@@ -1,7 +1,7 @@
 # CONVERSATION_QA_LOG
 # PTO ID System
 # Consolidated decisions from user/assistant discussion
-# Version: 2026-05-23
+# Version: 2026-05-26-AGGREGATE-BOUNDARIES-DRAFT
 
 Этот файл фиксирует важные вопросы, ответы и решения, которые появились в переписке и проектной памяти. Его цель — не заменить `PROJECT_MEMORY.md`, а сохранить ход принятия решений.
 
@@ -170,3 +170,18 @@ A: Сначала положить в репозиторий консолиди�
 - инструкцию для Codex/AI agents.
 
 После этого переходить к `Data Model v1 + Aggregate Boundaries`.
+
+---
+
+## 16. Aggregate boundaries before Database Schema V1
+
+### Q: Какие незакрытые границы нужно формально предложить до физической схемы данных?
+
+A: В `docs/09-aggregate-boundaries-and-invariants.md` зафиксирован draft baseline для ратификации:
+
+- `FolderTree` предлагается как отдельный object-scoped aggregate root, потому что hierarchy, move, duplicate и soft delete имеют самостоятельные инварианты и не должны менять content документов или раздувать `Object`;
+- самостоятельный `WorkItem` aggregate root для первого scope не вводится: работа, которую утверждает акт, принадлежит typed `Document` payload, пока не подтверждён shared workflow управления работами между несколькими документами/схемами;
+- `ProjectDrawingSet` предлагается как owned entity ограниченного `ObjectDocumentationContext`, потому что это общий basis проектной документации объекта, а не file-backed `ExecutiveScheme` с независимым evidence lifecycle;
+- `DocumentLock` остаётся operational lease: heartbeat, expiry и release не являются изменением document content и не создают revision.
+
+Статус решения: draft boundary baseline, требующий подтверждения перед утверждением Database Schema V1. Он конкретизирует, но не изменяет принятые ADR 0001-0005.

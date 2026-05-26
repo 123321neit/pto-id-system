@@ -2,7 +2,7 @@
 # PTO ID SYSTEM
 # EXECUTIVE DOCUMENTATION PLATFORM
 # MASTER CONTEXT / SOURCE OF TRUTH
-# VERSION: 2026-05-26-DOCUMENT-TYPES-CATALOG
+# VERSION: 2026-05-26-AGGREGATE-BOUNDARIES-AND-INVARIANTS
 # STATUS: ACTIVE SYSTEM ARCHITECTURE DESIGN PHASE
 # LANGUAGE: RU
 
@@ -1024,9 +1024,13 @@ ProjectDrawingSet используется в блоке реестра “Ко�
 - section;
 - note.
 
-Нужно решить позже: является ли ProjectDrawingSet отдельным aggregate или частью Object settings.
+Draft baseline из `docs/09-aggregate-boundaries-and-invariants.md`:
 
-Предварительно: часть Object/ObjectDocumentationSettings, если использование простое.
+```text
+ProjectDrawingSet = owned entity in ObjectDocumentationContext
+```
+
+Он не является самостоятельным aggregate root для первого scope. Если позднее появятся независимые approval/version/reuse workflows рабочих чертежей, boundary должна быть пересмотрена до реализации этих требований.
 
 ---
 
@@ -1420,10 +1424,11 @@ UI не должен быть перегружен, но система долж
 - company snapshot concept;
 - registry projection concept;
 - Package Builder high-level model.
+- aggregate boundaries and invariants draft baseline before Database Schema V1.
 
 Не завершено:
 
-- aggregate boundaries;
+- ратификация boundary baseline для `FolderTree`, `WorkItem` и `ProjectDrawingSet`;
 - PostgreSQL physical design;
 - repositories;
 - API map;
@@ -1442,18 +1447,25 @@ UI не должен быть перегружен, но система долж
 
 ### Q1 — Aggregate design
 
-Нужно определить DDD aggregate boundaries.
+Draft baseline определён в `docs/09-aggregate-boundaries-and-invariants.md` и требует ратификации до Database Schema V1.
 
-Предварительно:
+Зафиксированы как самостоятельные owners:
 
+- Object aggregate;
+- FolderTree aggregate;
 - Document aggregate;
 - Certificate aggregate;
 - ExecutiveScheme aggregate;
 - Package bounded context;
 - Template bounded context;
-- Object aggregate;
-- Folder aggregate/entity;
 - Registry projection service.
+
+Boundary choices для подтверждения:
+
+- `FolderTree` является отдельным object-scoped aggregate root;
+- содержательная работа первого scope хранится typed `Document` payload, без самостоятельного `WorkItem` root;
+- `ProjectDrawingSet` является owned entity `ObjectDocumentationContext`;
+- reusable boundaries для representatives/materials требуют решения.
 
 ### Q2 — PostgreSQL physical design
 
@@ -1552,18 +1564,18 @@ UI не должен быть перегружен, но система долж
 Следующий правильный этап:
 
 ```text
-Data Model v1 + Aggregate Boundaries
+Review and ratify Aggregate Boundaries and Invariants before Database Schema V1
 ```
 
-Не backend-код.
+Не backend-код и не физическая схема хранения до ратификации.
 
-Нужно создать документ:
+Создан draft-документ:
 
 ```text
-docs/06-data-model-v1.md
+docs/09-aggregate-boundaries-and-invariants.md
 ```
 
-В нём описать сущности, связи, ownership, source of truth, derived projections и MVP/deferred scope.
+В нём описаны owners, allowed/forbidden relationships, invariants, revision and invalidation rules, а также boundary choices, требующие подтверждения.
 
 ---
 
@@ -1609,6 +1621,7 @@ docs/06-data-model-v1.md
 | `docs/06-data-model-v1.md` | Первая формальная концептуальная модель данных | Фиксирует aggregate roots/boundaries, entities, ownership, snapshots, revisions и projections без выбора БД, API или стека. |
 | `docs/07-aosr-domain-specification.md` | Первая спецификация typed document | Формализует АОСР: blocks, validation, snapshots, revisions, registry/package behavior и открытые domain questions без выбора реализации. |
 | `docs/08-document-types-catalog.md` | Каталог document/evidence/output types | Классифицирует MVP baseline и candidate/deferred types, их source of truth, validation, registry/package and template behavior. |
+| `docs/09-aggregate-boundaries-and-invariants.md` | Boundary/invariants specification before database design | Фиксирует aggregate roots, ownership, invariants, revision/invalidation rules и draft boundary decisions для ратификации перед Database Schema V1. |
 | `docs/adr/*.md` | Принятые архитектурные решения | Нормативные решения по отдельным темам. Изменение принятого принципа требует нового ADR или явного пересмотра существующего. |
 | `docs/samples/*.md` | Анализ реальных примеров | Reference sources для доменной модели и будущих шаблонов/парсеров; не generated output системы. |
 
@@ -1640,18 +1653,18 @@ docs/06-data-model-v1.md
 | --- | --- | --- |
 | `Object` / `Project` | Строительный объект, основной пользовательский контейнер | Владеет настройками и ссылками, но не должен содержать все документы как giant aggregate. |
 | `EngineeringSystem` | Раздел или система: ОВиК, ВК, вентиляция, отопление, водоснабжение, канализация | Связан с объектом, работами, документами и схемами. |
-| `Folder` | Business collection node внутри объекта | Организует документы; поддерживает tree, move, duplicate и soft delete; не владеет lifecycle документов. |
+| `FolderTree` / `Folder` | Самостоятельный object-scoped aggregate и его business collection nodes | Draft baseline `docs/09-aggregate-boundaries-and-invariants.md`: владеет hierarchy/placement, move, duplicate и soft delete; не владеет lifecycle документов. |
 | `CompanyProfile` | Переиспользуемая карточка компании внутри tenant | Может меняться для будущих объектов; не должна ретроспективно менять исторические документы. |
 | `ObjectCompanySnapshot` | Зафиксированные данные компании на объекте | Используется документами и реестром для исторически устойчивого рендера. |
 | `Representative` | Представитель/подписант и его полномочия | Допускаются global, object и temporary representatives; важны порядок и overrides. |
 | `RegistrySignerSnapshot` | Выбранный подписант конкретного реестра | Подписант реестра может отличаться от подписантов актов. |
-| `ProjectDrawingSet` | Комплект рабочих чертежей, по которым выполняются работы | Не является исполнительной схемой; участвует в АОСР и блоке реестра. |
+| `ProjectDrawingSet` | Комплект рабочих чертежей, по которым выполняются работы | Draft baseline: owned entity в `ObjectDocumentationContext`; не является исполнительной схемой; участвует в АОСР и блоке реестра. |
 
 ### 44.3 Work and documentation aggregates
 
 | Сущность / концепт | Назначение | Ключевые правила |
 | --- | --- | --- |
-| `WorkItem` | Выполненная работа/участок/результат СМР | Может быть закрыт актами, связан с системой, местом, датами, материалами и схемами. |
+| `WorkItem` / work statement | Выполненная работа/участок/результат СМР | Draft baseline: самостоятельный aggregate root для V1 не вводится; работа, утверждаемая актом, хранится в typed `Document` payload, а reusable WorkItem остаётся future candidate. |
 | `Document` | Общая оболочка typed document | Содержит immutable `document_type`, status, number/date, typed payload, links, template version и revision. |
 | `AOSR` | Акт освидетельствования скрытых работ | Typed document, связывает работу, представителей, проектную документацию, материалы, сертификаты, схемы и разрешение последующих работ. |
 | `TestAct` | Акт испытаний | Typed document, фиксирует объект/методику/параметры/результаты испытаний и заключение. |
@@ -1681,7 +1694,8 @@ docs/06-data-model-v1.md
 - `RegistryProjection` является сервисом/проекцией, а не master aggregate.
 - `Package Builder` должен рассматриваться как отдельный bounded context или application service с собственными snapshots/jobs.
 - `DocumentLock` должен жить отдельно от document revision history.
-- Физические границы aggregates, storage tables и API ещё не утверждены: это задача `Data Model v1 + Aggregate Boundaries`.
+- Draft baseline `docs/09-aggregate-boundaries-and-invariants.md` принимает отдельный object-scoped `FolderTree`, document-owned work meaning без самостоятельного `WorkItem` root для V1 и object-owned `ProjectDrawingSet`; эти choices требуют ратификации до Database Schema V1.
+- Физическая модель хранения, storage tables и API ещё не утверждены.
 
 ---
 
@@ -1940,14 +1954,16 @@ docs/06-data-model-v1.md
 Текущий следующий шаг:
 
 ```text
-Review and ratify document types catalog, AOSR specification and remaining Data Model V1 boundaries
+Review and ratify aggregate boundaries and invariants before Database Schema V1
 ```
 
 Создан draft-документ `docs/07-aosr-domain-specification.md`, который формализует АОСР как первый typed document: structure blocks, validation categories, snapshots, revisions, registry behavior, package interaction и audit requirements.
 
 Создан draft-документ `docs/08-document-types-catalog.md`, который разделяет typed acts, evidence items, derived registry и package outputs, а для specialised test acts сохраняет candidate status до подтверждения первого MVP scope.
 
-Нужно согласовать точный набор MVP document types, открытые AOSR domain choices (обязательные participant roles, обязательность схем и документов качества для конкретных случаев, требуемую степень структуры work/location/project references и правила warning acceptance) и candidate aggregate boundaries Data Model V1. До такого подтверждения нельзя считать утверждёнными физическую БД, API, frontend state architecture, выбор backend/frontend стека или реализацию генератора.
+Создан draft-документ `docs/09-aggregate-boundaries-and-invariants.md`, который формально описывает owners, aggregate roots, invariants, revision/invalidation rules и три boundary baseline choices: отдельный object-scoped `FolderTree`, document-owned work meaning без самостоятельного `WorkItem` root на первом этапе и `ProjectDrawingSet` как owned entity object documentation context.
+
+Нужно ратифицировать эти boundary choices, точный набор MVP document types, открытые AOSR domain choices (обязательные participant roles, обязательность схем и документов качества для конкретных случаев, требуемую степень структуры work/location/project references и правила warning acceptance) и remaining policy choices по evidence/package/registry. До такого подтверждения нельзя считать утверждёнными физическую БД, API, frontend state architecture, выбор backend/frontend стека или реализацию генератора.
 
 ---
 
@@ -1995,7 +2011,7 @@ Review and ratify document types catalog, AOSR specification and remaining Data 
 | Каково назначение OCR/AI? | Assistant only. | Извлечённые metadata активируются только после пользовательского подтверждения. |
 | Где хранить данные компании на объекте? | Через `ObjectCompanySnapshot`. | Изменение профиля компании не переписывает исторические документы объекта. |
 | Может ли Object владеть всем сразу? | Нет. | Требуются отдельные aggregates/contexts для documents, certificates, schemes, templates и packages. |
-| Какая стадия проекта сейчас? | System Architecture Design, не coding. | Следующий шаг — Data Model v1 + Aggregate Boundaries, не scaffold приложения. |
+| Какая стадия проекта сейчас? | System Architecture Design, не coding. | Следующий шаг — ратификация Aggregate Boundaries and Invariants перед Database Schema V1, не scaffold приложения. |
 
 ### 51.1 Accepted ADR register
 
@@ -2006,6 +2022,16 @@ Review and ratify document types catalog, AOSR specification and remaining Data 
 | ADR 0003 | Реестр является derived projection. | Принято. |
 | ADR 0004 | Требуются document locks и snapshot-oriented autosave; детали реализации впереди. | Принято как принцип, требует детализации. |
 | ADR 0005 | Template versions версионируются и не изменяются после использования; детали template engine впереди. | Принято как принцип, требует детализации. |
+
+### 51.2 Draft boundary baseline requiring ratification
+
+| Вопрос границы | Draft baseline в `docs/09-aggregate-boundaries-and-invariants.md` | Причина |
+| --- | --- | --- |
+| Является ли `FolderTree` отдельным aggregate? | Да, object-scoped aggregate root. | Tree operations имеют собственные инварианты и не должны менять `Object` или document content. |
+| Является ли `WorkItem` отдельным aggregate root для V1? | Нет; meaning работы, утверждаемой актом, принадлежит typed `Document` payload. | Shared work lifecycle ещё не подтверждён; released act должен быть автономно воспроизводим. |
+| Где живёт `ProjectDrawingSet`? | Owned entity в `ObjectDocumentationContext`. | Это общий проектный basis объекта, не file-backed as-built evidence и пока не независимый lifecycle. |
+
+Эти решения конкретизируют существующие принципы и должны быть подтверждены до утверждения Database Schema V1; они не изменяют ADR 0001-0005.
 
 ---
 
@@ -2024,8 +2050,11 @@ Review and ratify document types catalog, AOSR specification and remaining Data 
 
 ### 52.2 Aggregate and storage design
 
-- Как точно проходят aggregate boundaries и транзакционные границы между Object, Folder, Document, Certificate, ExecutiveScheme, Template и Package?
-- Где должен находиться `ProjectDrawingSet`: в Object settings или как отдельный aggregate?
+- Должен ли draft baseline отдельного object-scoped `FolderTree` быть ратифицирован для Database Schema V1?
+- Подтверждается ли отсутствие самостоятельного `WorkItem` aggregate root на первом этапе, или уже в MVP нужен shared work lifecycle?
+- Подтверждается ли `ProjectDrawingSet` как owned entity `ObjectDocumentationContext`, либо ему нужен отдельный lifecycle?
+- Должен ли `RepresentativeProfile` стать отдельным library aggregate в первой схеме?
+- Нужен ли reusable `Material`/equipment catalog или достаточно document-owned `MaterialUsage` в первом scope?
 - Каковы physical storage, tables, indexes, constraints, JSONB strategy, tenant policies и soft-delete rules?
 - Как хранить originals, generated artifacts, package snapshots и build logs в cloud-agnostic storage?
 - Какие retention и hard-delete правила нужны для юридически/исторически значимых файлов?
@@ -2168,3 +2197,31 @@ Data Model V1 documented; open aggregate and MVP decisions require review before
 - окончательный список typed documents первого MVP;
 - новые фундаментальные архитектурные принципы или изменения ADR;
 - технические решения по хранению, API, стеку или генерации.
+
+### 2026-05-26 — Aggregate boundaries and invariants specification created
+
+- Документ: `docs/09-aggregate-boundaries-and-invariants.md`
+- Статус: `draft`
+- Описание: formal ownership, aggregate root, invariant, revision and invalidation specification before Database Schema V1.
+
+Зафиксированный прогресс:
+
+- систематизированы aggregate roots, owned entities, value/snapshot/projection и operational boundaries;
+- подробно закреплено, почему `Object` не поглощает independent document/evidence/template/package lifecycles;
+- сформулированы allowed/forbidden operations, cross-aggregate reference rules, package and registry invalidation triggers;
+- установлен draft baseline: `FolderTree` как отдельный object-scoped aggregate root;
+- установлен draft baseline: work meaning первого scope принадлежит typed `Document`, а самостоятельный `WorkItem` root не вводится без подтверждённого shared workflow;
+- установлен draft baseline: `ProjectDrawingSet` является owned entity `ObjectDocumentationContext`, отличной от `ExecutiveScheme`;
+- подтверждено, что `DocumentLock` является operational lease и не увеличивает document revision.
+
+Что требует ратификации перед Database Schema V1:
+
+- перечисленные boundary baseline choices;
+- точный MVP document type/validation scope;
+- границы reusable representatives/materials;
+- evidence replacement/retention, registry override scope и package readiness rules.
+
+Что не было изменено этим этапом:
+
+- фундаментальные принципы ADR 0001-0005;
+- физическая база данных, API, стек, миграции или implementation artifacts.
