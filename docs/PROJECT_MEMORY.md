@@ -2,7 +2,7 @@
 # PTO ID SYSTEM
 # EXECUTIVE DOCUMENTATION PLATFORM
 # MASTER CONTEXT / SOURCE OF TRUTH
-# VERSION: 2026-05-26-AOSR-DOMAIN-SPECIFICATION
+# VERSION: 2026-05-26-DOCUMENT-TYPES-CATALOG
 # STATUS: ACTIVE SYSTEM ARCHITECTURE DESIGN PHASE
 # LANGUAGE: RU
 
@@ -1608,6 +1608,7 @@ docs/06-data-model-v1.md
 | `docs/05-codex-agent-instructions.md` | Ранние инструкции Codex | Не удаляется; актуальные обязательные правила собраны в master context и `docs/AGENTS.md`. |
 | `docs/06-data-model-v1.md` | Первая формальная концептуальная модель данных | Фиксирует aggregate roots/boundaries, entities, ownership, snapshots, revisions и projections без выбора БД, API или стека. |
 | `docs/07-aosr-domain-specification.md` | Первая спецификация typed document | Формализует АОСР: blocks, validation, snapshots, revisions, registry/package behavior и открытые domain questions без выбора реализации. |
+| `docs/08-document-types-catalog.md` | Каталог document/evidence/output types | Классифицирует MVP baseline и candidate/deferred types, их source of truth, validation, registry/package and template behavior. |
 | `docs/adr/*.md` | Принятые архитектурные решения | Нормативные решения по отдельным темам. Изменение принятого принципа требует нового ADR или явного пересмотра существующего. |
 | `docs/samples/*.md` | Анализ реальных примеров | Reference sources для доменной модели и будущих шаблонов/парсеров; не generated output системы. |
 
@@ -1654,7 +1655,7 @@ docs/06-data-model-v1.md
 | `Document` | Общая оболочка typed document | Содержит immutable `document_type`, status, number/date, typed payload, links, template version и revision. |
 | `AOSR` | Акт освидетельствования скрытых работ | Typed document, связывает работу, представителей, проектную документацию, материалы, сертификаты, схемы и разрешение последующих работ. |
 | `TestAct` | Акт испытаний | Typed document, фиксирует объект/методику/параметры/результаты испытаний и заключение. |
-| `TechnicalReadinessAct` | Акт технической готовности | Обнаружен в реестре как требуемый тип; подробная schema ещё требует проработки. |
+| `TechnicalReadinessAct` | Акт технической готовности | Обнаружен в sample-реестре; включение в MVP и подробная schema ещё требуют проработки. |
 | `ExecutiveScheme` | Исполнительная схема | PDF/file + structured metadata; при замене создаётся новый файл/объект, а не правка чертежа системой. |
 | `Certificate` | Сертификат, декларация, паспорт, письмо или иной документ качества | Library aggregate с физическим файлом и metadata; переиспользуется в нескольких документах/объектах. |
 | `Material` | Материал или оборудование | Справочная/проектная сущность; обязательность каталога в MVP остаётся вопросом. |
@@ -1781,6 +1782,7 @@ docs/06-data-model-v1.md
 
 - `TECHNICAL_READINESS_ACT`: присутствует в реальном примере реестра; модель требует отдельного уточнения.
 - Другие акты испытаний и исполнительные документы: добавляются только как typed documents после согласования required fields и validation rules.
+- Классификация document/evidence/projection/package types и candidate test acts зафиксирована в `docs/08-document-types-catalog.md`; точный MVP type list всё ещё требует ратификации.
 
 ---
 
@@ -1938,12 +1940,14 @@ docs/06-data-model-v1.md
 Текущий следующий шаг:
 
 ```text
-Review and ratify AOSR domain specification and remaining Data Model V1 boundaries
+Review and ratify document types catalog, AOSR specification and remaining Data Model V1 boundaries
 ```
 
 Создан draft-документ `docs/07-aosr-domain-specification.md`, который формализует АОСР как первый typed document: structure blocks, validation categories, snapshots, revisions, registry behavior, package interaction и audit requirements.
 
-Нужно согласовать открытые AOSR domain choices: обязательные participant roles, обязательность схем и документов качества для конкретных случаев, требуемую степень структуры work/location/project references и правила warning acceptance. Также остаются candidate aggregate boundaries Data Model V1. До такого подтверждения нельзя считать утверждёнными физическую БД, API, frontend state architecture, выбор backend/frontend стека или реализацию генератора.
+Создан draft-документ `docs/08-document-types-catalog.md`, который разделяет typed acts, evidence items, derived registry и package outputs, а для specialised test acts сохраняет candidate status до подтверждения первого MVP scope.
+
+Нужно согласовать точный набор MVP document types, открытые AOSR domain choices (обязательные participant roles, обязательность схем и документов качества для конкретных случаев, требуемую степень структуры work/location/project references и правила warning acceptance) и candidate aggregate boundaries Data Model V1. До такого подтверждения нельзя считать утверждёнными физическую БД, API, frontend state architecture, выбор backend/frontend стека или реализацию генератора.
 
 ---
 
@@ -2144,3 +2148,23 @@ Data Model V1 documented; open aggregate and MVP decisions require review before
 - принятые архитектурные принципы ADR 0001-0005;
 - база данных, API, frontend или технологический стек;
 - правила, требующие отдельного решения владельца проекта по обязательной форме АОСР.
+
+### 2026-05-26 — Document types catalog created
+
+- Документ: `docs/08-document-types-catalog.md`
+- Статус: `draft`
+- Описание: catalog of typed acts, evidence items, registry projection and package outputs for MVP-oriented design and future extension.
+
+Зафиксированный прогресс:
+
+- перечислены обязательные для рассмотрения categories: AOSR, test acts, schemes, quality evidence, registry and package;
+- специализированные акты испытаний (`HydraulicTestAct`, `PressureTestAct`, `FlushingAct`) обозначены как MVP candidates, а не молча утверждённый первый состав;
+- `TechnicalReadinessAct` сохранён как deferred typed document candidate до определения schema;
+- `Declaration` и `Passport` классифицированы как file-backed quality evidence kinds в текущей Certificate Library model;
+- для каждого type описаны source of truth, базовые fields/links, validation, registry/package and template behavior, snapshots/revisions и open questions.
+
+Что не было принято этим этапом:
+
+- окончательный список typed documents первого MVP;
+- новые фундаментальные архитектурные принципы или изменения ADR;
+- технические решения по хранению, API, стеку или генерации.
