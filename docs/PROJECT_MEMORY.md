@@ -2069,6 +2069,21 @@ Review and ratify Data Model V1 open boundaries
 
 ## 53. Architectural Progress Log
 
+Policy:
+
+- Каждый крупный архитектурный документ должен попадать в этот log.
+- `PROJECT_MEMORY.md` всегда должен отражать актуальное состояние архитектуры.
+- После нового архитектурного решения нужно обновлять:
+  1. соответствующий документ;
+  2. `PROJECT_MEMORY.md`;
+  3. `CONVERSATION_QA_LOG.md`, если решение принято в обсуждении;
+  4. ADR, если решение меняет архитектурный принцип.
+
+### 2026-05-26 — docs/PROJECT_MEMORY.md
+
+- Статус: `active`
+- Описание: consolidated single source of truth for PTO ID System.
+
 ### 2026-05-26 — Data Model V1 specification created
 
 Создана первая формальная спецификация модели данных:
