@@ -2,7 +2,7 @@
 # PTO ID SYSTEM
 # EXECUTIVE DOCUMENTATION PLATFORM
 # MASTER CONTEXT / SOURCE OF TRUTH
-# VERSION: 2026-05-26-AGGREGATE-BOUNDARIES-AND-INVARIANTS
+# VERSION: 2026-05-26-AUTH-WORKSPACE-RBAC-MODEL
 # STATUS: ACTIVE SYSTEM ARCHITECTURE DESIGN PHASE
 # LANGUAGE: RU
 
@@ -193,64 +193,46 @@ OCR/AI может предлагать значения, но не должен 
 
 ---
 
-## 6. Users and roles
+## 6. Users, workspaces and roles
 
-### 6.1 admin
+`User` представляет физическое лицо, создающее аккаунт. Права на business data принадлежат не `User` напрямую, а его активному `Membership` в конкретном workspace.
 
-Полный доступ.
+После регистрации:
 
-Видит:
+- автоматически создаётся `Personal Workspace`;
+- регистрирующийся пользователь получает в нём membership с ролью `Owner`;
+- личный workspace позволяет полноценно вести объекты, документы, evidence, реестры и комплекты без участия организации.
 
-- пользователей;
-- tenants;
-- объекты;
-- системные настройки;
-- глобальные шаблоны;
-- системные справочники.
+Пользователь может одновременно состоять в нескольких `Organization Workspace`; вступление в них происходит через invitations. Личные и организационные данные не смешиваются автоматически.
 
-### 6.2 PTO
+Workspace membership roles baseline:
 
-Основной пользователь.
+- `Owner` — accountable controller workspace;
+- `Admin` — delegated workspace administrator;
+- `PTO Engineer` — основной профессиональный пользователь документации;
+- `Foreman` — ограниченный contributor;
+- `Viewer` — read-only participant.
 
-Может:
-
-- создавать объекты;
-- создавать папки;
-- создавать документы;
-- редактировать документы;
-- загружать сертификаты;
-- загружать исполнительные схемы;
-- вести библиотеку компаний;
-- вести библиотеку представителей;
-- собирать комплекты ИД;
-- управлять шаблонами объекта, если разрешено.
-
-### 6.3 foreman
-
-Упрощённая роль.
-
-Может:
-
-- создавать документы;
-- редактировать ограниченный набор данных;
-- загружать файлы;
-- просматривать документацию.
-
-Точные права требуют отдельного RBAC-дизайна.
+Точный permission baseline, invite rules и вопросы для ратификации определены в `docs/10-auth-workspace-rbac-model.md`. Workspace `Admin` не означает автоматически разрешённый platform-support access к данным других tenants.
 
 ---
 
-## 7. Multi-tenancy
+## 7. Multi-tenancy and workspace isolation
 
 Критически важное решение:
 
 ```text
-isolated tenant architecture
+isolated workspace/tenant architecture
 ```
 
-Каждый пользователь/tenant имеет логически изолированные данные.
+`Workspace` является tenant boundary для business data и workspace-scoped authorization. Существуют:
 
-Другие пользователи не видят:
+- `Personal Workspace` — автоматически создаваемая полноценная рабочая область физического лица;
+- `Organization Workspace` — совместная рабочая область, доступная через membership и invitations.
+
+Каждый workspace имеет логически изолированные данные.
+
+Пользователь без активного membership в данном workspace не видит:
 
 - объекты;
 - документы;
@@ -261,9 +243,9 @@ isolated tenant architecture
 - комплекты;
 - шаблоны объекта.
 
-Исключение: admin.
+Один пользователь может работать в нескольких organization workspaces, но это не разрешает cross-workspace links, reuse или copy domain data без отдельной утверждённой политики.
 
-Это не collaborative workspace между компаниями. Архитектура должна с самого начала учитывать `tenant_id` во всех ключевых сущностях.
+Организационный workspace — collaboration tenant, а `CompanyProfile` / `ObjectCompanySnapshot` — реквизиты сторон в документации; одно не даёт автоматически прав на другое. Архитектура должна с самого начала учитывать workspace/tenant boundary во всех ключевых сущностях.
 
 ---
 
@@ -1425,10 +1407,12 @@ UI не должен быть перегружен, но система долж
 - registry projection concept;
 - Package Builder high-level model.
 - aggregate boundaries and invariants draft baseline before Database Schema V1.
+- auth, workspace, invitation, membership and RBAC draft baseline before Database Schema V1.
 
 Не завершено:
 
 - ратификация boundary baseline для `FolderTree`, `WorkItem` и `ProjectDrawingSet`;
+- ратификация auth/workspace/RBAC baseline, invite policies и privacy/access requirements;
 - PostgreSQL physical design;
 - repositories;
 - API map;
@@ -1438,7 +1422,7 @@ UI не должен быть перегружен, но система долж
 - frontend state architecture;
 - OCR extraction schemas;
 - template placeholder/binding model;
-- RBAC details;
+- fine-grained RBAC/privacy/commercial lifecycle details;
 - frontend component architecture.
 
 ---
@@ -1564,7 +1548,7 @@ Boundary choices для подтверждения:
 Следующий правильный этап:
 
 ```text
-Review and ratify Aggregate Boundaries and Invariants before Database Schema V1
+Review and ratify Aggregate Boundaries/Invariants and Auth/Workspace/RBAC before Database Schema V1
 ```
 
 Не backend-код и не физическая схема хранения до ратификации.
@@ -1622,6 +1606,7 @@ docs/09-aggregate-boundaries-and-invariants.md
 | `docs/07-aosr-domain-specification.md` | Первая спецификация typed document | Формализует АОСР: blocks, validation, snapshots, revisions, registry/package behavior и открытые domain questions без выбора реализации. |
 | `docs/08-document-types-catalog.md` | Каталог document/evidence/output types | Классифицирует MVP baseline и candidate/deferred types, их source of truth, validation, registry/package and template behavior. |
 | `docs/09-aggregate-boundaries-and-invariants.md` | Boundary/invariants specification before database design | Фиксирует aggregate roots, ownership, invariants, revision/invalidation rules и draft boundary decisions для ратификации перед Database Schema V1. |
+| `docs/10-auth-workspace-rbac-model.md` | Access/tenant-boundary specification before database design | Фиксирует users, personal/organization workspaces, invitations, memberships, roles, permission baseline, isolation and SaaS readiness для ратификации перед Database Schema V1. |
 | `docs/adr/*.md` | Принятые архитектурные решения | Нормативные решения по отдельным темам. Изменение принятого принципа требует нового ADR или явного пересмотра существующего. |
 | `docs/samples/*.md` | Анализ реальных примеров | Reference sources для доменной модели и будущих шаблонов/парсеров; не generated output системы. |
 
@@ -1639,13 +1624,17 @@ docs/09-aggregate-boundaries-and-invariants.md
 
 Этот индекс консолидирует сущности, обнаруженные в проектной документации, анализе АОСР и анализе реестра. Это conceptual domain model, а не физическая схема БД.
 
-### 44.1 Tenant and access context
+### 44.1 Workspace tenant and access context
 
 | Сущность / концепт | Назначение | Ключевые правила |
 | --- | --- | --- |
-| `Tenant` | Логическая граница данных организации/пользователя SaaS | Все ключевые сущности должны учитывать `tenant_id`; данные tenants изолированы. |
-| `User` | Пользователь системы | Детальная модель пользователей и RBAC ещё не спроектирована. |
-| `Role` | `admin`, `PTO`, `foreman` и будущие права | Требует отдельного RBAC-дизайна; нельзя случайно реализовать до решения. |
+| `Workspace` / `TenantContext` | Логическая граница данных и workspace-scoped authorization SaaS | `Personal Workspace` и `Organization Workspace` изолируют domain data; cross-workspace access/reuse запрещены без отдельной политики. |
+| `User` | Аккаунт физического лица | Не несёт глобальной business role; может иметь memberships в нескольких workspaces. |
+| `Personal Workspace` | Полноценная личная рабочая область | Создаётся автоматически при регистрации; пользователь получает `Owner` membership. |
+| `Organization Workspace` | Совместная рабочая область команды | Участники вступают через stored invites и memberships; creator становится `Owner`. |
+| `Membership` | Связь пользователя с workspace и источник полномочий | Права принадлежат membership; role одного workspace не переносится в другой. |
+| `Invite` | Контролируемое приглашение в organization workspace | URL не содержит прав; роль, срок, revocation, usage and email binding определяются сохранённым invite. |
+| `Role` | `Owner`, `Admin`, `PTO Engineer`, `Foreman`, `Viewer` | Permission baseline описан в `docs/10-auth-workspace-rbac-model.md` и требует ратификации до физической схемы. |
 
 ### 44.2 Project and organization context
 
@@ -1954,7 +1943,7 @@ docs/06-data-model-v1.md
 Текущий следующий шаг:
 
 ```text
-Review and ratify aggregate boundaries and invariants before Database Schema V1
+Review and ratify aggregate boundaries/invariants and auth/workspace/RBAC before Database Schema V1
 ```
 
 Создан draft-документ `docs/07-aosr-domain-specification.md`, который формализует АОСР как первый typed document: structure blocks, validation categories, snapshots, revisions, registry behavior, package interaction и audit requirements.
@@ -1963,7 +1952,9 @@ Review and ratify aggregate boundaries and invariants before Database Schema V1
 
 Создан draft-документ `docs/09-aggregate-boundaries-and-invariants.md`, который формально описывает owners, aggregate roots, invariants, revision/invalidation rules и три boundary baseline choices: отдельный object-scoped `FolderTree`, document-owned work meaning без самостоятельного `WorkItem` root на первом этапе и `ProjectDrawingSet` как owned entity object documentation context.
 
-Нужно ратифицировать эти boundary choices, точный набор MVP document types, открытые AOSR domain choices (обязательные participant roles, обязательность схем и документов качества для конкретных случаев, требуемую степень структуры work/location/project references и правила warning acceptance) и remaining policy choices по evidence/package/registry. До такого подтверждения нельзя считать утверждёнными физическую БД, API, frontend state architecture, выбор backend/frontend стека или реализацию генератора.
+Создан draft-документ `docs/10-auth-workspace-rbac-model.md`, который конкретизирует tenant isolation через `Workspace`, разделяет `Personal Workspace` и `Organization Workspace`, определяет invitation/membership access model и permission baseline ролей `Owner`, `Admin`, `PTO Engineer`, `Foreman`, `Viewer`.
+
+Нужно ратифицировать boundary choices, auth/workspace/RBAC baseline, точный набор MVP document types, открытые AOSR domain choices (обязательные participant roles, обязательность схем и документов качества для конкретных случаев, требуемую степень структуры work/location/project references и правила warning acceptance) и remaining policy choices по evidence/package/registry/privacy. До такого подтверждения нельзя считать утверждёнными физическую БД, API, frontend state architecture, выбор backend/frontend стека или реализацию генератора.
 
 ---
 
@@ -1987,6 +1978,8 @@ Review and ratify aggregate boundaries and invariants before Database Schema V1
 14. `ProjectDrawingSet` и `ExecutiveScheme` — разные понятия.
 15. AI/OCR — assistant only; никакого auto-approve критичных metadata.
 16. Исходные документы могут содержать чувствительные реквизиты; privacy и tenant isolation обязательны.
+17. `Workspace` является tenant boundary, а workspace-права принадлежат `Membership`, не глобальному `User`.
+18. Каждый новый пользователь получает полноценный `Personal Workspace`; organization invitations не смешивают личные и командные данные.
 
 ---
 
@@ -2011,7 +2004,10 @@ Review and ratify aggregate boundaries and invariants before Database Schema V1
 | Каково назначение OCR/AI? | Assistant only. | Извлечённые metadata активируются только после пользовательского подтверждения. |
 | Где хранить данные компании на объекте? | Через `ObjectCompanySnapshot`. | Изменение профиля компании не переписывает исторические документы объекта. |
 | Может ли Object владеть всем сразу? | Нет. | Требуются отдельные aggregates/contexts для documents, certificates, schemes, templates и packages. |
-| Какая стадия проекта сейчас? | System Architecture Design, не coding. | Следующий шаг — ратификация Aggregate Boundaries and Invariants перед Database Schema V1, не scaffold приложения. |
+| Какая стадия проекта сейчас? | System Architecture Design, не coding. | Следующий шаг — ратификация Aggregate Boundaries/Invariants и Auth/Workspace/RBAC перед Database Schema V1, не scaffold приложения. |
+| Кто является пользователем SaaS? | Физическое лицо с одним аккаунтом и автоматическим `Personal Workspace`. | Пользователь может работать сам и состоять в нескольких organization workspaces. |
+| Где живут права доступа? | В `Membership` конкретного workspace, а не в `User` напрямую. | Один user может иметь разные роли в разных isolated tenants. |
+| Как пользователь вступает в организацию? | Через stored `Invite`, acceptance которого создаёт membership. | Invite URL не содержит доверенных прав; role/expiry/revocation/usage определяются сохранённым invite. |
 
 ### 51.1 Accepted ADR register
 
@@ -2032,6 +2028,18 @@ Review and ratify aggregate boundaries and invariants before Database Schema V1
 | Где живёт `ProjectDrawingSet`? | Owned entity в `ObjectDocumentationContext`. | Это общий проектный basis объекта, не file-backed as-built evidence и пока не независимый lifecycle. |
 
 Эти решения конкретизируют существующие принципы и должны быть подтверждены до утверждения Database Schema V1; они не изменяют ADR 0001-0005.
+
+### 51.3 Draft auth/workspace/RBAC baseline requiring ratification
+
+| Access question | Draft baseline в `docs/10-auth-workspace-rbac-model.md` | Причина |
+| --- | --- | --- |
+| Как соотносятся tenant и workspace? | `Workspace` конкретизирует tenant boundary для domain data и workspace-scoped authorization. | Нужна единая изоляционная граница для personal и organization usage. |
+| Как регистрируется пользователь? | Natural-person account автоматически получает полный `Personal Workspace` и `Owner` membership. | Независимый инженер ПТО должен полноценно работать без организации. |
+| Как работает совместная организация? | `Organization Workspace` имеет memberships; user может состоять в нескольких таких workspaces. | Поддерживает SaaS для команд без смешивания tenant data. |
+| Где находятся роли? | В `Membership`; роли baseline: `Owner`, `Admin`, `PTO Engineer`, `Foreman`, `Viewer`. | Глобальный user role создавал бы риск доступа между организациями. |
+| Как выдаётся доступ? | Stored invite определяет target/role/conditions; URL несёт только opaque token/reference. | Права нельзя доверять параметрам ссылки. |
+
+Auth/workspace baseline дополняет обязательную tenant isolation и требует ратификации permission details, invitation governance, ownership continuity, privacy/audit и commercial lifecycle до утверждения Database Schema V1. Новый ADR не требуется: фундаментальные принципы ADR 0001-0005 не меняются.
 
 ---
 
@@ -2084,8 +2092,11 @@ Review and ratify aggregate boundaries and invariants before Database Schema V1
 
 ### 52.6 Access, privacy and integrations
 
-- Какова детальная модель RBAC и нужна ли авторизация в самом раннем MVP?
+- Должен ли draft baseline `Workspace` as tenant boundary, automatic `Personal Workspace` и membership-owned roles быть ратифицирован для Database Schema V1?
+- Разрешены ли multi-use organization invites в первом scope, каковы owner transfer/recovery rules и нужна ли fine-grained object assignment policy?
+- Каковы точные права `Foreman` и `Viewer` на оригиналы evidence, outputs и lock override?
 - Какие privacy/access/audit requirements предъявляются к реальным сертификатам, схемам и персональным данным представителей?
+- Допустимы ли когда-либо controlled copy/transfer/export data между личным и organizational workspace или между организациями?
 - Нужны ли ЭЦП/юридически значимое подписание, импорт legacy DOCX/PDF, BIM/CAD/ERP integrations, public API или offline mode, и только на каком последующем этапе?
 
 ### 52.7 Technology decisions explicitly deferred
@@ -2220,6 +2231,34 @@ Data Model V1 documented; open aggregate and MVP decisions require review before
 - точный MVP document type/validation scope;
 - границы reusable representatives/materials;
 - evidence replacement/retention, registry override scope и package readiness rules.
+
+Что не было изменено этим этапом:
+
+- фундаментальные принципы ADR 0001-0005;
+- физическая база данных, API, стек, миграции или implementation artifacts.
+
+### 2026-05-26 — Auth, workspace and RBAC model created
+
+- Документ: `docs/10-auth-workspace-rbac-model.md`
+- Статус: `draft`
+- Описание: formal access, tenant-boundary, invitation, membership and role specification before Database Schema V1.
+
+Зафиксированный прогресс:
+
+- `Workspace` формализован как tenant boundary для domain data и workspace-scoped authorization;
+- определены `Personal Workspace` и `Organization Workspace`, включая автоматическое создание полноценного personal tenant при регистрации;
+- права закреплены за `Membership`, а не за глобальным `User`;
+- описаны invitation/join flow, включая правило, что invite URL не содержит доверенных прав;
+- сформирован permission baseline ролей `Owner`, `Admin`, `PTO Engineer`, `Foreman` и `Viewer`;
+- определены cross-workspace isolation, audit, security и SaaS commercial readiness guardrails.
+
+Что требует ратификации перед Database Schema V1:
+
+- workspace lifecycle/ownership continuity и organization creation governance;
+- detailed permission scope, evidence/privacy/download and lock override rules;
+- invite modes, expiration/revocation/email-verification and multi-use policy;
+- cross-workspace copy/transfer/export and commercial entitlement boundaries;
+- обязательный состав audit events и retention requirements.
 
 Что не было изменено этим этапом:
 

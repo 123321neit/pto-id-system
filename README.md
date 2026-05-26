@@ -65,19 +65,20 @@ DOCX/PDF/реестры/комплекты являются производны
 - `docs/07-aosr-domain-specification.md`
 - `docs/08-document-types-catalog.md`
 - `docs/09-aggregate-boundaries-and-invariants.md`
+- `docs/10-auth-workspace-rbac-model.md`
 
 ## Current next step
 
 Текущий следующий этап:
 
 ```text
-Ratify boundary baseline decisions before Database Schema V1
+Ratify aggregate boundary and auth/workspace/RBAC baseline decisions before Database Schema V1
 ```
 
-Рекомендованный следующий документ после ратификации boundary decisions:
+Рекомендованный следующий документ после ратификации этих decisions:
 
 ```text
-docs/10-database-schema-v1.md
+docs/11-database-schema-v1.md
 ```
 
-До ратификации решений из `docs/09-aggregate-boundaries-and-invariants.md` переходить к Database Schema V1 нельзя.
+До ратификации решений из `docs/09-aggregate-boundaries-and-invariants.md` и `docs/10-auth-workspace-rbac-model.md` переходить к Database Schema V1 нельзя.

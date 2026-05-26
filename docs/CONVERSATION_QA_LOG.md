@@ -1,7 +1,7 @@
 # CONVERSATION_QA_LOG
 # PTO ID System
 # Consolidated decisions from user/assistant discussion
-# Version: 2026-05-26-AGGREGATE-BOUNDARIES-DRAFT
+# Version: 2026-05-26-AUTH-WORKSPACE-RBAC-DRAFT
 
 Этот файл фиксирует важные вопросы, ответы и решения, которые появились в переписке и проектной памяти. Его цель — не заменить `PROJECT_MEMORY.md`, а сохранить ход принятия решений.
 
@@ -185,3 +185,23 @@ A: В `docs/09-aggregate-boundaries-and-invariants.md` зафиксирован 
 - `DocumentLock` остаётся operational lease: heartbeat, expiry и release не являются изменением document content и не создают revision.
 
 Статус решения: draft boundary baseline, требующий подтверждения перед утверждением Database Schema V1. Он конкретизирует, но не изменяет принятые ADR 0001-0005.
+
+---
+
+## 17. Auth, workspaces, invitations and RBAC before Database Schema V1
+
+### Q: Какую tenant/access модель нужно заложить, чтобы системой мог пользоваться и самостоятельный инженер, и организация?
+
+A: В `docs/10-auth-workspace-rbac-model.md` зафиксирован draft access baseline для ратификации:
+
+- пользователь создаёт аккаунт как физическое лицо, а после регистрации автоматически получает полноценный `Personal Workspace` и membership `Owner`;
+- `Workspace` конкретизирует tenant boundary: personal и organization workspaces изолируют объекты, документы, evidence, шаблоны, реестры, packages и outputs;
+- пользователь может состоять одновременно в нескольких `Organization Workspace`, но membership в одном workspace не даёт доступ к другому и не смешивает данные с personal workspace;
+- вступление в organization workspace выполняется через stored `Invite`; ссылка содержит opaque token/reference, а роль, expiration, revocation, usage и email binding определяются сохранённым invite;
+- права принадлежат `Membership`, а не `User` напрямую; предложены роли `Owner`, `Admin`, `PTO Engineer`, `Foreman`, `Viewer` и permission matrix;
+- invitation/membership changes, sensitive access and workspace-scoped domain actions требуют audit attribution;
+- коммерческие entitlement/seat/billing rules должны развиваться отдельно от membership authorization.
+
+Открытыми до ратификации остаются ownership transfer/recovery, multi-use invite policy первого scope, fine-grained object permissions, access/download/privacy rules для originals и персональных данных, cross-workspace transfer/export и commercial lifecycle.
+
+Статус решения: draft access and tenant-boundary baseline before Database Schema V1. Он конкретизирует уже обязательную tenant isolation и не изменяет ADR 0001-0005.

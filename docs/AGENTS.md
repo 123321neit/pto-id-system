@@ -43,7 +43,7 @@
 Текущий этап:
 
 ```text
-Review/ratification of docs/09-aggregate-boundaries-and-invariants.md
+Review/ratification of docs/09-aggregate-boundaries-and-invariants.md and docs/10-auth-workspace-rbac-model.md
 ```
 
 `docs/09-aggregate-boundaries-and-invariants.md` имеет статус draft. Перед Database Schema V1 нельзя молча принять draft decisions по:
@@ -57,10 +57,20 @@ Review/ratification of docs/09-aggregate-boundaries-and-invariants.md
 - evidence retention;
 - RBAC/privacy.
 
-Рекомендованный следующий документ только после ратификации boundary decisions:
+`docs/10-auth-workspace-rbac-model.md` имеет статус draft. Перед Database Schema V1 нельзя молча принять draft decisions по:
+
+- `Workspace` as tenant boundary;
+- automatic `Personal Workspace` creation and ownership lifecycle;
+- organization membership and invite policy;
+- role permission matrix;
+- cross-workspace copy/transfer/export;
+- audit, evidence access and privacy;
+- SaaS entitlement boundaries.
+
+Рекомендованный следующий документ только после ратификации aggregate boundary и auth/workspace/RBAC decisions:
 
 ```text
-docs/10-database-schema-v1.md
+docs/11-database-schema-v1.md
 ```
 
 До такой ратификации не проектировать физическую БД и API.
