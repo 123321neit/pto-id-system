@@ -40,16 +40,27 @@
 
 ## Current next step
 
-Рекомендованный следующий документ:
+Текущий этап:
 
 ```text
-docs/06-data-model-v1.md
+Review/ratification of docs/09-aggregate-boundaries-and-invariants.md
 ```
 
-Тема:
+`docs/09-aggregate-boundaries-and-invariants.md` имеет статус draft. Перед Database Schema V1 нельзя молча принять draft decisions по:
+
+- `FolderTree`;
+- `WorkItem`;
+- `ProjectDrawingSet`;
+- `RepresentativeProfile`;
+- material catalog;
+- `RegistryOverride` scope;
+- evidence retention;
+- RBAC/privacy.
+
+Рекомендованный следующий документ только после ратификации boundary decisions:
 
 ```text
-Data Model v1 + Aggregate Boundaries
+docs/10-database-schema-v1.md
 ```
 
-До завершения этого документа не проектировать физическую БД и API.
+До такой ратификации не проектировать физическую БД и API.

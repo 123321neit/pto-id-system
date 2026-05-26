@@ -57,16 +57,27 @@ DOCX/PDF/реестры/комплекты являются производны
 - enterprise document management system;
 - файловым менеджером.
 
+## Created architecture documents
+
+Уже созданы:
+
+- `docs/06-data-model-v1.md`
+- `docs/07-aosr-domain-specification.md`
+- `docs/08-document-types-catalog.md`
+- `docs/09-aggregate-boundaries-and-invariants.md`
+
 ## Current next step
 
-Следующий архитектурный этап:
+Текущий следующий этап:
 
 ```text
-Data Model v1 + Aggregate Boundaries
+Ratify boundary baseline decisions before Database Schema V1
 ```
 
-Рекомендуемый файл:
+Рекомендованный следующий документ после ратификации boundary decisions:
 
 ```text
-docs/06-data-model-v1.md
+docs/10-database-schema-v1.md
 ```
+
+До ратификации решений из `docs/09-aggregate-boundaries-and-invariants.md` переходить к Database Schema V1 нельзя.
