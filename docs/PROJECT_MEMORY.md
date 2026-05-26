@@ -2086,6 +2086,10 @@ Policy:
 
 ### 2026-05-26 — Data Model V1 specification created
 
+- Документ: `docs/06-data-model-v1.md`
+- Статус: `draft`
+- Описание: formal domain model and aggregate design specification for PTO ID System.
+
 Создана первая формальная спецификация модели данных:
 
 ```text

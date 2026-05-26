@@ -480,33 +480,49 @@ Package задаёт scope и ordering, затем инициирует asynchro
 
 ---
 
-## 9. Derived Projections
+## 9. Revision Model
 
-### 9.1 Definition
+### 9.1 Document revision
 
-Derived projection - это представление данных, собираемое из aggregate roots и snapshots для работы пользователя, проверки полноты или вывода. Проекция может быть рассчитана заранее, сохранена или экспортирована, но не является первичным владельцем исходных значений.
+`revision` идентифицирует содержательное состояние typed document. Модель обязана поддерживать историю изменений документа, особенно после достижения `final`.
 
-### 9.2 Required projections
+Принятое правило:
 
-| Projection | Purpose | Source aggregates |
+```text
+final document is editable; changing it produces the next revision
+```
+
+### 9.2 Revision triggers
+
+Операции, которые должны считаться содержательным изменением revision:
+
+- изменение полей typed payload;
+- изменение document date или rendered number, если документ уже зафиксирован/выпущен;
+- изменение связей с сертификатами, схемами или работами;
+- изменение зафиксированных представителей/подписантов документа;
+- смена template binding для нового представления документа;
+- изменение validation-relevant данных.
+
+Точный момент повышения revision у незавершённого draft и при частых autosave остаётся открытым. Autosave не должен автоматически создавать лавину published revisions.
+
+### 9.3 Revision consequences
+
+При изменении final revision:
+
+- новый документ должен пройти validation;
+- ранее сформированные артефакты не описывают автоматически новую revision;
+- package snapshots, которые должны включать обновлённый документ, помечаются устаревшими/требующими rebuild;
+- история должна показывать, какая revision участвовала в каком package snapshot.
+
+### 9.4 Version distinctions
+
+| Concept | What it versions | Not equivalent to |
 | --- | --- | --- |
-| `RegistryProjection` | Реестр документации объекта/комплекта | Object snapshots, ProjectDrawingSet, Documents, Certificates, ExecutiveSchemes, RegistryOverrides. |
-| `PackageContentsProjection` | Видимый состав собираемого комплекта | Package configuration, registry projection, documents/artifacts, evidence files. |
-| `DocumentListProjection` | Навигация по объекту/папке и статусам | Object, Folder placement, Documents. |
-| `CompletenessProjection` | Недостающие файлы, validation findings и readiness | Documents, links, Certificates, Schemes, templates, package requirements. |
-| `StaleArtifactProjection` | Какие output устарели после изменений | revisions, template versions, package snapshots, artifact provenance. |
-
-### 9.3 Projection edit principle
-
-Редактирование из projection UI допустимо только как команда исходному владельцу. Например:
-
-- изменение даты акта из строки реестра должно изменять `Document`;
-- привязка сертификата должна создать `DocumentCertificateLink` к существующему `Certificate`;
-- смена порядка в печатном реестре должна изменить `RegistryOverride`, а не переписать документ.
-
-### 9.4 No reverse authority from exported files
-
-Экспортированный DOCX, PDF или XLSX не возвращает изменения в модель автоматически. Импорт изменённого внешнего файла требует отдельного архитектурного решения и не входит в Data Model V1.
+| `DocumentRevision` | Содержание typed document | Template version, package snapshot, autosave state. |
+| `TemplateVersion` | Форму вывода | Document content revision. |
+| `PackageSnapshot` | Состав и output build комплекта | Текущие source entities после дальнейших изменений. |
+| `AutosaveSnapshot` | Рабочее промежуточное состояние | Published/final revision. |
+| `Certificate supersession/version` | Пока не утверждено формально | Не должно решаться молчаливой заменой original file. |
 
 ---
 
@@ -547,55 +563,9 @@ Package snapshot должен считаться требующим нового
 
 ---
 
-## 11. Revision Model
+## 11. File Ownership Model
 
-### 11.1 Document revision
-
-`revision` идентифицирует содержательное состояние typed document. Модель обязана поддерживать историю изменений документа, особенно после достижения `final`.
-
-Принятое правило:
-
-```text
-final document is editable; changing it produces the next revision
-```
-
-### 11.2 Revision triggers
-
-Операции, которые должны считаться содержательным изменением revision:
-
-- изменение полей typed payload;
-- изменение document date или rendered number, если документ уже зафиксирован/выпущен;
-- изменение связей с сертификатами, схемами или работами;
-- изменение зафиксированных представителей/подписантов документа;
-- смена template binding для нового представления документа;
-- изменение validation-relevant данных.
-
-Точный момент повышения revision у незавершённого draft и при частых autosave остаётся открытым. Autosave не должен автоматически создавать лавину published revisions.
-
-### 11.3 Revision consequences
-
-При изменении final revision:
-
-- новый документ должен пройти validation;
-- ранее сформированные артефакты не описывают автоматически новую revision;
-- package snapshots, которые должны включать обновлённый документ, помечаются устаревшими/требующими rebuild;
-- история должна показывать, какая revision участвовала в каком package snapshot.
-
-### 11.4 Version distinctions
-
-| Concept | What it versions | Not equivalent to |
-| --- | --- | --- |
-| `DocumentRevision` | Содержание typed document | Template version, package snapshot, autosave state. |
-| `TemplateVersion` | Форму вывода | Document content revision. |
-| `PackageSnapshot` | Состав и output build комплекта | Текущие source entities после дальнейших изменений. |
-| `AutosaveSnapshot` | Рабочее промежуточное состояние | Published/final revision. |
-| `Certificate supersession/version` | Пока не утверждено формально | Не должно решаться молчаливой заменой original file. |
-
----
-
-## 12. File Ownership Model
-
-### 12.1 File categories
+### 11.1 File categories
 
 | File category | Examples | Source/derived status | Conceptual owner |
 | --- | --- | --- | --- |
@@ -606,7 +576,7 @@ final document is editable; changing it produces the next revision
 | Generated registry output | Реестр в DOCX/PDF/XLSX | Derived artifact | Registry generation/package context. |
 | Generated package output | PDF/ZIP комплекта | Derived snapshot artifact | `PackageSnapshot`. |
 
-### 12.2 File ownership invariants
+### 11.2 File ownership invariants
 
 - FileAsset должен быть связан с owner context и tenant context.
 - Certificate без original file не может быть полноценным подтверждающим документом для акта/комплекта.
@@ -615,15 +585,15 @@ final document is editable; changing it produces the next revision
 - File used by a historical revision/snapshot cannot be silently overwritten.
 - Storage implementation, integrity strategy, retention and access mechanics требуют дальнейшего решения.
 
-### 12.3 AI/OCR processing rule
+### 11.3 AI/OCR processing rule
 
 OCR/AI может читать file content только в рамках будущей утверждённой privacy/data processing policy. Результат извлечения создаёт proposal, а не подтверждённые metadata. Пользователь обязан подтвердить критичные значения до их использования как verified fields.
 
 ---
 
-## 13. Certificate Model
+## 12. Certificate Model
 
-### 13.1 Role in the domain
+### 12.1 Role in the domain
 
 Certificate - самостоятельный library aggregate документа качества. Он подтверждает материал, изделие, оборудование или партию и может использоваться несколькими актами и комплектами внутри допустимого tenant scope.
 
@@ -636,7 +606,7 @@ Certificate - самостоятельный library aggregate документ�
 - исходящее/отказное/информационное письмо;
 - иной подтверждающий документ качества.
 
-### 13.2 Required certificate information
+### 12.2 Required certificate information
 
 | Information group | Conceptual fields |
 | --- | --- |
@@ -647,7 +617,7 @@ Certificate - самостоятельный library aggregate документ�
 | Verification | OCR state, user confirmation state, warnings/errors |
 | Lifecycle | tenant scope, timestamps, archive/soft delete/supersession state to be detailed |
 
-### 13.3 Link to materials and acts
+### 12.3 Link to materials and acts
 
 Сертификат не должен подтверждать абстрактную строку в документе. Желаемая смысловая цепочка:
 
@@ -657,7 +627,7 @@ WorkItem / AOSR material usage -> Certificate link -> Certificate original file
 
 Если полноценный `Material` catalog не войдёт в MVP, typed payload АОСР всё равно должен хранить конкретное применение/описание материала и связь с существующим `Certificate`.
 
-### 13.4 Mandatory file rule
+### 12.4 Mandatory file rule
 
 Нельзя:
 
@@ -671,7 +641,7 @@ WorkItem / AOSR material usage -> Certificate link -> Certificate original file
 - использовать один подтверждённый certificate item в нескольких документах;
 - показывать warning, если applicability требует проверки.
 
-### 13.5 Validity rule
+### 12.5 Validity rule
 
 Срок сертификата оценивается относительно даты документа, который использует сертификат, а не относительно даты просмотра системы.
 
@@ -681,19 +651,19 @@ WorkItem / AOSR material usage -> Certificate link -> Certificate original file
 - при создании/изменении документа с датой вне срока система должна сформировать finding;
 - согласно принятому решению такая просрочка рассматривается как warning, не автоматический hard block, пока не принято более строгое domain rule.
 
-### 13.6 OCR and confirmation
+### 12.6 OCR and confirmation
 
 OCR может предложить номер, даты, производителя, issuer, coverage и page count. До пользовательского подтверждения эти значения не должны использоваться как verified source data для финального документа или проверки комплекта.
 
 ---
 
-## 14. Executive Scheme Model
+## 13. Executive Scheme Model
 
-### 14.1 Meaning
+### 13.1 Meaning
 
 `ExecutiveScheme` описывает фактическую исполнительную схему или съёмку, подтверждающую выполненные работы. Она является evidence entity с файлом и структурированными metadata.
 
-### 14.2 Required information
+### 13.2 Required information
 
 | Information group | Conceptual fields |
 | --- | --- |
@@ -704,7 +674,7 @@ OCR может предложить номер, даты, производите
 | Relationships | linked WorkItems and Documents |
 | Lifecycle | created/updated/archive/delete metadata; replacement policy requires detailing |
 
-### 14.3 Difference from ProjectDrawingSet
+### 13.3 Difference from ProjectDrawingSet
 
 | Concept | Meaning | Typical registry location |
 | --- | --- | --- |
@@ -713,9 +683,72 @@ OCR может предложить номер, даты, производите
 
 Смешение этих понятий приведёт к ошибочному реестру и неверным связям АОСР.
 
-### 14.4 Initial scope
+### 13.4 Initial scope
 
 В первой модели metadata схемы вводятся вручную. Система не является CAD и не редактирует чертёж. OCR/AI-анализ схем, формальный versioning и автоматическое извлечение привязок относятся к deferred scope.
+
+---
+
+## 14. Document Model
+
+### 14.1 Document aggregate contract
+
+`Document` is the aggregate root for each typed act or other executable document. Its source of truth is its structured typed payload together with number, date, status, revision, validated relationships and template binding. The document never delegates its primary fields to a generated DOCX/PDF or registry row.
+
+The aggregate owns:
+
+- immutable `document_type`;
+- document number and document date;
+- lifecycle status and revision history;
+- typed payload and validation findings;
+- links to works, certificates and executive schemes;
+- representative snapshots and selected `TemplateVersion`;
+- provenance of generated artifacts derived from a revision.
+
+It does not own the source lifecycle of `Certificate`, `ExecutiveScheme`, `TemplateVersion` or `Package`. Those references are checked at document validation and package-build boundaries.
+
+### 14.2 AOSR typed document
+
+`AOSR` is a typed document represented by an `AOSRPayload` inside the `Document` aggregate, not a separate aggregate root and not a derived projection.
+
+| Aspect | Model |
+| --- | --- |
+| Purpose | Record inspection of concealed works before subsequent works proceed. |
+| Source of truth | Structured payload: inspected work, location, execution period, project references, material usages, linked certificates/schemes, participants, subsequent-work permission and notes. |
+| Lifecycle owner | Its containing `Document`; `draft` to validated `final`, with later corrections through a new revision. |
+| Relationships | `WorkItem`, `MaterialUsage`, `Certificate`, `ExecutiveScheme`, `ProjectDrawingSet`, representative snapshots and `TemplateVersion`. |
+| Constraints | Certificate text must render from an evidence-backed link; type is immutable; number/date changes after publication are revision-relevant. |
+
+### 14.3 TestAct typed document
+
+`TestAct` is a typed document represented by `TestActPayload` inside the `Document` aggregate, not an independent aggregate root and not a projection.
+
+| Aspect | Model |
+| --- | --- |
+| Purpose | Record testing of a system, section, pipeline or equipment and its conclusion. |
+| Source of truth | Structured payload: tested subject, testing type/method, parameters, actual results, dates, participants, instruments where applicable, conclusion and explicit links. |
+| Lifecycle owner | Its containing `Document`, following the same revision policy as other typed documents. |
+| Relationships | `EngineeringSystem`, `WorkItem` or tested subject, related acts, schemes, materials/certificates where required, representatives and `TemplateVersion`. |
+| Constraints | Exact MVP forms and required fields remain open; a free-form generic document cannot substitute for an approved typed schema. |
+
+### 14.4 Required entity disposition matrix
+
+The table below makes ownership and classification explicit for the key concepts required in this model. Details elsewhere in this document remain normative.
+
+| Entity | Purpose | Data owner and source of truth | Lifecycle and relationships | Constraints | Aggregate root / derived projection |
+| --- | --- | --- | --- | --- | --- |
+| `Object` | Construction project context | `Object`; structured object settings and snapshots | Own setup; references folders, systems, documents, drawings and packages | Must not absorb independent lifecycles into a giant aggregate | Aggregate root; not derived |
+| `Folder` | Business organization tree node | `FolderTree` candidate in object context; structured hierarchy | Move/duplicate/soft delete; places documents by reference | Same object only; no cycles; does not own document lifecycle | Not separately fixed as root; not derived |
+| `Document` | Typed executable-document envelope | `Document`; typed payload and revision state | Owns statuses, revisions, links and artifact provenance | Immutable type; final changes create revision | Aggregate root; not derived |
+| `AOSR` | Concealed works act | `Document` through `AOSRPayload` | Follows document lifecycle; links work, evidence and signers | Evidence-backed certificates; typed contract | Typed part of Document; not derived |
+| `TestAct` | Testing act | `Document` through `TestActPayload` | Follows document lifecycle; links tested context and results | Exact forms deferred; typed contract required | Typed part of Document; not derived |
+| `Certificate` | Quality evidence document | `Certificate`; metadata plus physical original file | Library lifecycle; linked from documents/packages and possibly material usages | Physical file required; validity checked by document date; OCR confirmation required | Aggregate root; not derived |
+| `ExecutiveScheme` | As-built factual scheme | `ExecutiveScheme`; metadata plus physical file | Independent file-backed lifecycle; links works/documents/packages | Not `ProjectDrawingSet`; silent file replacement forbidden | Aggregate root; not derived |
+| `Package` | Composition and build history of an ID set | `Package`; configuration and immutable build snapshots | Owns async builds/snapshots; reads exact source revisions/files | Async and snapshot-based; historical snapshots preserved | Aggregate root/context; not derived |
+| `Template` | Form family for rendering output | `Template`; versioned rendering definition | Owns `TemplateVersion`; selected by document/output | Used `TemplateVersion` is immutable | Aggregate root/context; not derived |
+| `GeneratedArtifact` | DOCX/PDF/XLSX/ZIP output | Generating revision or package snapshot via provenance | Regenerated from sources or preserved in snapshots | Never source of truth; identifies sources and template version | Not a root; derived artifact |
+| `RegistryProjection` | Registry view/output | Source aggregates plus approved overrides | Recomputed when current source changes; may be captured in package snapshot | Cannot own primary data | Not a root; derived projection |
+| `RegistryOverride` | Presentation choices for registry/package | Registry/package configuration scope | Applied when projection/output is generated | Only order, visibility, notes and signer selection; no source-field edits | Not a root; not itself a projection |
 
 ---
 
@@ -832,6 +865,28 @@ Override не может:
 ### 16.5 Freshness and rebuild
 
 После изменения source entity projection должна быть рассчитана заново для актуального output. Сохранённый registry artifact внутри historical package snapshot остаётся привязанным к snapshot; он не переписывается вслед за текущими данными.
+
+### 16.6 Related derived projections
+
+Derived projection - это представление данных, собираемое из aggregate roots и snapshots для работы пользователя, проверки полноты или вывода. Проекция может быть рассчитана заранее, сохранена или экспортирована, но не является первичным владельцем исходных значений.
+
+| Projection | Purpose | Source aggregates |
+| --- | --- | --- |
+| `RegistryProjection` | Реестр документации объекта/комплекта | Object snapshots, ProjectDrawingSet, Documents, Certificates, ExecutiveSchemes, RegistryOverrides. |
+| `PackageContentsProjection` | Видимый состав собираемого комплекта | Package configuration, registry projection, documents/artifacts, evidence files. |
+| `DocumentListProjection` | Навигация по объекту/папке и статусам | Object, Folder placement, Documents. |
+| `CompletenessProjection` | Недостающие файлы, validation findings и readiness | Documents, links, Certificates, Schemes, templates, package requirements. |
+| `StaleArtifactProjection` | Какие output устарели после изменений | Revisions, template versions, package snapshots, artifact provenance. |
+
+### 16.7 Edit authority and exported outputs
+
+Редактирование из projection UI допустимо только как команда исходному владельцу. Например:
+
+- изменение даты акта из строки реестра должно изменять `Document`;
+- привязка сертификата должна создать `DocumentCertificateLink` к существующему `Certificate`;
+- смена порядка в печатном реестре должна изменить `RegistryOverride`, а не переписать документ.
+
+Экспортированный DOCX, PDF или XLSX не возвращает изменения в модель автоматически. Импорт изменённого внешнего файла требует отдельного архитектурного решения и не входит в Data Model V1.
 
 ---
 
@@ -973,9 +1028,37 @@ MVP-oriented modeling baseline includes:
 
 ---
 
-## 20. Open Questions
+## 20. Risks and Tradeoffs
 
-### 20.1 Questions requiring product/domain confirmation
+### 20.1 Autonomous aggregates versus coordinated output
+
+Разделение `Object`, `Document`, `Certificate`, `ExecutiveScheme`, `Template` и `Package` защищает их независимые жизненные циклы и не допускает giant aggregate. Компромисс состоит в том, что registry/package readiness требует координировать несколько owners и явно отслеживать зависимости; потеря такой координации создаст stale output.
+
+### 20.2 Typed documents versus speed of adding forms
+
+Typed documents дают корректные связи, validation и генерацию для АОСР и актов испытаний. Цена решения - каждый новый вид исполнительного документа требует доменного анализа, согласования payload и правил, поэтому продукт не может безопасно принимать произвольную форму как generic document.
+
+### 20.3 Evidence files versus user entry friction
+
+Требование physical file для `Certificate` и `ExecutiveScheme` обеспечивает собираемость комплекта и историческую доказательность. Оно увеличивает число обязательных действий при вводе документа и требует хорошего workflow загрузки/повторного использования, иначе пользователь будет пытаться обходить правило текстовыми примечаниями.
+
+### 20.4 Revisions and snapshots versus storage growth
+
+Document revisions, immutable template versions и package snapshots позволяют воспроизводить выпуски спустя время. Компромисс - накопление исторических states и файлов; retention, replacement and access policies ещё должны быть определены без разрушения already-issued evidence.
+
+### 20.5 Async package build versus immediate feedback
+
+Асинхронная snapshot-based сборка необходима из-за генерации и включения evidence files. Она означает, что комплект не всегда появляется мгновенно: последующая спецификация должна сделать статусы, validation findings, failure/retry и stale state понятными пользователю, не превращая ожидание в потерю контроля.
+
+### 20.6 Registry overrides versus source-data clarity
+
+Overrides нужны для порядка, скрытия, примечаний и выбора подписанта в практическом выводе. Риск возникает, если UI позволит воспринимать override как исправление первичных данных; boundary должен оставаться явным: содержательное изменение производится у owner entity и ведёт к пересчёту projection.
+
+---
+
+## 21. Open Questions
+
+### 21.1 Questions requiring product/domain confirmation
 
 1. Какие точные типы документов помимо АОСР должны войти в первый работающий набор: какие виды актов испытаний и нужен ли `TECHNICAL_READINESS_ACT` в первом scope?
 2. Какие поля АОСР должны быть обязательными errors, а какие дают warnings?
@@ -983,7 +1066,7 @@ MVP-oriented modeling baseline includes:
 4. Какой уровень структуры нужен для мест выполнения работ: свободный rendered text, оси/отметки/этажи как отдельные значения или оба слоя?
 5. Какой набор representatives/signature blocks обязателен для АОСР и каждого типа акта?
 
-### 20.2 Questions requiring boundary decisions
+### 21.2 Questions requiring boundary decisions
 
 1. Является ли `FolderTree` отдельным aggregate root либо частью ограниченного `Object` aggregate с отдельными document references?
 2. Где проходит boundary `ProjectDrawingSet`: внутри ObjectDocumentationSettings или как самостоятельный aggregate?
@@ -991,7 +1074,7 @@ MVP-oriented modeling baseline includes:
 4. Каким образом хранятся snapshots representatives на уровне object/document/registry без ненужного дублирования, но с исторической воспроизводимостью?
 5. Какая модель replacement/supersession нужна certificate file и executive scheme file после участия в package?
 
-### 20.3 Questions requiring lifecycle decisions
+### 21.3 Questions requiring lifecycle decisions
 
 1. Нужны ли состояния `in_review`, `approved`, `issued`, `superseded` и `needs_regeneration` в document lifecycle либо часть из них является projection state?
 2. Когда для draft создаётся новая revision, а когда достаточно обновить autosave snapshot?
@@ -999,7 +1082,7 @@ MVP-oriented modeling baseline includes:
 4. Должен ли warning о certificate expiry когда-либо становиться hard error для конкретных document types или требований заказчика?
 5. Как оформляется явное обновление ObjectCompanySnapshot, если реквизиты на активном объекте действительно нужно изменить?
 
-### 20.4 Questions required before generation/storage design
+### 21.4 Questions required before generation/storage design
 
 1. Какой rendering contract должен связывать typed payload, template version, HTML preview и DOCX/PDF outputs?
 2. Какие dependency changes вызывают mandatory rebuild package, а какие только informational warning?
@@ -1007,7 +1090,7 @@ MVP-oriented modeling baseline includes:
 4. Как должна быть устроена privacy policy для оригиналов и возможной OCR/AI обработки?
 5. Какой минимальный audit trail нужен для юридически и практически полезной истории ИД?
 
-### 20.5 Completion criterion for this stage
+### 21.5 Completion criterion for this stage
 
 Data Model V1 считается готовой основой для следующей детализации после проверки владельцем проекта по следующим пунктам:
 
