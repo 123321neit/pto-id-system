@@ -2,7 +2,7 @@
 # PTO ID SYSTEM
 # EXECUTIVE DOCUMENTATION PLATFORM
 # MASTER CONTEXT / SOURCE OF TRUTH
-# VERSION: 2026-05-26-SINGLE-SOURCE-OF-TRUTH
+# VERSION: 2026-05-26-DATA-MODEL-V1
 # STATUS: ACTIVE SYSTEM ARCHITECTURE DESIGN PHASE
 # LANGUAGE: RU
 
@@ -1606,6 +1606,7 @@ docs/06-data-model-v1.md
 | `docs/03-registry-model.md` | Исходное описание реестров | Подтверждает derived projection policy. |
 | `docs/04-roadmap-and-open-questions.md` | Roadmap и ранние вопросы | Используется как источник незакрытых вопросов; актуальный консолидированный список приведён ниже. |
 | `docs/05-codex-agent-instructions.md` | Ранние инструкции Codex | Не удаляется; актуальные обязательные правила собраны в master context и `docs/AGENTS.md`. |
+| `docs/06-data-model-v1.md` | Первая формальная концептуальная модель данных | Фиксирует aggregate roots/boundaries, entities, ownership, snapshots, revisions и projections без выбора БД, API или стека. |
 | `docs/adr/*.md` | Принятые архитектурные решения | Нормативные решения по отдельным темам. Изменение принятого принципа требует нового ADR или явного пересмотра существующего. |
 | `docs/samples/*.md` | Анализ реальных примеров | Reference sources для доменной модели и будущих шаблонов/парсеров; не generated output системы. |
 
@@ -1911,29 +1912,35 @@ Sample analyses нужны как domain reference: они объясняют с
 
 ## 49. Current Next Step
 
-Текущий следующий архитектурный этап остаётся тем же:
+Текущий архитектурный этап выполнен в первой формальной редакции:
 
 ```text
 Data Model v1 + Aggregate Boundaries
 ```
 
-Предлагаемый документ:
+Создан документ:
 
 ```text
 docs/06-data-model-v1.md
 ```
 
-Он должен определить:
+Документ определяет:
 
 - bounded contexts и aggregate roots;
 - ownership и ссылки между `Object`, `Folder`, `Document`, `Certificate`, `ExecutiveScheme`, `Template`, `Package` и projections;
-- typed payload v1 для АОСР и первых актов испытаний;
+- основу typed payload для АОСР и рамки первых актов испытаний;
 - snapshot boundaries для компаний, документов и комплектов;
 - lifecycle, revision и invalidation events;
 - MVP scope и deferred scope;
-- список решений, которые ещё запрещают переход к физической БД/API.
+- открытые решения, которые ещё запрещают переход к физической БД/API.
 
-До принятия Data Model v1 нельзя считать утверждёнными физическую БД, API, frontend state architecture, выбор backend/frontend стека или реализацию генератора.
+Текущий следующий шаг:
+
+```text
+Review and ratify Data Model V1 open boundaries
+```
+
+Нужно согласовать состав документов MVP, candidate aggregate boundaries, обязательные поля/валидации АОСР, lifecycle/revision rules и package invalidation rules. До такого подтверждения нельзя считать утверждёнными физическую БД, API, frontend state architecture, выбор backend/frontend стека или реализацию генератора.
 
 ---
 
@@ -2057,3 +2064,41 @@ docs/06-data-model-v1.md
 - OCR/AI provider and data-processing policy.
 
 Пока эти вопросы открыты, агент не должен создавать реализационные файлы, выдавая выбор технологии за уже принятое решение.
+
+---
+
+## 53. Architectural Progress Log
+
+### 2026-05-26 — Data Model V1 specification created
+
+Создана первая формальная спецификация модели данных:
+
+```text
+docs/06-data-model-v1.md
+```
+
+Зафиксированный прогресс:
+
+- принятые архитектурные правила преобразованы в каталог aggregate roots, candidate boundaries, entities и value objects;
+- формализованы ownership rules и lifecycle ownership без выбора физического хранения;
+- описаны snapshot model и revision model, включая правило `final` document edit -> new revision и invalidation зависимых package snapshots;
+- закреплены file ownership rules для сертификатов, исполнительных схем, шаблонов и generated artifacts;
+- формализованы модели `Certificate`, `ExecutiveScheme`, `Package` и `RegistryProjection`;
+- составлена relationships matrix;
+- разделены MVP scope, deferred scope и вопросы, требующие подтверждения владельца проекта.
+
+Что не было принято или реализовано этим этапом:
+
+- физическая схема БД, SQL или ORM;
+- backend/frontend stack;
+- API;
+- механизм хранения файлов;
+- очередь package builds;
+- template/OCR implementation;
+- любой программный код продукта.
+
+Текущий статус:
+
+```text
+Data Model V1 documented; open aggregate and MVP decisions require review before implementation design.
+```
