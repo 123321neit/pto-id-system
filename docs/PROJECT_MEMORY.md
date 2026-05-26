@@ -2,7 +2,7 @@
 # PTO ID SYSTEM
 # EXECUTIVE DOCUMENTATION PLATFORM
 # MASTER CONTEXT / SOURCE OF TRUTH
-# VERSION: 2026-05-26-DATA-MODEL-V1
+# VERSION: 2026-05-26-AOSR-DOMAIN-SPECIFICATION
 # STATUS: ACTIVE SYSTEM ARCHITECTURE DESIGN PHASE
 # LANGUAGE: RU
 
@@ -1607,6 +1607,7 @@ docs/06-data-model-v1.md
 | `docs/04-roadmap-and-open-questions.md` | Roadmap и ранние вопросы | Используется как источник незакрытых вопросов; актуальный консолидированный список приведён ниже. |
 | `docs/05-codex-agent-instructions.md` | Ранние инструкции Codex | Не удаляется; актуальные обязательные правила собраны в master context и `docs/AGENTS.md`. |
 | `docs/06-data-model-v1.md` | Первая формальная концептуальная модель данных | Фиксирует aggregate roots/boundaries, entities, ownership, snapshots, revisions и projections без выбора БД, API или стека. |
+| `docs/07-aosr-domain-specification.md` | Первая спецификация typed document | Формализует АОСР: blocks, validation, snapshots, revisions, registry/package behavior и открытые domain questions без выбора реализации. |
 | `docs/adr/*.md` | Принятые архитектурные решения | Нормативные решения по отдельным темам. Изменение принятого принципа требует нового ADR или явного пересмотра существующего. |
 | `docs/samples/*.md` | Анализ реальных примеров | Reference sources для доменной модели и будущих шаблонов/парсеров; не generated output системы. |
 
@@ -1937,10 +1938,12 @@ docs/06-data-model-v1.md
 Текущий следующий шаг:
 
 ```text
-Review and ratify Data Model V1 open boundaries
+Review and ratify AOSR domain specification and remaining Data Model V1 boundaries
 ```
 
-Нужно согласовать состав документов MVP, candidate aggregate boundaries, обязательные поля/валидации АОСР, lifecycle/revision rules и package invalidation rules. До такого подтверждения нельзя считать утверждёнными физическую БД, API, frontend state architecture, выбор backend/frontend стека или реализацию генератора.
+Создан draft-документ `docs/07-aosr-domain-specification.md`, который формализует АОСР как первый typed document: structure blocks, validation categories, snapshots, revisions, registry behavior, package interaction и audit requirements.
+
+Нужно согласовать открытые AOSR domain choices: обязательные participant roles, обязательность схем и документов качества для конкретных случаев, требуемую степень структуры work/location/project references и правила warning acceptance. Также остаются candidate aggregate boundaries Data Model V1. До такого подтверждения нельзя считать утверждёнными физическую БД, API, frontend state architecture, выбор backend/frontend стека или реализацию генератора.
 
 ---
 
@@ -2121,3 +2124,23 @@ docs/06-data-model-v1.md
 ```text
 Data Model V1 documented; open aggregate and MVP decisions require review before implementation design.
 ```
+
+### 2026-05-26 — AOSR domain specification created
+
+- Документ: `docs/07-aosr-domain-specification.md`
+- Статус: `draft`
+- Описание: first formal typed-document domain specification for AOSR, including blocks, validation, snapshots, revisions, registry projection and package interaction.
+
+Зафиксированный прогресс:
+
+- АОСР описан как `AOSRPayload` внутри aggregate root `Document`, а не как файл или generic form;
+- формализованы header, work, participants, materials, certificate, executive scheme и attachments blocks;
+- определены inherited validation invariants и draft baseline для `ERROR`, `WARNING` и `INFO`;
+- описаны rendering, snapshot, revision, registry, package и audit rules;
+- обязательности, не утверждённые ранее (например, точный состав подписантов и обязательность схемы для каждого случая), оставлены открытыми для ратификации.
+
+Что не было изменено этим этапом:
+
+- принятые архитектурные принципы ADR 0001-0005;
+- база данных, API, frontend или технологический стек;
+- правила, требующие отдельного решения владельца проекта по обязательной форме АОСР.
