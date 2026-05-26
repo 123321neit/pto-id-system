@@ -2,7 +2,7 @@
 # PTO ID SYSTEM
 # EXECUTIVE DOCUMENTATION PLATFORM
 # MASTER CONTEXT / SOURCE OF TRUTH
-# VERSION: 2026-05-23-CONSOLIDATED
+# VERSION: 2026-05-26-SINGLE-SOURCE-OF-TRUTH
 # STATUS: ACTIVE SYSTEM ARCHITECTURE DESIGN PHASE
 # LANGUAGE: RU
 
@@ -1585,3 +1585,475 @@ docs/06-data-model-v1.md
 - историческая неизменность старых данных;
 - быстрый UX;
 - минимум ручной рутины.
+
+---
+
+## 43. Repository Structure Policy
+
+Этот раздел фиксирует назначение файлов репозитория и порядок разрешения противоречий. Он не отменяет исходные архитектурные документы: они сохраняются как детализация решений и история их формирования. При этом именно `docs/PROJECT_MEMORY.md` является самодостаточным master-файлом и первой точкой чтения для нового агента или разработчика.
+
+### 43.1 Canonical knowledge structure
+
+| Путь | Роль в проекте | Политика использования |
+| --- | --- | --- |
+| `README.md` | Входная страница репозитория | Кратко объясняет назначение проекта и ведёт к master context. Не является полным архитектурным описанием. |
+| `docs/PROJECT_MEMORY.md` | Единый master context | Канонический источник продуктовых и архитектурных решений, терминов, текущего статуса и правил для агентов. |
+| `docs/CONVERSATION_QA_LOG.md` | Журнал вопросов и решений | Хранит происхождение важных решений. Новые значимые ответы пользователя должны попадать сюда и затем отражаться в master context. |
+| `docs/AGENTS.md` | Быстрые инструкции агентам | Краткая operational entry point. При расхождении с master context приоритет у `PROJECT_MEMORY.md`. |
+| `docs/00-project-memory.md` | Ранняя фиксация принципов | Сохраняется как базовый архитектурный источник. Активные положения интегрированы в этот файл. |
+| `docs/01-architecture-overview.md` | Архитектурный обзор слоёв | Детализирует domain/application/projection/generation/storage layers. |
+| `docs/02-domain-model.md` | Исходное описание доменной модели | Используется при проектировании Data Model v1; положения включены в индексы ниже. |
+| `docs/03-registry-model.md` | Исходное описание реестров | Подтверждает derived projection policy. |
+| `docs/04-roadmap-and-open-questions.md` | Roadmap и ранние вопросы | Используется как источник незакрытых вопросов; актуальный консолидированный список приведён ниже. |
+| `docs/05-codex-agent-instructions.md` | Ранние инструкции Codex | Не удаляется; актуальные обязательные правила собраны в master context и `docs/AGENTS.md`. |
+| `docs/adr/*.md` | Принятые архитектурные решения | Нормативные решения по отдельным темам. Изменение принятого принципа требует нового ADR или явного пересмотра существующего. |
+| `docs/samples/*.md` | Анализ реальных примеров | Reference sources для доменной модели и будущих шаблонов/парсеров; не generated output системы. |
+
+### 43.2 Rules for repository changes
+
+- На текущем этапе репозиторий является архитектурным репозиторием, а не кодовой базой продукта.
+- Нельзя добавлять backend/frontend implementation, `package.json`, lock-файлы, Dockerfile, CI/CD, deployment configuration или зависимости без отдельного пользовательского запроса и предварительного архитектурного решения.
+- Нельзя удалять исходные docs, ADR или sample analyses только потому, что информация вошла в master context: они нужны как доказательная база и история решений.
+- При появлении нового доменного решения нужно обновить `docs/PROJECT_MEMORY.md`; если решение принято в диалоге, также обновить `docs/CONVERSATION_QA_LOG.md`; если оно изменяет долгосрочную архитектуру, создать ADR.
+- `docs/PROJECT_MEMORY.md` должен быть достаточен для начала новой сессии без обязательного чтения остальных файлов. Остальные файлы нужны для проверки происхождения деталей и углубления.
+
+---
+
+## 44. Full Domain Model Index
+
+Этот индекс консолидирует сущности, обнаруженные в проектной документации, анализе АОСР и анализе реестра. Это conceptual domain model, а не физическая схема БД.
+
+### 44.1 Tenant and access context
+
+| Сущность / концепт | Назначение | Ключевые правила |
+| --- | --- | --- |
+| `Tenant` | Логическая граница данных организации/пользователя SaaS | Все ключевые сущности должны учитывать `tenant_id`; данные tenants изолированы. |
+| `User` | Пользователь системы | Детальная модель пользователей и RBAC ещё не спроектирована. |
+| `Role` | `admin`, `PTO`, `foreman` и будущие права | Требует отдельного RBAC-дизайна; нельзя случайно реализовать до решения. |
+
+### 44.2 Project and organization context
+
+| Сущность / концепт | Назначение | Source of truth / связи |
+| --- | --- | --- |
+| `Object` / `Project` | Строительный объект, основной пользовательский контейнер | Владеет настройками и ссылками, но не должен содержать все документы как giant aggregate. |
+| `EngineeringSystem` | Раздел или система: ОВиК, ВК, вентиляция, отопление, водоснабжение, канализация | Связан с объектом, работами, документами и схемами. |
+| `Folder` | Business collection node внутри объекта | Организует документы; поддерживает tree, move, duplicate и soft delete; не владеет lifecycle документов. |
+| `CompanyProfile` | Переиспользуемая карточка компании внутри tenant | Может меняться для будущих объектов; не должна ретроспективно менять исторические документы. |
+| `ObjectCompanySnapshot` | Зафиксированные данные компании на объекте | Используется документами и реестром для исторически устойчивого рендера. |
+| `Representative` | Представитель/подписант и его полномочия | Допускаются global, object и temporary representatives; важны порядок и overrides. |
+| `RegistrySignerSnapshot` | Выбранный подписант конкретного реестра | Подписант реестра может отличаться от подписантов актов. |
+| `ProjectDrawingSet` | Комплект рабочих чертежей, по которым выполняются работы | Не является исполнительной схемой; участвует в АОСР и блоке реестра. |
+
+### 44.3 Work and documentation aggregates
+
+| Сущность / концепт | Назначение | Ключевые правила |
+| --- | --- | --- |
+| `WorkItem` | Выполненная работа/участок/результат СМР | Может быть закрыт актами, связан с системой, местом, датами, материалами и схемами. |
+| `Document` | Общая оболочка typed document | Содержит immutable `document_type`, status, number/date, typed payload, links, template version и revision. |
+| `AOSR` | Акт освидетельствования скрытых работ | Typed document, связывает работу, представителей, проектную документацию, материалы, сертификаты, схемы и разрешение последующих работ. |
+| `TestAct` | Акт испытаний | Typed document, фиксирует объект/методику/параметры/результаты испытаний и заключение. |
+| `TechnicalReadinessAct` | Акт технической готовности | Обнаружен в реестре как требуемый тип; подробная schema ещё требует проработки. |
+| `ExecutiveScheme` | Исполнительная схема | PDF/file + structured metadata; при замене создаётся новый файл/объект, а не правка чертежа системой. |
+| `Certificate` | Сертификат, декларация, паспорт, письмо или иной документ качества | Library aggregate с физическим файлом и metadata; переиспользуется в нескольких документах/объектах. |
+| `Material` | Материал или оборудование | Справочная/проектная сущность; обязательность каталога в MVP остаётся вопросом. |
+| `MaterialUsage` | Факт применения материала в работе | Связывает конкретную работу, количество/партию/место применения и подтверждающие сертификаты. |
+
+### 44.4 Output, rendering and lifecycle concepts
+
+| Сущность / концепт | Назначение | Ключевые правила |
+| --- | --- | --- |
+| `RegistryProjection` | Вычисляемое представление состава документации | Никогда не source of truth; строится из domain data и override layer. |
+| `RegistryOverride` | Управляемые печатные/порядковые изменения реестра | Позволяет порядок, скрытие, примечания и подписанта; не переписывает source fields. |
+| `Package` / `PackageSnapshot` | Комплект ИД и зафиксированный результат сборки | Snapshot-based, asynchronous build, invalidation при изменении зависимостей. |
+| `Template` / `TemplateVersion` | Правило визуального формирования документа | Version immutable after first use; новая форма означает новую версию. |
+| `GeneratedArtifact` | DOCX, PDF, ZIP, export или package output | Производен от structured data, template version и snapshot context. |
+| `DocumentLock` | Application-level lock редактирования | Отдельно от `Document`, содержит TTL/heartbeat и не меняет revision. |
+| `ActivityHistory` | Audit/activity history | Должна фиксировать ключевые изменения, генерации, подтверждение OCR и invalidation snapshots. |
+| `OCRExtractionProposal` | Предложенные AI/OCR metadata | Только assistant output; активными данные становятся после подтверждения пользователя. |
+
+### 44.5 Aggregate boundary guardrails
+
+- `Object` связывает данные объекта, но не поглощает documents, certificates, templates и packages в один giant aggregate.
+- `Document`, `Certificate` и `ExecutiveScheme` должны иметь самостоятельный жизненный цикл.
+- `RegistryProjection` является сервисом/проекцией, а не master aggregate.
+- `Package Builder` должен рассматриваться как отдельный bounded context или application service с собственными snapshots/jobs.
+- `DocumentLock` должен жить отдельно от document revision history.
+- Физические границы aggregates, storage tables и API ещё не утверждены: это задача `Data Model v1 + Aggregate Boundaries`.
+
+---
+
+## 45. Full Document Types Index
+
+### 45.1 Universal document contract
+
+Каждый typed document должен иметь:
+
+- идентификаторы tenant, object и folder;
+- неизменяемый тип документа;
+- status и revision;
+- номер/правило нумерации и дату документа;
+- structured payload соответствующего типа;
+- связи с сертификатами, схемами, работами и представителями, если применимо;
+- `template_version_id`;
+- generated artifacts и признак необходимости регенерации;
+- audit metadata и soft-delete metadata.
+
+Документ не является произвольным JSON blob или редактируемым DOCX. Flexible fields допустимы только внутри определённого typed contract и не должны уничтожать доменную семантику.
+
+### 45.2 AOSR / АОСР
+
+Назначение: подтвердить освидетельствование скрытых работ перед последующими работами.
+
+Обязательный смысл модели:
+
+- объект, система и место выполнения;
+- предъявленные скрытые работы;
+- даты выполнения и дата акта;
+- комплект рабочей/проектной документации и нормативные ссылки;
+- применённые материалы/оборудование;
+- ссылки на certificate library items;
+- исполнительные схемы/приложения, когда требуются;
+- участники освидетельствования, роли, полномочия и порядок;
+- разрешение на последующие работы, замечания и дополнительные сведения;
+- numbering, status, revision и template version.
+
+Цветовая логика АОСР является зафиксированным input-to-domain mapping:
+
+| Цвет в исходном обсуждении | Семантика | Правило хранения |
+| --- | --- | --- |
+| Жёлтый | Объектные данные и реквизиты объекта | Вводятся на уровне объекта и используются через object context/snapshot. |
+| Зелёный | Представители и подписанты | Определяются на объекте, допускают document override; подстрочный текст editable; порядок обязателен. |
+| Серый | Номер акта | Управляется numbering engine: prefix, sequence, suffix, rendered number. |
+| Фиолетовый | Дата акта | Поле документа; default может быть текущей датой; допускается массовое изменение в папке. |
+| Бирюзовый | Переменные данные конкретного акта | Работы, проектные ссылки, материалы, сертификаты, дальнейшие работы, приложения, примечания. |
+
+Непреложное правило: certificate number в печатном АОСР является rendered value связи с `Certificate`; нельзя вводить его как ничем не подтверждённую строку.
+
+### 45.3 Test Act / Акт испытаний
+
+Назначение: зафиксировать испытание системы, участка, трубопровода или оборудования.
+
+Модель должна поддерживать:
+
+- вид испытания, например гидравлическое, пневматическое, промывка, опрессовка, герметичность или индивидуальные испытания оборудования;
+- испытываемую систему/участок/оборудование;
+- нормативное основание или методику;
+- параметры и фактические результаты;
+- дату/время и участников;
+- измерительные средства, если применимо;
+- заключение о соответствии;
+- связанные схемы, материалы и другие акты.
+
+Точный перечень форм и обязательных полей MVP ещё не утверждён.
+
+### 45.4 Certificate / Документ качества
+
+Сертификат участвует в комплекте и реестре как самостоятельный library item, а не как typed акт. В перечень поддерживаемых документов качества входят сертификаты соответствия, декларации, паспорта качества/технические паспорта, исходящие и отказные письма, информационные письма и иные подтверждающие документы.
+
+Критические правила:
+
+- у сертификата обязан быть физически сохранённый файл;
+- акт и реестр ссылаются на `certificate_id`, а не держат ручную строку вместо сущности;
+- один сертификат может переиспользоваться в нескольких актах и объектах внутри допустимой tenant-области;
+- применимость/срок проверяется относительно даты документа, в котором сертификат используется;
+- OCR извлекает metadata только как предложение для подтверждения.
+
+### 45.5 ExecutiveScheme / Исполнительная схема
+
+Исполнительная схема отражает фактически выполненные работы и отличается от `ProjectDrawingSet`, который описывает исходный комплект рабочих чертежей.
+
+Минимальная модель:
+
+- файл PDF/attachment;
+- object и folder;
+- title;
+- registration number;
+- date;
+- sheet count;
+- note;
+- связи с WorkItem и актами.
+
+На первом этапе metadata вводятся вручную. При изменении схемы создаётся новая сущность/новый файл; сложный versioning схем на старте не принят.
+
+### 45.6 Documents recognized but requiring later schemas
+
+- `TECHNICAL_READINESS_ACT`: присутствует в реальном примере реестра; модель требует отдельного уточнения.
+- Другие акты испытаний и исполнительные документы: добавляются только как typed documents после согласования required fields и validation rules.
+
+---
+
+## 46. Full Registry Projection Rules
+
+### 46.1 Canonical rule
+
+```text
+Registry = derived projection, never source of truth
+```
+
+Реестр удобен как рабочее представление инженера ПТО и как печатный артефакт, но он не заменяет доменные сущности. Любая строка должна быть объяснима через первичные данные объекта, snapshots, документов, сертификатов, схем или управляемого override.
+
+### 46.2 Projection blocks and data ownership
+
+| Блок реестра | Source data | Что нельзя делать |
+| --- | --- | --- |
+| Шапка объекта | `Object`, object settings | Не хранить единственную копию объекта в тексте реестра. |
+| Подрядчик/исполнители | `ObjectCompanySnapshot`, contract/work settings | Не подтягивать будущие изменения `CompanyProfile` в исторический комплект. |
+| Комплект рабочих чертежей | `ProjectDrawingSet` | Не смешивать с `ExecutiveScheme`. |
+| Сертификаты/документы качества | `Certificate Library`, act refs, package scope | Не показывать номер без существующего файла library item. |
+| Акты | Typed `Document` aggregates | Не редактировать date/number/status только в строке проекции. |
+| Исполнительные схемы | `ExecutiveScheme` | Не подменять metadata свободным текстом в реестре. |
+| Подписант | `RegistrySignerSnapshot` / selected representative | Не предполагать, что это всегда подписант акта. |
+
+### 46.3 Color logic of the real registry example
+
+Цветовая логика, объяснённая пользователем при разборе реестра вентиляции, является доменным ориентиром:
+
+| Цвет | Блок | Вывод для модели |
+| --- | --- | --- |
+| Жёлтый | Объектные данные | Проецируются из object data, вводимых один раз на объект. |
+| Красный | Сертификаты и документы качества | Проецируются из Certificate Library и document/package links. |
+| Серый | Акты | Проецируются из typed `Document` aggregates. |
+| Зелёный | Исполнительные чертежи/схемы | Проецируются из `ExecutiveScheme`. |
+| Тёмно-красный | Лицо, подписывающее реестр | Проецируется из signer snapshot/selected representative. |
+
+### 46.4 Editable surface and override layer
+
+В интерфейсе реестра пользователь может:
+
+- менять визуальный порядок строк, сертификатов, актов и схем;
+- скрывать/возвращать строки в рамках конкретного выхода/комплекта;
+- добавлять печатные примечания;
+- выбирать подписанта реестра;
+- менять ordering комплекта.
+
+Эти операции должны сохраняться в `RegistryOverride` или package configuration. Они не дают права переписать primary fields сущностей.
+
+Если пользователь хочет изменить дату акта, номер сертификата, название схемы или реквизиты компании, он должен изменить исходную сущность; после этого projection пересчитывается, а зависимые generated artifacts/snapshots могут инвалидироваться.
+
+### 46.5 Registry output
+
+DOCX/PDF/XLSX реестра — generated artifact. Он должен строиться заново из актуальной проекции, template version и overrides. Изменение экспортированного файла вне системы не меняет structured data без отдельного проектируемого процесса импорта.
+
+---
+
+## 47. Source Materials and Privacy Policy
+
+### 47.1 Source materials used for the architecture
+
+Архитектурные выводы в этом master context опираются на:
+
+- исходные архитектурные документы `docs/00-project-memory.md` — `docs/05-codex-agent-instructions.md`;
+- ADR 0001–0005;
+- журнал решений `docs/CONVERSATION_QA_LOG.md`;
+- инструкции агентов `docs/AGENTS.md`;
+- анализ реального АОСР `docs/samples/aosr-example-analysis.md`, исходный пример обозначен как `Пример.docx`;
+- анализ реестра вентиляции `docs/samples/registry-ventilation-example.md`, исходный пример обозначен как `Реестр вентиляция.doc`.
+
+Sample analyses нужны как domain reference: они объясняют структуру документов, цветовую разметку и происхождение требований. Они не являются утверждёнными production templates, DB schemas или generated outputs будущей системы.
+
+### 47.2 Privacy and source handling
+
+В source examples могут находиться реальные или похожие на реальные персональные и организационные реквизиты: ФИО, компании, адреса, ИНН/КПП/ОГРН, договоры, регистрационные номера и сведения о сертификатах.
+
+Правила обращения:
+
+- использовать такие примеры для архитектурного анализа и разработки только в объёме, необходимом проекту;
+- не интерпретировать пример как разрешение публиковать персональные или договорные сведения в демонстрационных данных;
+- при создании публичных демо, тестовых fixtures, документации вне закрытого контекста или обучающих материалов обезличивать реквизиты;
+- не отправлять содержимое source files внешним AI/OCR-сервисам без отдельного решения о privacy, согласии и модели обработки данных;
+- оригинальные загруженные файлы будущей системы должны иметь tenant isolation, access control, audit trail и storage policy;
+- OCR/AI result не считается подтверждённым фактом до проверки пользователем.
+
+### 47.3 Historical evidence rule
+
+Файлы сертификатов, исполнительных схем и выпущенных комплектов важны как подтверждающие материалы. Их нельзя без следа заменять или удалять после использования в документах/комплектах. Delete/version/retention policy должна сохранить воспроизводимость истории.
+
+---
+
+## 48. Agent Operating Rules
+
+### 48.1 Mandatory reading and priority
+
+Перед изменением архитектуры или реализацией агент обязан прочитать этот master context. При необходимости проверки происхождения решения агент обращается к `docs/CONVERSATION_QA_LOG.md`, ADR и sample analyses.
+
+Если обнаружено противоречие:
+
+1. не выбирать молча удобную трактовку;
+2. выделить противоречие пользователю;
+3. предложить корректировку master context и/или ADR;
+4. до решения не внедрять необратимую реализацию.
+
+### 48.2 Hard prohibitions
+
+Агенту запрещено без явного нового решения:
+
+- начинать кодинг на архитектурном этапе;
+- делать DOCX, PDF, XLSX или выгруженный реестр source of truth;
+- делать реестр самостоятельной редактируемой master table;
+- моделировать документы как generic constructor или untyped JSON blob;
+- хранить сертификат только текстовым номером без файла в библиотеке;
+- считать `final` документ неизменяемым;
+- менять использованную template version;
+- делать Package Builder синхронной операцией пользовательского запроса;
+- превращать `Object` в giant aggregate;
+- разрешать OCR/AI автоматически утверждать критичные данные;
+- ломать tenant isolation;
+- заменять открытый архитектурный вопрос случайной технологической реализацией.
+
+### 48.3 Decision-making behavior
+
+- Если запрос касается source of truth, typed documents, registry projection, package snapshots, template versioning, locks/autosave, tenant isolation или privacy, агент должен проверить соответствие принятым решениям и при изменении принципа предложить ADR.
+- Если пользовательская идея создаёт риск потери историчности, отсутствия подтверждающих файлов или невозможности пересобрать комплект, агент должен явно возразить и объяснить риск.
+- Новые вопросы, на которые пользователь дал архитектурно значимый ответ, должны быть зафиксированы в `CONVERSATION_QA_LOG.md` и консолидированы здесь.
+- На стадии реализации агент должен предпочитать domain-specific UI и contracts универсальным конструкторам.
+
+---
+
+## 49. Current Next Step
+
+Текущий следующий архитектурный этап остаётся тем же:
+
+```text
+Data Model v1 + Aggregate Boundaries
+```
+
+Предлагаемый документ:
+
+```text
+docs/06-data-model-v1.md
+```
+
+Он должен определить:
+
+- bounded contexts и aggregate roots;
+- ownership и ссылки между `Object`, `Folder`, `Document`, `Certificate`, `ExecutiveScheme`, `Template`, `Package` и projections;
+- typed payload v1 для АОСР и первых актов испытаний;
+- snapshot boundaries для компаний, документов и комплектов;
+- lifecycle, revision и invalidation events;
+- MVP scope и deferred scope;
+- список решений, которые ещё запрещают переход к физической БД/API.
+
+До принятия Data Model v1 нельзя считать утверждёнными физическую БД, API, frontend state architecture, выбор backend/frontend стека или реализацию генератора.
+
+---
+
+## 50. What Must Not Be Forgotten
+
+Этот список является коротким guardrail register, который должен проверяться при любом новом проектном решении:
+
+1. `SOURCE OF TRUTH = STRUCTURED DATA`.
+2. DOCX, PDF, ZIP, реестр и комплект — generated artifacts/projections, а не база данных.
+3. Реестр — derived projection; source fields меняются в исходных сущностях.
+4. АОСР, акты испытаний и другие документы — typed documents, не generic document constructor.
+5. Цветовая логика АОСР: жёлтый — object, зелёный — representatives, серый — numbering, фиолетовый — date, бирюзовый — document-specific data.
+6. Цветовая логика реестра: жёлтый — object, красный — certificates, серый — acts, зелёный — schemes, тёмно-красный — signer.
+7. Номер сертификата нельзя просто вписать строкой: сначала должен существовать physical file + `Certificate` library entity.
+8. Срок сертификата проверяется относительно даты документа, а не текущей даты; истечение может дать warning, а не автоматический запрет.
+9. `final` документ можно исправлять; такое изменение повышает `revision` и инвалидирует зависимые package snapshots.
+10. Template version после использования immutable; изменившаяся форма создаёт новую версию.
+11. Package Builder является async и snapshot-based; rebuild вызывается изменением зависимостей.
+12. `Object` не должен стать giant aggregate.
+13. ObjectCompanySnapshot защищает исторические реквизиты объекта от будущих изменений карточки компании.
+14. `ProjectDrawingSet` и `ExecutiveScheme` — разные понятия.
+15. AI/OCR — assistant only; никакого auto-approve критичных metadata.
+16. Исходные документы могут содержать чувствительные реквизиты; privacy и tenant isolation обязательны.
+
+---
+
+## 51. Decisions Already Made
+
+Этот реестр включает решения из `CONVERSATION_QA_LOG.md`, ADR и source analyses, чтобы новый агент не возвращался к уже закрытым вопросам.
+
+| Вопрос / тема | Принятое решение | Архитектурное следствие |
+| --- | --- | --- |
+| Нужен ли единый master context? | Да, `docs/PROJECT_MEMORY.md` является главным источником знаний. | Новые значимые решения консолидируются здесь. |
+| Что является source of truth? | Structured data. | DOCX/PDF/registry/package — generated or derived outputs. |
+| Должен ли реестр быть отдельным редактируемым документом? | Нет, registry is derived projection. | Разрешены overrides порядка/видимости/примечаний, но не ручная замена source fields. |
+| Как трактовать цветовую разметку АОСР? | Жёлтый object, зелёный representatives, серый number, фиолетовый date, бирюзовый variable document data. | Разметка формирует boundaries данных документа и объекта. |
+| Можно ли вписать certificate number без сертификата? | Нет. | Certificate Library item с физическим файлом обязателен до ссылки из акта/реестра. |
+| На какую дату валидировать сертификат? | На дату документа, не на сегодняшнюю дату. | Исторически корректный документ сохраняет валидность; просрочка для нового документа даёт warning. |
+| Можно ли править final document? | Да. | `final` — validated published revision, правка вызывает `revision++`, revalidation и invalidation package snapshots. |
+| Можно ли изменить template version после использования? | Нет. | Used template version immutable; новая форма оформляется новой версией. |
+| Как собирать комплект ИД? | Автоматически, snapshot-based, async background job. | Нужны dependency invalidation, progress/status, retry и cached snapshots. |
+| Как хранить ExecutiveScheme? | File/PDF + structured metadata. | На старте metadata ручные; изменившаяся схема создаётся как новый файл/объект. |
+| Что такое ProjectDrawingSet? | Отдельный concept для рабочих чертежей; не ExecutiveScheme. | Используется как источник блока реестра и ссылок АОСР. |
+| Как должен ощущаться интерфейс? | Пользователь работает с комплектом ИД, а не с CRM-таблицей. | UX document-centric, complexity structured model скрывается. |
+| Каково назначение OCR/AI? | Assistant only. | Извлечённые metadata активируются только после пользовательского подтверждения. |
+| Где хранить данные компании на объекте? | Через `ObjectCompanySnapshot`. | Изменение профиля компании не переписывает исторические документы объекта. |
+| Может ли Object владеть всем сразу? | Нет. | Требуются отдельные aggregates/contexts для documents, certificates, schemes, templates и packages. |
+| Какая стадия проекта сейчас? | System Architecture Design, не coding. | Следующий шаг — Data Model v1 + Aggregate Boundaries, не scaffold приложения. |
+
+### 51.1 Accepted ADR register
+
+| ADR | Решение | Статус |
+| --- | --- | --- |
+| ADR 0001 | Structured data являются source of truth; файлы и реестры производны. | Принято. |
+| ADR 0002 | Используются typed documents вместо generic documents. | Принято. |
+| ADR 0003 | Реестр является derived projection. | Принято. |
+| ADR 0004 | Требуются document locks и snapshot-oriented autosave; детали реализации впереди. | Принято как принцип, требует детализации. |
+| ADR 0005 | Template versions версионируются и не изменяются после использования; детали template engine впереди. | Принято как принцип, требует детализации. |
+
+---
+
+## 52. Open Questions Still Not Solved
+
+Следующие вопросы не отменяют принятые выше принципы. Их нельзя решать случайным кодом: они требуют спецификации, пользовательского выбора и, где необходимо, ADR.
+
+### 52.1 Domain scope and typed schemas
+
+- Какие конкретные формы АОСР и акты испытаний входят в первый MVP?
+- Какова typed schema для `TECHNICAL_READINESS_ACT`, обнаруженного в реестре?
+- Насколько структурировать описание работы, оси, этажи, отметки и нормативные ссылки в первой версии?
+- Является ли `Material` обязательным каталогом MVP или достаточно `MaterialUsage` внутри typed documents со ссылками на сертификаты?
+- Как учитывать оборудование отдельно от материалов?
+- Какой набор участников и подписей обязателен для первых типов документов?
+
+### 52.2 Aggregate and storage design
+
+- Как точно проходят aggregate boundaries и транзакционные границы между Object, Folder, Document, Certificate, ExecutiveScheme, Template и Package?
+- Где должен находиться `ProjectDrawingSet`: в Object settings или как отдельный aggregate?
+- Каковы physical storage, tables, indexes, constraints, JSONB strategy, tenant policies и soft-delete rules?
+- Как хранить originals, generated artifacts, package snapshots и build logs в cloud-agnostic storage?
+- Какие retention и hard-delete правила нужны для юридически/исторически значимых файлов?
+
+### 52.3 Lifecycle, versioning and collaboration
+
+- Какой полный статусный lifecycle документов нужен кроме `draft`, `final`, `archived`, `deleted`?
+- Какая именно операция создаёт новую revision для draft/final и для массового renumber?
+- Каков UX и policy конфликтов locks: TTL, override permission, потеря соединения и восстановление drafts?
+- Требуется ли multi-user beyond locks в будущем и будет ли он вообще допустим для MVP?
+- Как версии/замены сертификатов и схем отражаются в уже сформированных historical packages?
+
+### 52.4 Templates and generation
+
+- Какой template engine поддержит DOCX placeholders, повторяющиеся таблицы, preview compatibility и object-level variants?
+- Как соотносятся data version, document revision, template version и generated artifact identity?
+- Как генерируется PDF и как обеспечивается воспроизводимость старого вывода?
+- Как устроены package async queue, rebuild dependency graph, PDF merge, retry/failure recovery и snapshot storage?
+
+### 52.5 Registry, search and UX
+
+- Какова формальная schema `RegistryOverride` для порядка, скрытия, примечаний и signer selection?
+- Какие реестры и экспортные формы входят в MVP?
+- Разрешено ли inline editing через registry UI как команда изменения исходной сущности, и для каких полей?
+- Как спроектировать global/object/folder search, filters и индексирование?
+- Как UI показывает stale generated artifacts, warnings, incomplete packages и результат OCR confirmation?
+
+### 52.6 Access, privacy and integrations
+
+- Какова детальная модель RBAC и нужна ли авторизация в самом раннем MVP?
+- Какие privacy/access/audit requirements предъявляются к реальным сертификатам, схемам и персональным данным представителей?
+- Нужны ли ЭЦП/юридически значимое подписание, импорт legacy DOCX/PDF, BIM/CAD/ERP integrations, public API или offline mode, и только на каком последующем этапе?
+
+### 52.7 Technology decisions explicitly deferred
+
+До отдельных решений остаются невыбранными:
+
+- backend/frontend stack;
+- база данных и миграции;
+- API и repository implementation;
+- dependency/tooling strategy;
+- Docker, deployment и CI/CD;
+- OCR/AI provider and data-processing policy.
+
+Пока эти вопросы открыты, агент не должен создавать реализационные файлы, выдавая выбор технологии за уже принятое решение.
