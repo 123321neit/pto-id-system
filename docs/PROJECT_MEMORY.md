@@ -2,7 +2,7 @@
 # PTO ID SYSTEM
 # EXECUTIVE DOCUMENTATION PLATFORM
 # MASTER CONTEXT / SOURCE OF TRUTH
-# VERSION: 2026-05-27-BACKEND-API-ARCHITECTURE-V1
+# VERSION: 2026-05-27-API-COMMAND-READMODEL-CONTRACTS-V1
 # STATUS: ACTIVE SYSTEM ARCHITECTURE DESIGN PHASE
 # LANGUAGE: RU
 
@@ -1426,14 +1426,15 @@ UI не должен быть перегружен, но система долж
 - conceptual Database Schema V1, applying the required pre-schema baselines without choosing SQL, ORM, API or implementation stack.
 - lifecycle, immutability, numbering, validation, registry override safety, package determinism and AI/OCR review follow-up produced by Schema V1 review in `docs/13-domain-lifecycle-immutability-validation-v1.md`.
 - conceptual Backend/API Architecture V1 in `docs/14-backend-api-architecture-v1.md`, defining modular backend boundaries, commands/read models, consistency, concurrency, validation, async workflows and tenant-safe API policy without implementation choices.
+- conceptual API Command/Read Model Contracts V1 in `docs/15-api-command-readmodel-contracts-v1.md`, defining envelope/result/error/async semantics, intent contracts, expected versions/idempotency, validation findings and UI read-model composition without transport or implementation choices.
 
 Не завершено:
 
-- review и принятие `docs/14-backend-api-architecture-v1.md` перед переходом к API Command/Read Model Contracts V1;
+- review и принятие `docs/15-api-command-readmodel-contracts-v1.md` перед переходом к MVP Scope and First Forms V1;
 - concrete typed scope/required fields для TestAct/AOSR/TechnicalReadinessAct и remaining invite, privacy/access, retention, AI-processing and audit requirements за пределами зафиксированных V1 policies;
 - production physical database mapping, migrations and storage implementation;
 - repositories;
-- exact API command/read-model contracts and transport mapping;
+- physical API transport mapping and implementation;
 - package builder implementation internals;
 - registry override persistence/read-model detail beyond its documented V1 safety surface;
 - search system;
@@ -1483,14 +1484,13 @@ Baseline определён в `docs/09-aggregate-boundaries-and-invariants.md` 
 
 ### Q3 — API command and read model contracts
 
-Conceptual Backend/API Architecture V1 создана в `docs/14-backend-api-architecture-v1.md`. Она фиксирует modules, domain commands, UI read-model families, validation/concurrency/idempotency and async-flow boundaries без route list или implementation stack.
+Conceptual Backend/API Architecture V1 создана в `docs/14-backend-api-architecture-v1.md`. На её основе в `docs/15-api-command-readmodel-contracts-v1.md` создан conceptual contract layer: common command/result/error/async vocabulary, intent payload/result semantics, expected versions/idempotency, validation findings, authorization scope и screen-specific read models без route list, OpenAPI или implementation stack.
 
 После review нужно спроектировать:
 
-- exact command inputs/outcomes, expected versions and idempotency semantics;
-- read-model fields for editor, pickers, registry, package, validation, AI review, audit and search;
-- error/conflict/async operation contracts;
-- authorization checks and transport mapping only after domain contracts are clear.
+- concrete MVP typed forms/required fields and first validation gates that use these contracts;
+- policy details for permissions, privacy, retention, warning acknowledgement and AI processing;
+- physical API transport mapping and implementation only after accepted contracts and MVP form scope.
 
 ### Q4 — Template engine
 
@@ -1573,10 +1573,10 @@ Draft baseline project ingestion, proposals, confirmation, traceability and isol
 Следующий правильный этап:
 
 ```text
-Review docs/14-backend-api-architecture-v1.md; proceed to API Command/Read Model Contracts V1 only if accepted
+Review docs/15-api-command-readmodel-contracts-v1.md; proceed to MVP Scope and First Forms V1 only if accepted
 ```
 
-Не backend-код, scaffold, production SQL/migrations/ORM schema, concrete API routes или физический database mapping до этого review.
+Не production code, backend/frontend scaffold, production SQL/migrations/ORM schema, OpenAPI, concrete routes или физический database mapping до этого review.
 
 Pre-schema источники baseline:
 
@@ -1610,10 +1610,18 @@ docs/14-backend-api-architecture-v1.md
 
 Он применяет зафиксированные policies через modular-monolith modules, explicit domain commands, UI-oriented read models, transaction/eventual boundaries, optimistic versioning, authoritative validation, package/artifact/AI async flows, tenant authorization and idempotency/error rules. Документ не является реализацией и не разрешает coding.
 
-После review рекомендуемый следующий документ:
+На его основе по прямому переходу владельца проекта создан contract-level документ:
 
 ```text
 docs/15-api-command-readmodel-contracts-v1.md
+```
+
+Он определяет common command envelope/results/errors/async operations, intent-level payload/result semantics, version/idempotency/invalidation behavior, validation finding contract, authorization scope и UI read-model fields. Документ не является OpenAPI/transport design и не разрешает coding.
+
+После review рекомендуемый следующий документ:
+
+```text
+docs/16-mvp-scope-and-first-forms-v1.md
 ```
 
 ---
@@ -1666,6 +1674,7 @@ docs/15-api-command-readmodel-contracts-v1.md
 | `docs/12-database-schema-v1.md` | Conceptual Database Schema V1 before Backend/API design | Применяет обязательные baseline-границы в storage-neutral table/relationship/constraint model, сохраняя открытыми physical mapping и domain/policy decisions. |
 | `docs/13-domain-lifecycle-immutability-validation-v1.md` | Schema V1 lifecycle/immutability/validation follow-up before Backend/API design | Фиксирует storage-neutral lifecycle, historical rebuild, numbering, validation, override safety, package determinism, AI review flow и FolderTree boundary для review/acceptance. |
 | `docs/14-backend-api-architecture-v1.md` | Conceptual Backend/API Architecture V1 before command/read-model contract design | Фиксирует modular-monolith modules, command/query boundary, UI read models, transactions/concurrency, validation, async outputs/AI and tenant-safe API principles без кода или technology selection. |
+| `docs/15-api-command-readmodel-contracts-v1.md` | Conceptual API Command/Read Model Contracts V1 before MVP forms | Фиксирует command/result/error/async semantics, intent contracts, expected versions/idempotency, validation findings, screen reads and scope rules без OpenAPI, code или technology selection. |
 | `docs/adr/*.md` | Принятые архитектурные решения | Нормативные решения по отдельным темам. Изменение принятого принципа требует нового ADR или явного пересмотра существующего. |
 | `docs/samples/*.md` | Анализ реальных примеров | Reference sources для доменной модели и будущих шаблонов/парсеров; не generated output системы. |
 
@@ -2030,19 +2039,33 @@ Backend/API Architecture V1:
 - применяет authoritative backend validation, immutable evidence/package references and workspace membership authorization;
 - оставляет открытыми exact contracts, physical transport/persistence, storage/queue/renderer/AI choices and policy details.
 
-Текущий следующий шаг:
-
-```text
-Review docs/14-backend-api-architecture-v1.md; proceed to API Command/Read Model Contracts V1 only if accepted
-```
-
-Рекомендуемый следующий документ после review:
+По прямому переходу владельца проекта к следующему этапу создан conceptual contract document:
 
 ```text
 docs/15-api-command-readmodel-contracts-v1.md
 ```
 
-Backend/API Architecture V1 не разрешает coding, backend/frontend scaffold, production SQL/migrations/ORM schema, concrete API routes, infrastructure selection или generation/storage implementation.
+API Command/Read Model Contracts V1:
+
+- определяет common command envelope, command result, error and async-operation contracts;
+- описывает payload/result semantics for typed document, folder/numbering, evidence, registry, package, artifact, AI/OCR and workspace/invite intents;
+- фиксирует expected-version/idempotency, stale/invalidation, validation finding and authorization-scope rules;
+- определяет screen-oriented read models without table dumps, routes or OpenAPI;
+- оставляет открытыми first typed forms, fine-grained RBAC/privacy/retention/AI policy and physical implementation choices.
+
+Текущий следующий шаг:
+
+```text
+Review docs/15-api-command-readmodel-contracts-v1.md; proceed to MVP Scope and First Forms V1 only if accepted
+```
+
+Рекомендуемый следующий документ после review:
+
+```text
+docs/16-mvp-scope-and-first-forms-v1.md
+```
+
+API Command/Read Model Contracts V1 не разрешает production code, backend/frontend scaffold, production SQL/migrations/ORM schema, OpenAPI, concrete API routes, infrastructure selection или generation/storage implementation.
 
 ---
 
@@ -2072,7 +2095,8 @@ Backend/API Architecture V1 не разрешает coding, backend/frontend sca
 20. AI extraction и error detection создают только traceable/auditable proposals; пользователь подтверждает extracted data и proposed links.
 21. `docs/12-database-schema-v1.md` является conceptual schema baseline; он не является production SQL, ORM/API contract или разрешением начать coding.
 22. `docs/13-domain-lifecycle-immutability-validation-v1.md` документирует policy follow-up Schema V1, применяемый Backend/API Architecture V1.
-23. `docs/14-backend-api-architecture-v1.md` является conceptual architecture, а не разрешением на code/SQL/scaffold; следующий gate — его review перед API Command/Read Model Contracts V1.
+23. `docs/14-backend-api-architecture-v1.md` является conceptual architecture input for command/read-model contracts, а не разрешением на code/SQL/scaffold.
+24. `docs/15-api-command-readmodel-contracts-v1.md` является conceptual contract layer, не OpenAPI или implementation; следующий gate — его review перед MVP Scope and First Forms V1.
 
 ---
 
@@ -2098,13 +2122,14 @@ Backend/API Architecture V1 не разрешает coding, backend/frontend sca
 | Можно ли использовать загруженный проект для AI-assisted ИД и поиска ошибок? | Да, как Workspace/Object-scoped source material с proposals-only workflow. | Structured data остаются source of truth; extracted data/links/findings требуют user confirmation, traceability and audit. |
 | Где хранить данные компании на объекте? | Через `ObjectCompanySnapshot`. | Изменение профиля компании не переписывает исторические документы объекта. |
 | Может ли Object владеть всем сразу? | Нет. | Требуются отдельные aggregates/contexts для documents, certificates, schemes, templates и packages. |
-| Какая стадия проекта сейчас? | System Architecture Design, не coding. | Conceptual Backend/API Architecture V1 создана; следующий шаг — review `docs/14-backend-api-architecture-v1.md`, не scaffold приложения. |
+| Какая стадия проекта сейчас? | System Architecture Design, не coding. | Conceptual API Command/Read Model Contracts V1 создан; следующий шаг — review `docs/15-api-command-readmodel-contracts-v1.md`, не scaffold приложения. |
 | Кто является пользователем SaaS? | Физическое лицо с одним аккаунтом и автоматическим `Personal Workspace`. | Пользователь может работать сам и состоять в нескольких organization workspaces. |
 | Где живут права доступа? | В `Membership` конкретного workspace, а не в `User` напрямую. | Один user может иметь разные роли в разных isolated tenants. |
 | Как пользователь вступает в организацию? | Через stored `Invite`, acceptance которого создаёт membership. | Invite URL не содержит доверенных прав; role/expiry/revocation/usage определяются сохранённым invite. |
 | Какая схема данных является baseline перед Backend/API? | `docs/12-database-schema-v1.md` как storage-neutral conceptual schema. | Она применяет required aggregate/access/ingestion boundaries, но не выбирает SQL, ORM, API или implementation. |
 | Какой follow-up Schema V1 требуется перед Backend/API? | `docs/13-domain-lifecycle-immutability-validation-v1.md` как lifecycle/immutability/validation V1 policy. | Фиксирует revisions, evidence lifecycles, numbering, validation, override safety, package determinism и AI review flow; требует review/acceptance. |
 | Какой Backend/API shape следует применять до contracts? | `docs/14-backend-api-architecture-v1.md` как conceptual modular-monolith/application boundary. | Explicit domain commands, UI read models, authoritative validation, version/idempotency and async derived flows; никакого CRUD-first API или code permission. |
+| Какой command/read-model contract применяется до MVP forms? | `docs/15-api-command-readmodel-contracts-v1.md` как conceptual contract layer. | Envelope/results/errors/async operations, intent semantics, validation findings and UI reads зафиксированы без routes/OpenAPI/code; следующий gate — review перед `docs/16-mvp-scope-and-first-forms-v1.md`. |
 
 ### 51.1 Accepted ADR register
 
@@ -2178,13 +2203,25 @@ Auth/workspace baseline отражён logical table families `workspace`, `memb
 
 Документ подготовлен для review и не разрешает coding, backend scaffold, SQL/migrations/ORM, physical API implementation или technology/provider choices. После его принятия рекомендуемый следующий этап — `docs/15-api-command-readmodel-contracts-v1.md`.
 
+### 51.7 API Command/Read Model Contracts V1 documented for review
+
+| Contract topic | V1 direction в `docs/15-api-command-readmodel-contracts-v1.md` | What remains open |
+| --- | --- | --- |
+| Common command/outcome vocabulary | Commands are scoped by workspace/object/membership, versions and idempotency; results expose affected ids, findings, invalidations, async and audit references. | Transport/serialization/auth implementation and client UX details. |
+| Errors and async work | Named error contract covers validation/conflict/access/idempotency/policy/file/override failures; package/artifact/AI/index operations never mutate sources. | Queue/runtime/provider/failure telemetry and privacy policy. |
+| Domain command intents | Typed documents, folders/numbering, evidence/schemes, registry, packages, artifacts, AI/OCR and invites have payload/result semantics. | Concrete first typed forms, detailed permissions and retention/correction policy. |
+| Read models and validation | Main PTO screens and `ValidationFinding` fields/gates/provenance are defined; registry/read outputs remain derived. | Frontend implementation, search/index policy and customer-specific acknowledgement/readiness rules. |
+| Versioning/authorization | Working versus immutable references, idempotent dangerous commands, tenant/object scope and leakage protection are explicit. | Fine-grained RBAC, original-file access, cross-workspace export and physical enforcement. |
+
+Документ подготовлен для review и не разрешает production code, backend/frontend scaffold, SQL/migrations/ORM, OpenAPI, concrete routes или technology/provider choices. После его принятия рекомендуемый следующий этап — `docs/16-mvp-scope-and-first-forms-v1.md`.
+
 ---
 
 ## 52. Open Questions Still Not Solved
 
 Следующие вопросы не отменяют принятые выше принципы. Их нельзя решать случайным кодом: они требуют спецификации, пользовательского выбора и, где необходимо, ADR.
 
-Lifecycle/immutability, structured numbering, validation baseline, package determinism и AI/OCR review boundary документированы в `docs/13-domain-lifecycle-immutability-validation-v1.md`. Backend module/command/read-model/consistency boundaries документированы в `docs/14-backend-api-architecture-v1.md`. Вопросы ниже сохраняют детализацию scope, contracts, policy и implementation, которую эти conceptual документы намеренно не утверждают.
+Lifecycle/immutability, structured numbering, validation baseline, package determinism и AI/OCR review boundary документированы в `docs/13-domain-lifecycle-immutability-validation-v1.md`. Backend module/consistency boundaries документированы в `docs/14-backend-api-architecture-v1.md`. Conceptual command/read-model/error/async/version/scope contracts документированы в `docs/15-api-command-readmodel-contracts-v1.md`. Вопросы ниже сохраняют детализацию first forms, policy и physical implementation, которую эти conceptual документы намеренно не утверждают.
 
 ### 52.1 Domain scope and typed schemas
 
@@ -2197,7 +2234,7 @@ Lifecycle/immutability, structured numbering, validation baseline, package deter
 
 ### 52.2 Aggregate and storage design
 
-- Object/folder numbering scope, explicit move renumber choice и folder-clone numbering strategies уже документированы в V1; открыта их будущая command/transaction/persistence реализация.
+- Object/folder numbering scope, explicit move renumber choice, folder-clone strategies and conceptual command outcomes уже документированы в V1; открыта их future physical transaction/persistence/UI реализация.
 - Требуется ли когда-либо пересмотреть применённый Schema V1 baseline отдельного object-scoped `FolderTree`?
 - Нужен ли после baseline без самостоятельного `WorkItem` root shared work lifecycle и отдельный aggregate в следующем scope?
 - Нужен ли `ProjectDrawingSet`, применённому как owned entity `ObjectDocumentationContext`, позднее отдельный lifecycle/versioning?
@@ -2226,7 +2263,7 @@ Lifecycle/immutability, structured numbering, validation baseline, package deter
 
 ### 52.5 Registry, search and UX
 
-- Разрешенная presentation-only surface `RegistryOverride` и запрет скрытия domain errors документированы в V1; какова ее physical/read-model schema для порядка, скрытия, примечаний и signer selection?
+- Разрешенная presentation-only surface `RegistryOverride`, запрет скрытия domain errors и conceptual command/read-model fields документированы в V1; какова их physical implementation и exact MVP export/UI scope?
 - Какие реестры и экспортные формы входят в MVP?
 - Разрешено ли inline editing через registry UI как команда изменения исходной сущности, и для каких полей?
 - Как спроектировать global/object/folder search, filters и индексирование?
@@ -2234,7 +2271,7 @@ Lifecycle/immutability, structured numbering, validation baseline, package deter
 
 ### 52.6 Access, privacy and integrations
 
-- Какие детали применённого Schema V1 baseline `Workspace` as tenant boundary, automatic `Personal Workspace` и membership-owned roles нужно утвердить перед Backend/API?
+- Какие детали применённого baseline `Workspace` as tenant boundary, automatic `Personal Workspace` и membership-owned roles нужно утвердить для first MVP scope?
 - Разрешены ли multi-use organization invites в первом scope, каковы owner transfer/recovery rules и нужна ли fine-grained object assignment policy?
 - Каковы точные права `Foreman` и `Viewer` на оригиналы evidence, outputs и lock override?
 - Какие privacy/access/audit requirements предъявляются к реальным сертификатам, схемам и персональным данным представителей?
@@ -2257,7 +2294,7 @@ Lifecycle/immutability, structured numbering, validation baseline, package deter
 
 - backend/frontend stack;
 - база данных и миграции;
-- exact API command/read-model transport contracts and repository implementation;
+- physical API transport/serialization, repository implementation and frontend state mapping;
 - dependency/tooling strategy;
 - Docker, deployment и CI/CD;
 - OCR/AI provider and data-processing policy.
@@ -2527,3 +2564,28 @@ Data Model V1 documented; open aggregate and MVP decisions require review before
 
 - ADR 0001-0005, Schema V1 and lifecycle/immutability principles;
 - production code, backend/frontend scaffold, SQL, migrations, ORM, concrete routes/OpenAPI, database, renderer, storage provider, queue or AI provider.
+
+### 2026-05-27 — API Command/Read Model Contracts V1 created
+
+- Документ: `docs/15-api-command-readmodel-contracts-v1.md`
+- Статус: `conceptual contract specification for review before MVP Scope and First Forms V1`
+- Описание: application-level command, result, error, async-operation, validation and read-model contract vocabulary applying Backend/API Architecture V1 without transport or implementation decisions.
+
+Зафиксированный прогресс:
+
+- определены common command envelope and result semantics, including workspace/object membership scope, expected versions, idempotency, invalidations and audit references;
+- описаны error contract and async operation contract for package build, artifact generation, AI/OCR/source processing and indexing without source mutation;
+- детализированы intent-level commands для typed documents, numbering/folders, evidence/schemes, registry, packages, artifacts, AI/OCR proposals and membership/invites;
+- зафиксированы screen-oriented read models для основного PTO workflow и explainable validation finding contract;
+- сохранены immutable released revisions/snapshots/template/evidence references, presentation-only registry overrides, assistant-only AI and tenant leakage protection.
+
+Открыто перед следующим этапом:
+
+- review и принятие `docs/15-api-command-readmodel-contracts-v1.md`;
+- concrete MVP typed forms/required fields and exact first validation scope in proposed `docs/16-mvp-scope-and-first-forms-v1.md`;
+- retention/privacy/RBAC/governance/AI-processing policies and later physical implementation choices.
+
+Что не было изменено или выбрано этим этапом:
+
+- ADR 0001-0005, Schema V1, lifecycle policy and Backend/API module boundaries;
+- production code, backend/frontend scaffold, SQL, migrations, ORM, OpenAPI, concrete routes, database, renderer, storage provider, queue or AI provider.

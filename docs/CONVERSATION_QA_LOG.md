@@ -1,7 +1,7 @@
 # CONVERSATION_QA_LOG
 # PTO ID System
 # Consolidated decisions from user/assistant discussion
-# Version: 2026-05-27-BACKEND-API-ARCHITECTURE-V1
+# Version: 2026-05-27-API-COMMAND-READMODEL-CONTRACTS-V1
 
 Этот файл фиксирует важные вопросы, ответы и решения, которые появились в переписке и проектной памяти. Его цель — не заменить `PROJECT_MEMORY.md`, а сохранить ход принятия решений.
 
@@ -287,4 +287,29 @@ A: По прямому переходу владельца проекта к с�
 
 ```text
 docs/15-api-command-readmodel-contracts-v1.md
+```
+
+---
+
+## 22. API Command/Read Model Contracts V1
+
+### Q: Какие application-level contracts нужны после Backend/API Architecture, не переходя к коду или OpenAPI?
+
+A: По прямому переходу владельца проекта в `docs/15-api-command-readmodel-contracts-v1.md` создан conceptual API Command/Read Model Contracts V1:
+
+- все команды имеют workspace/object scope, authoritative actor membership context, expected-version semantics для mutable state и idempotency для duplicate-sensitive intent;
+- common results возвращают affected identities, new versions/revisions, validation findings, stale/invalidated outputs, async operation and audit references;
+- named errors фиксируют validation, conflict, leakage-safe access, idempotency, async failure, unavailable policy, unsupported type, unsafe override and required-file outcomes;
+- typed document, numbering/folder, evidence, registry, package, artifact, AI/OCR and invitation commands описаны через payload/result intent без concrete routes или wire DTO;
+- package build, artifact generation, AI/OCR/source processing and indexing представлены как async derived operations, которые не меняют source entities;
+- read models собраны для рабочих экранов: editor/pickers/registry/package/validation/artifacts/AI/activity/search, а не как table dumps;
+- validation findings сохраняют `ERROR`/`WARNING`, blocking gate, provenance and suggested action; срок сертификата оценивается по дате документа;
+- tenant boundary сохраняет `NOT_FOUND_OR_NOT_AUTHORIZED` leakage protection и оставляет fine-grained RBAC отдельным вопросом.
+
+Открытыми остаются конкретные первые typed forms и blocking fields, retention/privacy/RBAC/governance, разрешённый AI/OCR processing scope, template/rendering/storage/queue and physical transport/persistence implementation.
+
+Статус решения: conceptual command/read-model contract specification documented for review. Документ не разрешает production code, backend/frontend scaffold, SQL, migrations, ORM schema, OpenAPI или выбор framework/database/queue/storage/renderer/AI provider. Следующий этап после review:
+
+```text
+docs/16-mvp-scope-and-first-forms-v1.md
 ```

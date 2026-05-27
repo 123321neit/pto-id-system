@@ -70,25 +70,26 @@ DOCX/PDF/реестры/комплекты являются производны
 - `docs/12-database-schema-v1.md`
 - `docs/13-domain-lifecycle-immutability-validation-v1.md`
 - `docs/14-backend-api-architecture-v1.md`
+- `docs/15-api-command-readmodel-contracts-v1.md`
 
 ## Current next step
 
-На основании lifecycle/immutability/validation follow-up следующим архитектурным этапом подготовлен conceptual Backend/API Architecture V1:
+На основании Backend/API Architecture V1 следующим архитектурным этапом подготовлен conceptual API Command/Read Model Contracts V1:
 
 ```text
-docs/14-backend-api-architecture-v1.md
+docs/15-api-command-readmodel-contracts-v1.md
 ```
 
-Документ переводит принятые правила в modular-monolith boundaries, explicit domain commands, UI-oriented read models, consistency/versioning/validation boundaries и async flows для комплектов, artifacts и AI proposals. Он сохраняет structured source of truth, file-backed evidence, derived registry и editable-through-revision `final`, не выбирая production SQL, ORM, framework, database, storage, queue, renderer или AI provider.
+Документ фиксирует conceptual envelope/result/error/async-operation semantics, intent-level commands, expected versions, idempotency, validation findings и screen-oriented read models. Он сохраняет structured source of truth, file-backed evidence, derived registry, immutable snapshots и editable-through-revision `final`, не выбирая routes/OpenAPI, production SQL, ORM, framework, database, storage, queue, renderer или AI provider.
 
 Текущий следующий этап:
 
 ```text
-Review docs/14-backend-api-architecture-v1.md; proceed to API Command/Read Model Contracts V1 only if accepted
+Review docs/15-api-command-readmodel-contracts-v1.md; proceed to MVP Scope and First Forms V1 only if accepted
 ```
 
-Backend/API Architecture V1 по-прежнему не разрешает coding, backend scaffold, SQL/migrations/ORM schema или выбор инфраструктуры. Следующий документ после успешного review:
+API Command/Read Model Contracts V1 по-прежнему не разрешает production code, backend/frontend scaffold, SQL/migrations/ORM schema, OpenAPI или выбор инфраструктуры. Следующий документ после успешного review:
 
 ```text
-docs/15-api-command-readmodel-contracts-v1.md
+docs/16-mvp-scope-and-first-forms-v1.md
 ```

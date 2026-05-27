@@ -44,7 +44,7 @@
 Текущий этап:
 
 ```text
-Backend/API Architecture V1 documented in docs/14-backend-api-architecture-v1.md; it requires review before API Command/Read Model Contracts V1
+API Command/Read Model Contracts V1 documented in docs/15-api-command-readmodel-contracts-v1.md; it requires review before MVP Scope and First Forms V1
 ```
 
 `docs/12-database-schema-v1.md` по прямому заданию применяет baseline decisions из `docs/09-aggregate-boundaries-and-invariants.md` по:
@@ -92,12 +92,20 @@ Privacy/data-processing policy, access to project originals and concrete AI proc
 - atomic revision/snapshot boundaries, eventual derived work, optimistic versioning and idempotency;
 - backend-authoritative validation, workspace authorization и async package/artifact/AI flows.
 
-Открытыми остаются command/read-model field contracts, concrete typed forms/required fields, retention/privacy/RBAC details, template/rendering/storage/queue implementation, AI processing policy/provider и physical database/API transport design.
+`docs/15-api-command-readmodel-contracts-v1.md` детализирует conceptual contract level через:
+
+- common command envelope, results, named errors and async operation outcome;
+- expected-version and idempotency rules для mutable/dangerous commands;
+- typed document, folder/numbering, evidence, registry, package, artifact, AI/OCR and invite command semantics;
+- screen-specific read models and validation finding contract;
+- workspace/object authorization scope and leakage protection.
+
+Открытыми остаются concrete typed forms/required fields, retention/privacy/RBAC details, template/rendering/storage/queue implementation, AI processing policy/provider и physical database/API transport/implementation design.
 
 Следующий архитектурный review должен рассмотреть и принять либо скорректировать:
 
 ```text
-docs/14-backend-api-architecture-v1.md
+docs/15-api-command-readmodel-contracts-v1.md
 ```
 
-Только после его принятия допускается переход к `docs/15-api-command-readmodel-contracts-v1.md`. Backend/API Architecture V1 не разрешает писать production code, backend scaffold, SQL/migrations/ORM schema, backend/frontend implementation или выбирать инфраструктуру.
+Только после его принятия допускается переход к `docs/16-mvp-scope-and-first-forms-v1.md`. API Command/Read Model Contracts V1 не разрешает писать production code, backend/frontend scaffold, SQL/migrations/ORM schema, OpenAPI, implementation или выбирать инфраструктуру.
