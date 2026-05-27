@@ -2,7 +2,7 @@
 # PTO ID SYSTEM
 # EXECUTIVE DOCUMENTATION PLATFORM
 # MASTER CONTEXT / SOURCE OF TRUTH
-# VERSION: 2026-05-27-DOMAIN-LIFECYCLE-IMMUTABILITY-VALIDATION-V1
+# VERSION: 2026-05-27-BACKEND-API-ARCHITECTURE-V1
 # STATUS: ACTIVE SYSTEM ARCHITECTURE DESIGN PHASE
 # LANGUAGE: RU
 
@@ -1425,14 +1425,15 @@ UI не должен быть перегружен, но система долж
 - AI project ingestion and assistance draft baseline before Database Schema V1.
 - conceptual Database Schema V1, applying the required pre-schema baselines without choosing SQL, ORM, API or implementation stack.
 - lifecycle, immutability, numbering, validation, registry override safety, package determinism and AI/OCR review follow-up produced by Schema V1 review in `docs/13-domain-lifecycle-immutability-validation-v1.md`.
+- conceptual Backend/API Architecture V1 in `docs/14-backend-api-architecture-v1.md`, defining modular backend boundaries, commands/read models, consistency, concurrency, validation, async workflows and tenant-safe API policy without implementation choices.
 
 Не завершено:
 
-- review и принятие `docs/13-domain-lifecycle-immutability-validation-v1.md` перед переходом к Backend/API Architecture;
+- review и принятие `docs/14-backend-api-architecture-v1.md` перед переходом к API Command/Read Model Contracts V1;
 - concrete typed scope/required fields для TestAct/AOSR/TechnicalReadinessAct и remaining invite, privacy/access, retention, AI-processing and audit requirements за пределами зафиксированных V1 policies;
 - production physical database mapping, migrations and storage implementation;
 - repositories;
-- API map;
+- exact API command/read-model contracts and transport mapping;
 - package builder implementation internals;
 - registry override persistence/read-model detail beyond its documented V1 safety surface;
 - search system;
@@ -1480,16 +1481,16 @@ Baseline определён в `docs/09-aggregate-boundaries-and-invariants.md` 
 - soft delete;
 - tenant isolation.
 
-### Q3 — API map
+### Q3 — API command and read model contracts
 
-После БД:
+Conceptual Backend/API Architecture V1 создана в `docs/14-backend-api-architecture-v1.md`. Она фиксирует modules, domain commands, UI read-model families, validation/concurrency/idempotency and async-flow boundaries без route list или implementation stack.
 
-- modules;
-- services;
-- repositories;
-- REST endpoints;
-- validation boundaries;
-- async job API.
+После review нужно спроектировать:
+
+- exact command inputs/outcomes, expected versions and idempotency semantics;
+- read-model fields for editor, pickers, registry, package, validation, AI review, audit and search;
+- error/conflict/async operation contracts;
+- authorization checks and transport mapping only after domain contracts are clear.
 
 ### Q4 — Template engine
 
@@ -1572,10 +1573,10 @@ Draft baseline project ingestion, proposals, confirmation, traceability and isol
 Следующий правильный этап:
 
 ```text
-Review docs/13-domain-lifecycle-immutability-validation-v1.md; proceed to Backend/API Architecture only if accepted
+Review docs/14-backend-api-architecture-v1.md; proceed to API Command/Read Model Contracts V1 only if accepted
 ```
 
-Не backend-код, production SQL/migrations, API contracts и не физический database mapping до этого review.
+Не backend-код, scaffold, production SQL/migrations/ORM schema, concrete API routes или физический database mapping до этого review.
 
 Pre-schema источники baseline:
 
@@ -1600,6 +1601,20 @@ docs/13-domain-lifecycle-immutability-validation-v1.md
 ```
 
 Он документирует V1 policies для lifecycle typed documents/evidence/packages/artifacts, editable-through-revision `final`, historical rebuild, structured numbering, validation gates, `RegistryOverride` safety, deterministic async packages, AI/OCR human review и границы `FolderTree`. Backend/API Architecture может начаться только после review и acceptance этого follow-up.
+
+По заданию владельца проекта следующим conceptual этапом создан:
+
+```text
+docs/14-backend-api-architecture-v1.md
+```
+
+Он применяет зафиксированные policies через modular-monolith modules, explicit domain commands, UI-oriented read models, transaction/eventual boundaries, optimistic versioning, authoritative validation, package/artifact/AI async flows, tenant authorization and idempotency/error rules. Документ не является реализацией и не разрешает coding.
+
+После review рекомендуемый следующий документ:
+
+```text
+docs/15-api-command-readmodel-contracts-v1.md
+```
 
 ---
 
@@ -1650,6 +1665,7 @@ docs/13-domain-lifecycle-immutability-validation-v1.md
 | `docs/11-ai-project-ingestion-and-assistance-model.md` | AI-assisted project source ingestion specification before database design | Фиксирует project source files, proposals, human confirmation, traceability, privacy/isolation/audit и связи с ИД, отражённые в Schema V1. |
 | `docs/12-database-schema-v1.md` | Conceptual Database Schema V1 before Backend/API design | Применяет обязательные baseline-границы в storage-neutral table/relationship/constraint model, сохраняя открытыми physical mapping и domain/policy decisions. |
 | `docs/13-domain-lifecycle-immutability-validation-v1.md` | Schema V1 lifecycle/immutability/validation follow-up before Backend/API design | Фиксирует storage-neutral lifecycle, historical rebuild, numbering, validation, override safety, package determinism, AI review flow и FolderTree boundary для review/acceptance. |
+| `docs/14-backend-api-architecture-v1.md` | Conceptual Backend/API Architecture V1 before command/read-model contract design | Фиксирует modular-monolith modules, command/query boundary, UI read models, transactions/concurrency, validation, async outputs/AI and tenant-safe API principles без кода или technology selection. |
 | `docs/adr/*.md` | Принятые архитектурные решения | Нормативные решения по отдельным темам. Изменение принятого принципа требует нового ADR или явного пересмотра существующего. |
 | `docs/samples/*.md` | Анализ реальных примеров | Reference sources для доменной модели и будущих шаблонов/парсеров; не generated output системы. |
 
@@ -1977,7 +1993,7 @@ docs/10-auth-workspace-rbac-model.md
 docs/11-ai-project-ingestion-and-assistance-model.md
 ```
 
-По прямому заданию владельца проекта создан новый conceptual schema document:
+По прямому заданию владельца проекта создан conceptual schema document:
 
 ```text
 docs/12-database-schema-v1.md
@@ -1992,12 +2008,6 @@ Database Schema V1:
 - определяет relationships, conceptual constraints, indexing considerations, MVP/deferred scope и вопросы перед Backend/API;
 - не выбирает production database, SQL, ORM, migrations, API или application stack.
 
-Текущий следующий шаг:
-
-```text
-Review docs/13-domain-lifecycle-immutability-validation-v1.md; proceed to Backend/API Architecture only if accepted
-```
-
 Review Schema V1 produced the required conceptual/storage-neutral follow-up:
 
 ```text
@@ -2006,7 +2016,33 @@ docs/13-domain-lifecycle-immutability-validation-v1.md
 
 Он документирует V1 policy по lifecycle typed documents/evidence/packages/artifacts, editable-through-revision `final`, historical rebuild, structured numbering, validation levels/gates, `RegistryOverride` safety surface, deterministic async package manifests, AI/OCR review flow и границе `FolderTree`.
 
-Перед Backend/API Architecture нужно рассмотреть и принять этот документ, сохраняя открытыми concrete MVP typed forms/required fields, evidence/source retention and privacy/access details, invite/governance policy, rendering/storage/AI-processing implementation и требуемые transaction/read-model boundaries. До acceptance нельзя считать утверждёнными production physical mapping, API, frontend state architecture, implementation stack или generation/storage mechanism.
+По прямому переходу владельца проекта к следующему этапу создан conceptual Backend/API document:
+
+```text
+docs/14-backend-api-architecture-v1.md
+```
+
+Backend/API Architecture V1:
+
+- определяет modular monolith first и bounded application modules для реального PTO workflow;
+- описывает explicit command families вместо CRUD-first API и screen-oriented read model families;
+- закрепляет atomic revision/snapshot transitions, eventual projection/generation/search/AI flow, optimistic versioning and idempotency;
+- применяет authoritative backend validation, immutable evidence/package references and workspace membership authorization;
+- оставляет открытыми exact contracts, physical transport/persistence, storage/queue/renderer/AI choices and policy details.
+
+Текущий следующий шаг:
+
+```text
+Review docs/14-backend-api-architecture-v1.md; proceed to API Command/Read Model Contracts V1 only if accepted
+```
+
+Рекомендуемый следующий документ после review:
+
+```text
+docs/15-api-command-readmodel-contracts-v1.md
+```
+
+Backend/API Architecture V1 не разрешает coding, backend/frontend scaffold, production SQL/migrations/ORM schema, concrete API routes, infrastructure selection или generation/storage implementation.
 
 ---
 
@@ -2035,7 +2071,8 @@ docs/13-domain-lifecycle-immutability-validation-v1.md
 19. Project source files для AI-assisted ИД всегда scoped к `Workspace` и `Object`; upload не делает их единственным source of truth.
 20. AI extraction и error detection создают только traceable/auditable proposals; пользователь подтверждает extracted data и proposed links.
 21. `docs/12-database-schema-v1.md` является conceptual schema baseline; он не является production SQL, ORM/API contract или разрешением начать coding.
-22. `docs/13-domain-lifecycle-immutability-validation-v1.md` документирует policy follow-up Schema V1; Backend/API Architecture начинается только после его review и acceptance.
+22. `docs/13-domain-lifecycle-immutability-validation-v1.md` документирует policy follow-up Schema V1, применяемый Backend/API Architecture V1.
+23. `docs/14-backend-api-architecture-v1.md` является conceptual architecture, а не разрешением на code/SQL/scaffold; следующий gate — его review перед API Command/Read Model Contracts V1.
 
 ---
 
@@ -2061,12 +2098,13 @@ docs/13-domain-lifecycle-immutability-validation-v1.md
 | Можно ли использовать загруженный проект для AI-assisted ИД и поиска ошибок? | Да, как Workspace/Object-scoped source material с proposals-only workflow. | Structured data остаются source of truth; extracted data/links/findings требуют user confirmation, traceability and audit. |
 | Где хранить данные компании на объекте? | Через `ObjectCompanySnapshot`. | Изменение профиля компании не переписывает исторические документы объекта. |
 | Может ли Object владеть всем сразу? | Нет. | Требуются отдельные aggregates/contexts для documents, certificates, schemes, templates и packages. |
-| Какая стадия проекта сейчас? | System Architecture Design, не coding. | Schema V1 review produced lifecycle/immutability/validation follow-up; следующий шаг — review `docs/13-domain-lifecycle-immutability-validation-v1.md`, не scaffold приложения. |
+| Какая стадия проекта сейчас? | System Architecture Design, не coding. | Conceptual Backend/API Architecture V1 создана; следующий шаг — review `docs/14-backend-api-architecture-v1.md`, не scaffold приложения. |
 | Кто является пользователем SaaS? | Физическое лицо с одним аккаунтом и автоматическим `Personal Workspace`. | Пользователь может работать сам и состоять в нескольких organization workspaces. |
 | Где живут права доступа? | В `Membership` конкретного workspace, а не в `User` напрямую. | Один user может иметь разные роли в разных isolated tenants. |
 | Как пользователь вступает в организацию? | Через stored `Invite`, acceptance которого создаёт membership. | Invite URL не содержит доверенных прав; role/expiry/revocation/usage определяются сохранённым invite. |
 | Какая схема данных является baseline перед Backend/API? | `docs/12-database-schema-v1.md` как storage-neutral conceptual schema. | Она применяет required aggregate/access/ingestion boundaries, но не выбирает SQL, ORM, API или implementation. |
 | Какой follow-up Schema V1 требуется перед Backend/API? | `docs/13-domain-lifecycle-immutability-validation-v1.md` как lifecycle/immutability/validation V1 policy. | Фиксирует revisions, evidence lifecycles, numbering, validation, override safety, package determinism и AI review flow; требует review/acceptance. |
+| Какой Backend/API shape следует применять до contracts? | `docs/14-backend-api-architecture-v1.md` как conceptual modular-monolith/application boundary. | Explicit domain commands, UI read models, authoritative validation, version/idempotency and async derived flows; никакого CRUD-first API или code permission. |
 
 ### 51.1 Accepted ADR register
 
@@ -2125,7 +2163,20 @@ Auth/workspace baseline отражён logical table families `workspace`, `memb
 | AI/OCR review | Proposals/findings retain citations, confidence, extractor/model/version and review state; explicit user acceptance is mandatory. | Provider, consent/privacy, supported processing scope and retention period. |
 | FolderTree boundary | Business collection and cloning boundary only; it never owns document lifecycle or becomes a generic drive. | Broader UX details. |
 
-Backend/API Architecture may begin only after this follow-up document is reviewed and accepted. Он конкретизирует existing guardrails, не изменяя ADR 0001-0005 и не разрешая implementation.
+Этот follow-up стал policy input для созданного по прямому переходу владельца проекта Backend/API Architecture V1. Он конкретизирует existing guardrails, не изменяя ADR 0001-0005 и не разрешая implementation.
+
+### 51.6 Backend/API Architecture V1 documented for review
+
+| Architecture topic | V1 direction в `docs/14-backend-api-architecture-v1.md` | What remains open |
+| --- | --- | --- |
+| Deployment/module shape | Modular monolith first with bounded modules for tenant, object, folders, typed documents, evidence, schemes, registry, package, templates, artifacts, sources, AI, validation, search and audit. | Framework/runtime/deployment and later split criteria. |
+| Mutation API | Explicit PTO domain commands instead of CRUD/table endpoints or generic document/file APIs. | Exact command payload/result and transport route contracts. |
+| Query API | UI-oriented read models for editor, pickers, registry, package, validation, artifacts, AI queue, activity and search. | Exact fields, pagination/filtering and frontend state. |
+| Consistency/versioning | Atomic document release and successful snapshot creation; eventual derived generation/search/AI; optimistic versions, immutable references and stale markers. | Persistence/transaction/lock implementation and user conflict UX. |
+| Validation and outputs | Server-authoritative gates, async package/artifact workflows, no mutation from outputs or AI. | Renderer/storage/queue/AI policy and first form readiness details. |
+| Authorization | Every command/query scoped through workspace membership and object context where applicable. | Fine-grained RBAC, sensitive download/access and invite/governance detail. |
+
+Документ подготовлен для review и не разрешает coding, backend scaffold, SQL/migrations/ORM, physical API implementation или technology/provider choices. После его принятия рекомендуемый следующий этап — `docs/15-api-command-readmodel-contracts-v1.md`.
 
 ---
 
@@ -2133,7 +2184,7 @@ Backend/API Architecture may begin only after this follow-up document is reviewe
 
 Следующие вопросы не отменяют принятые выше принципы. Их нельзя решать случайным кодом: они требуют спецификации, пользовательского выбора и, где необходимо, ADR.
 
-Lifecycle/immutability, structured numbering, validation baseline, package determinism и AI/OCR review boundary теперь документированы в `docs/13-domain-lifecycle-immutability-validation-v1.md`. Вопросы ниже сохраняют только детализацию scope, policy и implementation, которую этот V1 follow-up намеренно не утверждает.
+Lifecycle/immutability, structured numbering, validation baseline, package determinism и AI/OCR review boundary документированы в `docs/13-domain-lifecycle-immutability-validation-v1.md`. Backend module/command/read-model/consistency boundaries документированы в `docs/14-backend-api-architecture-v1.md`. Вопросы ниже сохраняют детализацию scope, contracts, policy и implementation, которую эти conceptual документы намеренно не утверждают.
 
 ### 52.1 Domain scope and typed schemas
 
@@ -2206,7 +2257,7 @@ Lifecycle/immutability, structured numbering, validation baseline, package deter
 
 - backend/frontend stack;
 - база данных и миграции;
-- API и repository implementation;
+- exact API command/read-model transport contracts and repository implementation;
 - dependency/tooling strategy;
 - Docker, deployment и CI/CD;
 - OCR/AI provider and data-processing policy.
@@ -2450,3 +2501,29 @@ Data Model V1 documented; open aggregate and MVP decisions require review before
 
 - ADR 0001-0005 и существующие structured-data/file-backed-evidence/derived-registry принципы;
 - production SQL, migrations, ORM, API, backend/frontend, renderer, storage provider, queue, AI provider, dependencies, Docker or CI.
+
+### 2026-05-27 — Backend/API Architecture V1 created
+
+- Документ: `docs/14-backend-api-architecture-v1.md`
+- Статус: `conceptual backend/API architecture for review before API Command/Read Model Contracts V1`
+- Описание: application-level modular architecture applying Schema V1 and lifecycle policies without production code or technology selection.
+
+Зафиксированный прогресс:
+
+- определён modular monolith first с bounded modules для identity/workspace/object/folders, typed documents, evidence/schemes, registry/packages, templates/artifacts, project sources/AI review, validation, search and audit;
+- mutations выражены explicit domain commands, а UI reads — отдельными read-model families для АОСР, certificate/scheme picker, registry preview, Package Builder, validation, AI review и activity/search;
+- сформулированы atomic revision/snapshot transitions и eventual registry/generation/search/AI processing, optimistic concurrency, immutable references, stale markers and idempotency requirements;
+- применены backend-authoritative validation rules, включая certificate-by-document-date, запрет `RegistryOverride` подавлять ошибки и human accept/reject для AI/OCR;
+- закреплены tenant-safe command/query scope и отсутствие generic CRUD API, generic document builder или generic file drive.
+
+Открыто перед следующим этапом:
+
+- review и принятие `docs/14-backend-api-architecture-v1.md`;
+- exact command/read-model contracts в рекомендуемом `docs/15-api-command-readmodel-contracts-v1.md`;
+- concrete typed form scope, RBAC/privacy/retention/governance and AI processing policy;
+- physical persistence/API transport, renderer/storage/queue/provider and frontend decisions.
+
+Что не было изменено или выбрано этим этапом:
+
+- ADR 0001-0005, Schema V1 and lifecycle/immutability principles;
+- production code, backend/frontend scaffold, SQL, migrations, ORM, concrete routes/OpenAPI, database, renderer, storage provider, queue or AI provider.

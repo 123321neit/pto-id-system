@@ -44,7 +44,7 @@
 Текущий этап:
 
 ```text
-Schema V1 review produced docs/13-domain-lifecycle-immutability-validation-v1.md; this follow-up requires review before Backend/API Architecture
+Backend/API Architecture V1 documented in docs/14-backend-api-architecture-v1.md; it requires review before API Command/Read Model Contracts V1
 ```
 
 `docs/12-database-schema-v1.md` по прямому заданию применяет baseline decisions из `docs/09-aggregate-boundaries-and-invariants.md` по:
@@ -84,12 +84,20 @@ Privacy/data-processing policy, access to project originals and concrete AI proc
 - proposal-only AI/OCR review flow;
 - `FolderTree` as business collection boundary.
 
-Открытыми остаются concrete typed forms/required fields, retention/privacy/RBAC details, template/rendering/storage implementation, AI processing policy/provider и physical database/API design.
+`docs/14-backend-api-architecture-v1.md` применяет эти policy на conceptual application/API уровне через:
 
-Следующий архитектурный review должен рассмотреть и принять либо скорректировать именно этот follow-up документ:
+- modular monolith first и domain-first application modules;
+- explicit command families без CRUD-first API;
+- UI-oriented read models для АОСР, сертификатов, схем, реестра, комплекта и AI review;
+- atomic revision/snapshot boundaries, eventual derived work, optimistic versioning and idempotency;
+- backend-authoritative validation, workspace authorization и async package/artifact/AI flows.
+
+Открытыми остаются command/read-model field contracts, concrete typed forms/required fields, retention/privacy/RBAC details, template/rendering/storage/queue implementation, AI processing policy/provider и physical database/API transport design.
+
+Следующий архитектурный review должен рассмотреть и принять либо скорректировать:
 
 ```text
-docs/13-domain-lifecycle-immutability-validation-v1.md
+docs/14-backend-api-architecture-v1.md
 ```
 
-Только после его принятия допускается переход к `Backend/API Architecture`. До такого review не писать production SQL/migrations, API/backend/frontend implementation и не выбирать инфраструктуру.
+Только после его принятия допускается переход к `docs/15-api-command-readmodel-contracts-v1.md`. Backend/API Architecture V1 не разрешает писать production code, backend scaffold, SQL/migrations/ORM schema, backend/frontend implementation или выбирать инфраструктуру.

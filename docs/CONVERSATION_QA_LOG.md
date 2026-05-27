@@ -1,7 +1,7 @@
 # CONVERSATION_QA_LOG
 # PTO ID System
 # Consolidated decisions from user/assistant discussion
-# Version: 2026-05-27-DOMAIN-LIFECYCLE-IMMUTABILITY-VALIDATION-V1
+# Version: 2026-05-27-BACKEND-API-ARCHITECTURE-V1
 
 Этот файл фиксирует важные вопросы, ответы и решения, которые появились в переписке и проектной памяти. Его цель — не заменить `PROJECT_MEMORY.md`, а сохранить ход принятия решений.
 
@@ -264,3 +264,27 @@ A: В `docs/13-domain-lifecycle-immutability-validation-v1.md` создан conc
 Открытыми остаются concrete first typed forms и blocking fields, evidence/project-source retention и privacy/access details, invitation/RBAC/governance policy, template/rendering/storage/queue choices, AI provider/data-processing rules и physical database/API design.
 
 Статус решения: Schema V1 review follow-up documented for review. `Backend/API Architecture` может начаться только после рассмотрения и принятия `docs/13-domain-lifecycle-immutability-validation-v1.md`; код, SQL, migrations и API этим решением не утверждаются.
+
+---
+
+## 21. Backend/API Architecture V1
+
+### Q: Какую backend/API архитектуру нужно зафиксировать после lifecycle follow-up, не начиная реализацию?
+
+A: По прямому переходу владельца проекта к следующему этапу в `docs/14-backend-api-architecture-v1.md` создан conceptual Backend/API Architecture V1:
+
+- первый backend строится как modular monolith с domain-first boundaries для workspace/object, `FolderTree`, typed documents, evidence, schemes, registry, packages, templates, artifacts, project sources, AI review, validation, search and audit;
+- mutations описаны explicit commands, а не CRUD операциями над таблицами; reads описаны как UI-oriented models для реальных экранов ПТО;
+- workflow АОСР применяет immutable released revision и новую working revision для исправления final; certificate/scheme originals и package manifest сохраняют historical references;
+- package build и artifact generation являются async derived flows; registry rebuild, search indexing и AI proposals допускают eventual consistency без подмены source data;
+- validation остается authoritative backend policy: `ERROR` blocks relevant gates, `WARNING` не блокирует по baseline, срок сертификата проверяется по дате акта, а `RegistryOverride` не скрывает ошибки;
+- AI/OCR сохраняет citations/confidence/model/version и требует explicit accept/edit/reject; acceptance выполняет обычную domain command;
+- каждая command/query строго scoped к workspace membership/object context, с version checks, idempotency and audit requirements.
+
+Открытыми остаются exact command/read-model contracts, concrete first typed forms, permissions/privacy/retention, rendering/storage/queue/AI policy and physical API/database implementation.
+
+Статус решения: conceptual backend/API architecture documented for review. Документ не разрешает production code, scaffold, SQL, migrations, ORM либо выбор stack/provider. Следующий этап после его принятия:
+
+```text
+docs/15-api-command-readmodel-contracts-v1.md
+```

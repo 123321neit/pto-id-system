@@ -69,21 +69,26 @@ DOCX/PDF/реестры/комплекты являются производны
 - `docs/11-ai-project-ingestion-and-assistance-model.md`
 - `docs/12-database-schema-v1.md`
 - `docs/13-domain-lifecycle-immutability-validation-v1.md`
+- `docs/14-backend-api-architecture-v1.md`
 
 ## Current next step
 
-Review conceptual Database Schema V1 выявил обязательный follow-up по lifecycle, исторической неизменности, numbering, validation, package determinism и AI review flow:
+На основании lifecycle/immutability/validation follow-up следующим архитектурным этапом подготовлен conceptual Backend/API Architecture V1:
 
 ```text
-docs/13-domain-lifecycle-immutability-validation-v1.md
+docs/14-backend-api-architecture-v1.md
 ```
 
-Документ сохраняет structured source of truth, file-backed evidence, derived registry и editable-through-revision `final`, оставаясь conceptual/storage-neutral без выбора production SQL, ORM, API или application stack.
+Документ переводит принятые правила в modular-monolith boundaries, explicit domain commands, UI-oriented read models, consistency/versioning/validation boundaries и async flows для комплектов, artifacts и AI proposals. Он сохраняет structured source of truth, file-backed evidence, derived registry и editable-through-revision `final`, не выбирая production SQL, ORM, framework, database, storage, queue, renderer или AI provider.
 
 Текущий следующий этап:
 
 ```text
-Review docs/13-domain-lifecycle-immutability-validation-v1.md; proceed to Backend/API Architecture only if accepted
+Review docs/14-backend-api-architecture-v1.md; proceed to API Command/Read Model Contracts V1 only if accepted
 ```
 
-До такого review нельзя начинать Backend/API Architecture и тем более считать утверждёнными production database mapping, API contracts, backend/frontend implementation, migrations или инфраструктуру.
+Backend/API Architecture V1 по-прежнему не разрешает coding, backend scaffold, SQL/migrations/ORM schema или выбор инфраструктуры. Следующий документ после успешного review:
+
+```text
+docs/15-api-command-readmodel-contracts-v1.md
+```
