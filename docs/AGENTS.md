@@ -44,7 +44,7 @@
 Текущий этап:
 
 ```text
-Conceptual Database Schema V1 created in docs/12-database-schema-v1.md; review required before Backend/API Architecture
+Schema V1 review produced docs/13-domain-lifecycle-immutability-validation-v1.md; this follow-up requires review before Backend/API Architecture
 ```
 
 `docs/12-database-schema-v1.md` по прямому заданию применяет baseline decisions из `docs/09-aggregate-boundaries-and-invariants.md` по:
@@ -53,7 +53,7 @@ Conceptual Database Schema V1 created in docs/12-database-schema-v1.md; review r
 - `WorkItem`;
 - `ProjectDrawingSet`;
 
-Она сохраняет открытыми для review вопросы reusable representative/material boundaries, exact `RegistryOverride` scope, evidence retention and replacement.
+Она сохраняла открытыми для review вопросы lifecycle, validation, package readiness, reusable representative/material boundaries, exact `RegistryOverride` scope, evidence retention and replacement.
 
 Schema V1 также применяет access baseline из `docs/10-auth-workspace-rbac-model.md` по:
 
@@ -73,10 +73,23 @@ Schema V1 отражает ingestion baseline из `docs/11-ai-project-ingestion
 
 Privacy/data-processing policy, access to project originals and concrete AI processing scope остаются открытыми.
 
-Следующий архитектурный review должен подтвердить или явно отложить оставшиеся domain/policy choices из Schema V1 перед следующим документом:
+`docs/13-domain-lifecycle-immutability-validation-v1.md` документирует V1 policy по:
+
+- editable-through-revision `final` documents и immutable historical revisions;
+- `Certificate`/`ExecutiveScheme` lifecycles и file-backed evidence protection;
+- object/folder numbering, renumber, move and folder-clone strategies;
+- `ERROR`/`WARNING` gates и certificate validation by document date;
+- presentation-only `RegistryOverride`;
+- async deterministic package snapshots и dependency manifest;
+- proposal-only AI/OCR review flow;
+- `FolderTree` as business collection boundary.
+
+Открытыми остаются concrete typed forms/required fields, retention/privacy/RBAC details, template/rendering/storage implementation, AI processing policy/provider и physical database/API design.
+
+Следующий архитектурный review должен рассмотреть и принять либо скорректировать именно этот follow-up документ:
 
 ```text
-Backend/API Architecture
+docs/13-domain-lifecycle-immutability-validation-v1.md
 ```
 
-До такого review не писать production SQL/migrations, API/backend/frontend implementation и не выбирать инфраструктуру.
+Только после его принятия допускается переход к `Backend/API Architecture`. До такого review не писать production SQL/migrations, API/backend/frontend implementation и не выбирать инфраструктуру.

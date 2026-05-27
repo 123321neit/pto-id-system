@@ -2,7 +2,7 @@
 # PTO ID SYSTEM
 # EXECUTIVE DOCUMENTATION PLATFORM
 # MASTER CONTEXT / SOURCE OF TRUTH
-# VERSION: 2026-05-27-DATABASE-SCHEMA-V1
+# VERSION: 2026-05-27-DOMAIN-LIFECYCLE-IMMUTABILITY-VALIDATION-V1
 # STATUS: ACTIVE SYSTEM ARCHITECTURE DESIGN PHASE
 # LANGUAGE: RU
 
@@ -1424,16 +1424,17 @@ UI не должен быть перегружен, но система долж
 - auth, workspace, invitation, membership and RBAC draft baseline before Database Schema V1.
 - AI project ingestion and assistance draft baseline before Database Schema V1.
 - conceptual Database Schema V1, applying the required pre-schema baselines without choosing SQL, ORM, API or implementation stack.
+- lifecycle, immutability, numbering, validation, registry override safety, package determinism and AI/OCR review follow-up produced by Schema V1 review in `docs/13-domain-lifecycle-immutability-validation-v1.md`.
 
 Не завершено:
 
-- review и окончательная domain/policy confirmation принятых в Schema V1 baseline assumptions перед Backend/API Architecture;
-- concrete typed scope/validation для TestAct/AOSR и remaining invite, privacy/access, retention, AI-processing and audit requirements;
+- review и принятие `docs/13-domain-lifecycle-immutability-validation-v1.md` перед переходом к Backend/API Architecture;
+- concrete typed scope/required fields для TestAct/AOSR/TechnicalReadinessAct и remaining invite, privacy/access, retention, AI-processing and audit requirements за пределами зафиксированных V1 policies;
 - production physical database mapping, migrations and storage implementation;
 - repositories;
 - API map;
-- package builder internals;
-- registry override structure;
+- package builder implementation internals;
+- registry override persistence/read-model detail beyond its documented V1 safety surface;
 - search system;
 - frontend state architecture;
 - OCR extraction schemas;
@@ -1504,6 +1505,8 @@ Baseline определён в `docs/09-aggregate-boundaries-and-invariants.md` 
 
 ### Q5 — Package Builder internals
 
+Async build, immutable released snapshots, dependency manifest and deterministic rebuild requirement документированы в `docs/13-domain-lifecycle-immutability-validation-v1.md`.
+
 Нужно спроектировать:
 
 - async queue;
@@ -1528,19 +1531,18 @@ Baseline определён в `docs/09-aggregate-boundaries-and-invariants.md` 
 
 ### Q7 — OCR / AI project ingestion and extraction model
 
-Draft baseline project ingestion, proposals, confirmation, traceability and isolation определён в `docs/11-ai-project-ingestion-and-assistance-model.md` и отражён отдельными conceptual table families в `docs/12-database-schema-v1.md`.
+Draft baseline project ingestion, proposals, confirmation, traceability and isolation определён в `docs/11-ai-project-ingestion-and-assistance-model.md`, отражён conceptual table families в `docs/12-database-schema-v1.md` и дополнен обязательным proposal/review flow в `docs/13-domain-lifecycle-immutability-validation-v1.md`.
 
-Нужно определить обязательные поля/правила извлечения:
+Нужно определить оставшиеся policy/implementation details:
 
-- из сертификатов;
-- из схем;
-- из актов.
-- из uploaded project documentation, drawings и specifications;
-- для source citations, proposal staleness, user confirmation и reviewable AI findings.
+- supported extraction scope для сертификатов, схем, актов и uploaded project documentation;
+- provider, privacy/data-processing consent и доступ ролей;
+- требуемую granular source citation и retention rejected/stale proposals;
+- какие подтвержденные checks могут стать formal domain validation rules.
 
 ### Q8 — Registry override layer
 
-Нужно спроектировать, как пользовательские правки порядка/видимости/примечаний живут поверх derived projection.
+Разрешенная V1 surface (`hidden`, `sort_order`, `note`, signer selection и package display config) и запрет замены source facts/скрытия domain errors документированы в `docs/13-domain-lifecycle-immutability-validation-v1.md`. Нужно спроектировать persistence/read model, конкретные registry scopes/exports и UI-команды изменения owning entities.
 
 ---
 
@@ -1570,10 +1572,10 @@ Draft baseline project ingestion, proposals, confirmation, traceability and isol
 Следующий правильный этап:
 
 ```text
-Review Database Schema V1 and resolve required domain/policy inputs before Backend/API Architecture
+Review docs/13-domain-lifecycle-immutability-validation-v1.md; proceed to Backend/API Architecture only if accepted
 ```
 
-Не backend-код, production SQL/migrations и не физический database/API mapping до этого review.
+Не backend-код, production SQL/migrations, API contracts и не физический database mapping до этого review.
 
 Pre-schema источники baseline:
 
@@ -1590,6 +1592,14 @@ docs/12-database-schema-v1.md
 ```
 
 Database Schema V1 является conceptual/storage-neutral specification: она описывает table families, owners, relationships, constraints, indexing considerations, MVP/deferred scope и вопросы перед Backend/API, но не выбирает SQL, ORM, миграции или реализацию.
+
+Review Schema V1 создал обязательный conceptual/storage-neutral follow-up:
+
+```text
+docs/13-domain-lifecycle-immutability-validation-v1.md
+```
+
+Он документирует V1 policies для lifecycle typed documents/evidence/packages/artifacts, editable-through-revision `final`, historical rebuild, structured numbering, validation gates, `RegistryOverride` safety, deterministic async packages, AI/OCR human review и границы `FolderTree`. Backend/API Architecture может начаться только после review и acceptance этого follow-up.
 
 ---
 
@@ -1639,6 +1649,7 @@ Database Schema V1 является conceptual/storage-neutral specification: о
 | `docs/10-auth-workspace-rbac-model.md` | Access/tenant-boundary specification before database design | Фиксирует users, personal/organization workspaces, invitations, memberships, roles, isolation и access-policy inputs, применённые/оставленные открытыми в Schema V1. |
 | `docs/11-ai-project-ingestion-and-assistance-model.md` | AI-assisted project source ingestion specification before database design | Фиксирует project source files, proposals, human confirmation, traceability, privacy/isolation/audit и связи с ИД, отражённые в Schema V1. |
 | `docs/12-database-schema-v1.md` | Conceptual Database Schema V1 before Backend/API design | Применяет обязательные baseline-границы в storage-neutral table/relationship/constraint model, сохраняя открытыми physical mapping и domain/policy decisions. |
+| `docs/13-domain-lifecycle-immutability-validation-v1.md` | Schema V1 lifecycle/immutability/validation follow-up before Backend/API design | Фиксирует storage-neutral lifecycle, historical rebuild, numbering, validation, override safety, package determinism, AI review flow и FolderTree boundary для review/acceptance. |
 | `docs/adr/*.md` | Принятые архитектурные решения | Нормативные решения по отдельным темам. Изменение принятого принципа требует нового ADR или явного пересмотра существующего. |
 | `docs/samples/*.md` | Анализ реальных примеров | Reference sources для доменной модели и будущих шаблонов/парсеров; не generated output системы. |
 
@@ -1984,10 +1995,18 @@ Database Schema V1:
 Текущий следующий шаг:
 
 ```text
-Review Database Schema V1 and resolve required domain/policy inputs before Backend/API Architecture
+Review docs/13-domain-lifecycle-immutability-validation-v1.md; proceed to Backend/API Architecture only if accepted
 ```
 
-Перед Backend/API Architecture нужно подтвердить или явно отложить concrete MVP document/validation scope, evidence/source retention and supersession, invite/governance/privacy rules, package readiness, AI processing policy и требуемые transaction/read-model boundaries. До такого review нельзя считать утверждёнными production physical mapping, API, frontend state architecture, implementation stack или generation/storage mechanism.
+Review Schema V1 produced the required conceptual/storage-neutral follow-up:
+
+```text
+docs/13-domain-lifecycle-immutability-validation-v1.md
+```
+
+Он документирует V1 policy по lifecycle typed documents/evidence/packages/artifacts, editable-through-revision `final`, historical rebuild, structured numbering, validation levels/gates, `RegistryOverride` safety surface, deterministic async package manifests, AI/OCR review flow и границе `FolderTree`.
+
+Перед Backend/API Architecture нужно рассмотреть и принять этот документ, сохраняя открытыми concrete MVP typed forms/required fields, evidence/source retention and privacy/access details, invite/governance policy, rendering/storage/AI-processing implementation и требуемые transaction/read-model boundaries. До acceptance нельзя считать утверждёнными production physical mapping, API, frontend state architecture, implementation stack или generation/storage mechanism.
 
 ---
 
@@ -2016,6 +2035,7 @@ Review Database Schema V1 and resolve required domain/policy inputs before Backe
 19. Project source files для AI-assisted ИД всегда scoped к `Workspace` и `Object`; upload не делает их единственным source of truth.
 20. AI extraction и error detection создают только traceable/auditable proposals; пользователь подтверждает extracted data и proposed links.
 21. `docs/12-database-schema-v1.md` является conceptual schema baseline; он не является production SQL, ORM/API contract или разрешением начать coding.
+22. `docs/13-domain-lifecycle-immutability-validation-v1.md` документирует policy follow-up Schema V1; Backend/API Architecture начинается только после его review и acceptance.
 
 ---
 
@@ -2041,11 +2061,12 @@ Review Database Schema V1 and resolve required domain/policy inputs before Backe
 | Можно ли использовать загруженный проект для AI-assisted ИД и поиска ошибок? | Да, как Workspace/Object-scoped source material с proposals-only workflow. | Structured data остаются source of truth; extracted data/links/findings требуют user confirmation, traceability and audit. |
 | Где хранить данные компании на объекте? | Через `ObjectCompanySnapshot`. | Изменение профиля компании не переписывает исторические документы объекта. |
 | Может ли Object владеть всем сразу? | Нет. | Требуются отдельные aggregates/contexts для documents, certificates, schemes, templates и packages. |
-| Какая стадия проекта сейчас? | System Architecture Design, не coding. | Conceptual Database Schema V1 создана; следующий шаг — её review и domain/policy decisions перед Backend/API Architecture, не scaffold приложения. |
+| Какая стадия проекта сейчас? | System Architecture Design, не coding. | Schema V1 review produced lifecycle/immutability/validation follow-up; следующий шаг — review `docs/13-domain-lifecycle-immutability-validation-v1.md`, не scaffold приложения. |
 | Кто является пользователем SaaS? | Физическое лицо с одним аккаунтом и автоматическим `Personal Workspace`. | Пользователь может работать сам и состоять в нескольких organization workspaces. |
 | Где живут права доступа? | В `Membership` конкретного workspace, а не в `User` напрямую. | Один user может иметь разные роли в разных isolated tenants. |
 | Как пользователь вступает в организацию? | Через stored `Invite`, acceptance которого создаёт membership. | Invite URL не содержит доверенных прав; role/expiry/revocation/usage определяются сохранённым invite. |
 | Какая схема данных является baseline перед Backend/API? | `docs/12-database-schema-v1.md` как storage-neutral conceptual schema. | Она применяет required aggregate/access/ingestion boundaries, но не выбирает SQL, ORM, API или implementation. |
+| Какой follow-up Schema V1 требуется перед Backend/API? | `docs/13-domain-lifecycle-immutability-validation-v1.md` как lifecycle/immutability/validation V1 policy. | Фиксирует revisions, evidence lifecycles, numbering, validation, override safety, package determinism и AI review flow; требует review/acceptance. |
 
 ### 51.1 Accepted ADR register
 
@@ -2091,11 +2112,28 @@ Auth/workspace baseline отражён logical table families `workspace`, `memb
 
 Этот baseline развивает принятые правила structured source of truth, AI assistant only и tenant isolation и отражён project-source/proposal/finding/citation table families Schema V1. Privacy/data-processing, source citation, access/audit and MVP material scope требуют review перед Backend/API Architecture; новый ADR не требуется.
 
+### 51.5 Lifecycle/immutability/validation follow-up documented after Schema V1 review
+
+| Review topic | V1 policy в `docs/13-domain-lifecycle-immutability-validation-v1.md` | Что не утверждается этим решением |
+| --- | --- | --- |
+| Document lifecycle and final editing | `final` is validated published revision; correction creates next revision, invalidates current package use and preserves immutable historical revision. | Concrete first act forms/required field sets. |
+| Evidence and historical immutability | `Certificate`/`ExecutiveScheme` are file-backed; historical file references and released package snapshots cannot be silently overwritten. | Full retention/legal/privacy/access policy. |
+| Numbering | Object/folder scope, structured prefix/sequence/suffix/rendered value, renumber, move choice and clone strategies are required. | API/transaction/collision implementation details. |
+| Validation | `ERROR` blocks relevant final/build release, `WARNING` does not by baseline; certificate expiry is evaluated by document date; missing certificate file is `ERROR`. | Customer-specific readiness strengthening and exact typed-form rules. |
+| Registry override | Presentation/configuration only; source fact changes and hiding domain errors are forbidden; `custom_display_title` is deferred. | Physical persistence/UI/export scope. |
+| Package determinism | Async builds produce immutable dependency-manifest snapshots; changed dependencies require new build/snapshot. | Queue, renderer, storage and binary-reproducibility mechanism. |
+| AI/OCR review | Proposals/findings retain citations, confidence, extractor/model/version and review state; explicit user acceptance is mandatory. | Provider, consent/privacy, supported processing scope and retention period. |
+| FolderTree boundary | Business collection and cloning boundary only; it never owns document lifecycle or becomes a generic drive. | Broader UX details. |
+
+Backend/API Architecture may begin only after this follow-up document is reviewed and accepted. Он конкретизирует existing guardrails, не изменяя ADR 0001-0005 и не разрешая implementation.
+
 ---
 
 ## 52. Open Questions Still Not Solved
 
 Следующие вопросы не отменяют принятые выше принципы. Их нельзя решать случайным кодом: они требуют спецификации, пользовательского выбора и, где необходимо, ADR.
+
+Lifecycle/immutability, structured numbering, validation baseline, package determinism и AI/OCR review boundary теперь документированы в `docs/13-domain-lifecycle-immutability-validation-v1.md`. Вопросы ниже сохраняют только детализацию scope, policy и implementation, которую этот V1 follow-up намеренно не утверждает.
 
 ### 52.1 Domain scope and typed schemas
 
@@ -2108,6 +2146,7 @@ Auth/workspace baseline отражён logical table families `workspace`, `memb
 
 ### 52.2 Aggregate and storage design
 
+- Object/folder numbering scope, explicit move renumber choice и folder-clone numbering strategies уже документированы в V1; открыта их будущая command/transaction/persistence реализация.
 - Требуется ли когда-либо пересмотреть применённый Schema V1 baseline отдельного object-scoped `FolderTree`?
 - Нужен ли после baseline без самостоятельного `WorkItem` root shared work lifecycle и отдельный aggregate в следующем scope?
 - Нужен ли `ProjectDrawingSet`, применённому как owned entity `ObjectDocumentationContext`, позднее отдельный lifecycle/versioning?
@@ -2119,14 +2158,16 @@ Auth/workspace baseline отражён logical table families `workspace`, `memb
 
 ### 52.3 Lifecycle, versioning and collaboration
 
-- Какой полный статусный lifecycle документов нужен кроме `draft`, `final`, `archived`, `deleted`?
-- Какая именно операция создаёт новую revision для draft/final и для массового renumber?
+- Baseline lifecycle для typed documents, evidence, packages и artifacts, включая editable `final` через новую revision и immutable historical output, документирован в `docs/13-domain-lifecycle-immutability-validation-v1.md`.
+- Нужны ли дополнительные approval/signature/ЭЦП statuses сверх документированного V1 lifecycle в будущем?
+- Каков UX хранения/отмены unpublished working revision и autosave recovery после исправления final?
 - Каков UX и policy конфликтов locks: TTL, override permission, потеря соединения и восстановление drafts?
 - Требуется ли multi-user beyond locks в будущем и будет ли он вообще допустим для MVP?
-- Как версии/замены сертификатов и схем отражаются в уже сформированных historical packages?
+- Каковы полные retention/legal/privacy/access rules для superseded certificate/scheme/source originals, при том что historical package references уже запрещено перезаписывать?
 
 ### 52.4 Templates and generation
 
+- Freeze template versions и dependency-manifest deterministic package rebuild документированы в V1; ниже остаются механизмы реализации.
 - Какой template engine поддержит DOCX placeholders, повторяющиеся таблицы, preview compatibility и object-level variants?
 - Как соотносятся data version, document revision, template version и generated artifact identity?
 - Как генерируется PDF и как обеспечивается воспроизводимость старого вывода?
@@ -2134,7 +2175,7 @@ Auth/workspace baseline отражён logical table families `workspace`, `memb
 
 ### 52.5 Registry, search and UX
 
-- Какова формальная schema `RegistryOverride` для порядка, скрытия, примечаний и signer selection?
+- Разрешенная presentation-only surface `RegistryOverride` и запрет скрытия domain errors документированы в V1; какова ее physical/read-model schema для порядка, скрытия, примечаний и signer selection?
 - Какие реестры и экспортные формы входят в MVP?
 - Разрешено ли inline editing через registry UI как команда изменения исходной сущности, и для каких полей?
 - Как спроектировать global/object/folder search, filters и индексирование?
@@ -2151,6 +2192,7 @@ Auth/workspace baseline отражён logical table families `workspace`, `memb
 
 ### 52.7 AI project ingestion and assistance
 
+- Mandatory proposal/review/accept-or-reject flow, provenance fields and no-auto-approval rule документированы в V1; ниже остаются supported scope и operating policy.
 - Какие PDF project materials и specifications входят в первый supported source scope, а какие форматы остаются deferred?
 - Как пользователь управляет заменой/supersession project source files и staleness ранее созданных proposals?
 - Какая granular source citation достаточна для extracted data и inconsistency findings?
@@ -2379,3 +2421,32 @@ Data Model V1 documented; open aggregate and MVP decisions require review before
 
 - ADR 0001-0005 и фундаментальные source-of-truth/typed/registry/template/package/AI guardrails;
 - production SQL, migrations, ORM, database vendor, API, backend/frontend, dependencies, Docker or CI.
+
+### 2026-05-27 — Domain Lifecycle, Immutability and Validation V1 created after Schema V1 review
+
+- Документ: `docs/13-domain-lifecycle-immutability-validation-v1.md`
+- Статус: `conceptual/storage-neutral follow-up for review before Backend/API Architecture`
+- Описание: policy layer closing lifecycle, historical immutability, numbering, validation, registry override safety, package determinism, AI/OCR review and FolderTree boundary gaps identified after Schema V1.
+
+Зафиксированный прогресс:
+
+- defined lifecycle transitions for typed documents, `Certificate`, `ExecutiveScheme`, `PackageBuild`/`PackageSnapshot` and generated artifacts;
+- закреплено, что `final` документ исправляется новой revision, тогда как published revision и released package snapshot остаются immutable;
+- описаны historical rebuild manifest requirements: frozen document revisions, evidence file references, scheme references, template versions, object/company snapshots, registry override version and package ordering;
+- формализованы object/folder numbering, renumber, move decision and folder-clone numbering strategies;
+- формализованы `ERROR`/`WARNING` validation gates, включая `ERROR` для certificate number without physical file и проверку expiry относительно даты документа;
+- ограничен `RegistryOverride` presentation/configuration surface с запретом подмены source facts и скрытия domain errors;
+- определены async package determinism и mandatory human-reviewed AI/OCR proposal flow;
+- подтверждена граница `FolderTree` как business collection, не generic file manager.
+
+Открыто перед Backend/API Architecture:
+
+- acceptance/review настоящего follow-up документа;
+- concrete first typed forms/required fields and customer-specific readiness policy;
+- retention/privacy/access/RBAC/governance и AI-processing policy;
+- template/rendering/storage/queue, API/transaction/read-model and physical database implementation choices.
+
+Что не было изменено или выбрано этим этапом:
+
+- ADR 0001-0005 и существующие structured-data/file-backed-evidence/derived-registry принципы;
+- production SQL, migrations, ORM, API, backend/frontend, renderer, storage provider, queue, AI provider, dependencies, Docker or CI.

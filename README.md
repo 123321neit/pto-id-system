@@ -68,21 +68,22 @@ DOCX/PDF/реестры/комплекты являются производны
 - `docs/10-auth-workspace-rbac-model.md`
 - `docs/11-ai-project-ingestion-and-assistance-model.md`
 - `docs/12-database-schema-v1.md`
+- `docs/13-domain-lifecycle-immutability-validation-v1.md`
 
 ## Current next step
 
-Создана первая conceptual Database Schema V1:
+Review conceptual Database Schema V1 выявил обязательный follow-up по lifecycle, исторической неизменности, numbering, validation, package determinism и AI review flow:
 
 ```text
-docs/12-database-schema-v1.md
+docs/13-domain-lifecycle-immutability-validation-v1.md
 ```
 
-Она применяет требуемые baseline-границы `Workspace`, `FolderTree`, typed `Document`, evidence, proposals, derived registry и snapshot-based package без выбора production SQL, ORM или application stack.
+Документ сохраняет structured source of truth, file-backed evidence, derived registry и editable-through-revision `final`, оставаясь conceptual/storage-neutral без выбора production SQL, ORM, API или application stack.
 
 Текущий следующий этап:
 
 ```text
-Review Database Schema V1 and resolve required domain/policy inputs before Backend/API Architecture
+Review docs/13-domain-lifecycle-immutability-validation-v1.md; proceed to Backend/API Architecture only if accepted
 ```
 
-До такого review нельзя считать утверждёнными production database mapping, API contracts, backend/frontend implementation, migrations или инфраструктуру.
+До такого review нельзя начинать Backend/API Architecture и тем более считать утверждёнными production database mapping, API contracts, backend/frontend implementation, migrations или инфраструктуру.
