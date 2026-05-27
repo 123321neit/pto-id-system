@@ -22,6 +22,7 @@
 8. Не делать OCR auto-approve.
 9. Не менять template version после использования.
 10. Не превращать Object в giant aggregate.
+11. Не делать uploaded project documentation или AI result единственным source of truth.
 
 ---
 
@@ -43,7 +44,7 @@
 Текущий этап:
 
 ```text
-Review/ratification of docs/09-aggregate-boundaries-and-invariants.md and docs/10-auth-workspace-rbac-model.md
+Review/ratification of docs/09-aggregate-boundaries-and-invariants.md, docs/10-auth-workspace-rbac-model.md and docs/11-ai-project-ingestion-and-assistance-model.md
 ```
 
 `docs/09-aggregate-boundaries-and-invariants.md` имеет статус draft. Перед Database Schema V1 нельзя молча принять draft decisions по:
@@ -67,10 +68,18 @@ Review/ratification of docs/09-aggregate-boundaries-and-invariants.md and docs/1
 - audit, evidence access and privacy;
 - SaaS entitlement boundaries.
 
-Рекомендованный следующий документ только после ратификации aggregate boundary и auth/workspace/RBAC decisions:
+`docs/11-ai-project-ingestion-and-assistance-model.md` имеет статус draft. Перед Database Schema V1 нельзя молча принять draft decisions по:
+
+- Workspace/Object ownership of uploaded project files;
+- proposal-only AI/OCR processing and user confirmation;
+- links to `ProjectDrawingSet`, document-owned work, typed documents and evidence;
+- source citations, traceability and audit;
+- privacy/data-processing policy and access to project originals.
+
+Рекомендованный следующий документ только после ратификации aggregate boundary, auth/workspace/RBAC и AI project ingestion/assistance decisions:
 
 ```text
-docs/11-database-schema-v1.md
+docs/12-database-schema-v1.md
 ```
 
 До такой ратификации не проектировать физическую БД и API.

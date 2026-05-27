@@ -1,7 +1,7 @@
 # CONVERSATION_QA_LOG
 # PTO ID System
 # Consolidated decisions from user/assistant discussion
-# Version: 2026-05-26-AUTH-WORKSPACE-RBAC-DRAFT
+# Version: 2026-05-27-AI-PROJECT-INGESTION-DRAFT
 
 Этот файл фиксирует важные вопросы, ответы и решения, которые появились в переписке и проектной памяти. Его цель — не заменить `PROJECT_MEMORY.md`, а сохранить ход принятия решений.
 
@@ -205,3 +205,22 @@ A: В `docs/10-auth-workspace-rbac-model.md` зафиксирован draft acce
 Открытыми до ратификации остаются ownership transfer/recovery, multi-use invite policy первого scope, fine-grained object permissions, access/download/privacy rules для originals и персональных данных, cross-workspace transfer/export и commercial lifecycle.
 
 Статус решения: draft access and tenant-boundary baseline before Database Schema V1. Он конкретизирует уже обязательную tenant isolation и не изменяет ADR 0001-0005.
+
+---
+
+## 18. Project upload for AI-assisted ID and error checking
+
+### Q: Можно ли загрузить проектную документацию, чтобы AI помогал создавать исполнительную документацию и находить ошибки?
+
+A: Да, как будущий assistant workflow с обязательным human confirmation. В `docs/11-ai-project-ingestion-and-assistance-model.md` зафиксирован draft ingestion baseline:
+
+- проектные PDF, чертежи, спецификации и другие future source materials привязываются к конкретным `Workspace` и `Object`;
+- uploaded project documentation служит source material и provenance, но не становится единственным source of truth: активная истина системы остаётся в confirmed structured data и explicit relations;
+- AI/OCR может предлагать project references, systems/zones/floors/axes, candidate AOSR/work statements, expected certificates и inconsistency findings только как proposals;
+- пользователь подтверждает extracted data и proposed links перед их применением к `ProjectDrawingSet`, typed documents, evidence workflows или package/completeness review;
+- AI может предлагать проверки missing certificates, mismatch между работами и drawings, completeness и inconsistencies, но не утверждает ошибку, compliance или документ автоматически;
+- project originals, proposals, confirmations and findings требуют tenant isolation, privacy policy, source citation, traceability и audit.
+
+Связи с `ProjectDrawingSet`, document-owned work statement, `AOSR`, `TestAct`, `Certificate` и `ExecutiveScheme` должны сохранять существующие ownership boundaries: проектный файл не становится сертификатом или исполнительной схемой, а AI не переписывает released revisions.
+
+Статус решения: draft AI project ingestion and assistance baseline before Database Schema V1. Он развивает уже принятые правила structured source of truth и assistant-only AI/OCR, поэтому не создаёт новый ADR.

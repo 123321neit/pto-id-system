@@ -2,7 +2,7 @@
 # PTO ID SYSTEM
 # EXECUTIVE DOCUMENTATION PLATFORM
 # MASTER CONTEXT / SOURCE OF TRUTH
-# VERSION: 2026-05-26-AUTH-WORKSPACE-RBAC-MODEL
+# VERSION: 2026-05-27-AI-PROJECT-INGESTION-MODEL
 # STATUS: ACTIVE SYSTEM ARCHITECTURE DESIGN PHASE
 # LANGUAGE: RU
 
@@ -128,6 +128,7 @@ DOCX, PDF, ZIP, печатные формы и итоговые комплект
 - поддерживать библиотеку представителей;
 - поддерживать OCR/AI-анализ сертификатов в будущем;
 - поддерживать OCR/AI-анализ исполнительных схем в будущем;
+- поддерживать загрузку project source materials по объекту и будущий AI-assisted анализ проекта для подготовки ИД и поиска несоответствий;
 - помогать искать сертификаты и документы;
 - предупреждать о просроченных сертификатах;
 - давать быстрый document-centric UX.
@@ -185,7 +186,9 @@ DOCX/PDF генерируются из данных. Редактировани�
 
 ### 5.6 AI is assistant only
 
-OCR/AI может предлагать значения, но не должен auto-approve критические данные. Пользователь подтверждает извлечённые данные.
+OCR/AI может предлагать значения, связи и findings, но не должен auto-approve критические данные или утверждать инженерный вывод. Пользователь подтверждает extracted data до изменения structured domain data.
+
+Uploaded project documentation может быть source material и provenance для помощи с ИД, но не становится единственным source of truth. Project files должны принадлежать конкретным `Workspace` и `Object`; AI results должны быть traceable и auditable.
 
 ### 5.7 Simple UX over enterprise complexity
 
@@ -939,6 +942,15 @@ Flow:
 4. Пользователь подтверждает значения.
 5. Только после подтверждения значения становятся active metadata.
 
+Project ingestion extension зафиксирован в `docs/11-ai-project-ingestion-and-assistance-model.md`:
+
+- пользователь в будущем сможет загружать проектные PDF, drawings, specifications и другие source materials в context конкретных `Workspace` и `Object`;
+- AI/OCR может предлагать project references, systems/zones/floors/axes, work statements, expected evidence и inconsistency findings;
+- предложение обязано сохранять source citation/provenance настолько детально, насколько допускает формат;
+- AI/OCR создаёт только proposals; принятие, исправление или отклонение выполняет authorized user;
+- confirmed structured data и explicit relations остаются source of truth, а source file/OCR text/AI response не заменяют domain state;
+- processing project originals требует утверждённых privacy, access, tenant isolation and audit rules.
+
 ---
 
 ## 27. ExecutiveScheme
@@ -1013,6 +1025,8 @@ ProjectDrawingSet = owned entity in ObjectDocumentationContext
 ```
 
 Он не является самостоятельным aggregate root для первого scope. Если позднее появятся независимые approval/version/reuse workflows рабочих чертежей, boundary должна быть пересмотрена до реализации этих требований.
+
+Project source files могут использоваться как provenance для данных и ссылок `ProjectDrawingSet`, но ни upload, ни AI extraction не изменяют эти confirmed fields автоматически. Связь и extracted values проходят user confirmation по модели `docs/11-ai-project-ingestion-and-assistance-model.md`.
 
 ---
 
@@ -1408,11 +1422,13 @@ UI не должен быть перегружен, но система долж
 - Package Builder high-level model.
 - aggregate boundaries and invariants draft baseline before Database Schema V1.
 - auth, workspace, invitation, membership and RBAC draft baseline before Database Schema V1.
+- AI project ingestion and assistance draft baseline before Database Schema V1.
 
 Не завершено:
 
 - ратификация boundary baseline для `FolderTree`, `WorkItem` и `ProjectDrawingSet`;
 - ратификация auth/workspace/RBAC baseline, invite policies и privacy/access requirements;
+- ратификация AI project ingestion/assistance baseline, project-source privacy/processing and audit requirements;
 - PostgreSQL physical design;
 - repositories;
 - API map;
@@ -1510,13 +1526,17 @@ Boundary choices для подтверждения:
 - conflict handling;
 - validation UI.
 
-### Q7 — OCR extraction schema
+### Q7 — OCR / AI project ingestion and extraction model
 
-Нужно определить обязательные поля извлечения:
+Draft baseline project ingestion, proposals, confirmation, traceability and isolation определён в `docs/11-ai-project-ingestion-and-assistance-model.md` и требует учёта до Database Schema V1.
+
+Нужно определить обязательные поля/правила извлечения:
 
 - из сертификатов;
 - из схем;
 - из актов.
+- из uploaded project documentation, drawings и specifications;
+- для source citations, proposal staleness, user confirmation и reviewable AI findings.
 
 ### Q8 — Registry override layer
 
@@ -1538,8 +1558,10 @@ Boundary choices для подтверждения:
 10. Не делать Package Builder synchronous.
 11. Не делать OCR auto-approve.
 12. Не ломать tenant isolation.
-13. Всегда учитывать реальную практику ПТО: документы часто исправляют, номера пересчитывают, папки дублируют, сертификаты используют повторно, заказчики требуют разные формы.
-14. Если есть сомнения — сначала задать вопрос пользователю и зафиксировать ответ в `docs/CONVERSATION_QA_LOG.md`.
+13. Не делать uploaded project documentation, OCR text или AI response единственным source of truth.
+14. Любые AI extraction/error detection results сохранять как traceable proposals до user confirmation.
+15. Всегда учитывать реальную практику ПТО: документы часто исправляют, номера пересчитывают, папки дублируют, сертификаты используют повторно, заказчики требуют разные формы.
+16. Если есть сомнения — сначала задать вопрос пользователю и зафиксировать ответ в `docs/CONVERSATION_QA_LOG.md`.
 
 ---
 
@@ -1548,7 +1570,7 @@ Boundary choices для подтверждения:
 Следующий правильный этап:
 
 ```text
-Review and ratify Aggregate Boundaries/Invariants and Auth/Workspace/RBAC before Database Schema V1
+Review and ratify Aggregate Boundaries/Invariants, Auth/Workspace/RBAC and AI Project Ingestion/Assistance before Database Schema V1
 ```
 
 Не backend-код и не физическая схема хранения до ратификации.
@@ -1560,6 +1582,19 @@ docs/09-aggregate-boundaries-and-invariants.md
 ```
 
 В нём описаны owners, allowed/forbidden relationships, invariants, revision and invalidation rules, а также boundary choices, требующие подтверждения.
+
+Созданы также pre-schema draft-документы:
+
+```text
+docs/10-auth-workspace-rbac-model.md
+docs/11-ai-project-ingestion-and-assistance-model.md
+```
+
+Database Schema V1 после рассмотрения этих baseline decisions должен быть следующим отдельным документом:
+
+```text
+docs/12-database-schema-v1.md
+```
 
 ---
 
@@ -1607,6 +1642,7 @@ docs/09-aggregate-boundaries-and-invariants.md
 | `docs/08-document-types-catalog.md` | Каталог document/evidence/output types | Классифицирует MVP baseline и candidate/deferred types, их source of truth, validation, registry/package and template behavior. |
 | `docs/09-aggregate-boundaries-and-invariants.md` | Boundary/invariants specification before database design | Фиксирует aggregate roots, ownership, invariants, revision/invalidation rules и draft boundary decisions для ратификации перед Database Schema V1. |
 | `docs/10-auth-workspace-rbac-model.md` | Access/tenant-boundary specification before database design | Фиксирует users, personal/organization workspaces, invitations, memberships, roles, permission baseline, isolation and SaaS readiness для ратификации перед Database Schema V1. |
+| `docs/11-ai-project-ingestion-and-assistance-model.md` | AI-assisted project source ingestion specification before database design | Фиксирует project source files, proposals, human confirmation, traceability, privacy/isolation/audit и связи с ИД для учёта перед Database Schema V1. |
 | `docs/adr/*.md` | Принятые архитектурные решения | Нормативные решения по отдельным темам. Изменение принятого принципа требует нового ADR или явного пересмотра существующего. |
 | `docs/samples/*.md` | Анализ реальных примеров | Reference sources для доменной модели и будущих шаблонов/парсеров; не generated output системы. |
 
@@ -1648,6 +1684,7 @@ docs/09-aggregate-boundaries-and-invariants.md
 | `Representative` | Представитель/подписант и его полномочия | Допускаются global, object и temporary representatives; важны порядок и overrides. |
 | `RegistrySignerSnapshot` | Выбранный подписант конкретного реестра | Подписант реестра может отличаться от подписантов актов. |
 | `ProjectDrawingSet` | Комплект рабочих чертежей, по которым выполняются работы | Draft baseline: owned entity в `ObjectDocumentationContext`; не является исполнительной схемой; участвует в АОСР и блоке реестра. |
+| `ProjectSourceFile` | Загруженный project source material: PDF, drawing, specification или future supported source | Принадлежит конкретным `Workspace` и `Object`; служит provenance/reference context, но не становится единственным source of truth. |
 
 ### 44.3 Work and documentation aggregates
 
@@ -1675,6 +1712,7 @@ docs/09-aggregate-boundaries-and-invariants.md
 | `DocumentLock` | Application-level lock редактирования | Отдельно от `Document`, содержит TTL/heartbeat и не меняет revision. |
 | `ActivityHistory` | Audit/activity history | Должна фиксировать ключевые изменения, генерации, подтверждение OCR и invalidation snapshots. |
 | `OCRExtractionProposal` | Предложенные AI/OCR metadata | Только assistant output; активными данные становятся после подтверждения пользователя. |
+| `AIConsistencyFindingProposal` | Предложение о missing evidence, mismatch, incompleteness или иной inconsistency | Только reviewable finding с source citation; не является автоматически ошибкой или engineering approval. |
 
 ### 44.5 Aggregate boundary guardrails
 
@@ -1684,6 +1722,7 @@ docs/09-aggregate-boundaries-and-invariants.md
 - `Package Builder` должен рассматриваться как отдельный bounded context или application service с собственными snapshots/jobs.
 - `DocumentLock` должен жить отдельно от document revision history.
 - Draft baseline `docs/09-aggregate-boundaries-and-invariants.md` принимает отдельный object-scoped `FolderTree`, document-owned work meaning без самостоятельного `WorkItem` root для V1 и object-owned `ProjectDrawingSet`; эти choices требуют ратификации до Database Schema V1.
+- Draft baseline `docs/11-ai-project-ingestion-and-assistance-model.md` требует Workspace/Object-scoped project files, proposal-only AI/OCR, human confirmation, traceability and audit до влияния на structured targets.
 - Физическая модель хранения, storage tables и API ещё не утверждены.
 
 ---
@@ -1868,8 +1907,9 @@ Sample analyses нужны как domain reference: они объясняют с
 - не интерпретировать пример как разрешение публиковать персональные или договорные сведения в демонстрационных данных;
 - при создании публичных демо, тестовых fixtures, документации вне закрытого контекста или обучающих материалов обезличивать реквизиты;
 - не отправлять содержимое source files внешним AI/OCR-сервисам без отдельного решения о privacy, согласии и модели обработки данных;
+- project documentation, загружаемая для AI-assisted ИД, должна быть привязана к конкретным `Workspace` и `Object`, а originals/extracted content/proposals должны наследовать access restrictions source context;
 - оригинальные загруженные файлы будущей системы должны иметь tenant isolation, access control, audit trail и storage policy;
-- OCR/AI result не считается подтверждённым фактом до проверки пользователем.
+- OCR/AI result не считается подтверждённым фактом до проверки пользователем; AI findings и подтверждения должны сохранять traceable source provenance и audit.
 
 ### 47.3 Historical evidence rule
 
@@ -1904,6 +1944,7 @@ Sample analyses нужны как domain reference: они объясняют с
 - делать Package Builder синхронной операцией пользовательского запроса;
 - превращать `Object` в giant aggregate;
 - разрешать OCR/AI автоматически утверждать критичные данные;
+- считать uploaded project documentation, OCR text или AI response единственным source of truth либо применять AI proposal без user confirmation;
 - ломать tenant isolation;
 - заменять открытый архитектурный вопрос случайной технологической реализацией.
 
@@ -1943,7 +1984,7 @@ docs/06-data-model-v1.md
 Текущий следующий шаг:
 
 ```text
-Review and ratify aggregate boundaries/invariants and auth/workspace/RBAC before Database Schema V1
+Review and ratify aggregate boundaries/invariants, auth/workspace/RBAC and AI project ingestion/assistance before Database Schema V1
 ```
 
 Создан draft-документ `docs/07-aosr-domain-specification.md`, который формализует АОСР как первый typed document: structure blocks, validation categories, snapshots, revisions, registry behavior, package interaction и audit requirements.
@@ -1954,7 +1995,15 @@ Review and ratify aggregate boundaries/invariants and auth/workspace/RBAC before
 
 Создан draft-документ `docs/10-auth-workspace-rbac-model.md`, который конкретизирует tenant isolation через `Workspace`, разделяет `Personal Workspace` и `Organization Workspace`, определяет invitation/membership access model и permission baseline ролей `Owner`, `Admin`, `PTO Engineer`, `Foreman`, `Viewer`.
 
-Нужно ратифицировать boundary choices, auth/workspace/RBAC baseline, точный набор MVP document types, открытые AOSR domain choices (обязательные participant roles, обязательность схем и документов качества для конкретных случаев, требуемую степень структуры work/location/project references и правила warning acceptance) и remaining policy choices по evidence/package/registry/privacy. До такого подтверждения нельзя считать утверждёнными физическую БД, API, frontend state architecture, выбор backend/frontend стека или реализацию генератора.
+Создан draft-документ `docs/11-ai-project-ingestion-and-assistance-model.md`, который описывает загрузку project source materials по `Workspace`/`Object`, assistant-only extraction/error detection proposals, human confirmation, связи с ИД и требования traceability/privacy/audit.
+
+Нужно ратифицировать boundary choices, auth/workspace/RBAC baseline, AI project ingestion/assistance baseline, точный набор MVP document types, открытые AOSR domain choices (обязательные participant roles, обязательность схем и документов качества для конкретных случаев, требуемую степень структуры work/location/project references и правила warning acceptance) и remaining policy choices по evidence/package/registry/privacy. До такого подтверждения нельзя считать утверждёнными физическую БД, API, frontend state architecture, выбор backend/frontend стека или реализацию генератора.
+
+Планируемый документ Database Schema V1 после этих review gates:
+
+```text
+docs/12-database-schema-v1.md
+```
 
 ---
 
@@ -1980,6 +2029,8 @@ Review and ratify aggregate boundaries/invariants and auth/workspace/RBAC before
 16. Исходные документы могут содержать чувствительные реквизиты; privacy и tenant isolation обязательны.
 17. `Workspace` является tenant boundary, а workspace-права принадлежат `Membership`, не глобальному `User`.
 18. Каждый новый пользователь получает полноценный `Personal Workspace`; organization invitations не смешивают личные и командные данные.
+19. Project source files для AI-assisted ИД всегда scoped к `Workspace` и `Object`; upload не делает их единственным source of truth.
+20. AI extraction и error detection создают только traceable/auditable proposals; пользователь подтверждает extracted data и proposed links.
 
 ---
 
@@ -2002,9 +2053,10 @@ Review and ratify aggregate boundaries/invariants and auth/workspace/RBAC before
 | Что такое ProjectDrawingSet? | Отдельный concept для рабочих чертежей; не ExecutiveScheme. | Используется как источник блока реестра и ссылок АОСР. |
 | Как должен ощущаться интерфейс? | Пользователь работает с комплектом ИД, а не с CRM-таблицей. | UX document-centric, complexity structured model скрывается. |
 | Каково назначение OCR/AI? | Assistant only. | Извлечённые metadata активируются только после пользовательского подтверждения. |
+| Можно ли использовать загруженный проект для AI-assisted ИД и поиска ошибок? | Да, как Workspace/Object-scoped source material с proposals-only workflow. | Structured data остаются source of truth; extracted data/links/findings требуют user confirmation, traceability and audit. |
 | Где хранить данные компании на объекте? | Через `ObjectCompanySnapshot`. | Изменение профиля компании не переписывает исторические документы объекта. |
 | Может ли Object владеть всем сразу? | Нет. | Требуются отдельные aggregates/contexts для documents, certificates, schemes, templates и packages. |
-| Какая стадия проекта сейчас? | System Architecture Design, не coding. | Следующий шаг — ратификация Aggregate Boundaries/Invariants и Auth/Workspace/RBAC перед Database Schema V1, не scaffold приложения. |
+| Какая стадия проекта сейчас? | System Architecture Design, не coding. | Следующий шаг — ратификация Aggregate Boundaries/Invariants, Auth/Workspace/RBAC и AI Project Ingestion/Assistance перед Database Schema V1, не scaffold приложения. |
 | Кто является пользователем SaaS? | Физическое лицо с одним аккаунтом и автоматическим `Personal Workspace`. | Пользователь может работать сам и состоять в нескольких organization workspaces. |
 | Где живут права доступа? | В `Membership` конкретного workspace, а не в `User` напрямую. | Один user может иметь разные роли в разных isolated tenants. |
 | Как пользователь вступает в организацию? | Через stored `Invite`, acceptance которого создаёт membership. | Invite URL не содержит доверенных прав; role/expiry/revocation/usage определяются сохранённым invite. |
@@ -2040,6 +2092,18 @@ Review and ratify aggregate boundaries/invariants and auth/workspace/RBAC before
 | Как выдаётся доступ? | Stored invite определяет target/role/conditions; URL несёт только opaque token/reference. | Права нельзя доверять параметрам ссылки. |
 
 Auth/workspace baseline дополняет обязательную tenant isolation и требует ратификации permission details, invitation governance, ownership continuity, privacy/audit и commercial lifecycle до утверждения Database Schema V1. Новый ADR не требуется: фундаментальные принципы ADR 0001-0005 не меняются.
+
+### 51.4 Draft AI project ingestion/assistance baseline requiring ratification
+
+| Ingestion question | Draft baseline в `docs/11-ai-project-ingestion-and-assistance-model.md` | Причина |
+| --- | --- | --- |
+| Где живут uploaded project files? | Каждый source file scoped to one `Workspace` and one `Object`. | Project content должен соблюдать tenant isolation и object context. |
+| Становится ли загруженный проект source of truth? | Он является source material/provenance, но confirmed structured data and relations остаются source of truth. | Нельзя заменить domain model файлом или AI interpretation. |
+| Что может сделать AI/OCR? | Создать extraction proposals и consistency findings with source citations. | AI помогает анализу, но не утверждает инженерный факт. |
+| Как proposal влияет на ИД? | Только после user confirmation, permission checks, validation and audit appropriate to target owner. | Документы/evidence/released history должны оставаться контролируемыми. |
+| Какие связи поддерживаются концептуально? | Project context может предлагать ссылки к `ProjectDrawingSet`, document-owned work, `AOSR`, `TestAct`, evidence expectations and scheme comparisons. | Project file не становится `Certificate` или `ExecutiveScheme` и не нарушает ownership boundaries. |
+
+Этот baseline развивает принятые правила structured source of truth, AI assistant only и tenant isolation. Он требует решения privacy/data-processing, source citation, access/audit and MVP material scope до утверждения Database Schema V1; новый ADR не требуется.
 
 ---
 
@@ -2099,7 +2163,16 @@ Auth/workspace baseline дополняет обязательную tenant isola
 - Допустимы ли когда-либо controlled copy/transfer/export data между личным и organizational workspace или между организациями?
 - Нужны ли ЭЦП/юридически значимое подписание, импорт legacy DOCX/PDF, BIM/CAD/ERP integrations, public API или offline mode, и только на каком последующем этапе?
 
-### 52.7 Technology decisions explicitly deferred
+### 52.7 AI project ingestion and assistance
+
+- Какие PDF project materials и specifications входят в первый supported source scope, а какие форматы остаются deferred?
+- Как пользователь управляет заменой/supersession project source files и staleness ранее созданных proposals?
+- Какая granular source citation достаточна для extracted data и inconsistency findings?
+- Какие роли вправе upload, process, review, confirm/dismiss и видеть sensitive project originals/extracted content?
+- Какие AI-assisted checks после подтверждения являются hints/warnings, а какие могут стать formal domain validation rules?
+- Какова approved privacy/data-processing policy до анализа реального проекта AI/OCR?
+
+### 52.8 Technology decisions explicitly deferred
 
 До отдельных решений остаются невыбранными:
 
@@ -2264,3 +2337,31 @@ Data Model V1 documented; open aggregate and MVP decisions require review before
 
 - фундаментальные принципы ADR 0001-0005;
 - физическая база данных, API, стек, миграции или implementation artifacts.
+
+### 2026-05-27 — AI project ingestion and assistance model created
+
+- Документ: `docs/11-ai-project-ingestion-and-assistance-model.md`
+- Статус: `draft`
+- Описание: architectural model for Workspace/Object-scoped project source uploads and assistant-only AI proposals for ID preparation and error checking before Database Schema V1.
+
+Зафиксированный прогресс:
+
+- project source files определены как object/workspace-scoped originals and provenance, но не как единственный source of truth;
+- закреплено, что source of truth остаётся за confirmed structured data и explicit domain relations;
+- описаны future source types, включая PDF, DWG/DXF future scope, DOCX/XLSX, scanned PDFs, specifications and drawings;
+- определены extraction proposals, inconsistency findings, source citations, human confirmation and audit requirements;
+- описаны связи source materials с `Object`, `ProjectDrawingSet`, document-owned work statement, `AOSR`, `TestAct`, `Certificate` и `ExecutiveScheme`;
+- установлены privacy/security and tenant isolation guardrails для originals, extracted content and AI results;
+- Database Schema V1 перенесён на планируемый путь `docs/12-database-schema-v1.md`, чтобы до него учесть ingestion baseline.
+
+Что требует ратификации перед Database Schema V1:
+
+- first supported project material scope, source-file lifecycle and citation granularity;
+- permissions for upload/processing/review/confirmation and access to originals/extracted content;
+- privacy/data-processing policy before any real AI/OCR processing;
+- staleness, finding severity and audit/retention requirements.
+
+Что не было изменено этим этапом:
+
+- фундаментальные принципы ADR 0001-0005: AI по-прежнему только assistant, structured data остаются source of truth;
+- AI/OCR provider, physical storage, база данных, API, SQL, стек, зависимости или implementation artifacts.
