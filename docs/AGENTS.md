@@ -44,42 +44,39 @@
 Текущий этап:
 
 ```text
-Review/ratification of docs/09-aggregate-boundaries-and-invariants.md, docs/10-auth-workspace-rbac-model.md and docs/11-ai-project-ingestion-and-assistance-model.md
+Conceptual Database Schema V1 created in docs/12-database-schema-v1.md; review required before Backend/API Architecture
 ```
 
-`docs/09-aggregate-boundaries-and-invariants.md` имеет статус draft. Перед Database Schema V1 нельзя молча принять draft decisions по:
+`docs/12-database-schema-v1.md` по прямому заданию применяет baseline decisions из `docs/09-aggregate-boundaries-and-invariants.md` по:
 
 - `FolderTree`;
 - `WorkItem`;
 - `ProjectDrawingSet`;
-- `RepresentativeProfile`;
-- material catalog;
-- `RegistryOverride` scope;
-- evidence retention;
-- RBAC/privacy.
 
-`docs/10-auth-workspace-rbac-model.md` имеет статус draft. Перед Database Schema V1 нельзя молча принять draft decisions по:
+Она сохраняет открытыми для review вопросы reusable representative/material boundaries, exact `RegistryOverride` scope, evidence retention and replacement.
+
+Schema V1 также применяет access baseline из `docs/10-auth-workspace-rbac-model.md` по:
 
 - `Workspace` as tenant boundary;
-- automatic `Personal Workspace` creation and ownership lifecycle;
+- automatic `Personal Workspace` creation and Owner membership;
 - organization membership and invite policy;
 - role permission matrix;
-- cross-workspace copy/transfer/export;
-- audit, evidence access and privacy;
-- SaaS entitlement boundaries.
 
-`docs/11-ai-project-ingestion-and-assistance-model.md` имеет статус draft. Перед Database Schema V1 нельзя молча принять draft decisions по:
+Ownership continuity, detailed permissions, cross-workspace copy/transfer/export, audit/evidence privacy and SaaS entitlement details остаются открытыми.
+
+Schema V1 отражает ingestion baseline из `docs/11-ai-project-ingestion-and-assistance-model.md` по:
 
 - Workspace/Object ownership of uploaded project files;
 - proposal-only AI/OCR processing and user confirmation;
 - links to `ProjectDrawingSet`, document-owned work, typed documents and evidence;
 - source citations, traceability and audit;
-- privacy/data-processing policy and access to project originals.
 
-Рекомендованный следующий документ только после ратификации aggregate boundary, auth/workspace/RBAC и AI project ingestion/assistance decisions:
+Privacy/data-processing policy, access to project originals and concrete AI processing scope остаются открытыми.
+
+Следующий архитектурный review должен подтвердить или явно отложить оставшиеся domain/policy choices из Schema V1 перед следующим документом:
 
 ```text
-docs/12-database-schema-v1.md
+Backend/API Architecture
 ```
 
-До такой ратификации не проектировать физическую БД и API.
+До такого review не писать production SQL/migrations, API/backend/frontend implementation и не выбирать инфраструктуру.

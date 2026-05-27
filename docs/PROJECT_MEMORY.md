@@ -2,7 +2,7 @@
 # PTO ID SYSTEM
 # EXECUTIVE DOCUMENTATION PLATFORM
 # MASTER CONTEXT / SOURCE OF TRUTH
-# VERSION: 2026-05-27-AI-PROJECT-INGESTION-MODEL
+# VERSION: 2026-05-27-DATABASE-SCHEMA-V1
 # STATUS: ACTIVE SYSTEM ARCHITECTURE DESIGN PHASE
 # LANGUAGE: RU
 
@@ -1423,13 +1423,13 @@ UI не должен быть перегружен, но система долж
 - aggregate boundaries and invariants draft baseline before Database Schema V1.
 - auth, workspace, invitation, membership and RBAC draft baseline before Database Schema V1.
 - AI project ingestion and assistance draft baseline before Database Schema V1.
+- conceptual Database Schema V1, applying the required pre-schema baselines without choosing SQL, ORM, API or implementation stack.
 
 Не завершено:
 
-- ратификация boundary baseline для `FolderTree`, `WorkItem` и `ProjectDrawingSet`;
-- ратификация auth/workspace/RBAC baseline, invite policies и privacy/access requirements;
-- ратификация AI project ingestion/assistance baseline, project-source privacy/processing and audit requirements;
-- PostgreSQL physical design;
+- review и окончательная domain/policy confirmation принятых в Schema V1 baseline assumptions перед Backend/API Architecture;
+- concrete typed scope/validation для TestAct/AOSR и remaining invite, privacy/access, retention, AI-processing and audit requirements;
+- production physical database mapping, migrations and storage implementation;
 - repositories;
 - API map;
 - package builder internals;
@@ -1447,7 +1447,7 @@ UI не должен быть перегружен, но система долж
 
 ### Q1 — Aggregate design
 
-Draft baseline определён в `docs/09-aggregate-boundaries-and-invariants.md` и требует ратификации до Database Schema V1.
+Baseline определён в `docs/09-aggregate-boundaries-and-invariants.md` и по заданию владельца проекта применён в conceptual `docs/12-database-schema-v1.md`. Любое расширение этих границ или их изменение должно быть подтверждено до Backend/API Architecture.
 
 Зафиксированы как самостоятельные owners:
 
@@ -1460,22 +1460,22 @@ Draft baseline определён в `docs/09-aggregate-boundaries-and-invariant
 - Template bounded context;
 - Registry projection service.
 
-Boundary choices для подтверждения:
+Применённые Schema V1 boundary choices, которые могут быть пересмотрены только явным последующим решением:
 
 - `FolderTree` является отдельным object-scoped aggregate root;
 - содержательная работа первого scope хранится typed `Document` payload, без самостоятельного `WorkItem` root;
 - `ProjectDrawingSet` является owned entity `ObjectDocumentationContext`;
 - reusable boundaries для representatives/materials требуют решения.
 
-### Q2 — PostgreSQL physical design
+### Q2 — Conceptual schema and physical database mapping
+
+Первая storage-neutral conceptual schema таблиц, relationships, constraints, indexing considerations и snapshots создана в `docs/12-database-schema-v1.md`.
 
 Нужно спроектировать:
 
-- tables;
-- indexes;
-- constraints;
-- JSONB strategy;
-- transactions;
+- production physical table/index/constraint mapping;
+- typed structured payload persistence strategy;
+- transactions and concurrency boundaries;
 - soft delete;
 - tenant isolation.
 
@@ -1528,7 +1528,7 @@ Boundary choices для подтверждения:
 
 ### Q7 — OCR / AI project ingestion and extraction model
 
-Draft baseline project ingestion, proposals, confirmation, traceability and isolation определён в `docs/11-ai-project-ingestion-and-assistance-model.md` и требует учёта до Database Schema V1.
+Draft baseline project ingestion, proposals, confirmation, traceability and isolation определён в `docs/11-ai-project-ingestion-and-assistance-model.md` и отражён отдельными conceptual table families в `docs/12-database-schema-v1.md`.
 
 Нужно определить обязательные поля/правила извлечения:
 
@@ -1570,31 +1570,26 @@ Draft baseline project ingestion, proposals, confirmation, traceability and isol
 Следующий правильный этап:
 
 ```text
-Review and ratify Aggregate Boundaries/Invariants, Auth/Workspace/RBAC and AI Project Ingestion/Assistance before Database Schema V1
+Review Database Schema V1 and resolve required domain/policy inputs before Backend/API Architecture
 ```
 
-Не backend-код и не физическая схема хранения до ратификации.
+Не backend-код, production SQL/migrations и не физический database/API mapping до этого review.
 
-Создан draft-документ:
+Pre-schema источники baseline:
 
 ```text
 docs/09-aggregate-boundaries-and-invariants.md
-```
-
-В нём описаны owners, allowed/forbidden relationships, invariants, revision and invalidation rules, а также boundary choices, требующие подтверждения.
-
-Созданы также pre-schema draft-документы:
-
-```text
 docs/10-auth-workspace-rbac-model.md
 docs/11-ai-project-ingestion-and-assistance-model.md
 ```
 
-Database Schema V1 после рассмотрения этих baseline decisions должен быть следующим отдельным документом:
+По прямому заданию владельца проекта их обязательные принципы применены в новом документе:
 
 ```text
 docs/12-database-schema-v1.md
 ```
+
+Database Schema V1 является conceptual/storage-neutral specification: она описывает table families, owners, relationships, constraints, indexing considerations, MVP/deferred scope и вопросы перед Backend/API, но не выбирает SQL, ORM, миграции или реализацию.
 
 ---
 
@@ -1640,9 +1635,10 @@ docs/12-database-schema-v1.md
 | `docs/06-data-model-v1.md` | Первая формальная концептуальная модель данных | Фиксирует aggregate roots/boundaries, entities, ownership, snapshots, revisions и projections без выбора БД, API или стека. |
 | `docs/07-aosr-domain-specification.md` | Первая спецификация typed document | Формализует АОСР: blocks, validation, snapshots, revisions, registry/package behavior и открытые domain questions без выбора реализации. |
 | `docs/08-document-types-catalog.md` | Каталог document/evidence/output types | Классифицирует MVP baseline и candidate/deferred types, их source of truth, validation, registry/package and template behavior. |
-| `docs/09-aggregate-boundaries-and-invariants.md` | Boundary/invariants specification before database design | Фиксирует aggregate roots, ownership, invariants, revision/invalidation rules и draft boundary decisions для ратификации перед Database Schema V1. |
-| `docs/10-auth-workspace-rbac-model.md` | Access/tenant-boundary specification before database design | Фиксирует users, personal/organization workspaces, invitations, memberships, roles, permission baseline, isolation and SaaS readiness для ратификации перед Database Schema V1. |
-| `docs/11-ai-project-ingestion-and-assistance-model.md` | AI-assisted project source ingestion specification before database design | Фиксирует project source files, proposals, human confirmation, traceability, privacy/isolation/audit и связи с ИД для учёта перед Database Schema V1. |
+| `docs/09-aggregate-boundaries-and-invariants.md` | Boundary/invariants specification before database design | Фиксирует aggregate roots, ownership, invariants, revision/invalidation rules и baseline decisions, применённые в conceptual Schema V1. |
+| `docs/10-auth-workspace-rbac-model.md` | Access/tenant-boundary specification before database design | Фиксирует users, personal/organization workspaces, invitations, memberships, roles, isolation и access-policy inputs, применённые/оставленные открытыми в Schema V1. |
+| `docs/11-ai-project-ingestion-and-assistance-model.md` | AI-assisted project source ingestion specification before database design | Фиксирует project source files, proposals, human confirmation, traceability, privacy/isolation/audit и связи с ИД, отражённые в Schema V1. |
+| `docs/12-database-schema-v1.md` | Conceptual Database Schema V1 before Backend/API design | Применяет обязательные baseline-границы в storage-neutral table/relationship/constraint model, сохраняя открытыми physical mapping и domain/policy decisions. |
 | `docs/adr/*.md` | Принятые архитектурные решения | Нормативные решения по отдельным темам. Изменение принятого принципа требует нового ADR или явного пересмотра существующего. |
 | `docs/samples/*.md` | Анализ реальных примеров | Reference sources для доменной модели и будущих шаблонов/парсеров; не generated output системы. |
 
@@ -1721,9 +1717,9 @@ docs/12-database-schema-v1.md
 - `RegistryProjection` является сервисом/проекцией, а не master aggregate.
 - `Package Builder` должен рассматриваться как отдельный bounded context или application service с собственными snapshots/jobs.
 - `DocumentLock` должен жить отдельно от document revision history.
-- Draft baseline `docs/09-aggregate-boundaries-and-invariants.md` принимает отдельный object-scoped `FolderTree`, document-owned work meaning без самостоятельного `WorkItem` root для V1 и object-owned `ProjectDrawingSet`; эти choices требуют ратификации до Database Schema V1.
-- Draft baseline `docs/11-ai-project-ingestion-and-assistance-model.md` требует Workspace/Object-scoped project files, proposal-only AI/OCR, human confirmation, traceability and audit до влияния на structured targets.
-- Физическая модель хранения, storage tables и API ещё не утверждены.
+- Conceptual `docs/12-database-schema-v1.md` применяет отдельный object-scoped `FolderTree`, document-owned work meaning без самостоятельного `WorkItem` root для V1 и object-owned `ProjectDrawingSet` как schema baseline.
+- Conceptual Schema V1 применяет Workspace/Object-scoped project files, proposal-only AI/OCR, human confirmation, traceability and audit до влияния на structured targets.
+- Production physical mapping, migrations, ORM, transactions and API ещё не утверждены.
 
 ---
 
@@ -1959,51 +1955,39 @@ Sample analyses нужны как domain reference: они объясняют с
 
 ## 49. Current Next Step
 
-Текущий архитектурный этап выполнен в первой формальной редакции:
-
-```text
-Data Model v1 + Aggregate Boundaries
-```
-
-Создан документ:
+Созданы последовательные domain and pre-schema specifications:
 
 ```text
 docs/06-data-model-v1.md
+docs/07-aosr-domain-specification.md
+docs/08-document-types-catalog.md
+docs/09-aggregate-boundaries-and-invariants.md
+docs/10-auth-workspace-rbac-model.md
+docs/11-ai-project-ingestion-and-assistance-model.md
 ```
 
-Документ определяет:
-
-- bounded contexts и aggregate roots;
-- ownership и ссылки между `Object`, `Folder`, `Document`, `Certificate`, `ExecutiveScheme`, `Template`, `Package` и projections;
-- основу typed payload для АОСР и рамки первых актов испытаний;
-- snapshot boundaries для компаний, документов и комплектов;
-- lifecycle, revision и invalidation events;
-- MVP scope и deferred scope;
-- открытые решения, которые ещё запрещают переход к физической БД/API.
-
-Текущий следующий шаг:
-
-```text
-Review and ratify aggregate boundaries/invariants, auth/workspace/RBAC and AI project ingestion/assistance before Database Schema V1
-```
-
-Создан draft-документ `docs/07-aosr-domain-specification.md`, который формализует АОСР как первый typed document: structure blocks, validation categories, snapshots, revisions, registry behavior, package interaction и audit requirements.
-
-Создан draft-документ `docs/08-document-types-catalog.md`, который разделяет typed acts, evidence items, derived registry и package outputs, а для specialised test acts сохраняет candidate status до подтверждения первого MVP scope.
-
-Создан draft-документ `docs/09-aggregate-boundaries-and-invariants.md`, который формально описывает owners, aggregate roots, invariants, revision/invalidation rules и три boundary baseline choices: отдельный object-scoped `FolderTree`, document-owned work meaning без самостоятельного `WorkItem` root на первом этапе и `ProjectDrawingSet` как owned entity object documentation context.
-
-Создан draft-документ `docs/10-auth-workspace-rbac-model.md`, который конкретизирует tenant isolation через `Workspace`, разделяет `Personal Workspace` и `Organization Workspace`, определяет invitation/membership access model и permission baseline ролей `Owner`, `Admin`, `PTO Engineer`, `Foreman`, `Viewer`.
-
-Создан draft-документ `docs/11-ai-project-ingestion-and-assistance-model.md`, который описывает загрузку project source materials по `Workspace`/`Object`, assistant-only extraction/error detection proposals, human confirmation, связи с ИД и требования traceability/privacy/audit.
-
-Нужно ратифицировать boundary choices, auth/workspace/RBAC baseline, AI project ingestion/assistance baseline, точный набор MVP document types, открытые AOSR domain choices (обязательные participant roles, обязательность схем и документов качества для конкретных случаев, требуемую степень структуры work/location/project references и правила warning acceptance) и remaining policy choices по evidence/package/registry/privacy. До такого подтверждения нельзя считать утверждёнными физическую БД, API, frontend state architecture, выбор backend/frontend стека или реализацию генератора.
-
-Планируемый документ Database Schema V1 после этих review gates:
+По прямому заданию владельца проекта создан новый conceptual schema document:
 
 ```text
 docs/12-database-schema-v1.md
 ```
+
+Database Schema V1:
+
+- применяет `Workspace` tenant boundary, membership-based authorization и opaque stored invites;
+- применяет отдельный `FolderTree`, document-owned work meaning без `WorkItem` root и object-owned `ProjectDrawingSet`;
+- описывает logical table families для typed `Document`/`AOSR`, evidence, project sources/proposals, templates, registry, package, files, artifacts, snapshots and audit;
+- сохраняет file-backed evidence, derived registry, immutable released/template/package history и assistant-only AI rules;
+- определяет relationships, conceptual constraints, indexing considerations, MVP/deferred scope и вопросы перед Backend/API;
+- не выбирает production database, SQL, ORM, migrations, API или application stack.
+
+Текущий следующий шаг:
+
+```text
+Review Database Schema V1 and resolve required domain/policy inputs before Backend/API Architecture
+```
+
+Перед Backend/API Architecture нужно подтвердить или явно отложить concrete MVP document/validation scope, evidence/source retention and supersession, invite/governance/privacy rules, package readiness, AI processing policy и требуемые transaction/read-model boundaries. До такого review нельзя считать утверждёнными production physical mapping, API, frontend state architecture, implementation stack или generation/storage mechanism.
 
 ---
 
@@ -2031,6 +2015,7 @@ docs/12-database-schema-v1.md
 18. Каждый новый пользователь получает полноценный `Personal Workspace`; organization invitations не смешивают личные и командные данные.
 19. Project source files для AI-assisted ИД всегда scoped к `Workspace` и `Object`; upload не делает их единственным source of truth.
 20. AI extraction и error detection создают только traceable/auditable proposals; пользователь подтверждает extracted data и proposed links.
+21. `docs/12-database-schema-v1.md` является conceptual schema baseline; он не является production SQL, ORM/API contract или разрешением начать coding.
 
 ---
 
@@ -2056,10 +2041,11 @@ docs/12-database-schema-v1.md
 | Можно ли использовать загруженный проект для AI-assisted ИД и поиска ошибок? | Да, как Workspace/Object-scoped source material с proposals-only workflow. | Structured data остаются source of truth; extracted data/links/findings требуют user confirmation, traceability and audit. |
 | Где хранить данные компании на объекте? | Через `ObjectCompanySnapshot`. | Изменение профиля компании не переписывает исторические документы объекта. |
 | Может ли Object владеть всем сразу? | Нет. | Требуются отдельные aggregates/contexts для documents, certificates, schemes, templates и packages. |
-| Какая стадия проекта сейчас? | System Architecture Design, не coding. | Следующий шаг — ратификация Aggregate Boundaries/Invariants, Auth/Workspace/RBAC и AI Project Ingestion/Assistance перед Database Schema V1, не scaffold приложения. |
+| Какая стадия проекта сейчас? | System Architecture Design, не coding. | Conceptual Database Schema V1 создана; следующий шаг — её review и domain/policy decisions перед Backend/API Architecture, не scaffold приложения. |
 | Кто является пользователем SaaS? | Физическое лицо с одним аккаунтом и автоматическим `Personal Workspace`. | Пользователь может работать сам и состоять в нескольких organization workspaces. |
 | Где живут права доступа? | В `Membership` конкретного workspace, а не в `User` напрямую. | Один user может иметь разные роли в разных isolated tenants. |
 | Как пользователь вступает в организацию? | Через stored `Invite`, acceptance которого создаёт membership. | Invite URL не содержит доверенных прав; role/expiry/revocation/usage определяются сохранённым invite. |
+| Какая схема данных является baseline перед Backend/API? | `docs/12-database-schema-v1.md` как storage-neutral conceptual schema. | Она применяет required aggregate/access/ingestion boundaries, но не выбирает SQL, ORM, API или implementation. |
 
 ### 51.1 Accepted ADR register
 
@@ -2071,7 +2057,7 @@ docs/12-database-schema-v1.md
 | ADR 0004 | Требуются document locks и snapshot-oriented autosave; детали реализации впереди. | Принято как принцип, требует детализации. |
 | ADR 0005 | Template versions версионируются и не изменяются после использования; детали template engine впереди. | Принято как принцип, требует детализации. |
 
-### 51.2 Draft boundary baseline requiring ratification
+### 51.2 Boundary baseline applied in Conceptual Database Schema V1
 
 | Вопрос границы | Draft baseline в `docs/09-aggregate-boundaries-and-invariants.md` | Причина |
 | --- | --- | --- |
@@ -2079,9 +2065,9 @@ docs/12-database-schema-v1.md
 | Является ли `WorkItem` отдельным aggregate root для V1? | Нет; meaning работы, утверждаемой актом, принадлежит typed `Document` payload. | Shared work lifecycle ещё не подтверждён; released act должен быть автономно воспроизводим. |
 | Где живёт `ProjectDrawingSet`? | Owned entity в `ObjectDocumentationContext`. | Это общий проектный basis объекта, не file-backed as-built evidence и пока не независимый lifecycle. |
 
-Эти решения конкретизируют существующие принципы и должны быть подтверждены до утверждения Database Schema V1; они не изменяют ADR 0001-0005.
+Эти решения по заданию владельца проекта применены в `docs/12-database-schema-v1.md` как conceptual schema baseline. Их будущая замена или расширение требует явного решения; ADR 0001-0005 они не изменяют.
 
-### 51.3 Draft auth/workspace/RBAC baseline requiring ratification
+### 51.3 Auth/workspace/RBAC baseline applied in Conceptual Database Schema V1
 
 | Access question | Draft baseline в `docs/10-auth-workspace-rbac-model.md` | Причина |
 | --- | --- | --- |
@@ -2091,9 +2077,9 @@ docs/12-database-schema-v1.md
 | Где находятся роли? | В `Membership`; роли baseline: `Owner`, `Admin`, `PTO Engineer`, `Foreman`, `Viewer`. | Глобальный user role создавал бы риск доступа между организациями. |
 | Как выдаётся доступ? | Stored invite определяет target/role/conditions; URL несёт только opaque token/reference. | Права нельзя доверять параметрам ссылки. |
 
-Auth/workspace baseline дополняет обязательную tenant isolation и требует ратификации permission details, invitation governance, ownership continuity, privacy/audit и commercial lifecycle до утверждения Database Schema V1. Новый ADR не требуется: фундаментальные принципы ADR 0001-0005 не меняются.
+Auth/workspace baseline отражён logical table families `workspace`, `membership` and `invite` в Schema V1. Permission details, invitation governance, ownership continuity, privacy/audit и commercial lifecycle остаются вопросами review перед Backend/API Architecture. Новый ADR не требуется: фундаментальные принципы ADR 0001-0005 не меняются.
 
-### 51.4 Draft AI project ingestion/assistance baseline requiring ratification
+### 51.4 AI project ingestion/assistance baseline applied in Conceptual Database Schema V1
 
 | Ingestion question | Draft baseline в `docs/11-ai-project-ingestion-and-assistance-model.md` | Причина |
 | --- | --- | --- |
@@ -2103,7 +2089,7 @@ Auth/workspace baseline дополняет обязательную tenant isola
 | Как proposal влияет на ИД? | Только после user confirmation, permission checks, validation and audit appropriate to target owner. | Документы/evidence/released history должны оставаться контролируемыми. |
 | Какие связи поддерживаются концептуально? | Project context может предлагать ссылки к `ProjectDrawingSet`, document-owned work, `AOSR`, `TestAct`, evidence expectations and scheme comparisons. | Project file не становится `Certificate` или `ExecutiveScheme` и не нарушает ownership boundaries. |
 
-Этот baseline развивает принятые правила structured source of truth, AI assistant only и tenant isolation. Он требует решения privacy/data-processing, source citation, access/audit and MVP material scope до утверждения Database Schema V1; новый ADR не требуется.
+Этот baseline развивает принятые правила structured source of truth, AI assistant only и tenant isolation и отражён project-source/proposal/finding/citation table families Schema V1. Privacy/data-processing, source citation, access/audit and MVP material scope требуют review перед Backend/API Architecture; новый ADR не требуется.
 
 ---
 
@@ -2122,12 +2108,12 @@ Auth/workspace baseline дополняет обязательную tenant isola
 
 ### 52.2 Aggregate and storage design
 
-- Должен ли draft baseline отдельного object-scoped `FolderTree` быть ратифицирован для Database Schema V1?
-- Подтверждается ли отсутствие самостоятельного `WorkItem` aggregate root на первом этапе, или уже в MVP нужен shared work lifecycle?
-- Подтверждается ли `ProjectDrawingSet` как owned entity `ObjectDocumentationContext`, либо ему нужен отдельный lifecycle?
-- Должен ли `RepresentativeProfile` стать отдельным library aggregate в первой схеме?
+- Требуется ли когда-либо пересмотреть применённый Schema V1 baseline отдельного object-scoped `FolderTree`?
+- Нужен ли после baseline без самостоятельного `WorkItem` root shared work lifecycle и отдельный aggregate в следующем scope?
+- Нужен ли `ProjectDrawingSet`, применённому как owned entity `ObjectDocumentationContext`, позднее отдельный lifecycle/versioning?
+- Достаточна ли включённая в Schema V1 workspace-scoped representative library вместе с immutable output snapshots?
 - Нужен ли reusable `Material`/equipment catalog или достаточно document-owned `MaterialUsage` в первом scope?
-- Каковы physical storage, tables, indexes, constraints, JSONB strategy, tenant policies и soft-delete rules?
+- Каковы production physical mapping, indexes, constraints, typed payload persistence strategy, tenant policies и soft-delete rules?
 - Как хранить originals, generated artifacts, package snapshots и build logs в cloud-agnostic storage?
 - Какие retention и hard-delete правила нужны для юридически/исторически значимых файлов?
 
@@ -2156,7 +2142,7 @@ Auth/workspace baseline дополняет обязательную tenant isola
 
 ### 52.6 Access, privacy and integrations
 
-- Должен ли draft baseline `Workspace` as tenant boundary, automatic `Personal Workspace` и membership-owned roles быть ратифицирован для Database Schema V1?
+- Какие детали применённого Schema V1 baseline `Workspace` as tenant boundary, automatic `Personal Workspace` и membership-owned roles нужно утвердить перед Backend/API?
 - Разрешены ли multi-use organization invites в первом scope, каковы owner transfer/recovery rules и нужна ли fine-grained object assignment policy?
 - Каковы точные права `Foreman` и `Viewer` на оригиналы evidence, outputs и lock override?
 - Какие privacy/access/audit requirements предъявляются к реальным сертификатам, схемам и персональным данным представителей?
@@ -2365,3 +2351,31 @@ Data Model V1 documented; open aggregate and MVP decisions require review before
 
 - фундаментальные принципы ADR 0001-0005: AI по-прежнему только assistant, structured data остаются source of truth;
 - AI/OCR provider, physical storage, база данных, API, SQL, стек, зависимости или implementation artifacts.
+
+### 2026-05-27 — Database Schema V1 created
+
+- Документ: `docs/12-database-schema-v1.md`
+- Статус: `conceptual schema baseline for review before Backend/API Architecture`
+- Описание: storage-neutral logical table, relationship, constraint, indexing and scope specification based on the required aggregate, access and project-ingestion baselines.
+
+Зафиксированный прогресс:
+
+- `Workspace`, `Membership` and stored opaque-token `Invite` представлены как tenant/access schema family без предоставления прав через `User` или URL;
+- `Object`, отдельный `FolderTree`, object-owned `ProjectDrawingSet` и отсутствие самостоятельного `WorkItem` root применены как V1 boundary baseline;
+- описаны typed `Document`/`AOSR` content, revisions, representative snapshots, validation and operational lock boundaries;
+- представлены file-backed `Certificate` and `ExecutiveScheme`, storage-neutral `FileAsset`, immutable-used `TemplateVersion` and derived `GeneratedArtifact` provenance;
+- представлены project source files, AI extraction/finding proposals, source citations and human confirmation boundary;
+- `RegistryProjection` сохранён derived, `RegistryOverride` ограничен presentation/configuration, а `PackageBuild`/`PackageSnapshot` сохранены async/snapshot-based;
+- собраны key relationships, constraints/invariants, indexing considerations, MVP/deferred scope and questions required before Backend/API Architecture.
+
+Открыто перед Backend/API Architecture:
+
+- concrete AOSR/TestAct typed validation and first MVP forms;
+- evidence/project-source retention, supersession and sensitive-file access rules;
+- invite/ownership/privacy/package readiness and AI processing policies;
+- transaction/query/concurrency boundaries and any production physical mapping.
+
+Что не было изменено или выбрано этим этапом:
+
+- ADR 0001-0005 и фундаментальные source-of-truth/typed/registry/template/package/AI guardrails;
+- production SQL, migrations, ORM, database vendor, API, backend/frontend, dependencies, Docker or CI.

@@ -67,19 +67,22 @@ DOCX/PDF/реестры/комплекты являются производны
 - `docs/09-aggregate-boundaries-and-invariants.md`
 - `docs/10-auth-workspace-rbac-model.md`
 - `docs/11-ai-project-ingestion-and-assistance-model.md`
+- `docs/12-database-schema-v1.md`
 
 ## Current next step
 
-Текущий следующий этап:
-
-```text
-Ratify aggregate boundary, auth/workspace/RBAC and AI project ingestion/assistance baseline decisions before Database Schema V1
-```
-
-Рекомендованный следующий документ после ратификации этих decisions:
+Создана первая conceptual Database Schema V1:
 
 ```text
 docs/12-database-schema-v1.md
 ```
 
-До ратификации решений из `docs/09-aggregate-boundaries-and-invariants.md`, `docs/10-auth-workspace-rbac-model.md` и `docs/11-ai-project-ingestion-and-assistance-model.md` переходить к Database Schema V1 нельзя.
+Она применяет требуемые baseline-границы `Workspace`, `FolderTree`, typed `Document`, evidence, proposals, derived registry и snapshot-based package без выбора production SQL, ORM или application stack.
+
+Текущий следующий этап:
+
+```text
+Review Database Schema V1 and resolve required domain/policy inputs before Backend/API Architecture
+```
+
+До такого review нельзя считать утверждёнными production database mapping, API contracts, backend/frontend implementation, migrations или инфраструктуру.
