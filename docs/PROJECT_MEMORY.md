@@ -2,7 +2,7 @@
 # PTO ID SYSTEM
 # EXECUTIVE DOCUMENTATION PLATFORM
 # MASTER CONTEXT / SOURCE OF TRUTH
-# VERSION: 2026-05-28-TECH-STACK-IMPLEMENTATION-STRATEGY-V1
+# VERSION: 2026-05-28-INITIAL-REPOSITORY-BOOTSTRAP-RULES-V1
 # STATUS: ACTIVE SYSTEM ARCHITECTURE DESIGN PHASE
 # LANGUAGE: RU
 
@@ -1429,10 +1429,11 @@ UI не должен быть перегружен, но система долж
 - conceptual API Command/Read Model Contracts V1 in `docs/15-api-command-readmodel-contracts-v1.md`, defining envelope/result/error/async semantics, intent contracts, expected versions/idempotency, validation findings and UI read-model composition without transport or implementation choices.
 - product MVP Scope and First Forms V1 in `docs/16-mvp-scope-and-first-forms-v1.md`, defining the first production-usable scope around AOSR, file-backed evidence, executive schemes, derived registry, package outputs, onboarding/contextual hints and AI-optional delivery without stack or implementation choices.
 - practical Tech Stack and Implementation Strategy V1 in `docs/17-tech-stack-and-implementation-strategy-v1.md`, selecting a boring MVP-oriented direction: React/TypeScript/Vite frontend, NestJS modular monolith backend, PostgreSQL, Redis/BullMQ async jobs, domain-scoped file storage, deterministic DOCX/PDF/ZIP generation, PostgreSQL-first search and optional proposal-only AI/OCR.
+- Initial Repository Bootstrap and Development Rules V1 in `docs/18-initial-repository-bootstrap-and-development-rules-v1.md`, defining the final pre-scaffold gate, coding preconditions, first scaffold scope, CI/dev quality gates, forbidden shortcuts, docs/16 precedence, ADR presence handling, Foreman restriction and architecture-violation criteria.
 
 Не завершено:
 
-- review и принятие `docs/17-tech-stack-and-implementation-strategy-v1.md` перед переходом к Initial Repository Bootstrap and Development Rules V1;
+- review и принятие `docs/18-initial-repository-bootstrap-and-development-rules-v1.md` перед первым explicit scaffold task;
 - точная первая AOSR template baseline/participant requirements and remaining invite, privacy/access, retention, AI-processing and audit requirements за пределами зафиксированных V1 policies;
 - production physical database mapping, migrations and storage implementation;
 - repositories;
@@ -1575,10 +1576,10 @@ Draft baseline project ingestion, proposals, confirmation, traceability and isol
 Следующий правильный этап:
 
 ```text
-Review docs/17-tech-stack-and-implementation-strategy-v1.md
+Review docs/18-initial-repository-bootstrap-and-development-rules-v1.md
 ```
 
-Не production code, backend/frontend scaffold, source folders, package manifests, production SQL/migrations/ORM schema, OpenAPI, concrete routes, Docker/CI/deployment files или repository bootstrap до принятия `docs/17` и `docs/18`.
+Не production code, backend/frontend scaffold, source folders, package manifests, production SQL/migrations/ORM schema, OpenAPI, concrete routes, Docker/CI/deployment files или repository bootstrap до принятия `docs/18` и отдельного explicit first scaffold task.
 
 Pre-schema источники baseline:
 
@@ -1647,6 +1648,22 @@ docs/18-initial-repository-bootstrap-and-development-rules-v1.md
 - PostgreSQL relational/full-text/trigram search first, semantic/vector search deferred;
 - AI/OCR optional, async, provider-abstracted and proposal-only.
 
+На его основе создан final pre-scaffold gate:
+
+```text
+docs/18-initial-repository-bootstrap-and-development-rules-v1.md
+```
+
+Он фиксирует enforceable first-bootstrap rules:
+
+- first scaffold requires acceptance of docs/18 and a separate explicit first scaffold task;
+- first scaffold is limited to tooling/app shells/shared config and MUST NOT include production features, Prisma schema, migrations, OpenAPI, real auth/uploads/queue/storage/generation, AI/OCR or deployment infrastructure;
+- docs/16 has implementation precedence over older docs/08 TestAct candidate wording;
+- ADR 0001-0005 physical files must exist or be restored/declared replaced by PROJECT_MEMORY in a documentation-only corrective step before scaffold;
+- Foreman active permissions are blocked without separate approval;
+- exact first AOSR template participant requirements must not be hardcoded before template review;
+- architecture violation criteria and stop/correct process are defined.
+
 ---
 
 ## 42. Final note
@@ -1700,6 +1717,7 @@ docs/18-initial-repository-bootstrap-and-development-rules-v1.md
 | `docs/15-api-command-readmodel-contracts-v1.md` | Conceptual API Command/Read Model Contracts V1 before MVP forms | Фиксирует command/result/error/async semantics, intent contracts, expected versions/idempotency, validation findings, screen reads and scope rules без OpenAPI, code или technology selection. |
 | `docs/16-mvp-scope-and-first-forms-v1.md` | Product MVP Scope and First Forms V1 before technology selection | Фиксирует первую production-usable поставку вокруг АОСР, certificate library, executive schemes, registry, package outputs, onboarding hints and AI-optional delivery без code/scaffold/SQL/OpenAPI или выбора стека. |
 | `docs/17-tech-stack-and-implementation-strategy-v1.md` | Tech Stack and Implementation Strategy V1 before repository bootstrap | Фиксирует pragmatic MVP stack and implementation direction: React/TypeScript/Vite, NestJS modular monolith, PostgreSQL, Redis/BullMQ, domain-scoped storage, deterministic DOCX/PDF/ZIP generation, PostgreSQL-first search and optional proposal-only AI/OCR; still no code/scaffold/migrations/OpenAPI. |
+| `docs/18-initial-repository-bootstrap-and-development-rules-v1.md` | Initial Repository Bootstrap and Development Rules V1 before first scaffold | Фиксирует final pre-scaffold gate: preconditions, invariants, first scaffold scope, CI/dev gates, forbidden shortcuts, docs/16 precedence, ADR handling, Foreman restriction, AOSR template hardcode ban and architecture violation rules. |
 | `docs/adr/*.md` | Принятые архитектурные решения | Нормативные решения по отдельным темам. Изменение принятого принципа требует нового ADR или явного пересмотра существующего. |
 | `docs/samples/*.md` | Анализ реальных примеров | Reference sources для доменной модели и будущих шаблонов/парсеров; не generated output системы. |
 
@@ -2094,18 +2112,6 @@ MVP Scope and First Forms V1:
 - фиксирует UX/onboarding decision: first-run guidance, contextual hints/tooltips, empty states, validation explanation and "do not show again" behavior without cluttering experienced users;
 - подчеркивает, что MVP must be usable without AI/OCR; AI/OCR remains optional/deferred and proposal-only.
 
-Текущий следующий шаг:
-
-```text
-Review docs/17-tech-stack-and-implementation-strategy-v1.md
-```
-
-Рекомендуемый следующий документ после review:
-
-```text
-docs/18-initial-repository-bootstrap-and-development-rules-v1.md
-```
-
 По прямому переходу владельца проекта к следующему этапу создан practical implementation strategy document:
 
 ```text
@@ -2124,6 +2130,24 @@ Tech Stack and Implementation Strategy V1:
 - определяет recommended first coding milestones but keeps coding blocked.
 
 Tech Stack and Implementation Strategy V1 не разрешает production code, backend/frontend scaffold, source folders, package manifests, production SQL/migrations/ORM schema, OpenAPI, concrete routes, Docker/CI/deployment files или repository bootstrap. Actual coding/scaffold may begin only after acceptance of both `docs/17-tech-stack-and-implementation-strategy-v1.md` and `docs/18-initial-repository-bootstrap-and-development-rules-v1.md`.
+
+По прямому переходу владельца проекта к следующему этапу создан final pre-scaffold gate document:
+
+```text
+docs/18-initial-repository-bootstrap-and-development-rules-v1.md
+```
+
+Initial Repository Bootstrap and Development Rules V1:
+
+- фиксирует preconditions before coding and first explicit scaffold task requirement;
+- ограничивает first scaffold package/workspace setup, TS/lint/format/test tooling, React/Vite shell, NestJS shell, worker shell and placeholders;
+- запрещает production features, Prisma schema, migrations, OpenAPI, real auth/uploads/queue/storage/generation, AI/OCR and deployment infrastructure in first scaffold;
+- фиксирует PostgreSQL + Prisma, NestJS, React + Vite + TS, Redis/BullMQ and S3-compatible storage abstraction as guarded implementation directions;
+- фиксирует docs/16 precedence over older docs/08 TestAct candidate wording;
+- требует ADR 0001-0005 physical presence or documentation-only corrective restoration/replacement declaration before scaffold;
+- блокирует active Foreman permissions without separate approval;
+- запрещает hardcoding exact first AOSR participant requirements before template review;
+- defines architecture violation and stop/correct process.
 
 ---
 
@@ -2159,7 +2183,10 @@ Tech Stack and Implementation Strategy V1 не разрешает production cod
 26. MVP должен быть usable without AI/OCR; AI/OCR не является prerequisite для первой delivery.
 27. Onboarding/contextual hints, empty states, validation explanations and "do not show again" behavior входят в UX baseline MVP, но не должны мешать experienced users.
 28. `docs/17-tech-stack-and-implementation-strategy-v1.md` фиксирует pragmatic stack and implementation direction but still does not permit code/scaffold/migrations/OpenAPI.
-29. Coding/scaffold may begin only after acceptance of both `docs/17-tech-stack-and-implementation-strategy-v1.md` and `docs/18-initial-repository-bootstrap-and-development-rules-v1.md`.
+29. `docs/18-initial-repository-bootstrap-and-development-rules-v1.md` фиксирует final pre-scaffold gate; first scaffold still requires explicit separate task and feature coding remains blocked until scaffold acceptance.
+30. `docs/16-mvp-scope-and-first-forms-v1.md` has implementation-scope precedence over older `docs/08-document-types-catalog.md` TestAct candidate wording.
+31. Foreman active permissions must not be implemented without separate approval.
+32. Exact first AOSR participant requirements must not be hardcoded before template review.
 
 ---
 
@@ -2185,7 +2212,7 @@ Tech Stack and Implementation Strategy V1 не разрешает production cod
 | Можно ли использовать загруженный проект для AI-assisted ИД и поиска ошибок? | Да, как Workspace/Object-scoped source material с proposals-only workflow. | Structured data остаются source of truth; extracted data/links/findings требуют user confirmation, traceability and audit. |
 | Где хранить данные компании на объекте? | Через `ObjectCompanySnapshot`. | Изменение профиля компании не переписывает исторические документы объекта. |
 | Может ли Object владеть всем сразу? | Нет. | Требуются отдельные aggregates/contexts для documents, certificates, schemes, templates и packages. |
-| Какая стадия проекта сейчас? | System Architecture Design / pre-coding implementation strategy review, не coding. | Tech Stack and Implementation Strategy V1 создан; следующий шаг — review `docs/17-tech-stack-and-implementation-strategy-v1.md`, затем `docs/18`, не scaffold приложения. |
+| Какая стадия проекта сейчас? | Final pre-scaffold gate review, не coding. | Initial Repository Bootstrap and Development Rules V1 создан; следующий шаг — review `docs/18-initial-repository-bootstrap-and-development-rules-v1.md`, затем отдельный explicit first scaffold task. |
 | Кто является пользователем SaaS? | Физическое лицо с одним аккаунтом и автоматическим `Personal Workspace`. | Пользователь может работать сам и состоять в нескольких organization workspaces. |
 | Где живут права доступа? | В `Membership` конкретного workspace, а не в `User` напрямую. | Один user может иметь разные роли в разных isolated tenants. |
 | Как пользователь вступает в организацию? | Через stored `Invite`, acceptance которого создаёт membership. | Invite URL не содержит доверенных прав; role/expiry/revocation/usage определяются сохранённым invite. |
@@ -2195,6 +2222,7 @@ Tech Stack and Implementation Strategy V1 не разрешает production cod
 | Какой command/read-model contract применяется до MVP forms? | `docs/15-api-command-readmodel-contracts-v1.md` как conceptual contract layer. | Envelope/results/errors/async operations, intent semantics, validation findings and UI reads зафиксированы без routes/OpenAPI/code. |
 | Какой first MVP scope принят к review? | `docs/16-mvp-scope-and-first-forms-v1.md`. | АОСР mandatory first-class form; certificate library, executive schemes, derived registry, package outputs and onboarding hints входят; `TestAct`/`TechnicalReadinessAct`, AI/OCR dependency and enterprise/platform features deferred. |
 | Какой stack/implementation direction выбран для MVP? | `docs/17-tech-stack-and-implementation-strategy-v1.md`. | React/TypeScript/Vite frontend, NestJS modular monolith backend, PostgreSQL, Redis/BullMQ, domain-scoped storage, deterministic DOCX/PDF/ZIP generation, PostgreSQL-first search and optional proposal-only AI/OCR. Coding still blocked until docs/18 accepted. |
+| Какие правила первого scaffold действуют? | `docs/18-initial-repository-bootstrap-and-development-rules-v1.md`. | First scaffold limited to tooling/app shells/placeholders; no production features, Prisma schema, migrations, OpenAPI, real auth/uploads/queue/storage/generation, AI/OCR or deployment infra without separate approval. |
 
 ### 51.1 Accepted ADR register
 
@@ -2306,13 +2334,25 @@ Auth/workspace baseline отражён logical table families `workspace`, `memb
 
 Документ подготовлен для review и не разрешает production code, backend/frontend scaffold, source folders, package manifests, SQL/migrations/ORM, OpenAPI, Docker/CI/deployment files или repository bootstrap. После его принятия рекомендуемый следующий этап — `docs/18-initial-repository-bootstrap-and-development-rules-v1.md`.
 
+### 51.10 Initial Repository Bootstrap and Development Rules V1 documented for review
+
+| Bootstrap topic | V1 direction в `docs/18-initial-repository-bootstrap-and-development-rules-v1.md` | What remains open |
+| --- | --- | --- |
+| Coding preconditions | Docs/18 acceptance and a separate explicit first scaffold task are required. | Actual scaffold execution. |
+| First scaffold scope | Only tooling, app shells, placeholders, local scripts and optional CI gates are allowed. | Feature implementation after scaffold acceptance. |
+| Scope corruption controls | Docs/16 overrides older docs/08 TestAct candidate wording; Foreman active permissions blocked; AOSR participant requirements not hardcoded before template review. | Template review and later permission policy. |
+| Architecture invariants | Structured data source of truth, typed AOSR first, registry derived, immutable snapshots/revisions, AI proposal-only, modular monolith and no cross-workspace leakage. | Concrete implementation details. |
+| ADR handling | ADR 0001-0005 physical files must exist or a documentation-only corrective step must restore/replace them before scaffold. | None for current repo if files remain present. |
+
+Документ подготовлен для review и не разрешает production code/scaffold by itself. После его принятия следующий шаг — отдельное явно ограниченное first scaffold task; feature coding remains blocked until scaffold is accepted.
+
 ---
 
 ## 52. Open Questions Still Not Solved
 
 Следующие вопросы не отменяют принятые выше принципы. Их нельзя решать случайным кодом: они требуют спецификации, пользовательского выбора и, где необходимо, ADR.
 
-Lifecycle/immutability, structured numbering, validation baseline, package determinism и AI/OCR review boundary документированы в `docs/13-domain-lifecycle-immutability-validation-v1.md`. Backend module/consistency boundaries документированы в `docs/14-backend-api-architecture-v1.md`. Conceptual command/read-model/error/async/version/scope contracts документированы в `docs/15-api-command-readmodel-contracts-v1.md`. First product/MVP scope documented in `docs/16-mvp-scope-and-first-forms-v1.md` narrows the first delivery to AOSR, evidence, schemes, registry, package outputs and AI-optional UX. Practical implementation direction documented in `docs/17-tech-stack-and-implementation-strategy-v1.md` selects the boring stack and first milestone order but still blocks code/scaffold until `docs/18` is accepted. Вопросы ниже сохраняют детализацию accepted first template, policy и physical implementation, которую эти conceptual/product/strategy documents намеренно не утверждают.
+Lifecycle/immutability, structured numbering, validation baseline, package determinism и AI/OCR review boundary документированы в `docs/13-domain-lifecycle-immutability-validation-v1.md`. Backend module/consistency boundaries документированы в `docs/14-backend-api-architecture-v1.md`. Conceptual command/read-model/error/async/version/scope contracts документированы в `docs/15-api-command-readmodel-contracts-v1.md`. First product/MVP scope documented in `docs/16-mvp-scope-and-first-forms-v1.md` narrows the first delivery to AOSR, evidence, schemes, registry, package outputs and AI-optional UX. Practical implementation direction documented in `docs/17-tech-stack-and-implementation-strategy-v1.md` selects the boring stack and first milestone order. Initial bootstrap rules in `docs/18-initial-repository-bootstrap-and-development-rules-v1.md` define the final pre-scaffold gate and still require a separate explicit scaffold task. Вопросы ниже сохраняют детализацию accepted first template, policy и physical implementation, которую эти conceptual/product/strategy/governance documents намеренно не утверждают.
 
 ### 52.1 Domain scope and typed schemas
 
@@ -2737,3 +2777,34 @@ Data Model V1 documented; open aggregate and MVP decisions require review before
 
 - ADR 0001-0005, Schema V1, lifecycle policy, Backend/API Architecture V1, API Command/Read Model Contracts V1 and MVP scope;
 - production code, backend/frontend scaffold, source folders, package manifests, SQL, migrations, ORM schema, OpenAPI, concrete routes, Docker/CI/deployment files or repository bootstrap.
+
+### 2026-05-28 — Initial Repository Bootstrap and Development Rules V1 created
+
+- Документ: `docs/18-initial-repository-bootstrap-and-development-rules-v1.md`
+- Статус: `pre-scaffold governance specification`
+- Описание: final implementation gate before the first scaffold, defining enforceable bootstrap/scaffold rules and architecture-violation criteria.
+
+Зафиксированный прогресс:
+
+- defined coding preconditions and requirement for a separate explicit first scaffold task;
+- limited first scaffold to package/workspace setup, TypeScript/lint/format/test tooling, React/Vite shell, NestJS shell, worker shell, shared placeholders and optional CI checks;
+- prohibited production features, Prisma schema, migrations, OpenAPI, real auth/uploads/queue/storage/generation, AI/OCR and deployment infrastructure in first scaffold;
+- fixed architecture invariants to preserve structured source of truth, typed AOSR first, derived registry, immutable revisions/snapshots, AI proposal-only, modular monolith and workspace isolation;
+- fixed docs/16 precedence over older docs/08 TestAct candidate wording for implementation scope;
+- required ADR 0001-0005 physical presence or documentation-only corrective restoration/replacement declaration before scaffold;
+- blocked active Foreman permissions without separate approval;
+- blocked hardcoding exact first AOSR participant requirements before template review;
+- defined architecture violation examples and stop/correct process.
+
+Открыто перед следующим этапом:
+
+- review и принятие `docs/18-initial-repository-bootstrap-and-development-rules-v1.md`;
+- separate explicit first scaffold task after acceptance;
+- exact first AOSR template baseline and required participant set;
+- retention/privacy/RBAC/governance policy details;
+- feature coding only after accepted scaffold and subsequent explicit feature tasks.
+
+Что не было изменено или выбрано этим этапом:
+
+- production code, backend/frontend scaffold, source folders, package manifests, dependencies, Prisma schema, SQL, migrations, OpenAPI, concrete routes, Docker/CI/deployment files or runtime configuration;
+- first AOSR template requirements, active Foreman permission model, TestAct implementation, AI/OCR provider or deployment strategy.

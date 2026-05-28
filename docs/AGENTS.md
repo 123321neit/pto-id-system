@@ -46,7 +46,7 @@
 Текущий этап:
 
 ```text
-Tech Stack and Implementation Strategy V1 documented in docs/17-tech-stack-and-implementation-strategy-v1.md; it requires review before initial repository bootstrap and development rules
+Initial Repository Bootstrap and Development Rules V1 documented in docs/18-initial-repository-bootstrap-and-development-rules-v1.md; it requires review before any scaffold
 ```
 
 `docs/12-database-schema-v1.md` по прямому заданию применяет baseline decisions из `docs/09-aggregate-boundaries-and-invariants.md` по:
@@ -123,12 +123,22 @@ Privacy/data-processing policy, access to project originals and concrete AI proc
 - search: PostgreSQL relational/full-text/trigram first; semantic/vector search deferred;
 - AI/OCR: optional, provider-abstracted, async proposal-only and never autonomous.
 
-Открытыми остаются review/acceptance docs/17, exact first AOSR template baseline/participant requirements, retention/privacy/RBAC details, exact bootstrap/tooling rules in docs/18, physical migrations/ORM schema/OpenAPI and production implementation.
+`docs/18-initial-repository-bootstrap-and-development-rules-v1.md` фиксирует final pre-scaffold gate:
+
+- first coding/scaffold requires explicit acceptance of docs/18 and a separate first scaffold task;
+- first scaffold is limited to tooling/app shells/shared config and MUST NOT include production features, Prisma schema, migrations, OpenAPI, real auth/uploads/queue/storage/generation or AI/OCR;
+- architecture invariants include structured data source of truth, typed AOSR first, registry derived, package snapshots immutable, AI proposal-only, modular monolith first and no cross-workspace leakage;
+- docs/16 has implementation precedence over older docs/08 TestAct candidate wording;
+- ADR 0001-0005 physical files must exist or a documentation-only corrective step must explicitly restore them or declare PROJECT_MEMORY authoritative replacement;
+- Foreman active permissions are blocked without separate approval;
+- first AOSR template participant requirements must not be hardcoded before template review.
+
+Открытыми остаются review/acceptance docs/18, exact first AOSR template baseline/participant requirements, retention/privacy/RBAC details, first scaffold task approval, physical migrations/ORM schema/OpenAPI and production implementation.
 
 Следующий архитектурный review должен рассмотреть и принять либо скорректировать:
 
 ```text
-docs/17-tech-stack-and-implementation-strategy-v1.md
+docs/18-initial-repository-bootstrap-and-development-rules-v1.md
 ```
 
-Только после его принятия допускается переход к `docs/18-initial-repository-bootstrap-and-development-rules-v1.md`. Coding/scaffold остается заблокированным до принятия и `docs/17`, и `docs/18`; нельзя писать production code, backend/frontend scaffold, source folders, package manifests, SQL/migrations/ORM schema, OpenAPI, Docker/CI или deployment files.
+Только после его принятия и отдельного явного задания допускается первый scaffold. Feature coding остается заблокированным до acceptance первого scaffold; нельзя писать production features, SQL/migrations/ORM schema, OpenAPI, real auth/uploads/queue/storage/generation, AI/OCR или deployment files без отдельного разрешения.

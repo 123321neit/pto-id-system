@@ -74,27 +74,22 @@ DOCX/PDF/реестры/комплекты являются производны
 - `docs/15-api-command-readmodel-contracts-v1.md`
 - `docs/16-mvp-scope-and-first-forms-v1.md`
 - `docs/17-tech-stack-and-implementation-strategy-v1.md`
+- `docs/18-initial-repository-bootstrap-and-development-rules-v1.md`
 
 ## Current next step
 
-На основании MVP Scope and First Forms V1 подготовлен practical implementation strategy документ:
-
-```text
-docs/17-tech-stack-and-implementation-strategy-v1.md
-```
-
-Документ фиксирует прагматичный stack и implementation direction для MVP: React + TypeScript + Vite frontend, NestJS modular monolith backend on Node.js LTS, PostgreSQL, Redis/BullMQ async jobs, domain-scoped file storage, deterministic DOCX/PDF/ZIP generation, PostgreSQL-first search и optional proposal-only AI/OCR.
-
-Текущий следующий этап:
-
-```text
-Review docs/17-tech-stack-and-implementation-strategy-v1.md
-```
-
-Tech Stack and Implementation Strategy V1 по-прежнему не разрешает production code, backend/frontend scaffold, source folders, package manifests, SQL/migrations/ORM schema, OpenAPI, Docker/CI или deployment files. Следующий документ после успешного review:
+На основании Tech Stack and Implementation Strategy V1 подготовлен финальный pre-scaffold gate документ:
 
 ```text
 docs/18-initial-repository-bootstrap-and-development-rules-v1.md
 ```
 
-Actual coding/scaffold may begin only after acceptance of both `docs/17-tech-stack-and-implementation-strategy-v1.md` and `docs/18-initial-repository-bootstrap-and-development-rules-v1.md`.
+Документ фиксирует жесткие правила первого repository bootstrap/scaffold: preconditions, architecture invariants, allowed conceptual structure, backend/frontend/shared package rules, PostgreSQL + Prisma, NestJS, React + Vite + TS, Redis/BullMQ, S3-compatible storage abstraction, CI/dev gates, forbidden shortcuts and architecture-violation criteria.
+
+Текущий следующий этап:
+
+```text
+Review docs/18-initial-repository-bootstrap-and-development-rules-v1.md
+```
+
+Actual coding/scaffold may begin only after explicit acceptance of `docs/18-initial-repository-bootstrap-and-development-rules-v1.md` and a separate first scaffold task. Feature coding remains blocked until scaffold is accepted.

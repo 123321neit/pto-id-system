@@ -1,7 +1,7 @@
 # CONVERSATION_QA_LOG
 # PTO ID System
 # Consolidated decisions from user/assistant discussion
-# Version: 2026-05-28-TECH-STACK-IMPLEMENTATION-STRATEGY-V1
+# Version: 2026-05-28-INITIAL-REPOSITORY-BOOTSTRAP-RULES-V1
 
 Этот файл фиксирует важные вопросы, ответы и решения, которые появились в переписке и проектной памяти. Его цель — не заменить `PROJECT_MEMORY.md`, а сохранить ход принятия решений.
 
@@ -377,16 +377,44 @@ Rejected for MVP:
 
 Статус решения: implementation strategy documented for review. Документ выбирает practical stack/direction, но не разрешает production code, backend/frontend scaffold, source folders, package manifests, SQL/migrations/ORM schema, OpenAPI, Docker/CI/deployment files или repository bootstrap.
 
-Текущий следующий этап:
-
-```text
-Review docs/17-tech-stack-and-implementation-strategy-v1.md
-```
-
-Следующий документ после review:
+Следующий этап на момент создания `docs/17`:
 
 ```text
 docs/18-initial-repository-bootstrap-and-development-rules-v1.md
 ```
 
-Actual coding/scaffold may begin only after acceptance of both `docs/17-tech-stack-and-implementation-strategy-v1.md` and `docs/18-initial-repository-bootstrap-and-development-rules-v1.md`.
+Этот этап теперь выполнен созданием `docs/18-initial-repository-bootstrap-and-development-rules-v1.md`.
+
+Текущий следующий этап:
+
+```text
+Review docs/18-initial-repository-bootstrap-and-development-rules-v1.md
+```
+
+Actual coding/scaffold may begin only after explicit acceptance of `docs/18-initial-repository-bootstrap-and-development-rules-v1.md` and a separate first scaffold task. Feature coding remains blocked until that scaffold is accepted.
+
+---
+
+## 25. Initial Repository Bootstrap and Development Rules V1
+
+### Q: Какие жесткие правила должны стоять между accepted architecture и первым scaffold?
+
+A: В `docs/18-initial-repository-bootstrap-and-development-rules-v1.md` создан final pre-scaffold gate:
+
+- coding/scaffold requires acceptance of docs/18 and a separate explicit first scaffold task;
+- first scaffold may include only package/workspace setup, TypeScript baseline, lint/format/test tooling, React/Vite shell, NestJS shell, worker shell, shared config/contracts/domain placeholders and CI checks if requested;
+- first scaffold must not include production features, Prisma schema, migrations, OpenAPI, real auth, uploads, queue jobs, storage adapter, AOSR form, generation pipeline, AI/OCR or deployment infrastructure;
+- implementation must preserve structured data source of truth, typed AOSR first, no generic CRUD/document builder/file manager, registry derived, async immutable package snapshots, AI proposal-only and workspace isolation;
+- docs/16 has implementation precedence over older docs/08 TestAct candidate wording;
+- ADR 0001-0005 physical file presence must be verified, or a documentation-only corrective step must restore them or declare PROJECT_MEMORY authoritative replacement before scaffold;
+- Foreman active permissions are blocked without separate approval;
+- first AOSR template participant requirements must not be hardcoded before template review;
+- architecture violation criteria and stop/correct process are defined.
+
+Текущий следующий этап:
+
+```text
+Review docs/18-initial-repository-bootstrap-and-development-rules-v1.md
+```
+
+After acceptance, the next allowed action is a separate explicitly scoped first scaffold task. Feature coding remains blocked until that scaffold is accepted.
