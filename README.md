@@ -5,10 +5,10 @@ Web-система автоматизации исполнительной до�
 Текущий статус:
 
 ```text
-FIRST ALLOWED INFRASTRUCTURE BOOTSTRAP SCAFFOLD
+FIRST ALLOWED INFRASTRUCTURE BOOTSTRAP SCAFFOLD ACCEPTED; CANONICAL ADR BASELINE ACCEPTED
 ```
 
-В репозитории начат первый разрешённый scaffold. Это только infrastructure/bootstrap
+В репозитории принят первый разрешённый scaffold. Это только infrastructure/bootstrap
 foundation: workspace, tooling, app shells, shared placeholders, env/config foundation
 and CI quality gates.
 
@@ -25,6 +25,11 @@ docs/PROJECT_MEMORY.md
 - `docs/PROJECT_MEMORY.md`
 - `docs/CONVERSATION_QA_LOG.md`
 - `docs/AGENTS.md`
+- `docs/adr/0001-structured-data-source-of-truth.md`
+- `docs/adr/0002-typed-document-domain-model.md`
+- `docs/adr/0003-file-backed-evidence-and-derived-artifacts.md`
+- `docs/adr/0004-immutable-revisions-and-package-snapshots.md`
+- `docs/adr/0005-modular-monolith-and-bounded-contexts.md`
 - `docs/samples/registry-ventilation-example.md`
 - `docs/samples/aosr-example-analysis.md`
 
@@ -35,6 +40,20 @@ SOURCE OF TRUTH = STRUCTURED DATA
 ```
 
 DOCX/PDF/реестры/комплекты являются производными артефактами и должны генерироваться из структурированных данных.
+
+## Canonical ADR baseline
+
+ADR baseline accepted. The canonical ADR files are now authoritative references
+for future implementation work:
+
+- `docs/adr/0001-structured-data-source-of-truth.md`
+- `docs/adr/0002-typed-document-domain-model.md`
+- `docs/adr/0003-file-backed-evidence-and-derived-artifacts.md`
+- `docs/adr/0004-immutable-revisions-and-package-snapshots.md`
+- `docs/adr/0005-modular-monolith-and-bounded-contexts.md`
+
+Future implementation must comply with these ADRs. They consolidate existing
+architecture decisions only and do not permit feature coding.
 
 ## MVP focus
 
@@ -79,8 +98,13 @@ DOCX/PDF/реестры/комплекты являются производны
 - `docs/16-mvp-scope-and-first-forms-v1.md`
 - `docs/17-tech-stack-and-implementation-strategy-v1.md`
 - `docs/18-initial-repository-bootstrap-and-development-rules-v1.md`
+- `docs/adr/0001-structured-data-source-of-truth.md`
+- `docs/adr/0002-typed-document-domain-model.md`
+- `docs/adr/0003-file-backed-evidence-and-derived-artifacts.md`
+- `docs/adr/0004-immutable-revisions-and-package-snapshots.md`
+- `docs/adr/0005-modular-monolith-and-bounded-contexts.md`
 
-## Current next step
+## Current guardrail
 
 На основании Tech Stack and Implementation Strategy V1 и pre-scaffold gate документа:
 
@@ -88,7 +112,7 @@ DOCX/PDF/реестры/комплекты являются производны
 docs/18-initial-repository-bootstrap-and-development-rules-v1.md
 ```
 
-создан первый инфраструктурный scaffold.
+создан и принят первый инфраструктурный scaffold.
 
 Scaffold включает:
 
@@ -131,4 +155,8 @@ The scaffold intentionally does not include:
 - database models;
 - business validation or domain logic.
 
-Recommended next step: review and accept this scaffold as infrastructure-only before any separate feature or database task is requested.
+Canonical ADR baseline is now accepted. Future implementation tasks must comply
+with canonical ADR 0001-0005 in `docs/adr/`.
+
+Feature coding remains blocked until a separate explicit feature/database/API
+task is requested and checked against the ADR baseline and project memory.

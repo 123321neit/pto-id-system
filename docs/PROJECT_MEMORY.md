@@ -2,8 +2,8 @@
 # PTO ID SYSTEM
 # EXECUTIVE DOCUMENTATION PLATFORM
 # MASTER CONTEXT / SOURCE OF TRUTH
-# VERSION: 2026-05-28-FIRST-INFRASTRUCTURE-SCAFFOLD
-# STATUS: FIRST ALLOWED INFRASTRUCTURE BOOTSTRAP SCAFFOLD
+# VERSION: 2026-05-28-CANONICAL-ADR-BASELINE
+# STATUS: FIRST ALLOWED INFRASTRUCTURE BOOTSTRAP SCAFFOLD; CANONICAL ADR BASELINE ACCEPTED
 # LANGUAGE: RU
 
 ---
@@ -25,10 +25,20 @@
 Текущая стадия проекта:
 
 ```text
-FIRST ALLOWED INFRASTRUCTURE BOOTSTRAP SCAFFOLD
+FIRST ALLOWED INFRASTRUCTURE BOOTSTRAP SCAFFOLD; CANONICAL ADR BASELINE ACCEPTED
 ```
 
-Проект перешёл к первому явно разрешённому infrastructure/bootstrap scaffold. Это не feature coding и не production MVP implementation. Главная цель текущего этапа — создать минимальную инженерную основу репозитория без доменной реализации.
+Проект принял первый явно разрешённый infrastructure/bootstrap scaffold. Это не feature coding и не production MVP implementation. Главная цель текущего этапа — удерживать минимальную инженерную основу репозитория без доменной реализации до отдельного feature/database/API задания.
+
+Canonical ADR baseline accepted. Authoritative ADR references:
+
+- `docs/adr/0001-structured-data-source-of-truth.md`
+- `docs/adr/0002-typed-document-domain-model.md`
+- `docs/adr/0003-file-backed-evidence-and-derived-artifacts.md`
+- `docs/adr/0004-immutable-revisions-and-package-snapshots.md`
+- `docs/adr/0005-modular-monolith-and-bounded-contexts.md`
+
+Future implementation must comply with these ADRs. They consolidate existing accepted decisions only and do not permit production feature coding.
 
 ---
 
@@ -1430,10 +1440,11 @@ UI не должен быть перегружен, но система долж
 - product MVP Scope and First Forms V1 in `docs/16-mvp-scope-and-first-forms-v1.md`, defining the first production-usable scope around AOSR, file-backed evidence, executive schemes, derived registry, package outputs, onboarding/contextual hints and AI-optional delivery without stack or implementation choices.
 - practical Tech Stack and Implementation Strategy V1 in `docs/17-tech-stack-and-implementation-strategy-v1.md`, selecting a boring MVP-oriented direction: React/TypeScript/Vite frontend, NestJS modular monolith backend, PostgreSQL, Redis/BullMQ async jobs, domain-scoped file storage, deterministic DOCX/PDF/ZIP generation, PostgreSQL-first search and optional proposal-only AI/OCR.
 - Initial Repository Bootstrap and Development Rules V1 in `docs/18-initial-repository-bootstrap-and-development-rules-v1.md`, defining the final pre-scaffold gate, coding preconditions, first scaffold scope, CI/dev quality gates, infrastructure portability/no server lock-in, forbidden shortcuts, docs/16 precedence, ADR presence handling, Foreman restriction and architecture-violation criteria.
+- canonical ADR baseline in `docs/adr/`, establishing authoritative references for structured source of truth, typed documents, file-backed evidence/derived artifacts, immutable revisions/package snapshots and modular monolith/bounded contexts.
 
 Не завершено:
 
-- review и принятие `docs/18-initial-repository-bootstrap-and-development-rules-v1.md` перед первым explicit scaffold task;
+- feature/database/API/storage/generation implementation; every such task still requires separate explicit authorization and ADR compliance check;
 - точная первая AOSR template baseline/participant requirements and remaining invite, privacy/access, retention, AI-processing and audit requirements за пределами зафиксированных V1 policies;
 - production physical database mapping, migrations and storage implementation;
 - repositories;
@@ -1660,7 +1671,7 @@ docs/18-initial-repository-bootstrap-and-development-rules-v1.md
 - first scaffold is limited to tooling/app shells/shared config and MUST NOT include production features, Prisma schema, migrations, OpenAPI, real auth/uploads/queue/storage/generation, AI/OCR or deployment infrastructure;
 - infrastructure portability/no server lock-in is mandatory: provider is replaceable, config/env drives database/Redis/storage/public URLs/CORS/session/app URLs, provider SDKs stay inside infrastructure adapters, and generated artifact links resolve through storage/download service;
 - docs/16 has implementation precedence over older docs/08 TestAct candidate wording;
-- ADR 0001-0005 physical files must exist or be restored/declared replaced by PROJECT_MEMORY in a documentation-only corrective step before scaffold;
+- canonical ADR 0001-0005 physical files now exist in `docs/adr/` and are authoritative references for implementation compliance;
 - Foreman active permissions are blocked without separate approval;
 - exact first AOSR template participant requirements must not be hardcoded before template review;
 - architecture violation criteria and stop/correct process are defined.
@@ -1997,7 +2008,15 @@ Sample analyses нужны как domain reference: они объясняют с
 
 ### 48.1 Mandatory reading and priority
 
-Перед изменением архитектуры или реализацией агент обязан прочитать этот master context. При необходимости проверки происхождения решения агент обращается к `docs/CONVERSATION_QA_LOG.md`, ADR и sample analyses.
+Перед изменением архитектуры или реализацией агент обязан прочитать этот master context и canonical ADR baseline:
+
+- `docs/adr/0001-structured-data-source-of-truth.md`
+- `docs/adr/0002-typed-document-domain-model.md`
+- `docs/adr/0003-file-backed-evidence-and-derived-artifacts.md`
+- `docs/adr/0004-immutable-revisions-and-package-snapshots.md`
+- `docs/adr/0005-modular-monolith-and-bounded-contexts.md`
+
+При необходимости проверки происхождения решения агент обращается к `docs/CONVERSATION_QA_LOG.md`, ADR и sample analyses.
 
 Если обнаружено противоречие:
 
@@ -2022,6 +2041,7 @@ Sample analyses нужны как domain reference: они объясняют с
 - разрешать OCR/AI автоматически утверждать критичные данные;
 - считать uploaded project documentation, OCR text или AI response единственным source of truth либо применять AI proposal без user confirmation;
 - ломать tenant isolation;
+- нарушать canonical ADR baseline;
 - заменять открытый архитектурный вопрос случайной технологической реализацией.
 
 ### 48.3 Decision-making behavior
@@ -2146,7 +2166,7 @@ Initial Repository Bootstrap and Development Rules V1:
 - фиксирует PostgreSQL + Prisma, NestJS, React + Vite + TS, Redis/BullMQ and S3-compatible storage abstraction as guarded implementation directions;
 - фиксирует infrastructure portability/no server lock-in: deployment provider replaceable, server/provider-specific assumptions forbidden in domain/application code, environment/config drives database/Redis/object storage/public URLs/CORS/session/base URLs, generated artifact links resolved through storage/download service;
 - фиксирует docs/16 precedence over older docs/08 TestAct candidate wording;
-- требует ADR 0001-0005 physical presence or documentation-only corrective restoration/replacement declaration before scaffold;
+- requires canonical ADR 0001-0005 physical presence and implementation compliance;
 - блокирует active Foreman permissions without separate approval;
 - запрещает hardcoding exact first AOSR participant requirements before template review;
 - defines architecture violation and stop/correct process.
@@ -2185,11 +2205,12 @@ Initial Repository Bootstrap and Development Rules V1:
 26. MVP должен быть usable without AI/OCR; AI/OCR не является prerequisite для первой delivery.
 27. Onboarding/contextual hints, empty states, validation explanations and "do not show again" behavior входят в UX baseline MVP, но не должны мешать experienced users.
 28. `docs/17-tech-stack-and-implementation-strategy-v1.md` фиксирует pragmatic stack and implementation direction but still does not permit code/scaffold/migrations/OpenAPI.
-29. `docs/18-initial-repository-bootstrap-and-development-rules-v1.md` фиксирует final pre-scaffold gate; first scaffold still requires explicit separate task and feature coding remains blocked until scaffold acceptance.
+29. `docs/18-initial-repository-bootstrap-and-development-rules-v1.md` фиксирует final pre-scaffold gate; first scaffold accepted, but feature coding remains blocked without separate explicit task.
 30. `docs/16-mvp-scope-and-first-forms-v1.md` has implementation-scope precedence over older `docs/08-document-types-catalog.md` TestAct candidate wording.
 31. Foreman active permissions must not be implemented without separate approval.
 32. Exact first AOSR participant requirements must not be hardcoded before template review.
 33. Infrastructure provider/server lock-in is forbidden: database, Redis, storage, public/download URLs, CORS, session secrets and app base URLs are config-driven; provider SDKs stay inside narrow infrastructure adapters.
+34. Canonical ADR baseline 0001-0005 in `docs/adr/` is accepted and must be followed by all future implementation work.
 
 ---
 
@@ -2215,7 +2236,7 @@ Initial Repository Bootstrap and Development Rules V1:
 | Можно ли использовать загруженный проект для AI-assisted ИД и поиска ошибок? | Да, как Workspace/Object-scoped source material с proposals-only workflow. | Structured data остаются source of truth; extracted data/links/findings требуют user confirmation, traceability and audit. |
 | Где хранить данные компании на объекте? | Через `ObjectCompanySnapshot`. | Изменение профиля компании не переписывает исторические документы объекта. |
 | Может ли Object владеть всем сразу? | Нет. | Требуются отдельные aggregates/contexts для documents, certificates, schemes, templates и packages. |
-| Какая стадия проекта сейчас? | Final pre-scaffold gate review, не coding. | Initial Repository Bootstrap and Development Rules V1 создан; следующий шаг — review `docs/18-initial-repository-bootstrap-and-development-rules-v1.md`, затем отдельный explicit first scaffold task. |
+| Какая стадия проекта сейчас? | Infrastructure scaffold accepted; canonical ADR baseline accepted; feature coding still blocked. | Следующий implementation step требует отдельного явного задания и проверки against project memory and ADR 0001-0005. |
 | Кто является пользователем SaaS? | Физическое лицо с одним аккаунтом и автоматическим `Personal Workspace`. | Пользователь может работать сам и состоять в нескольких organization workspaces. |
 | Где живут права доступа? | В `Membership` конкретного workspace, а не в `User` напрямую. | Один user может иметь разные роли в разных isolated tenants. |
 | Как пользователь вступает в организацию? | Через stored `Invite`, acceptance которого создаёт membership. | Invite URL не содержит доверенных прав; role/expiry/revocation/usage определяются сохранённым invite. |
@@ -2224,18 +2245,19 @@ Initial Repository Bootstrap and Development Rules V1:
 | Какой Backend/API shape следует применять до contracts? | `docs/14-backend-api-architecture-v1.md` как conceptual modular-monolith/application boundary. | Explicit domain commands, UI read models, authoritative validation, version/idempotency and async derived flows; никакого CRUD-first API или code permission. |
 | Какой command/read-model contract применяется до MVP forms? | `docs/15-api-command-readmodel-contracts-v1.md` как conceptual contract layer. | Envelope/results/errors/async operations, intent semantics, validation findings and UI reads зафиксированы без routes/OpenAPI/code. |
 | Какой first MVP scope принят к review? | `docs/16-mvp-scope-and-first-forms-v1.md`. | АОСР mandatory first-class form; certificate library, executive schemes, derived registry, package outputs and onboarding hints входят; `TestAct`/`TechnicalReadinessAct`, AI/OCR dependency and enterprise/platform features deferred. |
-| Какой stack/implementation direction выбран для MVP? | `docs/17-tech-stack-and-implementation-strategy-v1.md`. | React/TypeScript/Vite frontend, NestJS modular monolith backend, PostgreSQL, Redis/BullMQ, domain-scoped storage, deterministic DOCX/PDF/ZIP generation, PostgreSQL-first search and optional proposal-only AI/OCR. Coding still blocked until docs/18 accepted. |
+| Какой stack/implementation direction выбран для MVP? | `docs/17-tech-stack-and-implementation-strategy-v1.md`. | React/TypeScript/Vite frontend, NestJS modular monolith backend, PostgreSQL, Redis/BullMQ, domain-scoped storage, deterministic DOCX/PDF/ZIP generation, PostgreSQL-first search and optional proposal-only AI/OCR. Feature coding remains blocked without separate explicit task. |
 | Какие правила первого scaffold действуют? | `docs/18-initial-repository-bootstrap-and-development-rules-v1.md`. | First scaffold limited to tooling/app shells/placeholders; no production features, Prisma schema, migrations, OpenAPI, real auth/uploads/queue/storage/generation, AI/OCR or deployment infra without separate approval; infrastructure portability/no server lock-in is mandatory. |
+| Какие ADR являются canonical baseline? | `docs/adr/0001-structured-data-source-of-truth.md`, `docs/adr/0002-typed-document-domain-model.md`, `docs/adr/0003-file-backed-evidence-and-derived-artifacts.md`, `docs/adr/0004-immutable-revisions-and-package-snapshots.md`, `docs/adr/0005-modular-monolith-and-bounded-contexts.md`. | Future implementation must comply with these files; they consolidate existing decisions only and do not add feature/code permission. |
 
 ### 51.1 Accepted ADR register
 
 | ADR | Решение | Статус |
 | --- | --- | --- |
-| ADR 0001 | Structured data являются source of truth; файлы и реестры производны. | Принято. |
-| ADR 0002 | Используются typed documents вместо generic documents. | Принято. |
-| ADR 0003 | Реестр является derived projection. | Принято. |
-| ADR 0004 | Требуются document locks и snapshot-oriented autosave; детали реализации впереди. | Принято как принцип, требует детализации. |
-| ADR 0005 | Template versions версионируются и не изменяются после использования; детали template engine впереди. | Принято как принцип, требует детализации. |
+| ADR 0001 | `docs/adr/0001-structured-data-source-of-truth.md`: structured data являются source of truth; DOCX/PDF/registry/package/generated outputs are derived; no DOCX roundtrip import and no editable-source registry. | Принято; canonical. |
+| ADR 0002 | `docs/adr/0002-typed-document-domain-model.md`: typed document domain model; AOSR first-class typed document; no generic low-code builder, generic document engine or generic CRUD domain. | Принято; canonical. |
+| ADR 0003 | `docs/adr/0003-file-backed-evidence-and-derived-artifacts.md`: certificates and executive schemes are file-backed evidence; generated artifacts are derived; no evidence without physical file; storage/provider isolation required. | Принято; canonical. |
+| ADR 0004 | `docs/adr/0004-immutable-revisions-and-package-snapshots.md`: final edits create new revisions; released revisions and package snapshots are immutable; no silent mutation/history rewrite. | Принято; canonical. |
+| ADR 0005 | `docs/adr/0005-modular-monolith-and-bounded-contexts.md`: modular monolith first with bounded contexts; no premature microservices/event sourcing/CQRS split; infrastructure adapters isolated. | Принято; canonical. |
 
 ### 51.2 Boundary baseline applied in Conceptual Database Schema V1
 
@@ -2342,11 +2364,11 @@ Auth/workspace baseline отражён logical table families `workspace`, `memb
 | Bootstrap topic | V1 direction в `docs/18-initial-repository-bootstrap-and-development-rules-v1.md` | What remains open |
 | --- | --- | --- |
 | Coding preconditions | Docs/18 acceptance and a separate explicit first scaffold task are required. | Actual scaffold execution. |
-| First scaffold scope | Only tooling, app shells, placeholders, local scripts and optional CI gates are allowed. | Feature implementation after scaffold acceptance. |
+| First scaffold scope | Only tooling, app shells, placeholders, local scripts and optional CI gates are allowed. | Feature implementation requires a separate explicit task and ADR compliance check. |
 | Scope corruption controls | Docs/16 overrides older docs/08 TestAct candidate wording; Foreman active permissions blocked; AOSR participant requirements not hardcoded before template review. | Template review and later permission policy. |
 | Architecture invariants | Structured data source of truth, typed AOSR first, registry derived, immutable snapshots/revisions, AI proposal-only, modular monolith and no cross-workspace leakage. | Concrete implementation details. |
 | Infrastructure portability | Deployment provider is replaceable; server-specific assumptions, hardcoded hosts/paths and provider SDK leakage outside infrastructure adapters are forbidden. | Concrete deployment provider/config values. |
-| ADR handling | ADR 0001-0005 physical files must exist or a documentation-only corrective step must restore/replace them before scaffold. | None for current repo if files remain present. |
+| ADR handling | Canonical ADR 0001-0005 physical files exist in `docs/adr/` and are authoritative implementation references. | Future implementation must comply; changing accepted principles requires explicit ADR review. |
 
 Документ подготовлен для review и не разрешает production code/scaffold by itself. После его принятия следующий шаг — отдельное явно ограниченное first scaffold task; feature coding remains blocked until scaffold is accepted.
 
@@ -2797,14 +2819,15 @@ Data Model V1 documented; open aggregate and MVP decisions require review before
 - added infrastructure portability/no server lock-in guardrails: replaceable deployment provider, config-driven database/Redis/storage/public URLs/CORS/session/app base URLs, S3-compatible storage adapter boundary, no hardcoded server paths/hosts and no provider SDK leakage outside adapters;
 - fixed docs/16 precedence over older docs/08 TestAct candidate wording for implementation scope;
 - required ADR 0001-0005 physical presence or documentation-only corrective restoration/replacement declaration before scaffold;
+- superseded by the later canonical ADR baseline accepted in `docs/adr/`;
 - blocked active Foreman permissions without separate approval;
 - blocked hardcoding exact first AOSR participant requirements before template review;
 - defined architecture violation examples and stop/correct process.
 
 Открыто перед следующим этапом:
 
-- review и принятие `docs/18-initial-repository-bootstrap-and-development-rules-v1.md`;
-- separate explicit first scaffold task after acceptance;
+- docs/18 accepted and first infrastructure scaffold completed/accepted;
+- separate explicit feature/database/API tasks after scaffold acceptance;
 - exact first AOSR template baseline and required participant set;
 - retention/privacy/RBAC/governance policy details;
 - feature coding only after accepted scaffold and subsequent explicit feature tasks.
@@ -2893,8 +2916,36 @@ What remains forbidden after this scaffold:
 - no AI/OCR integration;
 - no deployment files, Docker or Kubernetes.
 
-Recommended next step:
+Current guardrail after scaffold and ADR baseline:
 
 ```text
-Review and accept this infrastructure-only scaffold before any separate feature, database, API, storage, generation or worker task.
+Do not start feature/database/API/storage/generation work without a separate explicit task and ADR compliance check.
 ```
+
+### 2026-05-28 — Canonical ADR baseline accepted
+
+- Документы:
+  - `docs/adr/0001-structured-data-source-of-truth.md`
+  - `docs/adr/0002-typed-document-domain-model.md`
+  - `docs/adr/0003-file-backed-evidence-and-derived-artifacts.md`
+  - `docs/adr/0004-immutable-revisions-and-package-snapshots.md`
+  - `docs/adr/0005-modular-monolith-and-bounded-contexts.md`
+- Статус: `accepted canonical ADR baseline`
+- Описание: documentation-only consolidation of accepted architecture decisions into the official ADR 0001-0005 set.
+
+Зафиксированный прогресс:
+
+- old non-canonical ADR files were replaced by the canonical file names above;
+- ADR 0001 fixes structured data as source of truth and confirms generated DOCX/PDF/registry/package artifacts are derived;
+- ADR 0002 fixes typed document domain model, AOSR as first-class typed document and rejects generic low-code/document/CRUD domain;
+- ADR 0003 fixes certificate/executive-scheme file-backed evidence, derived artifacts and provider-isolated storage abstraction;
+- ADR 0004 fixes immutable released revisions and immutable package snapshots, with final edits producing new revisions and no history rewrite;
+- ADR 0005 fixes modular monolith first, bounded contexts and isolated infrastructure adapters;
+- each ADR explicitly preserves no server lock-in, AI proposal-only, derived registry, async package build, workspace isolation, no cross-workspace leakage and no provider SDK leakage.
+
+Что не было изменено или выбрано этим этапом:
+
+- no architecture changes beyond consolidating already accepted decisions;
+- no MVP scope change;
+- no production code;
+- no Prisma schema, SQL, migrations, ORM schema, OpenAPI, API routes, storage adapter, queue worker, generation pipeline or business/domain implementation.

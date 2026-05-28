@@ -5,8 +5,13 @@
 
 1. `docs/PROJECT_MEMORY.md`
 2. `docs/CONVERSATION_QA_LOG.md`
-3. `docs/samples/registry-ventilation-example.md`
-4. `docs/samples/aosr-example-analysis.md`
+3. `docs/adr/0001-structured-data-source-of-truth.md`
+4. `docs/adr/0002-typed-document-domain-model.md`
+5. `docs/adr/0003-file-backed-evidence-and-derived-artifacts.md`
+6. `docs/adr/0004-immutable-revisions-and-package-snapshots.md`
+7. `docs/adr/0005-modular-monolith-and-bounded-contexts.md`
+8. `docs/samples/registry-ventilation-example.md`
+9. `docs/samples/aosr-example-analysis.md`
 
 ---
 
@@ -25,6 +30,7 @@
 11. Не делать uploaded project documentation или AI result единственным source of truth.
 12. Не делать AI/OCR обязательным для MVP.
 13. Не раздувать MVP в ERP, ECM, Google Drive, generic builder или enterprise platform.
+14. Не нарушать canonical ADR baseline 0001-0005 in `docs/adr/`.
 
 ---
 
@@ -46,7 +52,7 @@
 Текущий этап:
 
 ```text
-First allowed infrastructure/bootstrap scaffold started
+First allowed infrastructure/bootstrap scaffold accepted; canonical ADR baseline accepted
 ```
 
 Разрешённый scaffold ограничен:
@@ -67,7 +73,8 @@ GitHub Actions CI добавлен в `.github/workflows/ci.yml`. Он запу�
 
 Local `ci:check` remains the active quality gate.
 
-Feature coding remains blocked.
+Feature coding remains blocked. Future implementation tasks must comply with
+canonical ADR 0001-0005 in `docs/adr/`.
 
 Запрещено в рамках текущего scaffold:
 
@@ -85,10 +92,10 @@ Feature coding remains blocked.
 - database models;
 - business validation or domain logic.
 
-Следующий рекомендуемый этап:
+Следующий guardrail:
 
 ```text
-Review and accept the infrastructure-only scaffold before requesting any separate feature/database/API task
+Any separate feature/database/API task must comply with canonical ADR 0001-0005
 ```
 
 `docs/12-database-schema-v1.md` по прямому заданию применяет baseline decisions из `docs/09-aggregate-boundaries-and-invariants.md` по:
@@ -172,16 +179,16 @@ Privacy/data-processing policy, access to project originals and concrete AI proc
 - architecture invariants include structured data source of truth, typed AOSR first, registry derived, package snapshots immutable, AI proposal-only, modular monolith first and no cross-workspace leakage;
 - infrastructure portability/no server lock-in is mandatory: provider-specific assumptions, absolute server paths, hardcoded hosts and provider SDK leakage outside infrastructure adapters are forbidden;
 - docs/16 has implementation precedence over older docs/08 TestAct candidate wording;
-- ADR 0001-0005 physical files must exist or a documentation-only corrective step must explicitly restore them or declare PROJECT_MEMORY authoritative replacement;
+- canonical ADR baseline is accepted and ADR 0001-0005 in `docs/adr/` are authoritative implementation references;
 - Foreman active permissions are blocked without separate approval;
 - first AOSR template participant requirements must not be hardcoded before template review.
 
-Открытыми остаются review/acceptance docs/18, exact first AOSR template baseline/participant requirements, retention/privacy/RBAC details, first scaffold task approval, physical migrations/ORM schema/OpenAPI and production implementation.
+Открытыми остаются exact first AOSR template baseline/participant requirements, retention/privacy/RBAC details, physical migrations/ORM schema/OpenAPI and production implementation.
 
-Следующий архитектурный review должен рассмотреть и принять либо скорректировать:
+Следующий отдельный implementation task должен проверяться против:
 
 ```text
-docs/18-initial-repository-bootstrap-and-development-rules-v1.md
+canonical ADR 0001-0005 in docs/adr/
 ```
 
-Только после его принятия и отдельного явного задания допускается первый scaffold. Feature coding остается заблокированным до acceptance первого scaffold; нельзя писать production features, SQL/migrations/ORM schema, OpenAPI, real auth/uploads/queue/storage/generation, AI/OCR или deployment files без отдельного разрешения.
+Feature coding остается заблокированным без отдельного явного задания; нельзя писать production features, SQL/migrations/ORM schema, OpenAPI, real auth/uploads/queue/storage/generation, AI/OCR или deployment files без отдельного разрешения.

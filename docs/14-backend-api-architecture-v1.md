@@ -423,7 +423,7 @@ Read models являются query contracts для задач пользова�
 | Registry override version | Every meaningful configuration change creates a version visible to projection/build; historical output names the exact used version. |
 | Template version | Used template version is immutable; a changed form is a new version and may make current desired output require regeneration. |
 | Stale markers | Documents with unpublished changes, projections/artifacts built from older sources and packages affected by changed dependencies expose stale/rebuild-required markers. Marker changes do not rewrite historical contents. |
-| Locks UX | Editing lock acquisition, heartbeat, override experience and conflict presentation remain later frontend/API-contract detail, subject to ADR 0004 and optimistic version authority. |
+| Locks UX | Editing lock acquisition, heartbeat, override experience and conflict presentation remain later frontend/API-contract detail, subject to optimistic version authority and ADR 0004 no-history-rewrite rules. |
 
 Concurrency policy does not turn document editing into collaborative realtime editing. The baseline remains one controlled working edit path with explicit conflict handling and immutable release history.
 

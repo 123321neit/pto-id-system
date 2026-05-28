@@ -1,7 +1,7 @@
 # CONVERSATION_QA_LOG
 # PTO ID System
 # Consolidated decisions from user/assistant discussion
-# Version: 2026-05-28-FIRST-INFRASTRUCTURE-SCAFFOLD
+# Version: 2026-05-28-CANONICAL-ADR-BASELINE
 
 Этот файл фиксирует важные вопросы, ответы и решения, которые появились в переписке и проектной памяти. Его цель — не заменить `PROJECT_MEMORY.md`, а сохранить ход принятия решений.
 
@@ -406,7 +406,7 @@ A: В `docs/18-initial-repository-bootstrap-and-development-rules-v1.md` соз�
 - first scaffold must not include production features, Prisma schema, migrations, OpenAPI, real auth, uploads, queue jobs, storage adapter, AOSR form, generation pipeline, AI/OCR or deployment infrastructure;
 - implementation must preserve structured data source of truth, typed AOSR first, no generic CRUD/document builder/file manager, registry derived, async immutable package snapshots, AI proposal-only and workspace isolation;
 - docs/16 has implementation precedence over older docs/08 TestAct candidate wording;
-- ADR 0001-0005 physical file presence must be verified, or a documentation-only corrective step must restore them or declare PROJECT_MEMORY authoritative replacement before scaffold;
+- ADR 0001-0005 physical file presence must be verified; later documentation-only corrective step accepted canonical ADR files in `docs/adr/`;
 - Foreman active permissions are blocked without separate approval;
 - first AOSR template participant requirements must not be hardcoded before template review;
 - architecture violation criteria and stop/correct process are defined.
@@ -488,8 +488,37 @@ Still forbidden after scaffold:
 - database models;
 - domain/business validation and domain logic.
 
-Следующий рекомендуемый шаг:
+Текущий guardrail после scaffold acceptance:
 
 ```text
-Review and accept the infrastructure-only scaffold before requesting any separate feature/database/API/storage/generation task.
+Request any separate feature/database/API/storage/generation task explicitly and check it against PROJECT_MEMORY and canonical ADR 0001-0005.
 ```
+
+---
+
+## 28. Canonical ADR Baseline
+
+### Q: Как устранить долг, где документы ссылаются на ADR 0001-0005, но canonical ADR set отсутствовал или был не тем набором?
+
+A: Принят documentation-only corrective step: создан официальный canonical ADR baseline в `docs/adr/`:
+
+- `docs/adr/0001-structured-data-source-of-truth.md`;
+- `docs/adr/0002-typed-document-domain-model.md`;
+- `docs/adr/0003-file-backed-evidence-and-derived-artifacts.md`;
+- `docs/adr/0004-immutable-revisions-and-package-snapshots.md`;
+- `docs/adr/0005-modular-monolith-and-bounded-contexts.md`.
+
+Решение:
+
+- ADR 0001-0005 теперь являются authoritative references для будущей implementation work;
+- ADR baseline консолидирует уже принятые решения only;
+- future implementation must comply with ADRs;
+- no server lock-in, AI proposal-only, derived registry, async package build, workspace isolation, no cross-workspace leakage and no provider SDK leakage are explicit cross-cutting constraints in the ADRs;
+- старый non-canonical ADR set заменён, чтобы не оставлять ambiguity по ADR 0004/0005.
+
+Что не разрешено этим решением:
+
+- production feature coding;
+- MVP scope changes;
+- Prisma schema, migrations, OpenAPI, production API/routes or business implementation;
+- storage/queue/generation/AI provider implementation.
