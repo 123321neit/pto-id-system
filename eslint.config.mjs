@@ -58,8 +58,29 @@ const backendRelativeImportPatternsFor = (moduleName) => [
   `@api/${moduleName}/**`,
 ];
 
+const backendNestedImportPatternsFor = (moduleName) => [
+  `../${moduleName}/*/*`,
+  `../${moduleName}/*/*/*`,
+  `../${moduleName}/*/*/*/*`,
+  `../../${moduleName}/*/*`,
+  `../../${moduleName}/*/*/*`,
+  `../../${moduleName}/*/*/*/*`,
+  `../../../${moduleName}/*/*`,
+  `../../../${moduleName}/*/*/*`,
+  `../../../${moduleName}/*/*/*/*`,
+  `../../../../${moduleName}/*/*`,
+  `../../../../${moduleName}/*/*/*`,
+  `../../../../${moduleName}/*/*/*/*`,
+  `@api/${moduleName}/*/*`,
+  `@api/${moduleName}/*/*/*`,
+  `@api/${moduleName}/*/*/*/*`,
+];
+
 const backendImportPatternsFor = (moduleNames) =>
   moduleNames.flatMap((moduleName) => backendRelativeImportPatternsFor(moduleName));
+
+const backendNestedImportPatternsForModules = (moduleNames) =>
+  moduleNames.flatMap((moduleName) => backendNestedImportPatternsFor(moduleName));
 
 const backendBoundedModuleBoundaryConfigs = backendBoundedModules.map((moduleName) => ({
   files: [`apps/api/src/${moduleName}/**/*.ts`],
@@ -146,9 +167,12 @@ const backendHealthBoundaryConfig = {
         patterns: [
           ...baseRestrictedImports,
           {
-            group: backendImportPatternsFor([...backendBoundedModules, 'infrastructure']),
+            group: [
+              ...backendImportPatternsFor(backendBoundedModules),
+              ...backendNestedImportPatternsForModules(['infrastructure']),
+            ],
             message:
-              'Health checks must stay technical and must not import product module internals or infrastructure adapters.',
+              'Health checks must stay technical and must not import product module internals or infrastructure adapter internals.',
           },
         ],
       },

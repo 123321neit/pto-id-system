@@ -21,7 +21,8 @@ storage, package generation, AI/OCR, or domain behavior are introduced.
 
 ## Dependency Direction
 
-- `AppModule` composes runtime modules.
+- `AppModule` composes runtime modules, but infrastructure adapters are not
+  global providers.
 - Bounded modules may use `shared-kernel` primitives and their own local
   contracts, ports, and tokens.
 - Bounded modules must not import sibling module internals directly. Future
@@ -29,9 +30,10 @@ storage, package generation, AI/OCR, or domain behavior are introduced.
   orchestration decision.
 - Bounded modules must not import `infrastructure` directly. Provider access is
   composed at module roots after a separate infrastructure task.
-- The `health` module may report infrastructure dependency status through narrow
-  technical health ports. It must not import provider SDKs, Prisma client types,
-  domain modules, repositories, or business readiness checks.
+- The `health` module may explicitly import `InfrastructureModule` to report
+  infrastructure dependency status through narrow technical health ports. It
+  must not import provider SDKs, Prisma client types, domain modules,
+  repositories, or business readiness checks.
 - `infrastructure` must not import bounded domain modules. Adapters depend on
   narrow ports/contracts, not on domain internals.
 - `shared-kernel` must stay framework-neutral and must not import NestJS,
@@ -77,8 +79,10 @@ BullMQ, Redis clients, object-storage SDKs, or server-local path assumptions.
 The current database foundation contains a Prisma client adapter only inside
 `infrastructure/database` and an empty Prisma schema with no domain models.
 Domain/application modules must not import Prisma client types or database
-adapters. The skeleton intentionally contains no storage implementation, queue
-workers, controllers with domain behavior, repositories, or OpenAPI contracts.
+adapters. `InfrastructureModule` is intentionally not global; current wiring is
+explicit from the technical `health` module only. The skeleton intentionally
+contains no storage implementation, queue workers, controllers with domain
+behavior, repositories, or OpenAPI contracts.
 
 ## Current Status
 

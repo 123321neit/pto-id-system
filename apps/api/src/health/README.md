@@ -14,4 +14,5 @@ Forbidden responsibilities:
 - product API contracts.
 
 Current status: technical scaffold endpoint with infrastructure database
-dependency status only.
+dependency status only. `HealthModule` explicitly imports `InfrastructureModule`
+for this technical check.

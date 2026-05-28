@@ -619,6 +619,8 @@ A: Добавлен технический database foundation slice.
   `apps/api/src/infrastructure/database/`;
 - technical `/health` response dependency status for database:
   `configured`, `unconfigured`, `ok` or `error`;
+- explicit non-global module wiring where `HealthModule` imports
+  `InfrastructureModule` for technical health composition;
 - frontend technical status parser/display update;
 - mocked tests for env/config behavior, DB health utility and health response
   shape.
@@ -626,6 +628,7 @@ A: Добавлен технический database foundation slice.
 Решение:
 
 - database remains an infrastructure concern;
+- infrastructure is not a global Nest module;
 - Prisma Client is confined to infrastructure database adapter code;
 - `/health` reports only technical dependency status and does not imply domain
   readiness;

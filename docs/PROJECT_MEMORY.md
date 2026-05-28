@@ -3052,6 +3052,8 @@ isolation foundations before any product/domain work.
   Prisma-backed technical adapter;
 - shared technical `/health` dependency status for database
   `configured/unconfigured/ok/error`;
+- explicit non-global wiring: `HealthModule` imports `InfrastructureModule` for
+  technical health composition only;
 - frontend technical status parsing/display for the database dependency status;
 - mocked unit tests for database health behavior, env fail-safe behavior and
   health response shape.
@@ -3069,7 +3071,8 @@ Current database guardrail:
 
 ```text
 Prisma exists only as infrastructure foundation. Domain schema, migrations and
-business tables require a separate explicit task.
+business tables require a separate explicit task. `InfrastructureModule` is not
+global; domain bounded modules must not import it.
 ```
 
 Recommended next step: review this database foundation, then request a separate,

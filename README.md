@@ -20,9 +20,10 @@ for infrastructure verification and CI/build/test confidence.
 
 The database foundation technical slice adds Prisma generation wiring, an empty
 Prisma schema with only `generator` and `datasource`, and an infrastructure-only
-technical database health boundary. It intentionally has no domain models,
-migrations, business tables, repositories, CRUD APIs or domain readiness
-semantics.
+technical database health boundary. `InfrastructureModule` is explicit, not
+global, and is currently imported only by technical health composition. This
+slice intentionally has no domain models, migrations, business tables,
+repositories, CRUD APIs or domain readiness semantics.
 
 Production feature coding remains blocked.
 
@@ -146,7 +147,7 @@ Scaffold включает:
 - database foundation technical slice: Prisma generation wiring, empty
   `apps/api/prisma/schema.prisma` with no models, infrastructure database
   health port/adapter, and optional technical database dependency status in
-  `/health`.
+  `/health` through explicit non-global module wiring.
 
 The backend module skeleton includes module boundaries, README ownership notes,
 placeholder tokens/ports, `apps/api/src/ARCHITECTURE.md`, and ESLint import

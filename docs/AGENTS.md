@@ -78,13 +78,18 @@ First allowed infrastructure/bootstrap scaffold accepted; canonical ADR baseline
 - database foundation technical slice:
   empty Prisma schema with `generator` and `datasource` only, Prisma client
   generation wiring, infrastructure-only database health port/adapter, mocked
-  DB health tests and technical `/health` dependency status.
+  DB health tests and technical `/health` dependency status through explicit
+  non-global module wiring.
 
 The technical status and database foundation slices are not product
 implementation. They must not be expanded into domain readiness, АОСР,
 certificates, registry, package builder, auth, domain database schema,
 uploads/storage, queues, AI/OCR, CRUD APIs or OpenAPI without a new explicit
 task.
+
+`InfrastructureModule` is not global. The current approved import path is
+`HealthModule -> InfrastructureModule` for technical health composition only.
+Domain bounded modules must not import infrastructure.
 
 GitHub Actions CI добавлен в `.github/workflows/ci.yml`. Он запускается на
 `push` и `pull_request`, использует Node 22, Corepack, `pnpm install

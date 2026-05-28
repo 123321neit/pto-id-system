@@ -21,4 +21,5 @@ Forbidden responsibilities:
 
 Current status: architecture skeleton plus technical database foundation only.
 The Prisma adapter is infrastructure-local and must not leak into domain
-modules.
+modules. `InfrastructureModule` is not global; consumers must import it
+explicitly at an approved technical composition boundary.
