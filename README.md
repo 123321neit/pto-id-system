@@ -73,25 +73,28 @@ DOCX/PDF/реестры/комплекты являются производны
 - `docs/14-backend-api-architecture-v1.md`
 - `docs/15-api-command-readmodel-contracts-v1.md`
 - `docs/16-mvp-scope-and-first-forms-v1.md`
+- `docs/17-tech-stack-and-implementation-strategy-v1.md`
 
 ## Current next step
 
-На основании API Command/Read Model Contracts V1 подготовлен product/MVP scope документ:
-
-```text
-docs/16-mvp-scope-and-first-forms-v1.md
-```
-
-Документ фиксирует первую реалистичную production-usable поставку: АОСР как mandatory first-class form, certificate library, executive schemes, derived registry, package builder, generated DOCX/PDF/ZIP outputs, onboarding/contextual hints и правило, что MVP должен работать без AI/OCR.
-
-Текущий следующий этап:
-
-```text
-Review docs/16-mvp-scope-and-first-forms-v1.md
-```
-
-MVP Scope and First Forms V1 по-прежнему не разрешает production code, backend/frontend scaffold, SQL/migrations/ORM schema, OpenAPI или выбор инфраструктуры. Следующий документ после успешного review:
+На основании MVP Scope and First Forms V1 подготовлен practical implementation strategy документ:
 
 ```text
 docs/17-tech-stack-and-implementation-strategy-v1.md
 ```
+
+Документ фиксирует прагматичный stack и implementation direction для MVP: React + TypeScript + Vite frontend, NestJS modular monolith backend on Node.js LTS, PostgreSQL, Redis/BullMQ async jobs, domain-scoped file storage, deterministic DOCX/PDF/ZIP generation, PostgreSQL-first search и optional proposal-only AI/OCR.
+
+Текущий следующий этап:
+
+```text
+Review docs/17-tech-stack-and-implementation-strategy-v1.md
+```
+
+Tech Stack and Implementation Strategy V1 по-прежнему не разрешает production code, backend/frontend scaffold, source folders, package manifests, SQL/migrations/ORM schema, OpenAPI, Docker/CI или deployment files. Следующий документ после успешного review:
+
+```text
+docs/18-initial-repository-bootstrap-and-development-rules-v1.md
+```
+
+Actual coding/scaffold may begin only after acceptance of both `docs/17-tech-stack-and-implementation-strategy-v1.md` and `docs/18-initial-repository-bootstrap-and-development-rules-v1.md`.

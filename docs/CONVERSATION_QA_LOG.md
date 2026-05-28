@@ -1,7 +1,7 @@
 # CONVERSATION_QA_LOG
 # PTO ID System
 # Consolidated decisions from user/assistant discussion
-# Version: 2026-05-28-MVP-SCOPE-FIRST-FORMS-V1
+# Version: 2026-05-28-TECH-STACK-IMPLEMENTATION-STRATEGY-V1
 
 Этот файл фиксирует важные вопросы, ответы и решения, которые появились в переписке и проектной памяти. Его цель — не заменить `PROJECT_MEMORY.md`, а сохранить ход принятия решений.
 
@@ -341,3 +341,52 @@ A: В `docs/16-mvp-scope-and-first-forms-v1.md` создан product/MVP-scope �
 ```text
 docs/17-tech-stack-and-implementation-strategy-v1.md
 ```
+
+---
+
+## 24. Tech Stack and Implementation Strategy V1
+
+### Q: Какой pragmatic technology stack и implementation plan выбрать для MVP, не начиная кодинг?
+
+A: В `docs/17-tech-stack-and-implementation-strategy-v1.md` создан implementation-strategy документ для review перед repository bootstrap:
+
+- frontend direction: React + TypeScript + Vite, React Hook Form, TanStack Query/Table, restrained UI primitives and backend-authoritative validation UX;
+- backend direction: TypeScript on Node.js LTS, NestJS modular monolith, HTTP JSON command/query API without CRUD-first or OpenAPI-first implementation;
+- database direction: PostgreSQL, controlled JSONB usage, explicit transactions, optimistic versions and immutable snapshots, with Prisma-style TypeScript persistence likely during bootstrap;
+- async direction: Redis/BullMQ workers for package builds, generated artifacts, future AI/OCR and indexing;
+- file/storage direction: domain-scoped local development storage and S3-compatible production storage, with generic drive abstraction explicitly forbidden;
+- document generation direction: DOCX templates rendered from structured data, backend PDF conversion, ZIP generation from immutable package manifests;
+- search direction: PostgreSQL relational/full-text/trigram first, semantic/vector search deferred;
+- AI/OCR direction: optional, provider-abstracted, async proposal-only and never autonomous;
+- implementation milestones: bootstrap, workspace/auth skeleton, file asset foundation, certificate/scheme libraries, AOSR editor, finalization/revision, DOCX/PDF prototype, registry, package builder and pilot polish.
+
+Rejected for MVP:
+
+- microservices first;
+- event sourcing;
+- premature CQRS split;
+- generic low-code/document builders;
+- heavy BPM/workflow engines;
+- offline-first;
+- real-time collaborative editing;
+- generic drive/file manager;
+- AI-autonomous workflows;
+- vector database / Elasticsearch first;
+- Kubernetes first;
+- browser DOCX editor.
+
+Статус решения: implementation strategy documented for review. Документ выбирает practical stack/direction, но не разрешает production code, backend/frontend scaffold, source folders, package manifests, SQL/migrations/ORM schema, OpenAPI, Docker/CI/deployment files или repository bootstrap.
+
+Текущий следующий этап:
+
+```text
+Review docs/17-tech-stack-and-implementation-strategy-v1.md
+```
+
+Следующий документ после review:
+
+```text
+docs/18-initial-repository-bootstrap-and-development-rules-v1.md
+```
+
+Actual coding/scaffold may begin only after acceptance of both `docs/17-tech-stack-and-implementation-strategy-v1.md` and `docs/18-initial-repository-bootstrap-and-development-rules-v1.md`.

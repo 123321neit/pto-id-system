@@ -2,7 +2,7 @@
 # PTO ID SYSTEM
 # EXECUTIVE DOCUMENTATION PLATFORM
 # MASTER CONTEXT / SOURCE OF TRUTH
-# VERSION: 2026-05-28-MVP-SCOPE-FIRST-FORMS-V1
+# VERSION: 2026-05-28-TECH-STACK-IMPLEMENTATION-STRATEGY-V1
 # STATUS: ACTIVE SYSTEM ARCHITECTURE DESIGN PHASE
 # LANGUAGE: RU
 
@@ -1428,10 +1428,11 @@ UI не должен быть перегружен, но система долж
 - conceptual Backend/API Architecture V1 in `docs/14-backend-api-architecture-v1.md`, defining modular backend boundaries, commands/read models, consistency, concurrency, validation, async workflows and tenant-safe API policy without implementation choices.
 - conceptual API Command/Read Model Contracts V1 in `docs/15-api-command-readmodel-contracts-v1.md`, defining envelope/result/error/async semantics, intent contracts, expected versions/idempotency, validation findings and UI read-model composition without transport or implementation choices.
 - product MVP Scope and First Forms V1 in `docs/16-mvp-scope-and-first-forms-v1.md`, defining the first production-usable scope around AOSR, file-backed evidence, executive schemes, derived registry, package outputs, onboarding/contextual hints and AI-optional delivery without stack or implementation choices.
+- practical Tech Stack and Implementation Strategy V1 in `docs/17-tech-stack-and-implementation-strategy-v1.md`, selecting a boring MVP-oriented direction: React/TypeScript/Vite frontend, NestJS modular monolith backend, PostgreSQL, Redis/BullMQ async jobs, domain-scoped file storage, deterministic DOCX/PDF/ZIP generation, PostgreSQL-first search and optional proposal-only AI/OCR.
 
 Не завершено:
 
-- review и принятие `docs/16-mvp-scope-and-first-forms-v1.md` перед переходом к Tech Stack and Implementation Strategy V1;
+- review и принятие `docs/17-tech-stack-and-implementation-strategy-v1.md` перед переходом к Initial Repository Bootstrap and Development Rules V1;
 - точная первая AOSR template baseline/participant requirements and remaining invite, privacy/access, retention, AI-processing and audit requirements за пределами зафиксированных V1 policies;
 - production physical database mapping, migrations and storage implementation;
 - repositories;
@@ -1574,10 +1575,10 @@ Draft baseline project ingestion, proposals, confirmation, traceability and isol
 Следующий правильный этап:
 
 ```text
-Review docs/16-mvp-scope-and-first-forms-v1.md
+Review docs/17-tech-stack-and-implementation-strategy-v1.md
 ```
 
-Не production code, backend/frontend scaffold, production SQL/migrations/ORM schema, OpenAPI, concrete routes, физический database mapping или stack/provider choice до этого review.
+Не production code, backend/frontend scaffold, source folders, package manifests, production SQL/migrations/ORM schema, OpenAPI, concrete routes, Docker/CI/deployment files или repository bootstrap до принятия `docs/17` и `docs/18`.
 
 Pre-schema источники baseline:
 
@@ -1630,8 +1631,21 @@ docs/16-mvp-scope-and-first-forms-v1.md
 После review рекомендуемый следующий документ:
 
 ```text
-docs/17-tech-stack-and-implementation-strategy-v1.md
+docs/18-initial-repository-bootstrap-and-development-rules-v1.md
 ```
+
+`docs/17-tech-stack-and-implementation-strategy-v1.md` фиксирует pragmatic MVP implementation direction:
+
+- React + TypeScript + Vite frontend;
+- React Hook Form, TanStack Query/Table and restrained UI primitives for large validation-heavy PTO forms;
+- TypeScript on Node.js LTS with NestJS modular monolith backend;
+- HTTP JSON command/query API without CRUD-first endpoints or OpenAPI-first design;
+- PostgreSQL as relational database with controlled JSONB, explicit transactions and version-aware snapshots;
+- Redis/BullMQ workers for package builds, DOCX/PDF/ZIP generation, future AI/OCR and indexing;
+- domain-scoped local/S3-compatible storage for originals and generated artifacts;
+- DOCX templates rendered from structured data, PDF conversion in workers and ZIP generation from immutable package manifests;
+- PostgreSQL relational/full-text/trigram search first, semantic/vector search deferred;
+- AI/OCR optional, async, provider-abstracted and proposal-only.
 
 ---
 
@@ -1685,6 +1699,7 @@ docs/17-tech-stack-and-implementation-strategy-v1.md
 | `docs/14-backend-api-architecture-v1.md` | Conceptual Backend/API Architecture V1 before command/read-model contract design | Фиксирует modular-monolith modules, command/query boundary, UI read models, transactions/concurrency, validation, async outputs/AI and tenant-safe API principles без кода или technology selection. |
 | `docs/15-api-command-readmodel-contracts-v1.md` | Conceptual API Command/Read Model Contracts V1 before MVP forms | Фиксирует command/result/error/async semantics, intent contracts, expected versions/idempotency, validation findings, screen reads and scope rules без OpenAPI, code или technology selection. |
 | `docs/16-mvp-scope-and-first-forms-v1.md` | Product MVP Scope and First Forms V1 before technology selection | Фиксирует первую production-usable поставку вокруг АОСР, certificate library, executive schemes, registry, package outputs, onboarding hints and AI-optional delivery без code/scaffold/SQL/OpenAPI или выбора стека. |
+| `docs/17-tech-stack-and-implementation-strategy-v1.md` | Tech Stack and Implementation Strategy V1 before repository bootstrap | Фиксирует pragmatic MVP stack and implementation direction: React/TypeScript/Vite, NestJS modular monolith, PostgreSQL, Redis/BullMQ, domain-scoped storage, deterministic DOCX/PDF/ZIP generation, PostgreSQL-first search and optional proposal-only AI/OCR; still no code/scaffold/migrations/OpenAPI. |
 | `docs/adr/*.md` | Принятые архитектурные решения | Нормативные решения по отдельным темам. Изменение принятого принципа требует нового ADR или явного пересмотра существующего. |
 | `docs/samples/*.md` | Анализ реальных примеров | Reference sources для доменной модели и будущих шаблонов/парсеров; не generated output системы. |
 
@@ -2082,16 +2097,33 @@ MVP Scope and First Forms V1:
 Текущий следующий шаг:
 
 ```text
-Review docs/16-mvp-scope-and-first-forms-v1.md
+Review docs/17-tech-stack-and-implementation-strategy-v1.md
 ```
 
 Рекомендуемый следующий документ после review:
 
 ```text
+docs/18-initial-repository-bootstrap-and-development-rules-v1.md
+```
+
+По прямому переходу владельца проекта к следующему этапу создан practical implementation strategy document:
+
+```text
 docs/17-tech-stack-and-implementation-strategy-v1.md
 ```
 
-MVP Scope and First Forms V1 не разрешает production code, backend/frontend scaffold, production SQL/migrations/ORM schema, OpenAPI, concrete API routes, infrastructure selection или generation/storage implementation.
+Tech Stack and Implementation Strategy V1:
+
+- выбирает boring MVP-oriented stack: React + TypeScript + Vite frontend and NestJS modular monolith backend on Node.js LTS;
+- выбирает PostgreSQL as relational source-of-truth database, controlled JSONB usage, explicit transactions and version-aware snapshots;
+- выбирает Redis/BullMQ direction for async package builds, DOCX/PDF/ZIP generation, future AI/OCR and indexing;
+- выбирает domain-scoped file storage with local development adapter and S3-compatible production direction, forbidding generic drive abstraction;
+- выбирает DOCX template rendering from structured data, backend PDF conversion and ZIP package generation from immutable manifests;
+- выбирает PostgreSQL-first search and defers semantic/vector search;
+- фиксирует AI/OCR as optional, async, provider-abstracted, proposal-only and never autonomous;
+- определяет recommended first coding milestones but keeps coding blocked.
+
+Tech Stack and Implementation Strategy V1 не разрешает production code, backend/frontend scaffold, source folders, package manifests, production SQL/migrations/ORM schema, OpenAPI, concrete routes, Docker/CI/deployment files или repository bootstrap. Actual coding/scaffold may begin only after acceptance of both `docs/17-tech-stack-and-implementation-strategy-v1.md` and `docs/18-initial-repository-bootstrap-and-development-rules-v1.md`.
 
 ---
 
@@ -2123,9 +2155,11 @@ MVP Scope and First Forms V1 не разрешает production code, backend/fr
 22. `docs/13-domain-lifecycle-immutability-validation-v1.md` документирует policy follow-up Schema V1, применяемый Backend/API Architecture V1.
 23. `docs/14-backend-api-architecture-v1.md` является conceptual architecture input for command/read-model contracts, а не разрешением на code/SQL/scaffold.
 24. `docs/15-api-command-readmodel-contracts-v1.md` является conceptual contract layer, не OpenAPI или implementation.
-25. `docs/16-mvp-scope-and-first-forms-v1.md` фиксирует первый product/MVP scope; текущий gate — его review перед `docs/17-tech-stack-and-implementation-strategy-v1.md`.
+25. `docs/16-mvp-scope-and-first-forms-v1.md` фиксирует первый product/MVP scope before technology selection.
 26. MVP должен быть usable without AI/OCR; AI/OCR не является prerequisite для первой delivery.
 27. Onboarding/contextual hints, empty states, validation explanations and "do not show again" behavior входят в UX baseline MVP, но не должны мешать experienced users.
+28. `docs/17-tech-stack-and-implementation-strategy-v1.md` фиксирует pragmatic stack and implementation direction but still does not permit code/scaffold/migrations/OpenAPI.
+29. Coding/scaffold may begin only after acceptance of both `docs/17-tech-stack-and-implementation-strategy-v1.md` and `docs/18-initial-repository-bootstrap-and-development-rules-v1.md`.
 
 ---
 
@@ -2151,7 +2185,7 @@ MVP Scope and First Forms V1 не разрешает production code, backend/fr
 | Можно ли использовать загруженный проект для AI-assisted ИД и поиска ошибок? | Да, как Workspace/Object-scoped source material с proposals-only workflow. | Structured data остаются source of truth; extracted data/links/findings требуют user confirmation, traceability and audit. |
 | Где хранить данные компании на объекте? | Через `ObjectCompanySnapshot`. | Изменение профиля компании не переписывает исторические документы объекта. |
 | Может ли Object владеть всем сразу? | Нет. | Требуются отдельные aggregates/contexts для documents, certificates, schemes, templates и packages. |
-| Какая стадия проекта сейчас? | System Architecture Design, не coding. | MVP Scope and First Forms V1 создан; следующий шаг — review `docs/16-mvp-scope-and-first-forms-v1.md`, не scaffold приложения. |
+| Какая стадия проекта сейчас? | System Architecture Design / pre-coding implementation strategy review, не coding. | Tech Stack and Implementation Strategy V1 создан; следующий шаг — review `docs/17-tech-stack-and-implementation-strategy-v1.md`, затем `docs/18`, не scaffold приложения. |
 | Кто является пользователем SaaS? | Физическое лицо с одним аккаунтом и автоматическим `Personal Workspace`. | Пользователь может работать сам и состоять в нескольких organization workspaces. |
 | Где живут права доступа? | В `Membership` конкретного workspace, а не в `User` напрямую. | Один user может иметь разные роли в разных isolated tenants. |
 | Как пользователь вступает в организацию? | Через stored `Invite`, acceptance которого создаёт membership. | Invite URL не содержит доверенных прав; role/expiry/revocation/usage определяются сохранённым invite. |
@@ -2160,6 +2194,7 @@ MVP Scope and First Forms V1 не разрешает production code, backend/fr
 | Какой Backend/API shape следует применять до contracts? | `docs/14-backend-api-architecture-v1.md` как conceptual modular-monolith/application boundary. | Explicit domain commands, UI read models, authoritative validation, version/idempotency and async derived flows; никакого CRUD-first API или code permission. |
 | Какой command/read-model contract применяется до MVP forms? | `docs/15-api-command-readmodel-contracts-v1.md` как conceptual contract layer. | Envelope/results/errors/async operations, intent semantics, validation findings and UI reads зафиксированы без routes/OpenAPI/code. |
 | Какой first MVP scope принят к review? | `docs/16-mvp-scope-and-first-forms-v1.md`. | АОСР mandatory first-class form; certificate library, executive schemes, derived registry, package outputs and onboarding hints входят; `TestAct`/`TechnicalReadinessAct`, AI/OCR dependency and enterprise/platform features deferred. |
+| Какой stack/implementation direction выбран для MVP? | `docs/17-tech-stack-and-implementation-strategy-v1.md`. | React/TypeScript/Vite frontend, NestJS modular monolith backend, PostgreSQL, Redis/BullMQ, domain-scoped storage, deterministic DOCX/PDF/ZIP generation, PostgreSQL-first search and optional proposal-only AI/OCR. Coding still blocked until docs/18 accepted. |
 
 ### 51.1 Accepted ADR register
 
@@ -2258,13 +2293,26 @@ Auth/workspace baseline отражён logical table families `workspace`, `memb
 
 Документ подготовлен для review и не разрешает production code, backend/frontend scaffold, SQL/migrations/ORM, OpenAPI, concrete routes или database/provider/renderer/queue/AI choices. После его принятия рекомендуемый следующий этап — `docs/17-tech-stack-and-implementation-strategy-v1.md`.
 
+### 51.9 Tech Stack and Implementation Strategy V1 documented for review
+
+| Implementation topic | V1 direction в `docs/17-tech-stack-and-implementation-strategy-v1.md` | What remains open |
+| --- | --- | --- |
+| Frontend | React + TypeScript + Vite; React Hook Form, TanStack Query/Table, restrained UI primitives and backend-authoritative validation UX. | Actual scaffold, exact component library styling, route structure and frontend implementation. |
+| Backend | TypeScript on Node.js LTS with NestJS modular monolith and HTTP JSON command/query API. | Actual app scaffold, concrete controllers/routes, OpenAPI and module code. |
+| Database | PostgreSQL, controlled JSONB, explicit transactions, optimistic versions and immutable snapshots; Prisma-style TypeScript persistence likely after bootstrap. | Physical ORM schema, migrations, indexes and production mapping. |
+| Async/files/generation | Redis/BullMQ workers, domain-scoped storage, DOCX templates, backend PDF conversion and ZIP package snapshots. | Installed dependencies, converter packaging, storage provider config and generation code. |
+| Search and AI | PostgreSQL relational/full-text/trigram search first; semantic/vector search deferred; AI/OCR optional proposal-only. | Provider/privacy policy, exact processing scope and future indexing architecture. |
+| Coding gate | Recommended milestones are documented, but coding/scaffold remains blocked. | Review/acceptance of `docs/17` and creation/acceptance of `docs/18-initial-repository-bootstrap-and-development-rules-v1.md`. |
+
+Документ подготовлен для review и не разрешает production code, backend/frontend scaffold, source folders, package manifests, SQL/migrations/ORM, OpenAPI, Docker/CI/deployment files или repository bootstrap. После его принятия рекомендуемый следующий этап — `docs/18-initial-repository-bootstrap-and-development-rules-v1.md`.
+
 ---
 
 ## 52. Open Questions Still Not Solved
 
 Следующие вопросы не отменяют принятые выше принципы. Их нельзя решать случайным кодом: они требуют спецификации, пользовательского выбора и, где необходимо, ADR.
 
-Lifecycle/immutability, structured numbering, validation baseline, package determinism и AI/OCR review boundary документированы в `docs/13-domain-lifecycle-immutability-validation-v1.md`. Backend module/consistency boundaries документированы в `docs/14-backend-api-architecture-v1.md`. Conceptual command/read-model/error/async/version/scope contracts документированы в `docs/15-api-command-readmodel-contracts-v1.md`. First product/MVP scope documented in `docs/16-mvp-scope-and-first-forms-v1.md` narrows the first delivery to AOSR, evidence, schemes, registry, package outputs and AI-optional UX. Вопросы ниже сохраняют детализацию accepted first template, policy и physical implementation, которую эти conceptual/product documents намеренно не утверждают.
+Lifecycle/immutability, structured numbering, validation baseline, package determinism и AI/OCR review boundary документированы в `docs/13-domain-lifecycle-immutability-validation-v1.md`. Backend module/consistency boundaries документированы в `docs/14-backend-api-architecture-v1.md`. Conceptual command/read-model/error/async/version/scope contracts документированы в `docs/15-api-command-readmodel-contracts-v1.md`. First product/MVP scope documented in `docs/16-mvp-scope-and-first-forms-v1.md` narrows the first delivery to AOSR, evidence, schemes, registry, package outputs and AI-optional UX. Practical implementation direction documented in `docs/17-tech-stack-and-implementation-strategy-v1.md` selects the boring stack and first milestone order but still blocks code/scaffold until `docs/18` is accepted. Вопросы ниже сохраняют детализацию accepted first template, policy и physical implementation, которую эти conceptual/product/strategy documents намеренно не утверждают.
 
 ### 52.1 Domain scope and typed schemas
 
@@ -2651,12 +2699,41 @@ Data Model V1 documented; open aggregate and MVP decisions require review before
 
 Открыто перед следующим этапом:
 
-- review и принятие `docs/16-mvp-scope-and-first-forms-v1.md`;
+- review и принятие `docs/17-tech-stack-and-implementation-strategy-v1.md`;
 - exact first AOSR template baseline and required participant set;
 - retention/privacy/RBAC/governance policy details required before implementation;
-- technology/stack/rendering/storage/queue/API implementation strategy in proposed `docs/17-tech-stack-and-implementation-strategy-v1.md`.
+- initial repository bootstrap and development rules in proposed `docs/18-initial-repository-bootstrap-and-development-rules-v1.md`.
 
 Что не было изменено или выбрано этим этапом:
 
 - ADR 0001-0005, Schema V1, lifecycle policy, Backend/API Architecture V1 and API Command/Read Model Contracts V1;
 - production code, backend/frontend scaffold, SQL, migrations, ORM, OpenAPI, concrete routes, database, renderer, storage provider, queue, AI provider or dependency strategy.
+
+### 2026-05-28 — Tech Stack and Implementation Strategy V1 created
+
+- Документ: `docs/17-tech-stack-and-implementation-strategy-v1.md`
+- Статус: `implementation-strategy specification for review before initial repository bootstrap and development rules`
+- Описание: pragmatic MVP stack and implementation plan focused on forms, validation, DOCX/PDF generation, package builds, file-backed evidence and small-team maintainability.
+
+Зафиксированный прогресс:
+
+- выбран frontend direction: React + TypeScript + Vite, React Hook Form, TanStack Query/Table and restrained UI primitives for large validation-heavy PTO workflows;
+- выбран backend direction: TypeScript on Node.js LTS, NestJS modular monolith and HTTP JSON command/query API without CRUD-first or OpenAPI-first implementation;
+- выбран persistence direction: PostgreSQL, controlled JSONB, explicit transactions, optimistic versions and immutable snapshots, with Prisma-style TypeScript persistence likely during bootstrap;
+- выбран async direction: Redis/BullMQ workers for package builds, generated artifacts, future AI/OCR and search indexing;
+- выбран file/generation direction: domain-scoped local/S3-compatible storage, DOCX template rendering, backend PDF conversion and ZIP package generation from immutable manifests;
+- выбран search/AI direction: PostgreSQL-first search, semantic/vector search deferred, AI/OCR optional provider-abstracted proposal-only;
+- documented first coding milestones from bootstrap through AOSR DOCX/PDF prototype, registry and package builder.
+
+Открыто перед следующим этапом:
+
+- review и принятие `docs/17-tech-stack-and-implementation-strategy-v1.md`;
+- creation/review/acceptance of `docs/18-initial-repository-bootstrap-and-development-rules-v1.md`;
+- exact first AOSR template baseline and required participant set;
+- retention/privacy/RBAC/governance policy details;
+- actual scaffold, dependencies, migrations, ORM schema, OpenAPI and production implementation only after docs/18 acceptance.
+
+Что не было изменено или выбрано этим этапом:
+
+- ADR 0001-0005, Schema V1, lifecycle policy, Backend/API Architecture V1, API Command/Read Model Contracts V1 and MVP scope;
+- production code, backend/frontend scaffold, source folders, package manifests, SQL, migrations, ORM schema, OpenAPI, concrete routes, Docker/CI/deployment files or repository bootstrap.
