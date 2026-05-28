@@ -5,13 +5,18 @@ Web-система автоматизации исполнительной до�
 Текущий статус:
 
 ```text
-FIRST ALLOWED INFRASTRUCTURE BOOTSTRAP SCAFFOLD ACCEPTED; CANONICAL ADR BASELINE ACCEPTED; BACKEND MODULE ARCHITECTURE SKELETON INTRODUCED
+FIRST ALLOWED INFRASTRUCTURE BOOTSTRAP SCAFFOLD ACCEPTED; CANONICAL ADR BASELINE ACCEPTED; BACKEND MODULE ARCHITECTURE SKELETON INTRODUCED; FIRST TECHNICAL FRONTEND-BACKEND STATUS SLICE INTRODUCED
 ```
 
 В репозитории принят первый разрешённый scaffold. Это только infrastructure/bootstrap
 foundation: workspace, tooling, app shells, shared placeholders, env/config foundation
 and CI quality gates. Backend module boundaries are now introduced as an
 architecture skeleton only.
+
+The first technical vertical slice now proves that the React shell can call the
+NestJS technical `/health` endpoint through `VITE_API_BASE_URL` and consume the
+shared technical response type from `packages/shared-types`. This slice is only
+for infrastructure verification and CI/build/test confidence.
 
 Production feature coding remains blocked.
 
@@ -130,10 +135,17 @@ Scaffold включает:
 - canonical backend module skeleton in `apps/api/src`:
   `shared-kernel`, `infrastructure`, `workspace`, `documents`, `evidence`,
   `registry`, `packages`, `ai`, and `health`.
+- first technical frontend-backend status slice: typed `/health` response,
+  frontend fetch utility, placeholder status panel and focused tests.
 
 The backend module skeleton includes module boundaries, README ownership notes,
 placeholder tokens/ports, `apps/api/src/ARCHITECTURE.md`, and ESLint import
 guardrails. It intentionally does not include business/domain implementation.
+
+The technical status slice intentionally does not add product screens, domain
+readiness, business commands, CRUD APIs, OpenAPI, database state or real use
+cases. It exists only to validate frontend -> backend connectivity, shared
+types, env-driven API configuration and CI gates.
 
 GitHub Actions CI is committed at `.github/workflows/ci.yml`. It runs on
 `push` and `pull_request` with Node 22, Corepack, `pnpm install
@@ -169,6 +181,6 @@ with canonical ADR 0001-0005 in `docs/adr/`.
 Feature coding remains blocked until a separate explicit feature/database/API
 task is requested and checked against the ADR baseline and project memory.
 
-Recommended next step: a separate, narrow backend task for the next allowed
-application skeleton boundary, starting with workspace/session isolation
+Recommended next step: review this technical slice, then request a separate,
+narrow backend application skeleton task for workspace/session isolation
 foundations before any AOSR, package, storage, queue, database, or AI work.

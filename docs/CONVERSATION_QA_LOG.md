@@ -563,3 +563,40 @@ monolith. Это не feature implementation task и не начало доме�
 Next expected step recommendation: create a separate, narrow backend
 application skeleton task for workspace/session isolation foundations before any
 AOSR, database, storage, queue, package, OpenAPI or AI work.
+
+---
+
+## 30. First Technical Frontend-Backend Status Slice
+
+### Q: Как проверить, что frontend, backend, shared types and CI работают вместе, не начиная продуктовую реализацию?
+
+A: Создан первый маленький technical vertical slice.
+
+Он включает:
+
+- existing technical `/health` endpoint in `apps/api`;
+- shared technical `TechnicalHealthResponse` in `packages/shared-types`;
+- frontend fetch utility using `VITE_API_BASE_URL`;
+- minimal placeholder `Backend status` panel in `apps/web`;
+- backend health test and frontend technical health client test;
+- lockfile/package reference updates for the frontend shared-types dependency.
+
+Решение:
+
+- `/health` остаётся strictly technical endpoint;
+- response scope remains `technical`, service remains `api`, status remains `ok`;
+- frontend uses only the technical endpoint and env-driven API base URL;
+- no hardcoded production URL was introduced;
+- this is not business/domain implementation.
+
+Что не было введено:
+
+- no AOSR implementation;
+- no certificates, executive schemes, registry or package builder implementation;
+- no auth, database, Prisma schema, migrations, uploads/storage, queues,
+  AI/OCR, OpenAPI, CRUD APIs, real use cases or domain entities;
+- no domain readiness semantics.
+
+Next expected step recommendation: review this technical slice, then request a
+separate, explicitly scoped backend application skeleton task for
+workspace/session isolation foundations before any product/domain work.

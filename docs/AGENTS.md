@@ -52,7 +52,7 @@
 Текущий этап:
 
 ```text
-First allowed infrastructure/bootstrap scaffold accepted; canonical ADR baseline accepted; backend module architecture skeleton introduced
+First allowed infrastructure/bootstrap scaffold accepted; canonical ADR baseline accepted; backend module architecture skeleton introduced; first technical frontend-backend status slice introduced
 ```
 
 Разрешённый scaffold ограничен:
@@ -72,6 +72,14 @@ First allowed infrastructure/bootstrap scaffold accepted; canonical ADR baseline
   source-of-truth, revision/package, and infrastructure isolation rules;
 - ESLint backend import guardrails against sibling module internals,
   direct infrastructure access from bounded modules, and provider leakage.
+- first technical vertical slice proving frontend -> backend connectivity:
+  placeholder UI status panel, `VITE_API_BASE_URL` API configuration, typed
+  shared technical health response and focused tests.
+
+The technical status slice is not product implementation. It must not be
+expanded into domain readiness, АОСР, certificates, registry, package builder,
+auth, database, uploads/storage, queues, AI/OCR, CRUD APIs or OpenAPI without a
+new explicit task.
 
 GitHub Actions CI добавлен в `.github/workflows/ci.yml`. Он запускается на
 `push` и `pull_request`, использует Node 22, Corepack, `pnpm install
@@ -105,10 +113,11 @@ canonical ADR 0001-0005 in `docs/adr/`.
 Any separate feature/database/API task must comply with canonical ADR 0001-0005
 ```
 
-Recommended next step: request a separate, explicitly scoped backend
-application skeleton task for workspace/session isolation foundations. Do not
-start AOSR, Prisma, migrations, storage/uploads, queues, package generation,
-OpenAPI, AI/OCR, or domain validation without a new task.
+Recommended next step: review the technical frontend-backend status slice, then
+request a separate, explicitly scoped backend application skeleton task for
+workspace/session isolation foundations. Do not start AOSR, Prisma, migrations,
+storage/uploads, queues, package generation, OpenAPI, AI/OCR, or domain
+validation without a new task.
 
 `docs/12-database-schema-v1.md` по прямому заданию применяет baseline decisions из `docs/09-aggregate-boundaries-and-invariants.md` по:
 

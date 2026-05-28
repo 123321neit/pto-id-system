@@ -2,8 +2,8 @@
 # PTO ID SYSTEM
 # EXECUTIVE DOCUMENTATION PLATFORM
 # MASTER CONTEXT / SOURCE OF TRUTH
-# VERSION: 2026-05-28-BACKEND-MODULE-SKELETON
-# STATUS: FIRST ALLOWED INFRASTRUCTURE BOOTSTRAP SCAFFOLD; CANONICAL ADR BASELINE ACCEPTED; BACKEND MODULE ARCHITECTURE SKELETON INTRODUCED
+# VERSION: 2026-05-28-TECHNICAL-STATUS-SLICE
+# STATUS: FIRST ALLOWED INFRASTRUCTURE BOOTSTRAP SCAFFOLD; CANONICAL ADR BASELINE ACCEPTED; BACKEND MODULE ARCHITECTURE SKELETON INTRODUCED; FIRST TECHNICAL FRONTEND-BACKEND STATUS SLICE INTRODUCED
 # LANGUAGE: RU
 
 ---
@@ -25,10 +25,15 @@
 Текущая стадия проекта:
 
 ```text
-FIRST ALLOWED INFRASTRUCTURE BOOTSTRAP SCAFFOLD; CANONICAL ADR BASELINE ACCEPTED; BACKEND MODULE ARCHITECTURE SKELETON INTRODUCED
+FIRST ALLOWED INFRASTRUCTURE BOOTSTRAP SCAFFOLD; CANONICAL ADR BASELINE ACCEPTED; BACKEND MODULE ARCHITECTURE SKELETON INTRODUCED; FIRST TECHNICAL FRONTEND-BACKEND STATUS SLICE INTRODUCED
 ```
 
-Проект принял первый явно разрешённый infrastructure/bootstrap scaffold и отдельный backend module architecture skeleton. Это не feature coding и не production MVP implementation. Главная цель текущего этапа — удерживать минимальную инженерную основу репозитория без доменной реализации до отдельного feature/database/API задания.
+Проект принял первый явно разрешённый infrastructure/bootstrap scaffold,
+отдельный backend module architecture skeleton и первый маленький technical
+frontend-backend status slice. Это не feature coding и не production MVP
+implementation. Главная цель текущего этапа — удерживать минимальную инженерную
+основу репозитория без доменной реализации до отдельного feature/database/API
+задания.
 
 Canonical ADR baseline accepted. Authoritative ADR references:
 
@@ -1441,6 +1446,9 @@ UI не должен быть перегружен, но система долж
 - practical Tech Stack and Implementation Strategy V1 in `docs/17-tech-stack-and-implementation-strategy-v1.md`, selecting a boring MVP-oriented direction: React/TypeScript/Vite frontend, NestJS modular monolith backend, PostgreSQL, Redis/BullMQ async jobs, domain-scoped file storage, deterministic DOCX/PDF/ZIP generation, PostgreSQL-first search and optional proposal-only AI/OCR.
 - Initial Repository Bootstrap and Development Rules V1 in `docs/18-initial-repository-bootstrap-and-development-rules-v1.md`, defining the final pre-scaffold gate, coding preconditions, first scaffold scope, CI/dev quality gates, infrastructure portability/no server lock-in, forbidden shortcuts, docs/16 precedence, ADR presence handling, Foreman restriction and architecture-violation criteria.
 - canonical ADR baseline in `docs/adr/`, establishing authoritative references for structured source of truth, typed documents, file-backed evidence/derived artifacts, immutable revisions/package snapshots and modular monolith/bounded contexts.
+- first technical frontend-backend status slice, proving that the React shell can
+  call the NestJS technical `/health` endpoint through `VITE_API_BASE_URL` and
+  consume the shared technical response type from `packages/shared-types`.
 
 Не завершено:
 
@@ -1587,10 +1595,15 @@ Draft baseline project ingestion, proposals, confirmation, traceability and isol
 Следующий правильный этап:
 
 ```text
-Review docs/18-initial-repository-bootstrap-and-development-rules-v1.md
+Review first technical frontend-backend status slice, then request a separate workspace/session isolation skeleton task
 ```
 
-Не production code, backend/frontend scaffold, source folders, package manifests, production SQL/migrations/ORM schema, OpenAPI, concrete routes, Docker/CI/deployment files или repository bootstrap до принятия `docs/18` и отдельного explicit first scaffold task.
+Technical status slice уже добавлен только для проверки связи
+frontend/backend/shared/CI. Он не разрешает production feature coding, АОСР,
+database/API/storage/generation implementation, OpenAPI, auth, uploads, queues,
+AI/OCR или domain validation. Следующий implementation step должен быть отдельной
+явной задачей и проверяться against `docs/PROJECT_MEMORY.md` and canonical ADR
+0001-0005.
 
 Pre-schema источники baseline:
 
@@ -2990,3 +3003,35 @@ Recommended next step: request a separate, explicitly scoped backend
 application skeleton task for workspace/session isolation foundations. Any
 database/API/storage/queue/package/AOSR/AI work must remain blocked until its
 own task is checked against `docs/PROJECT_MEMORY.md` and canonical ADR 0001-0005.
+
+### 2026-05-28 — First technical frontend-backend status slice introduced
+
+- Статус: `technical vertical slice only`
+- Описание: минимальный end-to-end infrastructure check proving frontend ->
+  backend communication, shared technical DTO usage and CI/build/test coverage
+  without starting product/domain implementation.
+
+Добавлено:
+
+- `packages/shared-types/src/technical-health.ts` with technical
+  `TechnicalHealthResponse`;
+- strengthened backend `/health` test for the technical response shape and
+  timestamp;
+- `apps/web/src/technical-status/technical-health.ts` fetch utility using
+  `VITE_API_BASE_URL`;
+- frontend utility tests for URL construction, typed response parsing and
+  fail-closed behavior when API base URL is missing;
+- minimal placeholder `Backend status` panel showing loading, ok and error
+  states;
+- frontend workspace dependency on `@pto/shared-types`.
+
+What was not introduced:
+
+- no AOSR, certificates, executive schemes, registry or package builder;
+- no auth, database, Prisma schema, migrations, uploads/storage, queues,
+  AI/OCR, OpenAPI, CRUD APIs, real use cases or domain entities;
+- no domain readiness semantics.
+
+Recommended next step: review this technical slice, then request a separate,
+explicitly scoped backend application skeleton task for workspace/session
+isolation foundations before any product/domain work.

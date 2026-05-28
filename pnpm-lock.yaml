@@ -96,6 +96,9 @@ importers:
       '@pto/shared-config':
         specifier: workspace:*
         version: link:../../packages/shared-config
+      '@pto/shared-types':
+        specifier: workspace:*
+        version: link:../../packages/shared-types
       react:
         specifier: ^19.0.0
         version: 19.2.6

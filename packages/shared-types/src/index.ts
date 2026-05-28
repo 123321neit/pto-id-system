@@ -1,10 +1,8 @@
 export type RuntimeEnvironment = 'development' | 'test' | 'production';
 
-export type TechnicalHealthStatus = 'ok';
-
-export interface TechnicalHealthResponse {
-  readonly scope: 'technical';
-  readonly service: string;
-  readonly status: TechnicalHealthStatus;
-  readonly timestamp: string;
-}
+export {
+  type TechnicalHealthResponse,
+  type TechnicalHealthScope,
+  type TechnicalHealthService,
+  type TechnicalHealthStatus,
+} from './technical-health.js';

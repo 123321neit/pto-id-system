@@ -6,8 +6,12 @@ describe('HealthController', () => {
   it('returns technical health status only', () => {
     const response = new HealthController().check();
 
-    expect(response.scope).toBe('technical');
-    expect(response.service).toBe('api');
-    expect(response.status).toBe('ok');
+    expect(response).toEqual({
+      scope: 'technical',
+      service: 'api',
+      status: 'ok',
+      timestamp: expect.any(String) as string,
+    });
+    expect(Number.isNaN(Date.parse(response.timestamp))).toBe(false);
   });
 });
