@@ -460,10 +460,14 @@ A: Пользователь явно обозначил задачу как `П�
 - local CI-equivalent quality gates;
 - guardrails for strict TypeScript, import boundaries and infrastructure portability.
 
-GitHub Actions workflow was prepared during implementation but cannot be pushed
-with the current repository credentials because GitHub rejects workflow-file
-changes without `workflow` scope. Therefore CI workflow remains pending; local
-`ci:check` is wired and passing.
+GitHub Actions workflow was prepared during the original scaffold implementation
+but could not be pushed with the then-current repository credentials because
+GitHub rejected workflow-file changes without `workflow` scope. It was later
+added in the accepted scaffold CI task as `.github/workflows/ci.yml`.
+
+Current scaffold CI runs on `push` and `pull_request` with Node 22, Corepack,
+`pnpm install --frozen-lockfile` and `corepack pnpm ci:check`. It does not
+require production secrets, deploy, run AI/OCR or generate production artifacts.
 
 Важно: это не начало production feature coding.
 

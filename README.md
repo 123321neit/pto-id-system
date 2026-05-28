@@ -100,11 +100,13 @@ Scaffold включает:
 - `packages/shared-types` technical placeholder types;
 - `packages/shared-config` typed env validation foundation;
 - env example files for development, test and production;
-- architecture guardrails for import boundaries and infrastructure portability.
+- architecture guardrails for import boundaries and infrastructure portability;
+- GitHub Actions CI for scaffold quality checks.
 
-GitHub Actions workflow is not committed in this scaffold because the current
-repository push credentials cannot update workflow files without `workflow`
-scope. Local `ci:check` is wired and passing.
+GitHub Actions CI is committed at `.github/workflows/ci.yml`. It runs on
+`push` and `pull_request` with Node 22, Corepack, `pnpm install
+--frozen-lockfile`, and `corepack pnpm ci:check`. It does not require
+production secrets, deploy, run AI/OCR, or generate production artifacts.
 
 Local quality command:
 

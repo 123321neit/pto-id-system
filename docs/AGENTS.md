@@ -60,8 +60,11 @@ First allowed infrastructure/bootstrap scaffold started
 - env/config validation foundation;
 - local CI-equivalent quality gates.
 
-GitHub Actions workflow не добавлен в текущий push, потому что используемые
-repository credentials не имеют `workflow` scope для изменения `.github/workflows/*`.
+GitHub Actions CI добавлен в `.github/workflows/ci.yml`. Он запускается на
+`push` и `pull_request`, использует Node 22, Corepack, `pnpm install
+--frozen-lockfile` и `corepack pnpm ci:check`. CI не требует production secrets,
+не деплоит, не запускает AI/OCR и не генерирует production artifacts.
+
 Local `ci:check` remains the active quality gate.
 
 Feature coding remains blocked.

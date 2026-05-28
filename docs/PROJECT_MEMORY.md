@@ -2847,12 +2847,14 @@ Scaffold включает:
 GitHub Actions workflow status:
 
 ```text
-not committed in this scaffold
+committed as scaffold CI
 ```
 
-Reason: current repository push credentials cannot update `.github/workflows/*`
-without `workflow` scope. The workflow should be added in a later infrastructure
-task when credentials allow it. Local `ci:check` is wired and passing.
+Workflow: `.github/workflows/ci.yml`.
+
+It runs on `push` and `pull_request` with Node 22, Corepack, `pnpm install
+--frozen-lockfile` and `corepack pnpm ci:check`. It does not require production
+secrets, deploy, run AI/OCR or generate production artifacts.
 
 Architecture guardrails added in tooling:
 
