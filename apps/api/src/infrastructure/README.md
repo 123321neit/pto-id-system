@@ -7,6 +7,7 @@ Owns:
 - infrastructure provider tokens;
 - adapter contracts for future persistence, storage, async work, artifact, and
   AI provider integrations;
+- Prisma client bootstrap and technical database connectivity checks;
 - provider isolation notes.
 
 Forbidden responsibilities:
@@ -15,7 +16,9 @@ Forbidden responsibilities:
 - business validation;
 - direct source-of-truth decisions;
 - provider SDK leakage into domain modules;
-- actual database, queue, storage, upload, renderer, or AI implementation in
-  this skeleton.
+- domain database schema, migrations, repositories, queue, storage, upload,
+  renderer, or AI implementation in this skeleton.
 
-Current status: architecture skeleton only.
+Current status: architecture skeleton plus technical database foundation only.
+The Prisma adapter is infrastructure-local and must not leak into domain
+modules.

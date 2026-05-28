@@ -2,8 +2,8 @@
 # PTO ID SYSTEM
 # EXECUTIVE DOCUMENTATION PLATFORM
 # MASTER CONTEXT / SOURCE OF TRUTH
-# VERSION: 2026-05-28-TECHNICAL-STATUS-SLICE
-# STATUS: FIRST ALLOWED INFRASTRUCTURE BOOTSTRAP SCAFFOLD; CANONICAL ADR BASELINE ACCEPTED; BACKEND MODULE ARCHITECTURE SKELETON INTRODUCED; FIRST TECHNICAL FRONTEND-BACKEND STATUS SLICE INTRODUCED
+# VERSION: 2026-05-28-DATABASE-FOUNDATION-TECHNICAL-SLICE
+# STATUS: FIRST ALLOWED INFRASTRUCTURE BOOTSTRAP SCAFFOLD; CANONICAL ADR BASELINE ACCEPTED; BACKEND MODULE ARCHITECTURE SKELETON INTRODUCED; FIRST TECHNICAL FRONTEND-BACKEND STATUS SLICE INTRODUCED; DATABASE FOUNDATION TECHNICAL SLICE INTRODUCED
 # LANGUAGE: RU
 
 ---
@@ -25,15 +25,15 @@
 Текущая стадия проекта:
 
 ```text
-FIRST ALLOWED INFRASTRUCTURE BOOTSTRAP SCAFFOLD; CANONICAL ADR BASELINE ACCEPTED; BACKEND MODULE ARCHITECTURE SKELETON INTRODUCED; FIRST TECHNICAL FRONTEND-BACKEND STATUS SLICE INTRODUCED
+FIRST ALLOWED INFRASTRUCTURE BOOTSTRAP SCAFFOLD; CANONICAL ADR BASELINE ACCEPTED; BACKEND MODULE ARCHITECTURE SKELETON INTRODUCED; FIRST TECHNICAL FRONTEND-BACKEND STATUS SLICE INTRODUCED; DATABASE FOUNDATION TECHNICAL SLICE INTRODUCED
 ```
 
 Проект принял первый явно разрешённый infrastructure/bootstrap scaffold,
-отдельный backend module architecture skeleton и первый маленький technical
-frontend-backend status slice. Это не feature coding и не production MVP
-implementation. Главная цель текущего этапа — удерживать минимальную инженерную
-основу репозитория без доменной реализации до отдельного feature/database/API
-задания.
+отдельный backend module architecture skeleton, первый маленький technical
+frontend-backend status slice и database foundation technical slice. Это не
+feature coding и не production MVP implementation. Главная цель текущего этапа
+— удерживать минимальную инженерную основу репозитория без доменной реализации
+до отдельного feature/database/API задания.
 
 Canonical ADR baseline accepted. Authoritative ADR references:
 
@@ -2249,7 +2249,7 @@ Initial Repository Bootstrap and Development Rules V1:
 | Можно ли использовать загруженный проект для AI-assisted ИД и поиска ошибок? | Да, как Workspace/Object-scoped source material с proposals-only workflow. | Structured data остаются source of truth; extracted data/links/findings требуют user confirmation, traceability and audit. |
 | Где хранить данные компании на объекте? | Через `ObjectCompanySnapshot`. | Изменение профиля компании не переписывает исторические документы объекта. |
 | Может ли Object владеть всем сразу? | Нет. | Требуются отдельные aggregates/contexts для documents, certificates, schemes, templates и packages. |
-| Какая стадия проекта сейчас? | Infrastructure scaffold accepted; canonical ADR baseline accepted; feature coding still blocked. | Следующий implementation step требует отдельного явного задания и проверки against project memory and ADR 0001-0005. |
+| Какая стадия проекта сейчас? | Infrastructure scaffold accepted; canonical ADR baseline accepted; backend module skeleton, technical status slice and database foundation technical slice introduced; feature coding still blocked. | Следующий implementation step требует отдельного явного задания и проверки against project memory and ADR 0001-0005. |
 | Кто является пользователем SaaS? | Физическое лицо с одним аккаунтом и автоматическим `Personal Workspace`. | Пользователь может работать сам и состоять в нескольких organization workspaces. |
 | Где живут права доступа? | В `Membership` конкретного workspace, а не в `User` напрямую. | Один user может иметь разные роли в разных isolated tenants. |
 | Как пользователь вступает в организацию? | Через stored `Invite`, acceptance которого создаёт membership. | Invite URL не содержит доверенных прав; role/expiry/revocation/usage определяются сохранённым invite. |
@@ -2259,7 +2259,7 @@ Initial Repository Bootstrap and Development Rules V1:
 | Какой command/read-model contract применяется до MVP forms? | `docs/15-api-command-readmodel-contracts-v1.md` как conceptual contract layer. | Envelope/results/errors/async operations, intent semantics, validation findings and UI reads зафиксированы без routes/OpenAPI/code. |
 | Какой first MVP scope принят к review? | `docs/16-mvp-scope-and-first-forms-v1.md`. | АОСР mandatory first-class form; certificate library, executive schemes, derived registry, package outputs and onboarding hints входят; `TestAct`/`TechnicalReadinessAct`, AI/OCR dependency and enterprise/platform features deferred. |
 | Какой stack/implementation direction выбран для MVP? | `docs/17-tech-stack-and-implementation-strategy-v1.md`. | React/TypeScript/Vite frontend, NestJS modular monolith backend, PostgreSQL, Redis/BullMQ, domain-scoped storage, deterministic DOCX/PDF/ZIP generation, PostgreSQL-first search and optional proposal-only AI/OCR. Feature coding remains blocked without separate explicit task. |
-| Какие правила первого scaffold действуют? | `docs/18-initial-repository-bootstrap-and-development-rules-v1.md`. | First scaffold limited to tooling/app shells/placeholders; no production features, Prisma schema, migrations, OpenAPI, real auth/uploads/queue/storage/generation, AI/OCR or deployment infra without separate approval; infrastructure portability/no server lock-in is mandatory. |
+| Какие правила первого scaffold действуют? | `docs/18-initial-repository-bootstrap-and-development-rules-v1.md`. | First scaffold limited to tooling/app shells/placeholders. Database foundation now has a separately authorized empty Prisma schema and technical health boundary only; no domain models, migrations, OpenAPI, real auth/uploads/queue/storage/generation, AI/OCR or deployment infra without separate approval. |
 | Какие ADR являются canonical baseline? | `docs/adr/0001-structured-data-source-of-truth.md`, `docs/adr/0002-typed-document-domain-model.md`, `docs/adr/0003-file-backed-evidence-and-derived-artifacts.md`, `docs/adr/0004-immutable-revisions-and-package-snapshots.md`, `docs/adr/0005-modular-monolith-and-bounded-contexts.md`. | Future implementation must comply with these files; they consolidate existing decisions only and do not add feature/code permission. |
 
 ### 51.1 Accepted ADR register
@@ -3035,3 +3035,43 @@ What was not introduced:
 Recommended next step: review this technical slice, then request a separate,
 explicitly scoped backend application skeleton task for workspace/session
 isolation foundations before any product/domain work.
+
+### 2026-05-28 — Database foundation technical slice introduced
+
+- Статус: `database foundation technical slice only`
+- Описание: минимальная database infrastructure foundation without domain
+  schema, migrations, repositories, CRUD APIs or business behavior.
+
+Добавлено:
+
+- `apps/api/prisma/schema.prisma` with only Prisma `generator` and PostgreSQL
+  `datasource`;
+- Prisma Client dependency and `prisma:generate` wiring;
+- optional `db:check` script for a technical connectivity check;
+- `apps/api/src/infrastructure/database/` database health utility and
+  Prisma-backed technical adapter;
+- shared technical `/health` dependency status for database
+  `configured/unconfigured/ok/error`;
+- frontend technical status parsing/display for the database dependency status;
+- mocked unit tests for database health behavior, env fail-safe behavior and
+  health response shape.
+
+What was not introduced:
+
+- no Prisma `model` blocks;
+- no migrations folder;
+- no domain tables or business database schema;
+- no repositories, CRUD APIs, auth, uploads/storage, queues, AI/OCR or package
+  implementation;
+- no domain readiness semantics.
+
+Current database guardrail:
+
+```text
+Prisma exists only as infrastructure foundation. Domain schema, migrations and
+business tables require a separate explicit task.
+```
+
+Recommended next step: review this database foundation, then request a separate,
+explicitly scoped workspace/session isolation skeleton task before any domain
+schema, migration, AOSR, storage, queue, package, OpenAPI or AI work.

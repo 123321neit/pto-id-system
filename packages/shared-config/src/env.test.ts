@@ -12,6 +12,15 @@ describe('apiEnvSchema', () => {
     expect(parsed.CORS_ORIGINS).toEqual([]);
   });
 
+  it('normalizes blank development DATABASE_URL as an unconfigured database', () => {
+    const parsed = parseEnv(apiEnvSchema, {
+      DATABASE_URL: '',
+      NODE_ENV: 'development',
+    });
+
+    expect(parsed.DATABASE_URL).toBeUndefined();
+  });
+
   it('fails closed for production infrastructure configuration', () => {
     expect(() =>
       parseEnv(apiEnvSchema, {

@@ -16,6 +16,10 @@ const restrictedInfrastructureImports = [
   'yandex-cloud',
 ];
 
+const restrictedProviderImportsExceptPrisma = restrictedInfrastructureImports.filter(
+  (importPattern) => importPattern !== '@prisma/client',
+);
+
 const appBoundaryPatterns = ['apps/*', '../apps/*', '../../apps/*'];
 
 const baseRestrictedImports = [
@@ -90,7 +94,16 @@ const backendInfrastructureBoundaryConfig = {
       'error',
       {
         patterns: [
-          ...baseRestrictedImports,
+          {
+            group: appBoundaryPatterns,
+            message:
+              'Apps and packages must use workspace package boundaries instead of importing app internals.',
+          },
+          {
+            group: restrictedProviderImportsExceptPrisma,
+            message:
+              'Provider and queue SDK imports are blocked until a scoped infrastructure task authorizes an adapter.',
+          },
           {
             group: backendImportPatternsFor(backendBoundedModules),
             message:

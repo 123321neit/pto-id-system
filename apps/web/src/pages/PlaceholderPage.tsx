@@ -75,7 +75,9 @@ function renderBackendStatusText(status: BackendStatusState): string {
     return status.message;
   }
 
-  return `${status.health.service} / ${status.health.scope} / ${status.health.timestamp}`;
+  const databaseStatus = status.health.dependencies?.database?.status ?? 'unknown';
+
+  return `${status.health.service} / ${status.health.scope} / ${status.health.timestamp} / db ${databaseStatus}`;
 }
 
 function renderBackendStatusBadge(status: BackendStatusState): string {

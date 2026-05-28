@@ -52,7 +52,7 @@
 Текущий этап:
 
 ```text
-First allowed infrastructure/bootstrap scaffold accepted; canonical ADR baseline accepted; backend module architecture skeleton introduced; first technical frontend-backend status slice introduced
+First allowed infrastructure/bootstrap scaffold accepted; canonical ADR baseline accepted; backend module architecture skeleton introduced; first technical frontend-backend status slice introduced; database foundation technical slice introduced
 ```
 
 Разрешённый scaffold ограничен:
@@ -75,11 +75,16 @@ First allowed infrastructure/bootstrap scaffold accepted; canonical ADR baseline
 - first technical vertical slice proving frontend -> backend connectivity:
   placeholder UI status panel, `VITE_API_BASE_URL` API configuration, typed
   shared technical health response and focused tests.
+- database foundation technical slice:
+  empty Prisma schema with `generator` and `datasource` only, Prisma client
+  generation wiring, infrastructure-only database health port/adapter, mocked
+  DB health tests and technical `/health` dependency status.
 
-The technical status slice is not product implementation. It must not be
-expanded into domain readiness, АОСР, certificates, registry, package builder,
-auth, database, uploads/storage, queues, AI/OCR, CRUD APIs or OpenAPI without a
-new explicit task.
+The technical status and database foundation slices are not product
+implementation. They must not be expanded into domain readiness, АОСР,
+certificates, registry, package builder, auth, domain database schema,
+uploads/storage, queues, AI/OCR, CRUD APIs or OpenAPI without a new explicit
+task.
 
 GitHub Actions CI добавлен в `.github/workflows/ci.yml`. Он запускается на
 `push` и `pull_request`, использует Node 22, Corepack, `pnpm install
@@ -96,7 +101,7 @@ canonical ADR 0001-0005 in `docs/adr/`.
 - AOSR implementation;
 - certificates implementation;
 - package builder implementation;
-- Prisma schema or migrations;
+- domain Prisma models or migrations;
 - OpenAPI;
 - real auth;
 - uploads/storage implementation;
@@ -104,7 +109,7 @@ canonical ADR 0001-0005 in `docs/adr/`.
 - document generation;
 - AI/OCR;
 - CRUD APIs;
-- database models;
+- business database tables;
 - business validation or domain logic.
 
 Следующий guardrail:
@@ -113,11 +118,11 @@ canonical ADR 0001-0005 in `docs/adr/`.
 Any separate feature/database/API task must comply with canonical ADR 0001-0005
 ```
 
-Recommended next step: review the technical frontend-backend status slice, then
+Recommended next step: review the database foundation technical slice, then
 request a separate, explicitly scoped backend application skeleton task for
-workspace/session isolation foundations. Do not start AOSR, Prisma, migrations,
-storage/uploads, queues, package generation, OpenAPI, AI/OCR, or domain
-validation without a new task.
+workspace/session isolation foundations. Do not start AOSR, domain Prisma
+models, migrations, storage/uploads, queues, package generation, OpenAPI,
+AI/OCR, or domain validation without a new task.
 
 `docs/12-database-schema-v1.md` по прямому заданию применяет baseline decisions из `docs/09-aggregate-boundaries-and-invariants.md` по:
 

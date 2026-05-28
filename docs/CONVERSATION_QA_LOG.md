@@ -600,3 +600,49 @@ A: Создан первый маленький technical vertical slice.
 Next expected step recommendation: review this technical slice, then request a
 separate, explicitly scoped backend application skeleton task for
 workspace/session isolation foundations before any product/domain work.
+
+---
+
+## 31. Database Foundation Technical Slice
+
+### Q: Как добавить database foundation, не начиная доменную схему и бизнес-реализацию?
+
+A: Добавлен технический database foundation slice.
+
+Он включает:
+
+- `apps/api/prisma/schema.prisma` with Prisma `generator` and PostgreSQL
+  `datasource` only;
+- Prisma Client dependency and `prisma:generate` wiring;
+- optional technical `db:check` script;
+- infrastructure-only database health utility and Prisma adapter under
+  `apps/api/src/infrastructure/database/`;
+- technical `/health` response dependency status for database:
+  `configured`, `unconfigured`, `ok` or `error`;
+- frontend technical status parser/display update;
+- mocked tests for env/config behavior, DB health utility and health response
+  shape.
+
+Решение:
+
+- database remains an infrastructure concern;
+- Prisma Client is confined to infrastructure database adapter code;
+- `/health` reports only technical dependency status and does not imply domain
+  readiness;
+- missing `DATABASE_URL` in dev/test is fail-safe and reported as
+  `unconfigured`.
+
+Что не было введено:
+
+- no Prisma models;
+- no migrations;
+- no Workspace/User/Document/Certificate/AOSR tables;
+- no domain repositories;
+- no CRUD APIs;
+- no business validation or product logic;
+- no auth, uploads/storage, package builder, registry, certificates or AI/OCR
+  implementation.
+
+Next expected step recommendation: review the database foundation technical
+slice, then request a separate workspace/session isolation skeleton task before
+any domain schema, migrations or business feature implementation.

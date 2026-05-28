@@ -1,4 +1,8 @@
-import type { TechnicalHealthResponse } from '@pto/shared-types';
+import type {
+  TechnicalDependencyStatus,
+  TechnicalHealthDependencies,
+  TechnicalHealthResponse,
+} from '@pto/shared-types';
 
 type TechnicalHealthFetcher = (input: string, init?: RequestInit) => Promise<Response>;
 
@@ -36,7 +40,7 @@ export function parseTechnicalHealthResponse(payload: unknown): TechnicalHealthR
     throw new Error('Unexpected technical health response.');
   }
 
-  const { scope, service, status, timestamp } = payload;
+  const { dependencies, scope, service, status, timestamp } = payload;
 
   if (
     scope !== 'technical' ||
@@ -48,7 +52,10 @@ export function parseTechnicalHealthResponse(payload: unknown): TechnicalHealthR
     throw new Error('Unexpected technical health response.');
   }
 
+  const parsedDependencies = parseDependencies(dependencies);
+
   return {
+    ...(parsedDependencies === undefined ? {} : { dependencies: parsedDependencies }),
     scope,
     service,
     status,
@@ -58,4 +65,42 @@ export function parseTechnicalHealthResponse(payload: unknown): TechnicalHealthR
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null;
+}
+
+function parseDependencies(value: unknown): TechnicalHealthDependencies | undefined {
+  if (value === undefined) {
+    return undefined;
+  }
+
+  if (!isRecord(value)) {
+    throw new Error('Unexpected technical health response.');
+  }
+
+  const database = parseDependency(value['database']);
+
+  return database === undefined
+    ? undefined
+    : {
+        database,
+      };
+}
+
+function parseDependency(
+  value: unknown,
+): { readonly status: TechnicalDependencyStatus } | undefined {
+  if (value === undefined) {
+    return undefined;
+  }
+
+  if (!isRecord(value) || !isTechnicalDependencyStatus(value['status'])) {
+    throw new Error('Unexpected technical health response.');
+  }
+
+  return {
+    status: value['status'],
+  };
+}
+
+function isTechnicalDependencyStatus(value: unknown): value is TechnicalDependencyStatus {
+  return value === 'configured' || value === 'unconfigured' || value === 'ok' || value === 'error';
 }

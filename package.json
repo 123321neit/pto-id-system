@@ -13,12 +13,14 @@
     }
   },
   "scripts": {
-    "build": "corepack pnpm -r build",
-    "ci:check": "corepack pnpm format:check && corepack pnpm lint && corepack pnpm typecheck && corepack pnpm test && corepack pnpm build",
+    "build": "corepack pnpm prisma:generate && corepack pnpm -r build",
+    "ci:check": "corepack pnpm format:check && corepack pnpm prisma:generate && corepack pnpm lint && corepack pnpm typecheck && corepack pnpm test && corepack pnpm build",
+    "db:check": "corepack pnpm --filter @pto/api db:check",
     "dev": "corepack pnpm --parallel -r dev",
     "format": "prettier --write \"*.{json,md,mjs,yaml,yml}\" \"apps/**/*.{ts,tsx,js,mjs,json,css,html}\" \"packages/**/*.{ts,tsx,js,mjs,json}\"",
     "format:check": "prettier --check \"*.{json,md,mjs,yaml,yml}\" \"apps/**/*.{ts,tsx,js,mjs,json,css,html}\" \"packages/**/*.{ts,tsx,js,mjs,json}\"",
     "lint": "eslint .",
+    "prisma:generate": "corepack pnpm --filter @pto/api prisma:generate",
     "test": "corepack pnpm -r test",
     "typecheck": "corepack pnpm --filter @pto/shared-types build && corepack pnpm --filter @pto/shared-config build && corepack pnpm -r typecheck"
   },

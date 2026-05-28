@@ -17,6 +17,11 @@ describe('technical health client', () => {
   it('fetches the typed technical health response', async () => {
     const calls: { readonly input: string; readonly init: RequestInit | undefined }[] = [];
     const payload = {
+      dependencies: {
+        database: {
+          status: 'unconfigured',
+        },
+      },
       scope: 'technical',
       service: 'api',
       status: 'ok',
@@ -51,6 +56,22 @@ describe('technical health client', () => {
     expect(() =>
       parseTechnicalHealthResponse({
         scope: 'domain',
+        service: 'api',
+        status: 'ok',
+        timestamp: '2026-05-28T00:00:00.000Z',
+      }),
+    ).toThrow(/Unexpected technical health response/);
+  });
+
+  it('rejects unsupported dependency status payloads', () => {
+    expect(() =>
+      parseTechnicalHealthResponse({
+        dependencies: {
+          database: {
+            status: 'ready',
+          },
+        },
+        scope: 'technical',
         service: 'api',
         status: 'ok',
         timestamp: '2026-05-28T00:00:00.000Z',

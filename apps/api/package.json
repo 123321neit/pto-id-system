@@ -5,8 +5,10 @@
   "type": "module",
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
+    "db:check": "tsx src/infrastructure/database/db-check.cli.ts",
     "dev": "tsx watch src/main.ts",
     "lint": "eslint .",
+    "prisma:generate": "prisma generate --schema=prisma/schema.prisma",
     "start": "node dist/main.js",
     "test": "vitest run",
     "typecheck": "tsc -p tsconfig.json --noEmit"
@@ -15,6 +17,7 @@
     "@nestjs/common": "^11.0.0",
     "@nestjs/core": "^11.0.0",
     "@nestjs/platform-express": "^11.0.0",
+    "@prisma/client": "^6.19.3",
     "@pto/shared-config": "workspace:*",
     "@pto/shared-types": "workspace:*",
     "bullmq": "^5.0.0",

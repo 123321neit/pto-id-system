@@ -16,8 +16,8 @@ storage, package generation, AI/OCR, or domain behavior are introduced.
 | `packages` | Package build boundary, snapshots, generated artifact ownership, async orchestration contracts. | Source document ownership, evidence originals, registry source facts, synchronous package execution. |
 | `ai` | Proposal and finding boundaries for future AI/OCR-assisted review. | Autonomous source mutation, validation suppression, evidence confirmation, finalization, package release. |
 | `shared-kernel` | Shared primitives, scope vocabulary, and framework-neutral interfaces. | Business aggregates, repositories, use cases, provider details. |
-| `infrastructure` | Provider adapter boundaries and infrastructure tokens. | Domain ownership, source-of-truth decisions, provider types leaking into modules. |
-| `health` | Technical runtime health endpoint only. | Product API contracts, domain readiness, business health semantics. |
+| `infrastructure` | Provider adapter boundaries, infrastructure tokens, Prisma bootstrap, and technical database health adapters. | Domain ownership, source-of-truth decisions, provider types leaking into modules. |
+| `health` | Technical runtime health endpoint and technical dependency status only. | Product API contracts, domain readiness, business health semantics. |
 
 ## Dependency Direction
 
@@ -29,6 +29,9 @@ storage, package generation, AI/OCR, or domain behavior are introduced.
   orchestration decision.
 - Bounded modules must not import `infrastructure` directly. Provider access is
   composed at module roots after a separate infrastructure task.
+- The `health` module may report infrastructure dependency status through narrow
+  technical health ports. It must not import provider SDKs, Prisma client types,
+  domain modules, repositories, or business readiness checks.
 - `infrastructure` must not import bounded domain modules. Adapters depend on
   narrow ports/contracts, not on domain internals.
 - `shared-kernel` must stay framework-neutral and must not import NestJS,
@@ -71,14 +74,17 @@ boundaries.
 
 Domain/application modules must not import provider SDKs, Prisma client types,
 BullMQ, Redis clients, object-storage SDKs, or server-local path assumptions.
-The current skeleton intentionally contains no adapters, database access,
-storage implementation, queue workers, controllers with domain behavior, or
-OpenAPI contracts.
+The current database foundation contains a Prisma client adapter only inside
+`infrastructure/database` and an empty Prisma schema with no domain models.
+Domain/application modules must not import Prisma client types or database
+adapters. The skeleton intentionally contains no storage implementation, queue
+workers, controllers with domain behavior, repositories, or OpenAPI contracts.
 
 ## Current Status
 
-This is an architecture skeleton only. It introduces canonical backend module
-boundaries, placeholder tokens/ports, and import guardrails. It does not
-implement AOSR, Prisma schema, migrations, CRUD APIs, auth, uploads/storage,
-package generation, AI/OCR, repositories, use cases, queue jobs, validation
-rules, or business logic.
+This is an architecture skeleton plus technical database foundation only. It
+introduces canonical backend module boundaries, placeholder tokens/ports, import
+guardrails, Prisma generation wiring, an empty Prisma schema, and a technical
+database health adapter. It does not implement AOSR, domain Prisma models,
+migrations, CRUD APIs, auth, uploads/storage, package generation, AI/OCR,
+repositories, use cases, queue jobs, validation rules, or business logic.
