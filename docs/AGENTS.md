@@ -128,6 +128,7 @@ Privacy/data-processing policy, access to project originals and concrete AI proc
 - first coding/scaffold requires explicit acceptance of docs/18 and a separate first scaffold task;
 - first scaffold is limited to tooling/app shells/shared config and MUST NOT include production features, Prisma schema, migrations, OpenAPI, real auth/uploads/queue/storage/generation or AI/OCR;
 - architecture invariants include structured data source of truth, typed AOSR first, registry derived, package snapshots immutable, AI proposal-only, modular monolith first and no cross-workspace leakage;
+- infrastructure portability/no server lock-in is mandatory: provider-specific assumptions, absolute server paths, hardcoded hosts and provider SDK leakage outside infrastructure adapters are forbidden;
 - docs/16 has implementation precedence over older docs/08 TestAct candidate wording;
 - ADR 0001-0005 physical files must exist or a documentation-only corrective step must explicitly restore them or declare PROJECT_MEMORY authoritative replacement;
 - Foreman active permissions are blocked without separate approval;

@@ -84,7 +84,7 @@ DOCX/PDF/реестры/комплекты являются производны
 docs/18-initial-repository-bootstrap-and-development-rules-v1.md
 ```
 
-Документ фиксирует жесткие правила первого repository bootstrap/scaffold: preconditions, architecture invariants, allowed conceptual structure, backend/frontend/shared package rules, PostgreSQL + Prisma, NestJS, React + Vite + TS, Redis/BullMQ, S3-compatible storage abstraction, CI/dev gates, forbidden shortcuts and architecture-violation criteria.
+Документ фиксирует жесткие правила первого repository bootstrap/scaffold: preconditions, architecture invariants, allowed conceptual structure, backend/frontend/shared package rules, PostgreSQL + Prisma, NestJS, React + Vite + TS, Redis/BullMQ, S3-compatible storage abstraction, infrastructure portability/no server lock-in, CI/dev gates, forbidden shortcuts and architecture-violation criteria.
 
 Текущий следующий этап:
 

@@ -25,6 +25,7 @@ It fixes:
 - monorepo structure rules;
 - backend/frontend/shared package guardrails;
 - database, migration, queue, storage and API restrictions;
+- infrastructure portability requirements;
 - CI and development quality gates;
 - anti-corruption rules against scope creep;
 - forbidden shortcuts;
@@ -302,12 +303,64 @@ Rules:
 - environment validation MUST fail closed for required runtime secrets;
 - local defaults MUST NOT silently point to production resources;
 - storage, database, Redis and session secrets MUST be environment-driven.
+- public URLs, file download URLs, CORS origins and app base URLs MUST be environment/config driven.
 
 Secrets MUST NOT be embedded in source code, tests, docs examples with real values, templates or CI config.
 
 ---
 
-## 10. File Storage Rules
+## 10. Infrastructure Portability / No Server Lock-in
+
+PTO ID System MUST NOT be hard-wired to one VPS, PaaS, cloud, server, region or hosting provider.
+
+Deployment provider is replaceable. Moving the system to another server/provider MUST require configuration, environment changes and storage/data migration, not rewriting domain logic, backend modules, frontend code or package generation.
+
+Rules:
+
+- deployment provider MUST be treated as infrastructure, not product architecture;
+- server-specific assumptions are forbidden in domain and application code;
+- database connection, Redis connection, object storage endpoint/bucket/region, public URLs, file download URL behavior, CORS origins, session secrets and app base URLs MUST be environment/config driven;
+- local, development, staging and production environments MUST differ by configuration, not by long-lived code branches;
+- S3-compatible storage adapter MUST hide provider details from domain/application services;
+- provider SDKs MUST NOT leak into domain services, command handlers, validation rules, package builder domain logic, frontend code or shared contracts;
+- provider SDKs are allowed only inside narrow infrastructure adapters;
+- generated artifact links MUST be resolved through storage/download service, not stored as permanent server-local paths;
+- public download links MUST be derived from current storage/download configuration and access policy;
+- background workers MUST read database, Redis, storage and public URL configuration from the environment/config layer;
+- no absolute server filesystem paths may be stored as durable domain references;
+- no hardcoded IP, domain, hostname, bucket, region, CDN URL or provider-specific URL may appear in application code;
+- no feature may depend on a provider-specific filesystem layout, reverse proxy path or machine-local path outside the infrastructure layer.
+
+Forbidden examples:
+
+- storing `/var/www/pto/uploads/file.pdf` as a generated artifact URL;
+- hardcoding `https://current-server.example.com/files/...` in generated manifests;
+- importing an S3/AWS/MinIO/provider SDK directly into a domain module;
+- branching application logic with `if production provider is X`;
+- making package generation depend on a fixed server directory;
+- embedding CORS origins, base URLs or download hosts in source code.
+
+Acceptable portability cost:
+
+- changing environment variables;
+- migrating PostgreSQL data;
+- migrating object storage contents;
+- migrating Redis/queue state according to operational policy;
+- updating DNS or app base URL configuration;
+- re-running workers against the new configuration.
+
+Unacceptable portability cost:
+
+- rewriting domain modules;
+- rewriting command/query handlers;
+- rewriting frontend business logic;
+- rewriting generated artifact provenance model;
+- changing package manifest semantics;
+- changing document generation logic because the server/provider changed.
+
+---
+
+## 11. File Storage Rules
 
 File storage implementation MUST preserve domain meaning.
 
@@ -336,10 +389,11 @@ Forbidden:
 - overwriting a file used by a released revision or package snapshot;
 - treating uploaded project files as confirmed domain facts;
 - storing generated artifacts as source truth.
+- storing generated artifact links as permanent server-local paths.
 
 ---
 
-## 11. Queue and Async Rules
+## 12. Queue and Async Rules
 
 The accepted async direction is:
 
@@ -364,7 +418,7 @@ The worker MUST NOT mutate source aggregates as a side effect of derived output 
 
 ---
 
-## 12. Database Rules
+## 13. Database Rules
 
 The accepted database direction is:
 
@@ -388,7 +442,7 @@ The first scaffold MUST NOT create Prisma schema until the task explicitly autho
 
 ---
 
-## 13. Migration Rules
+## 14. Migration Rules
 
 Migrations are blocked until a separate implementation task authorizes them.
 
@@ -412,7 +466,7 @@ Migrations MUST NOT:
 
 ---
 
-## 14. API Rules
+## 15. API Rules
 
 The API MUST follow the accepted command/query direction:
 
@@ -445,7 +499,7 @@ OpenAPI MUST NOT be written before concrete API contracts are ready and approved
 
 ---
 
-## 15. Validation Rules
+## 16. Validation Rules
 
 Validation MUST be backend-authoritative.
 
@@ -481,7 +535,7 @@ Validation result MUST support explanation:
 
 ---
 
-## 16. Generated Artifact Rules
+## 17. Generated Artifact Rules
 
 Generated artifacts include DOCX, PDF, registry exports and package ZIPs.
 
@@ -493,6 +547,8 @@ Rules:
 - package ZIP MUST come from immutable package snapshot manifest;
 - generated artifacts MAY become stale;
 - historical retained artifacts MUST NOT be edited in place;
+- generated artifact links MUST be resolved through storage/download service;
+- generated artifacts MUST NOT store permanent server-local absolute paths as authoritative links;
 - manual edits to downloaded DOCX/PDF MUST NOT mutate source data;
 - failed generation MUST produce operation failure, not partial source mutation.
 
@@ -505,7 +561,7 @@ Template rules:
 
 ---
 
-## 17. AI/OCR Implementation Restrictions
+## 18. AI/OCR Implementation Restrictions
 
 AI/OCR is not part of required MVP execution.
 
@@ -533,7 +589,7 @@ If AI/OCR is later implemented, it MUST:
 
 ---
 
-## 18. Testing and CI Rules
+## 19. Testing and CI Rules
 
 The first scaffold MUST include basic quality gates if tooling is created.
 
@@ -566,7 +622,7 @@ No test may encode unsupported first-scope TestAct behavior.
 
 ---
 
-## 19. Logging/Audit Rules
+## 20. Logging/Audit Rules
 
 Logging and audit are separate concerns.
 
@@ -601,7 +657,7 @@ Scaffold MUST NOT fake audit compliance. If audit is not implemented, it MUST be
 
 ---
 
-## 20. Security Baseline
+## 21. Security Baseline
 
 Security baseline for first implementation:
 
@@ -614,6 +670,8 @@ Security baseline for first implementation:
 - upload handling MUST validate size/type before accepting real files;
 - signed URLs or streamed downloads MUST be scoped and time-limited when implemented;
 - CORS MUST be restrictive;
+- CORS origins MUST be configuration-driven and MUST NOT be hardcoded in application code;
+- app base URLs, public URLs and download hosts MUST be configuration-driven;
 - CSRF protection MUST be considered for cookie-auth mutations;
 - rate limiting MUST be considered for auth and upload endpoints.
 
@@ -625,7 +683,7 @@ Foreman role rule:
 
 ---
 
-## 21. Forbidden Shortcuts
+## 22. Forbidden Shortcuts
 
 The following shortcuts are forbidden:
 
@@ -637,6 +695,9 @@ The following shortcuts are forbidden:
 - building package synchronously in an HTTP request;
 - mutating documents during package build;
 - overwriting historical originals or generated artifacts;
+- hardcoding absolute server paths, IPs, domains, hostnames, bucket names or provider URLs in application code;
+- letting provider SDKs leak outside narrow infrastructure adapters;
+- storing generated artifact links as permanent server-local paths;
 - using JSONB as untyped document storage;
 - using generic CRUD controllers;
 - creating a generic document builder;
@@ -653,7 +714,7 @@ The following shortcuts are forbidden:
 
 ---
 
-## 22. Explicitly Deferred Features
+## 23. Explicitly Deferred Features
 
 Deferred features MUST NOT appear in first scaffold except as documentation references:
 
@@ -681,7 +742,7 @@ Deferred does not mean impossible. It means implementation requires separate app
 
 ---
 
-## 23. Initial Development Sequence
+## 24. Initial Development Sequence
 
 After this document is accepted, implementation MUST proceed in this order unless a later accepted plan changes it:
 
@@ -704,7 +765,7 @@ The first serious product demo MUST be AOSR-focused, not a dashboard, generic fi
 
 ---
 
-## 24. First Allowed Scaffold Scope
+## 25. First Allowed Scaffold Scope
 
 The first scaffold may include only:
 
@@ -739,7 +800,7 @@ If the first scaffold task needs any item outside this list, it MUST explicitly 
 
 ---
 
-## 25. Definition of "Architecture Violation"
+## 26. Definition of "Architecture Violation"
 
 An architecture violation is any implementation, scaffold, dependency, API shape, data model, UI pattern or shortcut that contradicts accepted project invariants.
 
@@ -750,6 +811,8 @@ Examples:
 - package build edits documents;
 - generated artifacts overwrite historical outputs;
 - file storage behaves like a generic drive;
+- domain/application code depends on a specific server, host, provider SDK or absolute path;
+- generated artifact URLs are stored as permanent server-local paths;
 - API exposes generic CRUD over domain tables;
 - workspace authorization is optional or client-trusted;
 - document type can change after creation;
@@ -770,20 +833,21 @@ When an architecture violation is found:
 
 ---
 
-## 26. Final Gate Before Real Feature Coding
+## 27. Final Gate Before Real Feature Coding
 
 After this document is accepted, the project may proceed to a separate first scaffold task.
 
 Real feature coding is still not allowed until:
 
 - the first scaffold task is explicitly requested;
-- first scaffold scope is limited to Section 24 or approved exceptions;
+- first scaffold scope is limited to Section 25 or approved exceptions;
 - development quality gates exist and pass;
 - no production feature code is hidden in scaffold;
 - no database/migration/API/document-generation shortcut is introduced;
+- infrastructure portability/no server lock-in rules are preserved;
 - ADR presence/replacement issue is resolved;
 - `docs/16` precedence over older TestAct candidate wording is respected;
 - Foreman active permissions remain unimplemented;
 - first AOSR template/participant requirements are not hardcoded before review.
 
-Once the scaffold is accepted, feature coding MUST start with the sequence in Section 23 and MUST preserve the invariants in Section 3.
+Once the scaffold is accepted, feature coding MUST start with the sequence in Section 24 and MUST preserve the invariants in Section 3.

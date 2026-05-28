@@ -1,7 +1,7 @@
 # CONVERSATION_QA_LOG
 # PTO ID System
 # Consolidated decisions from user/assistant discussion
-# Version: 2026-05-28-INITIAL-REPOSITORY-BOOTSTRAP-RULES-V1
+# Version: 2026-05-28-INFRASTRUCTURE-PORTABILITY-GUARDRAILS
 
 Этот файл фиксирует важные вопросы, ответы и решения, которые появились в переписке и проектной памяти. Его цель — не заменить `PROJECT_MEMORY.md`, а сохранить ход принятия решений.
 
@@ -418,3 +418,23 @@ Review docs/18-initial-repository-bootstrap-and-development-rules-v1.md
 ```
 
 After acceptance, the next allowed action is a separate explicitly scoped first scaffold task. Feature coding remains blocked until that scaffold is accepted.
+
+---
+
+## 26. Infrastructure Portability / No Server Lock-in Amendment
+
+### Q: Как зафиксировать, что PTO ID System не должен быть жестко привязан к одному серверу, VPS, PaaS, cloud или hosting provider?
+
+A: В `docs/18-initial-repository-bootstrap-and-development-rules-v1.md` добавлено правило Infrastructure Portability / No Server Lock-in:
+
+- deployment provider is replaceable;
+- moving server/provider should require configuration, environment changes and storage/data migration, not rewriting domain logic, backend modules, frontend or package generation;
+- server-specific assumptions are forbidden in domain/application code;
+- database, Redis, object storage, public URLs, file download URL behavior, CORS origins, session secrets and app base URLs must be environment/config driven;
+- local/dev/staging/prod must differ by configuration, not code branches;
+- S3-compatible storage adapter must hide provider details;
+- provider SDKs must not leak outside narrow infrastructure adapters;
+- generated artifact links must be resolved through storage/download service, not stored as permanent server-local paths;
+- hardcoded absolute server paths, IPs, domains, hostnames, buckets, regions, CDN URLs and provider-specific URLs are forbidden in application code.
+
+Статус решения: documentation-only amendment to docs/18. No code, scaffold, Docker, CI, package manifest, source folders, migrations, OpenAPI or ORM schema were introduced by this amendment.
