@@ -23,6 +23,8 @@
 9. Не менять template version после использования.
 10. Не превращать Object в giant aggregate.
 11. Не делать uploaded project documentation или AI result единственным source of truth.
+12. Не делать AI/OCR обязательным для MVP.
+13. Не раздувать MVP в ERP, ECM, Google Drive, generic builder или enterprise platform.
 
 ---
 
@@ -44,7 +46,7 @@
 Текущий этап:
 
 ```text
-API Command/Read Model Contracts V1 documented in docs/15-api-command-readmodel-contracts-v1.md; it requires review before MVP Scope and First Forms V1
+MVP Scope and First Forms V1 documented in docs/16-mvp-scope-and-first-forms-v1.md; it requires review before tech stack and implementation strategy
 ```
 
 `docs/12-database-schema-v1.md` по прямому заданию применяет baseline decisions из `docs/09-aggregate-boundaries-and-invariants.md` по:
@@ -100,12 +102,22 @@ Privacy/data-processing policy, access to project originals and concrete AI proc
 - screen-specific read models and validation finding contract;
 - workspace/object authorization scope and leakage protection.
 
-Открытыми остаются concrete typed forms/required fields, retention/privacy/RBAC details, template/rendering/storage/queue implementation, AI processing policy/provider и physical database/API transport/implementation design.
+`docs/16-mvp-scope-and-first-forms-v1.md` фиксирует первый product scope:
+
+- АОСР является mandatory first-class typed form MVP;
+- `TestAct` и `TechnicalReadinessAct` не входят в первую production delivery как generated/finalizable typed forms без отдельной ратификации;
+- certificate library и executive schemes входят как file-backed evidence;
+- registry остается derived projection, а package builder собирает snapshot-based outputs;
+- generated outputs MVP: DOCX, PDF, registry export and ZIP package;
+- onboarding/contextual hints, empty states, "do not show again" and validation explanation UX являются частью MVP;
+- MVP must be usable without AI/OCR; AI/OCR остается optional/deferred and proposal-only.
+
+Открытыми остаются review/acceptance MVP scope, точная первая AOSR template baseline/participant requirements, retention/privacy/RBAC details, template/rendering/storage/queue implementation, AI processing policy/provider и physical database/API transport/implementation design.
 
 Следующий архитектурный review должен рассмотреть и принять либо скорректировать:
 
 ```text
-docs/15-api-command-readmodel-contracts-v1.md
+docs/16-mvp-scope-and-first-forms-v1.md
 ```
 
-Только после его принятия допускается переход к `docs/16-mvp-scope-and-first-forms-v1.md`. API Command/Read Model Contracts V1 не разрешает писать production code, backend/frontend scaffold, SQL/migrations/ORM schema, OpenAPI, implementation или выбирать инфраструктуру.
+Только после его принятия допускается переход к `docs/17-tech-stack-and-implementation-strategy-v1.md`. MVP Scope and First Forms V1 не разрешает писать production code, backend/frontend scaffold, SQL/migrations/ORM schema, OpenAPI, implementation или выбирать инфраструктуру.

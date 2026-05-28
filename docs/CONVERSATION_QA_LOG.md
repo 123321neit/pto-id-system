@@ -1,7 +1,7 @@
 # CONVERSATION_QA_LOG
 # PTO ID System
 # Consolidated decisions from user/assistant discussion
-# Version: 2026-05-27-API-COMMAND-READMODEL-CONTRACTS-V1
+# Version: 2026-05-28-MVP-SCOPE-FIRST-FORMS-V1
 
 Этот файл фиксирует важные вопросы, ответы и решения, которые появились в переписке и проектной памяти. Его цель — не заменить `PROJECT_MEMORY.md`, а сохранить ход принятия решений.
 
@@ -312,4 +312,32 @@ A: По прямому переходу владельца проекта в `do
 
 ```text
 docs/16-mvp-scope-and-first-forms-v1.md
+```
+
+---
+
+## 23. MVP Scope and First Forms V1
+
+### Q: Какой первый реально реализуемый production MVP нужно зафиксировать до выбора стека?
+
+A: В `docs/16-mvp-scope-and-first-forms-v1.md` создан product/MVP-scope документ, который сужает первую delivery до АОСР и минимального end-to-end workflow:
+
+- основной пользователь MVP — инженер ПТО в small/medium construction workflow, одиночно или в small team workspace;
+- `AOSR` является mandatory first-class typed form;
+- `TestAct` family и `TechnicalReadinessAct` не входят в первую production delivery как generated/finalizable typed forms без отдельной ратификации concrete form/payload/template/validation;
+- certificate library MVP обязателен: документы качества имеют physical original file and confirmed metadata, а номер сертификата нельзя просто вписать строкой;
+- executive schemes MVP входят как file-backed object evidence with manual metadata;
+- folder/numbering MVP ограничен object-scoped folders, simple numbering, explicit renumber, and move with keep/recalculate choice;
+- package builder MVP включает registry generation, default ordering, manual ordering, snapshot/release and ZIP/downloadable outputs;
+- generated output MVP: AOSR DOCX, AOSR PDF, registry export and ZIP package;
+- AI/OCR is not required for MVP; MVP must work fully without AI/OCR; any future AI/OCR remains optional, proposal-only and non-autonomous;
+- UX/onboarding decision зафиксирован: first-run guidance, contextual hints/tooltips, empty states, validation explanation and "do not show again" behavior, без перегруза experienced users;
+- explicit non-MVP list excludes ERP, procurement, finance, generic task management, advanced approvals, mobile/offline, EDS, template marketplace/editor, AI autopilot, generic document builder, deep analytics and platform features.
+
+Открытыми остаются exact first AOSR template baseline, required participant set, retention/privacy/RBAC/governance details and technology/implementation strategy.
+
+Статус решения: product/MVP scope documented for review. Документ не разрешает production code, backend/frontend scaffold, SQL/migrations/ORM schema, OpenAPI или выбор stack/provider/database/storage/queue/renderer/AI provider. Следующий этап после review:
+
+```text
+docs/17-tech-stack-and-implementation-strategy-v1.md
 ```

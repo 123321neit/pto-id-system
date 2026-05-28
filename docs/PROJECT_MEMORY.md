@@ -2,7 +2,7 @@
 # PTO ID SYSTEM
 # EXECUTIVE DOCUMENTATION PLATFORM
 # MASTER CONTEXT / SOURCE OF TRUTH
-# VERSION: 2026-05-27-API-COMMAND-READMODEL-CONTRACTS-V1
+# VERSION: 2026-05-28-MVP-SCOPE-FIRST-FORMS-V1
 # STATUS: ACTIVE SYSTEM ARCHITECTURE DESIGN PHASE
 # LANGUAGE: RU
 
@@ -1427,11 +1427,12 @@ UI не должен быть перегружен, но система долж
 - lifecycle, immutability, numbering, validation, registry override safety, package determinism and AI/OCR review follow-up produced by Schema V1 review in `docs/13-domain-lifecycle-immutability-validation-v1.md`.
 - conceptual Backend/API Architecture V1 in `docs/14-backend-api-architecture-v1.md`, defining modular backend boundaries, commands/read models, consistency, concurrency, validation, async workflows and tenant-safe API policy without implementation choices.
 - conceptual API Command/Read Model Contracts V1 in `docs/15-api-command-readmodel-contracts-v1.md`, defining envelope/result/error/async semantics, intent contracts, expected versions/idempotency, validation findings and UI read-model composition without transport or implementation choices.
+- product MVP Scope and First Forms V1 in `docs/16-mvp-scope-and-first-forms-v1.md`, defining the first production-usable scope around AOSR, file-backed evidence, executive schemes, derived registry, package outputs, onboarding/contextual hints and AI-optional delivery without stack or implementation choices.
 
 Не завершено:
 
-- review и принятие `docs/15-api-command-readmodel-contracts-v1.md` перед переходом к MVP Scope and First Forms V1;
-- concrete typed scope/required fields для TestAct/AOSR/TechnicalReadinessAct и remaining invite, privacy/access, retention, AI-processing and audit requirements за пределами зафиксированных V1 policies;
+- review и принятие `docs/16-mvp-scope-and-first-forms-v1.md` перед переходом к Tech Stack and Implementation Strategy V1;
+- точная первая AOSR template baseline/participant requirements and remaining invite, privacy/access, retention, AI-processing and audit requirements за пределами зафиксированных V1 policies;
 - production physical database mapping, migrations and storage implementation;
 - repositories;
 - physical API transport mapping and implementation;
@@ -1573,10 +1574,10 @@ Draft baseline project ingestion, proposals, confirmation, traceability and isol
 Следующий правильный этап:
 
 ```text
-Review docs/15-api-command-readmodel-contracts-v1.md; proceed to MVP Scope and First Forms V1 only if accepted
+Review docs/16-mvp-scope-and-first-forms-v1.md
 ```
 
-Не production code, backend/frontend scaffold, production SQL/migrations/ORM schema, OpenAPI, concrete routes или физический database mapping до этого review.
+Не production code, backend/frontend scaffold, production SQL/migrations/ORM schema, OpenAPI, concrete routes, физический database mapping или stack/provider choice до этого review.
 
 Pre-schema источники baseline:
 
@@ -1618,10 +1619,18 @@ docs/15-api-command-readmodel-contracts-v1.md
 
 Он определяет common command envelope/results/errors/async operations, intent-level payload/result semantics, version/idempotency/invalidation behavior, validation finding contract, authorization scope и UI read-model fields. Документ не является OpenAPI/transport design и не разрешает coding.
 
-После review рекомендуемый следующий документ:
+На его основе по прямому переходу владельца проекта создан product/MVP-scope документ:
 
 ```text
 docs/16-mvp-scope-and-first-forms-v1.md
+```
+
+Он фиксирует первую production-usable поставку: АОСР как mandatory first-class form, certificate library, executive schemes, derived registry, package builder, generated DOCX/PDF/registry/ZIP outputs, search/collaboration/onboarding MVP boundaries and explicit non-MVP exclusions. Документ подчеркивает, что MVP must be usable without AI/OCR, а AI/OCR остается optional/deferred and proposal-only.
+
+После review рекомендуемый следующий документ:
+
+```text
+docs/17-tech-stack-and-implementation-strategy-v1.md
 ```
 
 ---
@@ -1675,6 +1684,7 @@ docs/16-mvp-scope-and-first-forms-v1.md
 | `docs/13-domain-lifecycle-immutability-validation-v1.md` | Schema V1 lifecycle/immutability/validation follow-up before Backend/API design | Фиксирует storage-neutral lifecycle, historical rebuild, numbering, validation, override safety, package determinism, AI review flow и FolderTree boundary для review/acceptance. |
 | `docs/14-backend-api-architecture-v1.md` | Conceptual Backend/API Architecture V1 before command/read-model contract design | Фиксирует modular-monolith modules, command/query boundary, UI read models, transactions/concurrency, validation, async outputs/AI and tenant-safe API principles без кода или technology selection. |
 | `docs/15-api-command-readmodel-contracts-v1.md` | Conceptual API Command/Read Model Contracts V1 before MVP forms | Фиксирует command/result/error/async semantics, intent contracts, expected versions/idempotency, validation findings, screen reads and scope rules без OpenAPI, code или technology selection. |
+| `docs/16-mvp-scope-and-first-forms-v1.md` | Product MVP Scope and First Forms V1 before technology selection | Фиксирует первую production-usable поставку вокруг АОСР, certificate library, executive schemes, registry, package outputs, onboarding hints and AI-optional delivery без code/scaffold/SQL/OpenAPI или выбора стека. |
 | `docs/adr/*.md` | Принятые архитектурные решения | Нормативные решения по отдельным темам. Изменение принятого принципа требует нового ADR или явного пересмотра существующего. |
 | `docs/samples/*.md` | Анализ реальных примеров | Reference sources для доменной модели и будущих шаблонов/парсеров; не generated output системы. |
 
@@ -2053,19 +2063,35 @@ API Command/Read Model Contracts V1:
 - определяет screen-oriented read models without table dumps, routes or OpenAPI;
 - оставляет открытыми first typed forms, fine-grained RBAC/privacy/retention/AI policy and physical implementation choices.
 
-Текущий следующий шаг:
-
-```text
-Review docs/15-api-command-readmodel-contracts-v1.md; proceed to MVP Scope and First Forms V1 only if accepted
-```
-
-Рекомендуемый следующий документ после review:
+По прямому переходу владельца проекта к следующему этапу создан product/MVP-scope document:
 
 ```text
 docs/16-mvp-scope-and-first-forms-v1.md
 ```
 
-API Command/Read Model Contracts V1 не разрешает production code, backend/frontend scaffold, production SQL/migrations/ORM schema, OpenAPI, concrete API routes, infrastructure selection или generation/storage implementation.
+MVP Scope and First Forms V1:
+
+- фиксирует АОСР как mandatory first-class typed form первой production delivery;
+- оставляет `TestAct` и `TechnicalReadinessAct` limited/deferred без approved concrete form/payload/template/validation;
+- включает certificate library and executive schemes as file-backed evidence, not standalone text in acts;
+- ограничивает registry and package builder derived/snapshot workflows without ERP/ECM/platform expansion;
+- фиксирует generated outputs MVP: AOSR DOCX/PDF, registry export and ZIP package;
+- фиксирует UX/onboarding decision: first-run guidance, contextual hints/tooltips, empty states, validation explanation and "do not show again" behavior without cluttering experienced users;
+- подчеркивает, что MVP must be usable without AI/OCR; AI/OCR remains optional/deferred and proposal-only.
+
+Текущий следующий шаг:
+
+```text
+Review docs/16-mvp-scope-and-first-forms-v1.md
+```
+
+Рекомендуемый следующий документ после review:
+
+```text
+docs/17-tech-stack-and-implementation-strategy-v1.md
+```
+
+MVP Scope and First Forms V1 не разрешает production code, backend/frontend scaffold, production SQL/migrations/ORM schema, OpenAPI, concrete API routes, infrastructure selection или generation/storage implementation.
 
 ---
 
@@ -2096,7 +2122,10 @@ API Command/Read Model Contracts V1 не разрешает production code, bac
 21. `docs/12-database-schema-v1.md` является conceptual schema baseline; он не является production SQL, ORM/API contract или разрешением начать coding.
 22. `docs/13-domain-lifecycle-immutability-validation-v1.md` документирует policy follow-up Schema V1, применяемый Backend/API Architecture V1.
 23. `docs/14-backend-api-architecture-v1.md` является conceptual architecture input for command/read-model contracts, а не разрешением на code/SQL/scaffold.
-24. `docs/15-api-command-readmodel-contracts-v1.md` является conceptual contract layer, не OpenAPI или implementation; следующий gate — его review перед MVP Scope and First Forms V1.
+24. `docs/15-api-command-readmodel-contracts-v1.md` является conceptual contract layer, не OpenAPI или implementation.
+25. `docs/16-mvp-scope-and-first-forms-v1.md` фиксирует первый product/MVP scope; текущий gate — его review перед `docs/17-tech-stack-and-implementation-strategy-v1.md`.
+26. MVP должен быть usable without AI/OCR; AI/OCR не является prerequisite для первой delivery.
+27. Onboarding/contextual hints, empty states, validation explanations and "do not show again" behavior входят в UX baseline MVP, но не должны мешать experienced users.
 
 ---
 
@@ -2122,14 +2151,15 @@ API Command/Read Model Contracts V1 не разрешает production code, bac
 | Можно ли использовать загруженный проект для AI-assisted ИД и поиска ошибок? | Да, как Workspace/Object-scoped source material с proposals-only workflow. | Structured data остаются source of truth; extracted data/links/findings требуют user confirmation, traceability and audit. |
 | Где хранить данные компании на объекте? | Через `ObjectCompanySnapshot`. | Изменение профиля компании не переписывает исторические документы объекта. |
 | Может ли Object владеть всем сразу? | Нет. | Требуются отдельные aggregates/contexts для documents, certificates, schemes, templates и packages. |
-| Какая стадия проекта сейчас? | System Architecture Design, не coding. | Conceptual API Command/Read Model Contracts V1 создан; следующий шаг — review `docs/15-api-command-readmodel-contracts-v1.md`, не scaffold приложения. |
+| Какая стадия проекта сейчас? | System Architecture Design, не coding. | MVP Scope and First Forms V1 создан; следующий шаг — review `docs/16-mvp-scope-and-first-forms-v1.md`, не scaffold приложения. |
 | Кто является пользователем SaaS? | Физическое лицо с одним аккаунтом и автоматическим `Personal Workspace`. | Пользователь может работать сам и состоять в нескольких organization workspaces. |
 | Где живут права доступа? | В `Membership` конкретного workspace, а не в `User` напрямую. | Один user может иметь разные роли в разных isolated tenants. |
 | Как пользователь вступает в организацию? | Через stored `Invite`, acceptance которого создаёт membership. | Invite URL не содержит доверенных прав; role/expiry/revocation/usage определяются сохранённым invite. |
 | Какая схема данных является baseline перед Backend/API? | `docs/12-database-schema-v1.md` как storage-neutral conceptual schema. | Она применяет required aggregate/access/ingestion boundaries, но не выбирает SQL, ORM, API или implementation. |
 | Какой follow-up Schema V1 требуется перед Backend/API? | `docs/13-domain-lifecycle-immutability-validation-v1.md` как lifecycle/immutability/validation V1 policy. | Фиксирует revisions, evidence lifecycles, numbering, validation, override safety, package determinism и AI review flow; требует review/acceptance. |
 | Какой Backend/API shape следует применять до contracts? | `docs/14-backend-api-architecture-v1.md` как conceptual modular-monolith/application boundary. | Explicit domain commands, UI read models, authoritative validation, version/idempotency and async derived flows; никакого CRUD-first API или code permission. |
-| Какой command/read-model contract применяется до MVP forms? | `docs/15-api-command-readmodel-contracts-v1.md` как conceptual contract layer. | Envelope/results/errors/async operations, intent semantics, validation findings and UI reads зафиксированы без routes/OpenAPI/code; следующий gate — review перед `docs/16-mvp-scope-and-first-forms-v1.md`. |
+| Какой command/read-model contract применяется до MVP forms? | `docs/15-api-command-readmodel-contracts-v1.md` как conceptual contract layer. | Envelope/results/errors/async operations, intent semantics, validation findings and UI reads зафиксированы без routes/OpenAPI/code. |
+| Какой first MVP scope принят к review? | `docs/16-mvp-scope-and-first-forms-v1.md`. | АОСР mandatory first-class form; certificate library, executive schemes, derived registry, package outputs and onboarding hints входят; `TestAct`/`TechnicalReadinessAct`, AI/OCR dependency and enterprise/platform features deferred. |
 
 ### 51.1 Accepted ADR register
 
@@ -2215,13 +2245,26 @@ Auth/workspace baseline отражён logical table families `workspace`, `memb
 
 Документ подготовлен для review и не разрешает production code, backend/frontend scaffold, SQL/migrations/ORM, OpenAPI, concrete routes или technology/provider choices. После его принятия рекомендуемый следующий этап — `docs/16-mvp-scope-and-first-forms-v1.md`.
 
+### 51.8 MVP Scope and First Forms V1 documented for review
+
+| MVP topic | V1 direction в `docs/16-mvp-scope-and-first-forms-v1.md` | What remains open |
+| --- | --- | --- |
+| First production scope | АОСР is mandatory first-class typed form; first workflow runs object -> AOSR -> evidence/schemes -> registry -> package output. | Review/acceptance of scope and exact first template baseline. |
+| First evidence scope | Certificate library and ExecutiveScheme are file-backed MVP foundations; certificate numbers cannot be standalone truth. | Detailed retention/supersession/privacy and original-file access policy. |
+| Deferred forms | `TestAct` family and `TechnicalReadinessAct` are not first generated/finalizable typed forms without separate concrete form ratification. | Which exact test act enters a later release. |
+| Generated outputs | AOSR DOCX/PDF, registry export and ZIP package are MVP outputs; template marketplace and visual editor are excluded. | Rendering/storage/queue/template implementation in later tech strategy. |
+| AI/OCR policy | MVP must work without AI/OCR; any AI/OCR remains optional/deferred, proposal-only and never autonomous. | Approved processing/provider/privacy policy before real file processing. |
+| UX/onboarding | First-run guidance, contextual hints/tooltips, empty states, validation explanation and "do not show again" are MVP UX decisions. | Exact frontend state, lock/autosave UX and component implementation. |
+
+Документ подготовлен для review и не разрешает production code, backend/frontend scaffold, SQL/migrations/ORM, OpenAPI, concrete routes или database/provider/renderer/queue/AI choices. После его принятия рекомендуемый следующий этап — `docs/17-tech-stack-and-implementation-strategy-v1.md`.
+
 ---
 
 ## 52. Open Questions Still Not Solved
 
 Следующие вопросы не отменяют принятые выше принципы. Их нельзя решать случайным кодом: они требуют спецификации, пользовательского выбора и, где необходимо, ADR.
 
-Lifecycle/immutability, structured numbering, validation baseline, package determinism и AI/OCR review boundary документированы в `docs/13-domain-lifecycle-immutability-validation-v1.md`. Backend module/consistency boundaries документированы в `docs/14-backend-api-architecture-v1.md`. Conceptual command/read-model/error/async/version/scope contracts документированы в `docs/15-api-command-readmodel-contracts-v1.md`. Вопросы ниже сохраняют детализацию first forms, policy и physical implementation, которую эти conceptual документы намеренно не утверждают.
+Lifecycle/immutability, structured numbering, validation baseline, package determinism и AI/OCR review boundary документированы в `docs/13-domain-lifecycle-immutability-validation-v1.md`. Backend module/consistency boundaries документированы в `docs/14-backend-api-architecture-v1.md`. Conceptual command/read-model/error/async/version/scope contracts документированы в `docs/15-api-command-readmodel-contracts-v1.md`. First product/MVP scope documented in `docs/16-mvp-scope-and-first-forms-v1.md` narrows the first delivery to AOSR, evidence, schemes, registry, package outputs and AI-optional UX. Вопросы ниже сохраняют детализацию accepted first template, policy и physical implementation, которую эти conceptual/product documents намеренно не утверждают.
 
 ### 52.1 Domain scope and typed schemas
 
@@ -2579,13 +2622,41 @@ Data Model V1 documented; open aggregate and MVP decisions require review before
 - зафиксированы screen-oriented read models для основного PTO workflow и explainable validation finding contract;
 - сохранены immutable released revisions/snapshots/template/evidence references, presentation-only registry overrides, assistant-only AI and tenant leakage protection.
 
-Открыто перед следующим этапом:
+Открыто перед следующим этапом на момент создания документа:
 
 - review и принятие `docs/15-api-command-readmodel-contracts-v1.md`;
-- concrete MVP typed forms/required fields and exact first validation scope in proposed `docs/16-mvp-scope-and-first-forms-v1.md`;
+- concrete MVP typed forms/required fields and exact first validation scope, subsequently addressed for review in `docs/16-mvp-scope-and-first-forms-v1.md`;
 - retention/privacy/RBAC/governance/AI-processing policies and later physical implementation choices.
 
 Что не было изменено или выбрано этим этапом:
 
 - ADR 0001-0005, Schema V1, lifecycle policy and Backend/API module boundaries;
 - production code, backend/frontend scaffold, SQL, migrations, ORM, OpenAPI, concrete routes, database, renderer, storage provider, queue or AI provider.
+
+### 2026-05-28 — MVP Scope and First Forms V1 created
+
+- Документ: `docs/16-mvp-scope-and-first-forms-v1.md`
+- Статус: `product/MVP-scope specification for review before technology selection and implementation strategy`
+- Описание: first production-usable MVP boundary focused on AOSR, file-backed evidence, executive schemes, registry, package outputs and simple UX without implementation choices.
+
+Зафиксированный прогресс:
+
+- определено, что `AOSR` является mandatory first-class typed form первой production delivery;
+- `TestAct` family и `TechnicalReadinessAct` оставлены limited/deferred до отдельной ратификации concrete form, payload, template and validation;
+- certificate library MVP and executive schemes MVP зафиксированы как file-backed evidence, required for AOSR/package correctness;
+- folder/numbering, registry, package builder and generated output MVP rules narrowed to first usable workflow;
+- AI/OCR explicitly not required for MVP; product must work fully with manual entry and confirmed structured data;
+- onboarding/contextual hints, empty states, validation explanation UX and "do not show again" behavior added as MVP UX decisions;
+- explicit large non-MVP list documented to prevent ERP/ECM/platform/generic-builder scope creep.
+
+Открыто перед следующим этапом:
+
+- review и принятие `docs/16-mvp-scope-and-first-forms-v1.md`;
+- exact first AOSR template baseline and required participant set;
+- retention/privacy/RBAC/governance policy details required before implementation;
+- technology/stack/rendering/storage/queue/API implementation strategy in proposed `docs/17-tech-stack-and-implementation-strategy-v1.md`.
+
+Что не было изменено или выбрано этим этапом:
+
+- ADR 0001-0005, Schema V1, lifecycle policy, Backend/API Architecture V1 and API Command/Read Model Contracts V1;
+- production code, backend/frontend scaffold, SQL, migrations, ORM, OpenAPI, concrete routes, database, renderer, storage provider, queue, AI provider or dependency strategy.

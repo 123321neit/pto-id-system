@@ -37,12 +37,13 @@ DOCX/PDF/реестры/комплекты являются производны
 - ОВиК
 - ВК
 - российская исполнительная документация
-- АОСР
-- акты испытаний
+- АОСР как первая обязательная first-class form
+- акты испытаний только после отдельной ратификации concrete forms
 - сертификаты
 - исполнительные схемы
 - реестры
 - комплекты ИД
+- MVP должен быть usable without AI/OCR
 
 ## Non-goals
 
@@ -71,25 +72,26 @@ DOCX/PDF/реестры/комплекты являются производны
 - `docs/13-domain-lifecycle-immutability-validation-v1.md`
 - `docs/14-backend-api-architecture-v1.md`
 - `docs/15-api-command-readmodel-contracts-v1.md`
+- `docs/16-mvp-scope-and-first-forms-v1.md`
 
 ## Current next step
 
-На основании Backend/API Architecture V1 следующим архитектурным этапом подготовлен conceptual API Command/Read Model Contracts V1:
+На основании API Command/Read Model Contracts V1 подготовлен product/MVP scope документ:
 
 ```text
-docs/15-api-command-readmodel-contracts-v1.md
+docs/16-mvp-scope-and-first-forms-v1.md
 ```
 
-Документ фиксирует conceptual envelope/result/error/async-operation semantics, intent-level commands, expected versions, idempotency, validation findings и screen-oriented read models. Он сохраняет structured source of truth, file-backed evidence, derived registry, immutable snapshots и editable-through-revision `final`, не выбирая routes/OpenAPI, production SQL, ORM, framework, database, storage, queue, renderer или AI provider.
+Документ фиксирует первую реалистичную production-usable поставку: АОСР как mandatory first-class form, certificate library, executive schemes, derived registry, package builder, generated DOCX/PDF/ZIP outputs, onboarding/contextual hints и правило, что MVP должен работать без AI/OCR.
 
 Текущий следующий этап:
 
 ```text
-Review docs/15-api-command-readmodel-contracts-v1.md; proceed to MVP Scope and First Forms V1 only if accepted
+Review docs/16-mvp-scope-and-first-forms-v1.md
 ```
 
-API Command/Read Model Contracts V1 по-прежнему не разрешает production code, backend/frontend scaffold, SQL/migrations/ORM schema, OpenAPI или выбор инфраструктуры. Следующий документ после успешного review:
+MVP Scope and First Forms V1 по-прежнему не разрешает production code, backend/frontend scaffold, SQL/migrations/ORM schema, OpenAPI или выбор инфраструктуры. Следующий документ после успешного review:
 
 ```text
-docs/16-mvp-scope-and-first-forms-v1.md
+docs/17-tech-stack-and-implementation-strategy-v1.md
 ```
