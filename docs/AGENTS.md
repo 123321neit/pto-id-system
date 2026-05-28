@@ -52,7 +52,7 @@
 Текущий этап:
 
 ```text
-First allowed infrastructure/bootstrap scaffold accepted; canonical ADR baseline accepted
+First allowed infrastructure/bootstrap scaffold accepted; canonical ADR baseline accepted; backend module architecture skeleton introduced
 ```
 
 Разрешённый scaffold ограничен:
@@ -65,6 +65,13 @@ First allowed infrastructure/bootstrap scaffold accepted; canonical ADR baseline
 - strict TypeScript, lint, format, test and build tooling;
 - env/config validation foundation;
 - local CI-equivalent quality gates.
+- canonical `apps/api/src` backend module skeleton:
+  `shared-kernel`, `infrastructure`, `workspace`, `documents`, `evidence`,
+  `registry`, `packages`, `ai`, and `health`;
+- `apps/api/src/ARCHITECTURE.md` with ownership, dependency direction,
+  source-of-truth, revision/package, and infrastructure isolation rules;
+- ESLint backend import guardrails against sibling module internals,
+  direct infrastructure access from bounded modules, and provider leakage.
 
 GitHub Actions CI добавлен в `.github/workflows/ci.yml`. Он запускается на
 `push` и `pull_request`, использует Node 22, Corepack, `pnpm install
@@ -97,6 +104,11 @@ canonical ADR 0001-0005 in `docs/adr/`.
 ```text
 Any separate feature/database/API task must comply with canonical ADR 0001-0005
 ```
+
+Recommended next step: request a separate, explicitly scoped backend
+application skeleton task for workspace/session isolation foundations. Do not
+start AOSR, Prisma, migrations, storage/uploads, queues, package generation,
+OpenAPI, AI/OCR, or domain validation without a new task.
 
 `docs/12-database-schema-v1.md` по прямому заданию применяет baseline decisions из `docs/09-aggregate-boundaries-and-invariants.md` по:
 

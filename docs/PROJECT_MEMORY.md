@@ -2,8 +2,8 @@
 # PTO ID SYSTEM
 # EXECUTIVE DOCUMENTATION PLATFORM
 # MASTER CONTEXT / SOURCE OF TRUTH
-# VERSION: 2026-05-28-CANONICAL-ADR-BASELINE
-# STATUS: FIRST ALLOWED INFRASTRUCTURE BOOTSTRAP SCAFFOLD; CANONICAL ADR BASELINE ACCEPTED
+# VERSION: 2026-05-28-BACKEND-MODULE-SKELETON
+# STATUS: FIRST ALLOWED INFRASTRUCTURE BOOTSTRAP SCAFFOLD; CANONICAL ADR BASELINE ACCEPTED; BACKEND MODULE ARCHITECTURE SKELETON INTRODUCED
 # LANGUAGE: RU
 
 ---
@@ -25,10 +25,10 @@
 Текущая стадия проекта:
 
 ```text
-FIRST ALLOWED INFRASTRUCTURE BOOTSTRAP SCAFFOLD; CANONICAL ADR BASELINE ACCEPTED
+FIRST ALLOWED INFRASTRUCTURE BOOTSTRAP SCAFFOLD; CANONICAL ADR BASELINE ACCEPTED; BACKEND MODULE ARCHITECTURE SKELETON INTRODUCED
 ```
 
-Проект принял первый явно разрешённый infrastructure/bootstrap scaffold. Это не feature coding и не production MVP implementation. Главная цель текущего этапа — удерживать минимальную инженерную основу репозитория без доменной реализации до отдельного feature/database/API задания.
+Проект принял первый явно разрешённый infrastructure/bootstrap scaffold и отдельный backend module architecture skeleton. Это не feature coding и не production MVP implementation. Главная цель текущего этапа — удерживать минимальную инженерную основу репозитория без доменной реализации до отдельного feature/database/API задания.
 
 Canonical ADR baseline accepted. Authoritative ADR references:
 
@@ -2949,3 +2949,44 @@ Do not start feature/database/API/storage/generation work without a separate exp
 - no MVP scope change;
 - no production code;
 - no Prisma schema, SQL, migrations, ORM schema, OpenAPI, API routes, storage adapter, queue worker, generation pipeline or business/domain implementation.
+
+### 2026-05-28 — Backend module architecture skeleton introduced
+
+- Статус: `backend architecture skeleton only`
+- Документы:
+  - `apps/api/src/ARCHITECTURE.md`
+  - module `README.md` files under `apps/api/src/{shared-kernel,infrastructure,workspace,documents,evidence,registry,packages,ai,health}/`
+- Описание: canonical backend module boundaries for the NestJS modular monolith,
+  introduced before feature implementation and without domain/business behavior.
+
+Созданные backend boundaries:
+
+- `workspace`: workspace boundary, membership vocabulary and isolation contracts;
+- `documents`: typed documents, revisions and finalization lifecycle boundary;
+- `evidence`: certificates, executive schemes and file-backed evidence boundary;
+- `registry`: derived projection and presentation-only override boundary;
+- `packages`: package builds, snapshots, generated artifacts and future async orchestration boundary;
+- `ai`: proposal/finding-only boundary for future AI/OCR assistance;
+- `shared-kernel`: shared primitives/interfaces only, without business aggregate leakage;
+- `infrastructure`: provider adapter tokens/ports only, without provider leakage into domain modules;
+- `health`: technical health endpoint only.
+
+Architecture guardrails added:
+
+- `apps/api/src/ARCHITECTURE.md` documents module purpose, ownership, forbidden couplings, dependency direction, source-of-truth rules, derived artifacts, revision/package invariants and infrastructure isolation;
+- ESLint now blocks direct sibling-module internal imports for backend bounded contexts;
+- ESLint blocks direct infrastructure access from bounded modules;
+- ESLint keeps `shared-kernel` framework-free and keeps `infrastructure` from importing domain module internals.
+
+What was not introduced:
+
+- no AOSR implementation;
+- no Prisma schema or migrations;
+- no CRUD APIs, OpenAPI, auth, uploads/storage implementation, DB access, queue jobs, package generation or AI/OCR implementation;
+- no controllers/services with domain behavior;
+- no repositories, use cases, real entities, validation rules or business logic.
+
+Recommended next step: request a separate, explicitly scoped backend
+application skeleton task for workspace/session isolation foundations. Any
+database/API/storage/queue/package/AOSR/AI work must remain blocked until its
+own task is checked against `docs/PROJECT_MEMORY.md` and canonical ADR 0001-0005.

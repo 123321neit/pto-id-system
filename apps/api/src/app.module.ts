@@ -1,8 +1,24 @@
 import { Module } from '@nestjs/common';
 
-import { HealthController } from './health.controller.js';
+import { AiModule } from './ai/module.js';
+import { DocumentsModule } from './documents/module.js';
+import { EvidenceModule } from './evidence/module.js';
+import { HealthModule } from './health/module.js';
+import { InfrastructureModule } from './infrastructure/module.js';
+import { PackagesModule } from './packages/module.js';
+import { RegistryModule } from './registry/module.js';
+import { WorkspaceModule } from './workspace/module.js';
 
 @Module({
-  controllers: [HealthController],
+  imports: [
+    WorkspaceModule,
+    DocumentsModule,
+    EvidenceModule,
+    RegistryModule,
+    PackagesModule,
+    AiModule,
+    InfrastructureModule,
+    HealthModule,
+  ],
 })
 export class AppModule {}

@@ -522,3 +522,44 @@ A: Принят documentation-only corrective step: создан официал�
 - MVP scope changes;
 - Prisma schema, migrations, OpenAPI, production API/routes or business implementation;
 - storage/queue/generation/AI provider implementation.
+
+---
+
+## 29. Backend Module Architecture Skeleton
+
+### Q: Как ввести canonical backend module boundaries, не начиная feature implementation?
+
+A: Создан backend architecture skeleton в `apps/api/src` для NestJS modular
+monolith. Это не feature implementation task и не начало доменной реализации.
+
+Созданы boundaries:
+
+- `shared-kernel` — shared primitives/interfaces only;
+- `infrastructure` — provider adapter skeleton/tokens/ports only;
+- `workspace` — workspace boundary, membership vocabulary and isolation;
+- `documents` — typed documents, revisions and finalization lifecycle boundary;
+- `evidence` — certificates, executive schemes and file-backed evidence boundary;
+- `registry` — derived projections only;
+- `packages` — package builds, snapshots, generated artifacts and async orchestration boundary;
+- `ai` — proposals/findings only, no autonomous mutation;
+- `health` — technical health endpoint only.
+
+Добавлено:
+
+- `apps/api/src/ARCHITECTURE.md`;
+- module-level README files with purpose, ownership and forbidden responsibilities;
+- placeholder tokens/ports without implementations;
+- ESLint import guardrails against sibling-module leakage, direct infrastructure access from bounded modules, and shared-kernel framework/provider leakage.
+
+Что не было введено:
+
+- no AOSR implementation;
+- no Prisma schema or migrations;
+- no CRUD APIs or OpenAPI contracts;
+- no auth, uploads/storage implementation, DB access, queues/workers, package builder, package generation or AI/OCR implementation;
+- no controllers/services with domain behavior;
+- no real entities, repositories, use cases, validation rules or business logic.
+
+Next expected step recommendation: create a separate, narrow backend
+application skeleton task for workspace/session isolation foundations before any
+AOSR, database, storage, queue, package, OpenAPI or AI work.

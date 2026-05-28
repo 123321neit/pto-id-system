@@ -5,12 +5,13 @@ Web-система автоматизации исполнительной до�
 Текущий статус:
 
 ```text
-FIRST ALLOWED INFRASTRUCTURE BOOTSTRAP SCAFFOLD ACCEPTED; CANONICAL ADR BASELINE ACCEPTED
+FIRST ALLOWED INFRASTRUCTURE BOOTSTRAP SCAFFOLD ACCEPTED; CANONICAL ADR BASELINE ACCEPTED; BACKEND MODULE ARCHITECTURE SKELETON INTRODUCED
 ```
 
 В репозитории принят первый разрешённый scaffold. Это только infrastructure/bootstrap
 foundation: workspace, tooling, app shells, shared placeholders, env/config foundation
-and CI quality gates.
+and CI quality gates. Backend module boundaries are now introduced as an
+architecture skeleton only.
 
 Production feature coding remains blocked.
 
@@ -126,6 +127,13 @@ Scaffold включает:
 - env example files for development, test and production;
 - architecture guardrails for import boundaries and infrastructure portability;
 - GitHub Actions CI for scaffold quality checks.
+- canonical backend module skeleton in `apps/api/src`:
+  `shared-kernel`, `infrastructure`, `workspace`, `documents`, `evidence`,
+  `registry`, `packages`, `ai`, and `health`.
+
+The backend module skeleton includes module boundaries, README ownership notes,
+placeholder tokens/ports, `apps/api/src/ARCHITECTURE.md`, and ESLint import
+guardrails. It intentionally does not include business/domain implementation.
 
 GitHub Actions CI is committed at `.github/workflows/ci.yml`. It runs on
 `push` and `pull_request` with Node 22, Corepack, `pnpm install
@@ -160,3 +168,7 @@ with canonical ADR 0001-0005 in `docs/adr/`.
 
 Feature coding remains blocked until a separate explicit feature/database/API
 task is requested and checked against the ADR baseline and project memory.
+
+Recommended next step: a separate, narrow backend task for the next allowed
+application skeleton boundary, starting with workspace/session isolation
+foundations before any AOSR, package, storage, queue, database, or AI work.

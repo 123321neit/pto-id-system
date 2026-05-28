@@ -39,6 +39,110 @@ const typedTypeScriptConfigs = [
   files: ['**/*.{ts,tsx}'],
 }));
 
+const backendBoundedModules = ['workspace', 'documents', 'evidence', 'registry', 'packages', 'ai'];
+
+const backendRelativeImportPatternsFor = (moduleName) => [
+  `../${moduleName}/*`,
+  `../${moduleName}/**`,
+  `../../${moduleName}/*`,
+  `../../${moduleName}/**`,
+  `../../../${moduleName}/*`,
+  `../../../${moduleName}/**`,
+  `../../../../${moduleName}/*`,
+  `../../../../${moduleName}/**`,
+  `@api/${moduleName}/*`,
+  `@api/${moduleName}/**`,
+];
+
+const backendImportPatternsFor = (moduleNames) =>
+  moduleNames.flatMap((moduleName) => backendRelativeImportPatternsFor(moduleName));
+
+const backendBoundedModuleBoundaryConfigs = backendBoundedModules.map((moduleName) => ({
+  files: [`apps/api/src/${moduleName}/**/*.ts`],
+  rules: {
+    'no-restricted-imports': [
+      'error',
+      {
+        patterns: [
+          ...baseRestrictedImports,
+          {
+            group: backendImportPatternsFor(
+              backendBoundedModules.filter((otherModuleName) => otherModuleName !== moduleName),
+            ),
+            message:
+              'Backend bounded contexts must not import sibling module internals. Use explicit contracts or an approved orchestration boundary.',
+          },
+          {
+            group: backendImportPatternsFor(['infrastructure']),
+            message:
+              'Domain modules must not directly access infrastructure. Compose provider adapters at approved module boundaries.',
+          },
+        ],
+      },
+    ],
+  },
+}));
+
+const backendInfrastructureBoundaryConfig = {
+  files: ['apps/api/src/infrastructure/**/*.ts'],
+  rules: {
+    'no-restricted-imports': [
+      'error',
+      {
+        patterns: [
+          ...baseRestrictedImports,
+          {
+            group: backendImportPatternsFor(backendBoundedModules),
+            message:
+              'Infrastructure adapters must stay provider-facing and must not import domain module internals.',
+          },
+        ],
+      },
+    ],
+  },
+};
+
+const backendSharedKernelBoundaryConfig = {
+  files: ['apps/api/src/shared-kernel/**/*.ts'],
+  rules: {
+    'no-restricted-imports': [
+      'error',
+      {
+        patterns: [
+          ...baseRestrictedImports,
+          {
+            group: [
+              '@nestjs/*',
+              ...backendImportPatternsFor([...backendBoundedModules, 'infrastructure', 'health']),
+            ],
+            message:
+              'Shared kernel must stay framework-free and must not import backend module internals.',
+          },
+        ],
+      },
+    ],
+  },
+};
+
+const backendHealthBoundaryConfig = {
+  files: ['apps/api/src/health/**/*.ts'],
+  rules: {
+    'no-restricted-imports': [
+      'error',
+      {
+        patterns: [
+          ...baseRestrictedImports,
+          {
+            group: backendImportPatternsFor([...backendBoundedModules, 'infrastructure']),
+            message:
+              'Health checks must stay technical and must not import product module internals or infrastructure adapters.',
+          },
+        ],
+      },
+    ],
+  },
+};
+
 export default tseslint.config(
   {
     ignores: [
@@ -105,6 +209,10 @@ export default tseslint.config(
       },
     },
   },
+  ...backendBoundedModuleBoundaryConfigs,
+  backendInfrastructureBoundaryConfig,
+  backendSharedKernelBoundaryConfig,
+  backendHealthBoundaryConfig,
   {
     files: ['apps/web/**/*.{ts,tsx}'],
     languageOptions: {
