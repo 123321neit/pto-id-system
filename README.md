@@ -5,10 +5,14 @@ Web-система автоматизации исполнительной до�
 Текущий статус:
 
 ```text
-SYSTEM ARCHITECTURE DESIGN
+FIRST ALLOWED INFRASTRUCTURE BOOTSTRAP SCAFFOLD
 ```
 
-Проект пока не находится на стадии кодинга.
+В репозитории начат первый разрешённый scaffold. Это только infrastructure/bootstrap
+foundation: workspace, tooling, app shells, shared placeholders, env/config foundation
+and CI quality gates.
+
+Production feature coding remains blocked.
 
 Главный источник знаний проекта:
 
@@ -78,18 +82,51 @@ DOCX/PDF/реестры/комплекты являются производны
 
 ## Current next step
 
-На основании Tech Stack and Implementation Strategy V1 подготовлен финальный pre-scaffold gate документ:
+На основании Tech Stack and Implementation Strategy V1 и pre-scaffold gate документа:
 
 ```text
 docs/18-initial-repository-bootstrap-and-development-rules-v1.md
 ```
 
-Документ фиксирует жесткие правила первого repository bootstrap/scaffold: preconditions, architecture invariants, allowed conceptual structure, backend/frontend/shared package rules, PostgreSQL + Prisma, NestJS, React + Vite + TS, Redis/BullMQ, S3-compatible storage abstraction, infrastructure portability/no server lock-in, CI/dev gates, forbidden shortcuts and architecture-violation criteria.
+создан первый инфраструктурный scaffold.
 
-Текущий следующий этап:
+Scaffold включает:
 
-```text
-Review docs/18-initial-repository-bootstrap-and-development-rules-v1.md
+- `pnpm` workspace root;
+- strict TypeScript baseline;
+- ESLint, Prettier, Vitest and local CI-equivalent checks;
+- `apps/web` React + TypeScript + Vite shell;
+- `apps/api` NestJS shell with technical `/health` endpoint only;
+- `packages/shared-types` technical placeholder types;
+- `packages/shared-config` typed env validation foundation;
+- env example files for development, test and production;
+- architecture guardrails for import boundaries and infrastructure portability.
+
+GitHub Actions workflow is not committed in this scaffold because the current
+repository push credentials cannot update workflow files without `workflow`
+scope. Local `ci:check` is wired and passing.
+
+Local quality command:
+
+```bash
+corepack pnpm ci:check
 ```
 
-Actual coding/scaffold may begin only after explicit acceptance of `docs/18-initial-repository-bootstrap-and-development-rules-v1.md` and a separate first scaffold task. Feature coding remains blocked until scaffold is accepted.
+The scaffold intentionally does not include:
+
+- AOSR implementation;
+- certificates implementation;
+- package builder implementation;
+- Prisma schema;
+- migrations;
+- OpenAPI;
+- auth implementation;
+- uploads/storage implementation;
+- queue workers;
+- document generation;
+- AI/OCR;
+- CRUD APIs;
+- database models;
+- business validation or domain logic.
+
+Recommended next step: review and accept this scaffold as infrastructure-only before any separate feature or database task is requested.

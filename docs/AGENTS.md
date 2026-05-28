@@ -46,7 +46,46 @@
 Текущий этап:
 
 ```text
-Initial Repository Bootstrap and Development Rules V1 documented in docs/18-initial-repository-bootstrap-and-development-rules-v1.md; it requires review before any scaffold
+First allowed infrastructure/bootstrap scaffold started
+```
+
+Разрешённый scaffold ограничен:
+
+- `pnpm` workspace setup;
+- React + TypeScript + Vite shell in `apps/web`;
+- NestJS shell in `apps/api`;
+- technical health endpoint only;
+- shared placeholder packages;
+- strict TypeScript, lint, format, test and build tooling;
+- env/config validation foundation;
+- local CI-equivalent quality gates.
+
+GitHub Actions workflow не добавлен в текущий push, потому что используемые
+repository credentials не имеют `workflow` scope для изменения `.github/workflows/*`.
+Local `ci:check` remains the active quality gate.
+
+Feature coding remains blocked.
+
+Запрещено в рамках текущего scaffold:
+
+- AOSR implementation;
+- certificates implementation;
+- package builder implementation;
+- Prisma schema or migrations;
+- OpenAPI;
+- real auth;
+- uploads/storage implementation;
+- queue workers;
+- document generation;
+- AI/OCR;
+- CRUD APIs;
+- database models;
+- business validation or domain logic.
+
+Следующий рекомендуемый этап:
+
+```text
+Review and accept the infrastructure-only scaffold before requesting any separate feature/database/API task
 ```
 
 `docs/12-database-schema-v1.md` по прямому заданию применяет baseline decisions из `docs/09-aggregate-boundaries-and-invariants.md` по:

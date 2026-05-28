@@ -1,7 +1,7 @@
 # CONVERSATION_QA_LOG
 # PTO ID System
 # Consolidated decisions from user/assistant discussion
-# Version: 2026-05-28-INFRASTRUCTURE-PORTABILITY-GUARDRAILS
+# Version: 2026-05-28-FIRST-INFRASTRUCTURE-SCAFFOLD
 
 Этот файл фиксирует важные вопросы, ответы и решения, которые появились в переписке и проектной памяти. Его цель — не заменить `PROJECT_MEMORY.md`, а сохранить ход принятия решений.
 
@@ -438,3 +438,54 @@ A: В `docs/18-initial-repository-bootstrap-and-development-rules-v1.md` доб�
 - hardcoded absolute server paths, IPs, domains, hostnames, buckets, regions, CDN URLs and provider-specific URLs are forbidden in application code.
 
 Статус решения: documentation-only amendment to docs/18. No code, scaffold, Docker, CI, package manifest, source folders, migrations, OpenAPI or ORM schema were introduced by this amendment.
+
+---
+
+## 27. First Allowed Infrastructure Scaffold
+
+### Q: Что разрешено в первом scaffold task и что фактически начато?
+
+A: Пользователь явно обозначил задачу как `ПЕРВЫЙ РАЗРЕШЕННЫЙ SCAFFOLD TASK` и ограничил её infrastructure/bootstrap scaffold.
+
+Созданная основа включает:
+
+- `pnpm` workspace;
+- root TypeScript/ESLint/Prettier/Vitest tooling;
+- React + TypeScript + Vite shell in `apps/web`;
+- NestJS shell in `apps/api`;
+- technical `/health` endpoint only;
+- `packages/shared-types` and `packages/shared-config` placeholders;
+- typed env/config validation foundation;
+- dev/test/prod env example structure without committed secrets;
+- local CI-equivalent quality gates;
+- guardrails for strict TypeScript, import boundaries and infrastructure portability.
+
+GitHub Actions workflow was prepared during implementation but cannot be pushed
+with the current repository credentials because GitHub rejects workflow-file
+changes without `workflow` scope. Therefore CI workflow remains pending; local
+`ci:check` is wired and passing.
+
+Важно: это не начало production feature coding.
+
+Still forbidden after scaffold:
+
+- AOSR implementation;
+- certificate implementation;
+- package builder implementation;
+- Prisma schema;
+- migrations;
+- OpenAPI;
+- real auth;
+- uploads/storage implementation;
+- queue workers;
+- document generation;
+- AI/OCR;
+- CRUD APIs;
+- database models;
+- domain/business validation and domain logic.
+
+Следующий рекомендуемый шаг:
+
+```text
+Review and accept the infrastructure-only scaffold before requesting any separate feature/database/API/storage/generation task.
+```

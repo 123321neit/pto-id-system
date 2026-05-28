@@ -2,8 +2,8 @@
 # PTO ID SYSTEM
 # EXECUTIVE DOCUMENTATION PLATFORM
 # MASTER CONTEXT / SOURCE OF TRUTH
-# VERSION: 2026-05-28-INFRASTRUCTURE-PORTABILITY-GUARDRAILS
-# STATUS: ACTIVE SYSTEM ARCHITECTURE DESIGN PHASE
+# VERSION: 2026-05-28-FIRST-INFRASTRUCTURE-SCAFFOLD
+# STATUS: FIRST ALLOWED INFRASTRUCTURE BOOTSTRAP SCAFFOLD
 # LANGUAGE: RU
 
 ---
@@ -25,10 +25,10 @@
 Текущая стадия проекта:
 
 ```text
-SYSTEM ARCHITECTURE DESIGN
+FIRST ALLOWED INFRASTRUCTURE BOOTSTRAP SCAFFOLD
 ```
 
-Проект **не находится на стадии быстрого кодинга MVP**. Главная цель текущего этапа — спроектировать production-ready архитектуру SaaS-системы исполнительной документации для инженеров ПТО.
+Проект перешёл к первому явно разрешённому infrastructure/bootstrap scaffold. Это не feature coding и не production MVP implementation. Главная цель текущего этапа — создать минимальную инженерную основу репозитория без доменной реализации.
 
 ---
 
@@ -2813,3 +2813,86 @@ Data Model V1 documented; open aggregate and MVP decisions require review before
 
 - production code, backend/frontend scaffold, source folders, package manifests, dependencies, Prisma schema, SQL, migrations, OpenAPI, concrete routes, Docker/CI/deployment files or runtime configuration;
 - first AOSR template requirements, active Foreman permission model, TestAct implementation, AI/OCR provider or deployment strategy.
+
+### 2026-05-28 — First allowed infrastructure scaffold started
+
+- Статус: `infrastructure/bootstrap scaffold`
+- Описание: первый явно разрешённый scaffold после `docs/18`, ограниченный инженерной основой репозитория.
+
+Созданная структура:
+
+```text
+apps/
+  api/
+  web/
+packages/
+  shared-config/
+  shared-types/
+```
+
+Scaffold включает:
+
+- `pnpm` workspace root;
+- root scripts for `dev`, `build`, `lint`, `typecheck`, `test`, `format:check` and `ci:check`;
+- strict TypeScript baseline with project references, workspace package imports and local path-alias foundations;
+- ESLint/Prettier/Vitest setup;
+- `.editorconfig`, `.gitignore`, env example files and Node version baseline;
+- React + TypeScript + Vite shell in `apps/web`;
+- NestJS shell in `apps/api`;
+- technical `/health` endpoint only;
+- shared technical placeholder types in `packages/shared-types`;
+- typed env validation foundation in `packages/shared-config`;
+- local CI-equivalent quality gate running format, lint, typecheck, test and build.
+
+GitHub Actions workflow status:
+
+```text
+not committed in this scaffold
+```
+
+Reason: current repository push credentials cannot update `.github/workflows/*`
+without `workflow` scope. The workflow should be added in a later infrastructure
+task when credentials allow it. Local `ci:check` is wired and passing.
+
+Architecture guardrails added in tooling:
+
+- strict TypeScript options;
+- import boundary restrictions against app-internal cross-imports;
+- blocked provider/database/queue SDK imports until a scoped infrastructure adapter task authorizes them;
+- blocked hardcoded absolute server/workstation path literals in TypeScript/JavaScript source;
+- env examples keep database, Redis, storage, CORS and public URL values configuration-driven.
+
+What remains forbidden after this scaffold:
+
+- AOSR implementation;
+- certificates implementation;
+- package builder implementation;
+- Prisma schema;
+- migrations;
+- OpenAPI;
+- real auth;
+- uploads or storage implementation;
+- queue workers;
+- document generation;
+- AI/OCR;
+- CRUD APIs;
+- database models;
+- domain/business validation or domain logic.
+
+Что не было введено:
+
+- no production domain modules;
+- no database schema;
+- no migrations;
+- no OpenAPI;
+- no storage adapter;
+- no worker app or queue processor;
+- no AOSR/certificate/package feature code;
+- no AI/OCR integration;
+- no deployment files, Docker or Kubernetes.
+
+Recommended next step:
+
+```text
+Review and accept this infrastructure-only scaffold before any separate feature, database, API, storage, generation or worker task.
+```

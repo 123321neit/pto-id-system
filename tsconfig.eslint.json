@@ -1,0 +1,22 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "allowJs": true,
+    "baseUrl": ".",
+    "checkJs": false,
+    "noEmit": true,
+    "paths": {
+      "@pto/shared-config": ["packages/shared-config/src/index.ts"],
+      "@pto/shared-types": ["packages/shared-types/src/index.ts"]
+    }
+  },
+  "include": [
+    "eslint.config.mjs",
+    "apps/**/*.ts",
+    "apps/**/*.tsx",
+    "apps/**/*.mts",
+    "packages/**/*.ts",
+    "packages/**/*.tsx",
+    "packages/**/*.mts"
+  ]
+}
