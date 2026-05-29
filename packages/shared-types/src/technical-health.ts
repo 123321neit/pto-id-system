@@ -12,6 +12,7 @@ export interface TechnicalDependencyHealth {
 
 export interface TechnicalHealthDependencies {
   readonly database?: TechnicalDependencyHealth;
+  readonly storage?: TechnicalDependencyHealth;
 }
 
 export interface TechnicalHealthResponse {

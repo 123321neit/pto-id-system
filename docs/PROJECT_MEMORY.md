@@ -2,8 +2,8 @@
 # PTO ID SYSTEM
 # EXECUTIVE DOCUMENTATION PLATFORM
 # MASTER CONTEXT / SOURCE OF TRUTH
-# VERSION: 2026-05-28-DATABASE-FOUNDATION-TECHNICAL-SLICE
-# STATUS: FIRST ALLOWED INFRASTRUCTURE BOOTSTRAP SCAFFOLD; CANONICAL ADR BASELINE ACCEPTED; BACKEND MODULE ARCHITECTURE SKELETON INTRODUCED; FIRST TECHNICAL FRONTEND-BACKEND STATUS SLICE INTRODUCED; DATABASE FOUNDATION TECHNICAL SLICE INTRODUCED
+# VERSION: 2026-05-29-OBJECT-STORAGE-FOUNDATION-TECHNICAL-SLICE
+# STATUS: FIRST ALLOWED INFRASTRUCTURE BOOTSTRAP SCAFFOLD; CANONICAL ADR BASELINE ACCEPTED; BACKEND MODULE ARCHITECTURE SKELETON INTRODUCED; FIRST TECHNICAL FRONTEND-BACKEND STATUS SLICE INTRODUCED; DATABASE FOUNDATION TECHNICAL SLICE INTRODUCED; OBJECT STORAGE FOUNDATION TECHNICAL SLICE INTRODUCED
 # LANGUAGE: RU
 
 ---
@@ -25,15 +25,16 @@
 Текущая стадия проекта:
 
 ```text
-FIRST ALLOWED INFRASTRUCTURE BOOTSTRAP SCAFFOLD; CANONICAL ADR BASELINE ACCEPTED; BACKEND MODULE ARCHITECTURE SKELETON INTRODUCED; FIRST TECHNICAL FRONTEND-BACKEND STATUS SLICE INTRODUCED; DATABASE FOUNDATION TECHNICAL SLICE INTRODUCED
+FIRST ALLOWED INFRASTRUCTURE BOOTSTRAP SCAFFOLD; CANONICAL ADR BASELINE ACCEPTED; BACKEND MODULE ARCHITECTURE SKELETON INTRODUCED; FIRST TECHNICAL FRONTEND-BACKEND STATUS SLICE INTRODUCED; DATABASE FOUNDATION TECHNICAL SLICE INTRODUCED; OBJECT STORAGE FOUNDATION TECHNICAL SLICE INTRODUCED
 ```
 
 Проект принял первый явно разрешённый infrastructure/bootstrap scaffold,
 отдельный backend module architecture skeleton, первый маленький technical
-frontend-backend status slice и database foundation technical slice. Это не
-feature coding и не production MVP implementation. Главная цель текущего этапа
-— удерживать минимальную инженерную основу репозитория без доменной реализации
-до отдельного feature/database/API задания.
+frontend-backend status slice, database foundation technical slice и object
+storage foundation technical slice. Это не feature coding и не production MVP
+implementation. Главная цель текущего этапа — удерживать минимальную
+инженерную основу репозитория без доменной реализации до отдельного
+feature/database/API задания.
 
 Canonical ADR baseline accepted. Authoritative ADR references:
 
@@ -1449,12 +1450,16 @@ UI не должен быть перегружен, но система долж
 - first technical frontend-backend status slice, proving that the React shell can
   call the NestJS technical `/health` endpoint through `VITE_API_BASE_URL` and
   consume the shared technical response type from `packages/shared-types`.
+- database foundation technical slice with empty Prisma schema, Prisma
+  generation wiring and infrastructure-only database health status.
+- object storage foundation technical slice with infrastructure-only
+  S3-compatible config health status and no uploads/file APIs.
 
 Не завершено:
 
-- feature/database/API/storage/generation implementation; every such task still requires separate explicit authorization and ADR compliance check;
+- feature/domain API/uploads/generation implementation; every such task still requires separate explicit authorization and ADR compliance check;
 - точная первая AOSR template baseline/participant requirements and remaining invite, privacy/access, retention, AI-processing and audit requirements за пределами зафиксированных V1 policies;
-- production physical database mapping, migrations and storage implementation;
+- production physical database mapping, migrations and business file storage implementation;
 - repositories;
 - physical API transport mapping and implementation;
 - package builder implementation internals;
@@ -2249,7 +2254,7 @@ Initial Repository Bootstrap and Development Rules V1:
 | Можно ли использовать загруженный проект для AI-assisted ИД и поиска ошибок? | Да, как Workspace/Object-scoped source material с proposals-only workflow. | Structured data остаются source of truth; extracted data/links/findings требуют user confirmation, traceability and audit. |
 | Где хранить данные компании на объекте? | Через `ObjectCompanySnapshot`. | Изменение профиля компании не переписывает исторические документы объекта. |
 | Может ли Object владеть всем сразу? | Нет. | Требуются отдельные aggregates/contexts для documents, certificates, schemes, templates и packages. |
-| Какая стадия проекта сейчас? | Infrastructure scaffold accepted; canonical ADR baseline accepted; backend module skeleton, technical status slice and database foundation technical slice introduced; feature coding still blocked. | Следующий implementation step требует отдельного явного задания и проверки against project memory and ADR 0001-0005. |
+| Какая стадия проекта сейчас? | Infrastructure scaffold accepted; canonical ADR baseline accepted; backend module skeleton, technical status slice, database foundation technical slice and object storage foundation technical slice introduced; feature coding still blocked. | Следующий implementation step требует отдельного явного задания и проверки against project memory and ADR 0001-0005. |
 | Кто является пользователем SaaS? | Физическое лицо с одним аккаунтом и автоматическим `Personal Workspace`. | Пользователь может работать сам и состоять в нескольких organization workspaces. |
 | Где живут права доступа? | В `Membership` конкретного workspace, а не в `User` напрямую. | Один user может иметь разные роли в разных isolated tenants. |
 | Как пользователь вступает в организацию? | Через stored `Invite`, acceptance которого создаёт membership. | Invite URL не содержит доверенных прав; role/expiry/revocation/usage определяются сохранённым invite. |
@@ -2259,7 +2264,7 @@ Initial Repository Bootstrap and Development Rules V1:
 | Какой command/read-model contract применяется до MVP forms? | `docs/15-api-command-readmodel-contracts-v1.md` как conceptual contract layer. | Envelope/results/errors/async operations, intent semantics, validation findings and UI reads зафиксированы без routes/OpenAPI/code. |
 | Какой first MVP scope принят к review? | `docs/16-mvp-scope-and-first-forms-v1.md`. | АОСР mandatory first-class form; certificate library, executive schemes, derived registry, package outputs and onboarding hints входят; `TestAct`/`TechnicalReadinessAct`, AI/OCR dependency and enterprise/platform features deferred. |
 | Какой stack/implementation direction выбран для MVP? | `docs/17-tech-stack-and-implementation-strategy-v1.md`. | React/TypeScript/Vite frontend, NestJS modular monolith backend, PostgreSQL, Redis/BullMQ, domain-scoped storage, deterministic DOCX/PDF/ZIP generation, PostgreSQL-first search and optional proposal-only AI/OCR. Feature coding remains blocked without separate explicit task. |
-| Какие правила первого scaffold действуют? | `docs/18-initial-repository-bootstrap-and-development-rules-v1.md`. | First scaffold limited to tooling/app shells/placeholders. Database foundation now has a separately authorized empty Prisma schema and technical health boundary only; no domain models, migrations, OpenAPI, real auth/uploads/queue/storage/generation, AI/OCR or deployment infra without separate approval. |
+| Какие правила первого scaffold действуют? | `docs/18-initial-repository-bootstrap-and-development-rules-v1.md`. | First scaffold limited to tooling/app shells/placeholders. Database and object storage foundations now have separately authorized technical health boundaries only; no domain models, migrations, OpenAPI, real auth/uploads/file APIs/queue/generation, AI/OCR or deployment infra without separate approval. |
 | Какие ADR являются canonical baseline? | `docs/adr/0001-structured-data-source-of-truth.md`, `docs/adr/0002-typed-document-domain-model.md`, `docs/adr/0003-file-backed-evidence-and-derived-artifacts.md`, `docs/adr/0004-immutable-revisions-and-package-snapshots.md`, `docs/adr/0005-modular-monolith-and-bounded-contexts.md`. | Future implementation must comply with these files; they consolidate existing decisions only and do not add feature/code permission. |
 
 ### 51.1 Accepted ADR register
@@ -3063,7 +3068,7 @@ What was not introduced:
 - no Prisma `model` blocks;
 - no migrations folder;
 - no domain tables or business database schema;
-- no repositories, CRUD APIs, auth, uploads/storage, queues, AI/OCR or package
+- no repositories, CRUD APIs, auth, uploads, business file storage, queues, AI/OCR or package
   implementation;
 - no domain readiness semantics.
 
@@ -3077,4 +3082,66 @@ global; domain bounded modules must not import it.
 
 Recommended next step: review this database foundation, then request a separate,
 explicitly scoped workspace/session isolation skeleton task before any domain
-schema, migration, AOSR, storage, queue, package, OpenAPI or AI work.
+schema, migration, AOSR, uploads/file APIs, queue, package, OpenAPI or AI work.
+
+### 2026-05-29 — Object storage foundation technical slice introduced
+
+- Статус: `object storage foundation technical slice only`
+- Описание: минимальная infrastructure-only object storage health foundation
+  without uploads, downloads, evidence files, generated artifacts, file metadata,
+  repositories, CRUD APIs or business behavior.
+
+Добавлено:
+
+- `apps/api/src/infrastructure/storage/` object storage health utility, port
+  re-export and S3-compatible adapter skeleton;
+- env-driven storage health configuration using `OBJECT_STORAGE_ENDPOINT`,
+  `OBJECT_STORAGE_BUCKET` and `OBJECT_STORAGE_REGION`;
+- config-only runtime health behavior where missing config is fail-safe
+  `unconfigured` and complete config reports `configured`;
+- optional mocked adapter path in tests for future lightweight connectivity
+  behavior returning `ok` or `error`;
+- technical `/health` response dependency status for storage:
+  `configured`, `unconfigured`, `ok` or `error`;
+- explicit non-global wiring: `HealthModule` imports `InfrastructureModule` for
+  technical health composition only;
+- frontend technical status parsing/display for the storage dependency status;
+- mocked unit tests for storage config behavior, storage health behavior and
+  health response shape.
+
+Решение:
+
+- object storage remains an infrastructure concern;
+- no storage SDK dependency was added in this slice;
+- the S3-compatible adapter skeleton performs a config-only check at runtime so
+  CI does not depend on MinIO/S3 network availability;
+- `/health` reports only `dependencies.storage.status` and does not expose
+  endpoint, bucket, region, access keys, provider URLs, file paths, evidence
+  state or artifact state;
+- `InfrastructureModule` remains explicit and not global.
+
+What was not introduced:
+
+- no upload or download API;
+- no certificate files, executive scheme files, document files, package
+  artifacts or generated artifacts;
+- no file metadata domain models;
+- no file paths persisted;
+- no Prisma models or migrations;
+- no domain repositories, CRUD APIs, auth, package builder, registry,
+  certificates or AI/OCR implementation;
+- no business validation or domain readiness semantics.
+
+Current object storage guardrail:
+
+```text
+Object storage exists only as an infrastructure health/config boundary. Uploads,
+downloads, file metadata, evidence workflows, generated artifacts and domain
+storage records require separate explicit tasks. Provider SDKs must stay inside
+future infrastructure adapters and must not leak into domain/application modules.
+```
+
+Recommended next step: review this object storage foundation, then request a
+separate, explicitly scoped workspace/session isolation skeleton task before any
+domain schema, migration, AOSR, uploads, file APIs, queue, package, OpenAPI or
+AI work.

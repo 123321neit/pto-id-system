@@ -54,7 +54,7 @@ export function PlaceholderPage(): React.JSX.Element {
         <p className="status-text">Product workflows are intentionally absent in this bootstrap.</p>
         <section className="backend-status" aria-label="Backend status">
           <div>
-            <h2>Backend status</h2>
+            <h2>Technical status</h2>
             <p className="backend-status__text">{renderBackendStatusText(backendStatus)}</p>
           </div>
           <span className={`backend-status__badge backend-status__badge--${backendStatus.kind}`}>
@@ -76,8 +76,9 @@ function renderBackendStatusText(status: BackendStatusState): string {
   }
 
   const databaseStatus = status.health.dependencies?.database?.status ?? 'unknown';
+  const storageStatus = status.health.dependencies?.storage?.status ?? 'unknown';
 
-  return `${status.health.service} / ${status.health.scope} / ${status.health.timestamp} / db ${databaseStatus}`;
+  return `${status.health.service} / ${status.health.scope} / ${status.health.timestamp} / db ${databaseStatus} / storage ${storageStatus}`;
 }
 
 function renderBackendStatusBadge(status: BackendStatusState): string {

@@ -17,9 +17,9 @@ coverage/
 !.env.production.example
 
 # Local runtime artifacts
-storage/
-uploads/
-generated/
+/storage/
+/uploads/
+/generated/
 *.log
 *.tsbuildinfo
 

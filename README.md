@@ -5,7 +5,7 @@ Web-система автоматизации исполнительной до�
 Текущий статус:
 
 ```text
-FIRST ALLOWED INFRASTRUCTURE BOOTSTRAP SCAFFOLD ACCEPTED; CANONICAL ADR BASELINE ACCEPTED; BACKEND MODULE ARCHITECTURE SKELETON INTRODUCED; FIRST TECHNICAL FRONTEND-BACKEND STATUS SLICE INTRODUCED; DATABASE FOUNDATION TECHNICAL SLICE INTRODUCED
+FIRST ALLOWED INFRASTRUCTURE BOOTSTRAP SCAFFOLD ACCEPTED; CANONICAL ADR BASELINE ACCEPTED; BACKEND MODULE ARCHITECTURE SKELETON INTRODUCED; FIRST TECHNICAL FRONTEND-BACKEND STATUS SLICE INTRODUCED; DATABASE FOUNDATION TECHNICAL SLICE INTRODUCED; OBJECT STORAGE FOUNDATION TECHNICAL SLICE INTRODUCED
 ```
 
 В репозитории принят первый разрешённый scaffold. Это только infrastructure/bootstrap
@@ -24,6 +24,14 @@ technical database health boundary. `InfrastructureModule` is explicit, not
 global, and is currently imported only by technical health composition. This
 slice intentionally has no domain models, migrations, business tables,
 repositories, CRUD APIs or domain readiness semantics.
+
+The object storage foundation technical slice adds an infrastructure-only
+object storage health boundary and S3-compatible configuration adapter skeleton.
+Runtime health checks are config-only and report `configured` or `unconfigured`
+for storage, avoiding brittle CI/network coupling. This slice intentionally has
+no uploads, downloads, file metadata, evidence files, generated artifacts,
+provider URLs in health, Prisma models, migrations, repositories, CRUD APIs or
+business storage behavior.
 
 Production feature coding remains blocked.
 
@@ -148,16 +156,21 @@ Scaffold включает:
   `apps/api/prisma/schema.prisma` with no models, infrastructure database
   health port/adapter, and optional technical database dependency status in
   `/health` through explicit non-global module wiring.
+- object storage foundation technical slice: infrastructure-only storage health
+  port/adapter skeleton, env-driven S3-compatible config boundary, and optional
+  technical storage dependency status in `/health` through the same explicit
+  non-global module wiring.
 
 The backend module skeleton includes module boundaries, README ownership notes,
 placeholder tokens/ports, `apps/api/src/ARCHITECTURE.md`, and ESLint import
 guardrails. It intentionally does not include business/domain implementation.
 
-The technical status and database foundation slices intentionally do not add
-product screens, domain readiness, business commands, CRUD APIs, OpenAPI, domain
-database state or real use cases. They exist only to validate frontend ->
-backend connectivity, shared types, env-driven API configuration, Prisma client
-generation and infrastructure connectivity checks.
+The technical status, database foundation and object storage foundation slices
+intentionally do not add product screens, domain readiness, business commands,
+CRUD APIs, OpenAPI, domain database state, file APIs or real use cases. They
+exist only to validate frontend -> backend connectivity, shared types,
+env-driven API/storage configuration, Prisma client generation and
+infrastructure health boundaries.
 
 GitHub Actions CI is committed at `.github/workflows/ci.yml`. It runs on
 `push` and `pull_request` with Node 22, Corepack, `pnpm install
@@ -178,7 +191,7 @@ The scaffold intentionally does not include:
 - migrations;
 - OpenAPI;
 - auth implementation;
-- uploads/storage implementation;
+- uploads, download APIs or business file storage implementation;
 - queue workers;
 - document generation;
 - AI/OCR;
@@ -192,7 +205,7 @@ with canonical ADR 0001-0005 in `docs/adr/`.
 Feature coding remains blocked until a separate explicit feature/database/API
 task is requested and checked against the ADR baseline and project memory.
 
-Recommended next step: review this database foundation technical slice, then
+Recommended next step: review this object storage foundation technical slice, then
 request a separate, narrow workspace/session isolation skeleton task. Domain
-schema, migrations, AOSR, packages, storage, queues and AI remain separate
-explicit tasks.
+schema, migrations, AOSR, packages, uploads/file APIs, queues and AI remain
+separate explicit tasks.

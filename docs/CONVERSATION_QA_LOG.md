@@ -643,9 +643,60 @@ A: Добавлен технический database foundation slice.
 - no domain repositories;
 - no CRUD APIs;
 - no business validation or product logic;
-- no auth, uploads/storage, package builder, registry, certificates or AI/OCR
+- no auth, uploads, business file storage, package builder, registry, certificates or AI/OCR
   implementation.
 
 Next expected step recommendation: review the database foundation technical
 slice, then request a separate workspace/session isolation skeleton task before
 any domain schema, migrations or business feature implementation.
+
+---
+
+## 32. Object Storage Foundation Technical Slice
+
+### Q: Как добавить object storage foundation, не начиная uploads/evidence/business files?
+
+A: Добавлен технический object storage foundation slice.
+
+Он включает:
+
+- infrastructure-only object storage health utility, port re-export and
+  S3-compatible adapter skeleton under `apps/api/src/infrastructure/storage/`;
+- env-driven storage config boundary using `OBJECT_STORAGE_ENDPOINT`,
+  `OBJECT_STORAGE_BUCKET` and `OBJECT_STORAGE_REGION`;
+- config-only runtime health behavior: missing storage config reports
+  `unconfigured`, complete config reports `configured`;
+- optional mocked adapter path in unit tests for future lightweight checks that
+  can report `ok` or `error`;
+- technical `/health` response dependency status for storage:
+  `configured`, `unconfigured`, `ok` or `error`;
+- explicit non-global module wiring where `HealthModule` imports
+  `InfrastructureModule` for technical health composition;
+- frontend technical status parser/display update;
+- mocked tests for storage config behavior, storage health utility and health
+  response shape.
+
+Решение:
+
+- storage remains infrastructure-only;
+- no storage SDK dependency was added in this slice;
+- runtime storage health is config-only to avoid brittle CI/network coupling;
+- provider details, endpoint, bucket, region, access keys, provider URLs and
+  file paths are not exposed in health;
+- domain bounded modules still must not import infrastructure or storage SDKs.
+
+Что не было введено:
+
+- no uploads or downloads;
+- no certificate files, executive scheme files, document files, package
+  artifacts or generated artifacts;
+- no file metadata domain models;
+- no file paths persisted;
+- no Prisma models or migrations;
+- no repositories, CRUD APIs, business validation, AOSR, certificates, registry,
+  package builder, auth or AI/OCR implementation.
+
+Next expected step recommendation: review this object storage foundation
+technical slice, then request a separate workspace/session isolation skeleton
+task before any domain schema, uploads/file APIs, migrations or business feature
+implementation.

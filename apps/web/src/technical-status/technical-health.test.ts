@@ -21,6 +21,9 @@ describe('technical health client', () => {
         database: {
           status: 'unconfigured',
         },
+        storage: {
+          status: 'configured',
+        },
       },
       scope: 'technical',
       service: 'api',
@@ -67,7 +70,7 @@ describe('technical health client', () => {
     expect(() =>
       parseTechnicalHealthResponse({
         dependencies: {
-          database: {
+          storage: {
             status: 'ready',
           },
         },

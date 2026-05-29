@@ -52,7 +52,7 @@
 Текущий этап:
 
 ```text
-First allowed infrastructure/bootstrap scaffold accepted; canonical ADR baseline accepted; backend module architecture skeleton introduced; first technical frontend-backend status slice introduced; database foundation technical slice introduced
+First allowed infrastructure/bootstrap scaffold accepted; canonical ADR baseline accepted; backend module architecture skeleton introduced; first technical frontend-backend status slice introduced; database foundation technical slice introduced; object storage foundation technical slice introduced
 ```
 
 Разрешённый scaffold ограничен:
@@ -80,12 +80,17 @@ First allowed infrastructure/bootstrap scaffold accepted; canonical ADR baseline
   generation wiring, infrastructure-only database health port/adapter, mocked
   DB health tests and technical `/health` dependency status through explicit
   non-global module wiring.
+- object storage foundation technical slice:
+  infrastructure-only object storage health port/adapter skeleton,
+  S3-compatible env-driven config boundary, mocked storage health tests and
+  technical `/health` dependency status through explicit non-global module
+  wiring.
 
-The technical status and database foundation slices are not product
+The technical status, database foundation and object storage foundation slices are not product
 implementation. They must not be expanded into domain readiness, АОСР,
 certificates, registry, package builder, auth, domain database schema,
-uploads/storage, queues, AI/OCR, CRUD APIs or OpenAPI without a new explicit
-task.
+uploads, file metadata, download APIs, queues, AI/OCR, CRUD APIs or OpenAPI
+without a new explicit task.
 
 `InfrastructureModule` is not global. The current approved import path is
 `HealthModule -> InfrastructureModule` for technical health composition only.
@@ -109,7 +114,7 @@ canonical ADR 0001-0005 in `docs/adr/`.
 - domain Prisma models or migrations;
 - OpenAPI;
 - real auth;
-- uploads/storage implementation;
+- uploads, download APIs or business file storage implementation;
 - queue workers;
 - document generation;
 - AI/OCR;
@@ -123,10 +128,10 @@ canonical ADR 0001-0005 in `docs/adr/`.
 Any separate feature/database/API task must comply with canonical ADR 0001-0005
 ```
 
-Recommended next step: review the database foundation technical slice, then
+Recommended next step: review the object storage foundation technical slice, then
 request a separate, explicitly scoped backend application skeleton task for
 workspace/session isolation foundations. Do not start AOSR, domain Prisma
-models, migrations, storage/uploads, queues, package generation, OpenAPI,
+models, migrations, uploads/file APIs, queues, package generation, OpenAPI,
 AI/OCR, or domain validation without a new task.
 
 `docs/12-database-schema-v1.md` по прямому заданию применяет baseline decisions из `docs/09-aggregate-boundaries-and-invariants.md` по:

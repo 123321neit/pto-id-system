@@ -3,7 +3,7 @@
 This backend starts as a NestJS modular monolith. The folders in this directory
 are canonical architecture boundaries, not feature implementations. They exist
 to make ownership visible before database schema, controllers, services, queues,
-storage, package generation, AI/OCR, or domain behavior are introduced.
+uploads, package generation, AI/OCR, or domain behavior are introduced.
 
 ## Module Map
 
@@ -16,7 +16,7 @@ storage, package generation, AI/OCR, or domain behavior are introduced.
 | `packages` | Package build boundary, snapshots, generated artifact ownership, async orchestration contracts. | Source document ownership, evidence originals, registry source facts, synchronous package execution. |
 | `ai` | Proposal and finding boundaries for future AI/OCR-assisted review. | Autonomous source mutation, validation suppression, evidence confirmation, finalization, package release. |
 | `shared-kernel` | Shared primitives, scope vocabulary, and framework-neutral interfaces. | Business aggregates, repositories, use cases, provider details. |
-| `infrastructure` | Provider adapter boundaries, infrastructure tokens, Prisma bootstrap, and technical database health adapters. | Domain ownership, source-of-truth decisions, provider types leaking into modules. |
+| `infrastructure` | Provider adapter boundaries, infrastructure tokens, Prisma bootstrap, technical database health adapters, and technical object storage health adapters. | Domain ownership, source-of-truth decisions, provider types leaking into modules. |
 | `health` | Technical runtime health endpoint and technical dependency status only. | Product API contracts, domain readiness, business health semantics. |
 
 ## Dependency Direction
@@ -32,8 +32,8 @@ storage, package generation, AI/OCR, or domain behavior are introduced.
   composed at module roots after a separate infrastructure task.
 - The `health` module may explicitly import `InfrastructureModule` to report
   infrastructure dependency status through narrow technical health ports. It
-  must not import provider SDKs, Prisma client types, domain modules,
-  repositories, or business readiness checks.
+  must not import provider SDKs, Prisma client types, object-storage SDK types,
+  domain modules, repositories, or business readiness checks.
 - `infrastructure` must not import bounded domain modules. Adapters depend on
   narrow ports/contracts, not on domain internals.
 - `shared-kernel` must stay framework-neutral and must not import NestJS,
@@ -78,17 +78,23 @@ Domain/application modules must not import provider SDKs, Prisma client types,
 BullMQ, Redis clients, object-storage SDKs, or server-local path assumptions.
 The current database foundation contains a Prisma client adapter only inside
 `infrastructure/database` and an empty Prisma schema with no domain models.
+The current object storage foundation contains an S3-compatible config-only
+health adapter only inside `infrastructure/storage`; it performs no upload,
+download, file metadata, path persistence, evidence, or artifact behavior.
 Domain/application modules must not import Prisma client types or database
-adapters. `InfrastructureModule` is intentionally not global; current wiring is
-explicit from the technical `health` module only. The skeleton intentionally
-contains no storage implementation, queue workers, controllers with domain
+adapters, object storage health adapters, or provider SDK types.
+`InfrastructureModule` is intentionally not global; current wiring is explicit
+from the technical `health` module only. The skeleton intentionally contains no
+upload/download implementation, queue workers, controllers with domain
 behavior, repositories, or OpenAPI contracts.
 
 ## Current Status
 
-This is an architecture skeleton plus technical database foundation only. It
+This is an architecture skeleton plus technical database and object storage
+foundation only. It
 introduces canonical backend module boundaries, placeholder tokens/ports, import
 guardrails, Prisma generation wiring, an empty Prisma schema, and a technical
-database health adapter. It does not implement AOSR, domain Prisma models,
-migrations, CRUD APIs, auth, uploads/storage, package generation, AI/OCR,
+database health adapter plus a config-only technical object storage health
+adapter. It does not implement AOSR, domain Prisma models, migrations, CRUD
+APIs, auth, uploads, downloads, file metadata, package generation, AI/OCR,
 repositories, use cases, queue jobs, validation rules, or business logic.

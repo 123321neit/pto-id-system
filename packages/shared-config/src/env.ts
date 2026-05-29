@@ -37,6 +37,7 @@ const productionRequiredKeys = [
   'DATABASE_URL',
   'OBJECT_STORAGE_BUCKET',
   'OBJECT_STORAGE_ENDPOINT',
+  'OBJECT_STORAGE_REGION',
   'REDIS_URL',
   'SESSION_SECRET',
 ] as const;

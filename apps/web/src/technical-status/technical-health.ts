@@ -77,11 +77,13 @@ function parseDependencies(value: unknown): TechnicalHealthDependencies | undefi
   }
 
   const database = parseDependency(value['database']);
+  const storage = parseDependency(value['storage']);
 
-  return database === undefined
+  return database === undefined && storage === undefined
     ? undefined
     : {
-        database,
+        ...(database === undefined ? {} : { database }),
+        ...(storage === undefined ? {} : { storage }),
       };
 }
 
