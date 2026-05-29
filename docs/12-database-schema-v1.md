@@ -12,6 +12,14 @@
 
 Основание модели: `docs/06-data-model-v1.md`, `docs/07-aosr-domain-specification.md`, `docs/08-document-types-catalog.md`, `docs/09-aggregate-boundaries-and-invariants.md`, `docs/10-auth-workspace-rbac-model.md`, `docs/11-ai-project-ingestion-and-assistance-model.md`, ADR 0001-0005.
 
+Access amendment note, 2026-05-29:
+
+```text
+docs/19-sharing-and-access-model-v1.md supersedes the membership/RBAC table family for MVP implementation scope.
+```
+
+The conceptual schema below remains historical V1 context where it describes tenant isolation, opaque invite-token safety, auditability and no cross-workspace references. Future physical schema work for MVP access must use owner-based `OwnedWorkspace`, share codes, share grants and grant capabilities from `docs/19`, not the `Membership` role matrix described here.
+
 ---
 
 ## 1. Purpose
@@ -36,8 +44,8 @@ Schema V1 должна позволить представить:
 По прямому требованию к настоящей схеме она использует следующие границы как baseline V1:
 
 1. `Workspace` является tenant boundary.
-2. `User` не владеет business data напрямую; доступ следует из `Membership`.
-3. `Invite` хранится серверно, а URL несёт только opaque token/reference.
+2. MVP access to another user's resources follows owner-based share grants from `docs/19-sharing-and-access-model-v1.md`; the older `Membership` role matrix is deferred.
+3. Share/invite codes are stored server-side, and URLs/codes carry only opaque token/reference, never trusted authorization claims.
 4. `Object` не поглощает документы, evidence, outputs и jobs как giant aggregate.
 5. `FolderTree` является отдельным object-scoped aggregate root.
 6. Самостоятельный `WorkItem` aggregate root в baseline отсутствует.

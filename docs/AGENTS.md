@@ -5,13 +5,14 @@
 
 1. `docs/PROJECT_MEMORY.md`
 2. `docs/CONVERSATION_QA_LOG.md`
-3. `docs/adr/0001-structured-data-source-of-truth.md`
-4. `docs/adr/0002-typed-document-domain-model.md`
-5. `docs/adr/0003-file-backed-evidence-and-derived-artifacts.md`
-6. `docs/adr/0004-immutable-revisions-and-package-snapshots.md`
-7. `docs/adr/0005-modular-monolith-and-bounded-contexts.md`
-8. `docs/samples/registry-ventilation-example.md`
-9. `docs/samples/aosr-example-analysis.md`
+3. `docs/19-sharing-and-access-model-v1.md`
+4. `docs/adr/0001-structured-data-source-of-truth.md`
+5. `docs/adr/0002-typed-document-domain-model.md`
+6. `docs/adr/0003-file-backed-evidence-and-derived-artifacts.md`
+7. `docs/adr/0004-immutable-revisions-and-package-snapshots.md`
+8. `docs/adr/0005-modular-monolith-and-bounded-contexts.md`
+9. `docs/samples/registry-ventilation-example.md`
+10. `docs/samples/aosr-example-analysis.md`
 
 ---
 
@@ -31,6 +32,7 @@
 12. Не делать AI/OCR обязательным для MVP.
 13. Не раздувать MVP в ERP, ECM, Google Drive, generic builder или enterprise platform.
 14. Не нарушать canonical ADR baseline 0001-0005 in `docs/adr/`.
+15. Не реализовывать сложный RBAC для MVP: access model первого scope описан в `docs/19-sharing-and-access-model-v1.md`.
 
 ---
 
@@ -142,14 +144,16 @@ AI/OCR, or domain validation without a new task.
 
 Она сохраняла открытыми для review вопросы lifecycle, validation, package readiness, reusable representative/material boundaries, exact `RegistryOverride` scope, evidence retention and replacement.
 
-Schema V1 также применяет access baseline из `docs/10-auth-workspace-rbac-model.md` по:
+Access model amendment `docs/19-sharing-and-access-model-v1.md` supersedes `docs/10-auth-workspace-rbac-model.md` for MVP implementation scope. MVP access now uses:
 
-- `Workspace` as tenant boundary;
-- automatic `Personal Workspace` creation and Owner membership;
-- organization membership and invite policy;
-- role permission matrix;
+- one global system admin, separate from business collaboration;
+- regular users owning their own workspaces/project data and certificate libraries;
+- opaque share codes / invite codes;
+- persistent resource-scoped grants after authenticated acceptance;
+- explicit capabilities instead of roles;
+- default view-only access and default deny when capability is missing.
 
-Ownership continuity, detailed permissions, cross-workspace copy/transfer/export, audit/evidence privacy and SaaS entitlement details остаются открытыми.
+Previous membership/RBAC role matrix, `Foreman` active behavior, organization governance and fine-grained RBAC are deferred. Workspace isolation, no cross-workspace leakage, revocation and audit remain mandatory.
 
 Schema V1 отражает ingestion baseline из `docs/11-ai-project-ingestion-and-assistance-model.md` по:
 
@@ -219,7 +223,7 @@ Privacy/data-processing policy, access to project originals and concrete AI proc
 - Foreman active permissions are blocked without separate approval;
 - first AOSR template participant requirements must not be hardcoded before template review.
 
-Открытыми остаются exact first AOSR template baseline/participant requirements, retention/privacy/RBAC details, physical migrations/ORM schema/OpenAPI and production implementation.
+Открытыми остаются exact first AOSR template baseline/participant requirements, retention/privacy/share-grant details, physical migrations/ORM schema/OpenAPI and production implementation.
 
 Следующий отдельный implementation task должен проверяться против:
 

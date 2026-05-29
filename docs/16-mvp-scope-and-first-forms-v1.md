@@ -12,6 +12,14 @@
 
 Основание: `docs/07-aosr-domain-specification.md`, `docs/08-document-types-catalog.md`, `docs/12-database-schema-v1.md`, `docs/13-domain-lifecycle-immutability-validation-v1.md`, `docs/14-backend-api-architecture-v1.md`, `docs/15-api-command-readmodel-contracts-v1.md`, ADR 0001-0005, sample analyses.
 
+Access amendment note, 2026-05-29:
+
+```text
+docs/19-sharing-and-access-model-v1.md supersedes the collaboration/RBAC section of this document for MVP implementation scope.
+```
+
+MVP collaboration must use owner-based workspace/certificate-library sharing, share codes and explicit grant capabilities. The role/membership wording below is updated to reflect that decision.
+
 Этот документ фиксирует первый реалистичный product scope PTO ID System. Он не является техническим заданием на код, SQL, API, OpenAPI, ORM, frontend scaffold, deployment или выбор стека.
 
 Неприкосновенные принципы:
@@ -656,28 +664,52 @@ Deferred search:
 
 ---
 
-## 12. Collaboration MVP
+## 12. Sharing MVP
 
-MVP collaboration supports small teams, not enterprise governance.
+MVP sharing supports small collaboration without enterprise governance.
 
 Included:
 
-- personal workspace created for individual work;
-- organization workspace for small team collaboration;
-- workspace invites via stored invitation, not trusted URL role claims;
-- simple roles: Owner, Admin, PTO Engineer, Viewer;
-- basic membership list and invite revoke/expiry behavior;
-- membership-based access to workspace data;
-- document lock/autosave concept sufficient to avoid obvious conflicting edits.
+- personal/owned workspace created for individual work;
+- owner-based workspace/project database sharing through opaque share codes;
+- owner selects capabilities before sharing;
+- default workspace access is view-only;
+- accepted code creates persistent `WorkspaceShareGrant`;
+- owner can revoke grants and rotate/regenerate codes;
+- separate certificate library sharing/connect flow;
+- default certificate library access is view/use only;
+- accepted library code creates persistent `CertificateLibraryShareGrant`;
+- grant-capability checks replace role matrix checks;
+- document lock/autosave concept sufficient to avoid obvious conflicting edits;
+- global system admin is exactly one operational/admin user and separate from collaboration.
 
-Optional/limited:
+Workspace sharing capabilities are defined in `docs/19-sharing-and-access-model-v1.md` and include:
 
-- Foreman role may remain deferred or map to restricted contributor only after role permissions are explicitly reviewed;
-- lock override can wait unless pilot users require it.
+- `view_workspace`;
+- `view_folder_tree`;
+- `view_signatories`;
+- `view_documents`;
+- `edit_documents`;
+- `create_documents`;
+- `edit_signatories`;
+- `edit_folder_tree`;
+- `build_packages`;
+- `export_generated_artifacts`.
+
+Certificate library sharing capabilities are defined in `docs/19-sharing-and-access-model-v1.md` and include:
+
+- `view_certificate_library`;
+- `use_certificates_in_documents`;
+- `add_certificates`;
+- `edit_certificate_cards`;
+- `archive_certificates`;
+- `replace_certificate_files`.
 
 Deferred collaboration complexity:
 
-- fine-grained object/folder RBAC;
+- fine-grained RBAC;
+- `Foreman` role;
+- `Owner/Admin/PTO Engineer/Viewer` role matrix;
 - approval chains;
 - reviewer workflows;
 - comments/mentions;
@@ -685,7 +717,7 @@ Deferred collaboration complexity:
 - department/team hierarchy;
 - support/admin impersonation;
 - external guest portals;
-- public sharing;
+- public sharing beyond owner-issued codes;
 - cross-workspace copy/transfer policy.
 
 ---
@@ -933,7 +965,7 @@ Suggested sequence:
 11. Package builder: scope, ordering, readiness validation, async build concept, immutable snapshot and ZIP download.
 12. Staleness/revision flow: edit final AOSR, publish new revision, stale current package/output.
 13. Basic search: object/document/certificate/scheme metadata search.
-14. Small team invites and simple roles.
+14. Owner-based workspace sharing and separate certificate library sharing.
 15. Onboarding/hints polish across editor, picker, validation and package builder.
 
 Dependencies:
@@ -949,7 +981,7 @@ What can wait:
 - TestAct generated forms;
 - TechnicalReadinessAct;
 - advanced package variants;
-- advanced role policy;
+- advanced RBAC/role policy;
 - OCR/AI;
 - template marketplace/editor;
 - mobile/offline;

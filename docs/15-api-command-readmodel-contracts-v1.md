@@ -12,6 +12,14 @@
 
 Основание: `docs/12-database-schema-v1.md`, `docs/13-domain-lifecycle-immutability-validation-v1.md`, `docs/14-backend-api-architecture-v1.md`, ADR 0001-0005, анализ АОСР и реестра.
 
+Access amendment note, 2026-05-29:
+
+```text
+docs/19-sharing-and-access-model-v1.md supersedes membership/RBAC command contracts for MVP implementation scope.
+```
+
+MVP command/read contracts for access must use owner-based sharing, share codes and explicit grant capabilities. Membership/role contract language below is deferred historical context unless a later non-MVP governance document reintroduces it.
+
 Этот документ описывает семантику application contracts: какие намерения выражают команды, какие версии и idempotency expectations они используют, какие UI-oriented reads нужны пользователю и как выглядят validation/error/async outcomes. Он не является API transport specification и не разрешает начинать implementation.
 
 Неприкосновенные принципы:
@@ -88,7 +96,7 @@ Common envelope is the semantic context of a command. Future authentication/tran
 | `workspace_id` | Every command | Tenant boundary in which actor membership, targets, files, jobs and output references are resolved. |
 | `object_id` | Object-scoped command | Construction object context; all referenced folders/documents/schemes/packages/sources must belong to this same object where their owner is object-specific. |
 | `object_id` omitted | Workspace library/access command where appropriate | For example a workspace-level certificate library item or organization invite; omission never permits cross-workspace resolution. |
-| Actor membership context | Every authorized command | Authoritative active `membership_id`, actor identity and effective permission are resolved by server-side authorization context for `workspace_id`; a client-supplied role is never authority. |
+| Actor access context | Every authorized command | Authoritative owner status or share-grant capability is resolved server-side for the target resource; client-supplied role/capability claims are never authority. |
 | `command_id` | Every accepted command outcome | Stable attempt/correlation identity used for audit and tracing; it may be generated on acceptance if the caller did not provide an allowed request identity. |
 | `idempotency_key` | Dangerous/retriable command; optional only where explicitly unnecessary | Caller intent identity within an actor/workspace/command scope. Identical replay returns the established outcome; conflicting reuse is rejected. |
 | `expected_version` | Mutation of an existing mutable owner/configuration | Version observed by the caller for the exact target being changed, such as document working state, folder tree, override or package configuration. |
@@ -344,19 +352,21 @@ Proposal/finding read context always includes source citations where available, 
 
 ---
 
-## 14. Workspace/Invite Command Contracts
+## 14. Workspace/Sharing Command Contracts
 
-These contracts preserve the tenant/access baseline without deciding the full permission matrix, ownership continuity, entitlement or sensitive-file policy.
+These contracts are superseded for MVP by the owner-based sharing model in `docs/19-sharing-and-access-model-v1.md`. The table below defines the replacement access command semantics for first-scope implementation planning.
 
 | Command | Intent and payload semantics | Result semantics | Rules |
 | --- | --- | --- | --- |
-| `invite_member` | Authorized organization member offers a stored target workspace membership with intended role, invite conditions/expiry and optional bound identity according to policy. | New invite identity/state and auditable issuance reference. | Idempotency required for duplicate send intent where supported; token/reference carries no trusted rights; allowed issuer/role rules remain RBAC detail. |
-| `accept_invite` | Authenticated user accepts one stored valid opaque-reference invitation. | Created/activated membership identity or idempotent already-established outcome and audit reference. | Atomic and idempotent; validates expiry/revocation/usage/binding; never grants another workspace. |
-| `revoke_invite` | Authorized actor revokes an unconsumed or otherwise revocable invitation. | Revoked invite state/version and audit reference. | Requires expected invite state/version; does not remove existing accepted membership silently. |
-| `change_membership_role` | Change role for one existing membership in the same workspace with reason where policy requires. | New membership version/role and audit reference. | Requires expected version; owner safety and exact permissions remain open and may reject command until configured. |
-| `remove_membership` | End member access in one workspace. | Removed/ended membership state and audit reference. | Requires expected membership version; historical actor attribution remains; ownership-continuity rules may be `POLICY_NOT_CONFIGURED`. |
+| `create_workspace_share_code` | Owner creates opaque code for one owned workspace/project database with selected capabilities, expiry and usage policy. | New share code reference/state and auditable creation record. | Token/reference carries no trusted rights; default capability posture is view-only. |
+| `accept_workspace_share_code` | Authenticated user accepts one valid workspace share code. | Persistent `WorkspaceShareGrant`, effective capabilities and audit reference. | Validates expiry/revocation/scope; never grants unrelated workspace access. |
+| `rotate_workspace_share_code` | Owner regenerates code for future acceptance. | Previous code no longer accepts new users; new code reference/state is created. | Existing accepted grants remain active unless explicitly revoked. |
+| `revoke_workspace_share_grant` | Owner revokes accepted workspace grant. | Revoked grant state and audit reference. | Historical actor attribution remains; future access denied. |
+| `create_certificate_library_share_code` | Owner creates opaque code for one certificate library with selected capabilities. | New library share code reference/state and audit. | Default posture is view/use only according to `docs/19`. |
+| `accept_certificate_library_share_code` | Authenticated user accepts valid library code. | Persistent `CertificateLibraryShareGrant`, effective capabilities and audit reference. | Does not grant workspace access; preserves source owner/provenance. |
+| `update_grant_capabilities` | Owner changes capability set for an existing grant if policy permits. | New grant capability version and audit reference. | Default deny for missing capability; owner may instead revoke/reissue. |
 
-Fine-grained RBAC is intentionally open: this contract establishes that permissions derive from active membership and are evaluated server-side, not which role can perform every command or download every original.
+Fine-grained RBAC is deferred: MVP permissions derive from owner status or explicit grant capabilities and are evaluated server-side.
 
 ---
 
@@ -366,7 +376,7 @@ Read models are composed views for real screens and decisions. Each read carries
 
 | Read model | Required composition / fields visible to the task |
 | --- | --- |
-| Workspace switcher | Workspace id/display kind/name/status, current membership role/status, switch eligibility, pending invite indicators safe for the actor; no other workspace content leakage. |
+| Workspace switcher | Owned and connected workspace id/display kind/name/status, owner identity where relevant, effective grant capabilities and safe pending/connected indicators; no other workspace content leakage. |
 | Object dashboard | Object id/name/status/discipline context, document/folder/package counts, validation `ERROR`/`WARNING` counts, latest package freshness/build state, pending AI/source work and recent safe activity summary. |
 | Folder tree/document list | Folder hierarchy/order/status/version, selected-folder placement list, document type/number/date/lifecycle/latest revision/working-change marker, scheme/package representation, validation/stale badges and permitted commands. |
 | Document editor view | Document identity/type/status, working content and expected working version, latest released revision, typed block values, numbering/date, participant context, certificate/material/scheme links, selected template context, draft/final findings, unpublished/stale impacts and later lock/autosave state. |
@@ -454,9 +464,9 @@ Required baseline examples:
 | Object scope where relevant | Folders, documents, schemes, project source files, registry scopes, packages, object outputs and their AI/read context must share one permitted `object_id`. |
 | No cross-workspace ids | A payload cannot link/copy/reference an id from another tenant merely because it is syntactically valid or guessed. Future controlled copy/export must create destination-owned data under separate policy. |
 | Leakage protection | Missing target and inaccessible target are exposed as `NOT_FOUND_OR_NOT_AUTHORIZED`; operations, pickers, search, files and error detail reveal no foreign existence. |
-| Membership is authority context | A `User` identity or submitted role is insufficient; permissions derive from active membership and later ratified rules. |
+| Owner/grant is authority context | A `User` identity or submitted role is insufficient; MVP permissions derive from ownership or accepted resource-scoped grant capabilities. |
 | Derived output inherits source scope | Registry projections, snapshots, artifacts, AI results, index results and audit views cannot relax tenant/object access. |
-| Fine-grained RBAC remains open | Per-role action/download/release/review/lock-override rules must be specified later and are not inferred here. |
+| Fine-grained RBAC remains deferred | Per-role action/download/release/review/lock-override rules are not MVP behavior and must not be inferred here. |
 
 ---
 
@@ -490,7 +500,7 @@ API Command/Read Model Contracts V1 explicitly does not provide or authorize:
 - [x] Registry contracts admit only presentation/configuration overrides and forbid source-fact changes.
 - [x] Package and artifact contracts preserve async derived work, immutable snapshots and stale/current distinction.
 - [x] AI/OCR contracts preserve proposal-only results, citations, explicit human decision and ordinary owner-command application.
-- [x] Workspace/invite contracts preserve membership-based tenant authority while leaving fine-grained RBAC open.
+- [x] Workspace/sharing contracts preserve owner/grant-based authority while leaving fine-grained RBAC deferred.
 - [x] Screen-specific read models, validation findings, version/idempotency and authorization rules are described without routes or storage implementation.
 
 ### 20.2 Questions intentionally still open
@@ -498,7 +508,7 @@ API Command/Read Model Contracts V1 explicitly does not provide or authorize:
 - Which exact AOSR and first test-act forms, fields, participants, templates and blocking validations enter MVP?
 - Which warning acknowledgements or customer-specific package readiness constraints are permitted?
 - What evidence/project-source correction, retention, original-download, privacy and legal-hold policy applies?
-- What detailed role permissions, invite governance, ownership continuity and cross-workspace export rules apply?
+- What exact share-code defaults, grant capability update policy, revocation/session behavior and cross-workspace export rules apply?
 - Which source formats and AI/OCR processing/privacy/provider policy may ever be enabled?
 - What later transport, persistence, rendering, async execution, search and frontend implementation will realize accepted contracts?
 

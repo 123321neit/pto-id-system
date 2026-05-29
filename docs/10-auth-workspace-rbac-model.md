@@ -12,6 +12,14 @@
 
 Основание модели: `docs/06-data-model-v1.md`, `docs/08-document-types-catalog.md`, `docs/09-aggregate-boundaries-and-invariants.md`, ADR 0001-0005.
 
+Supersession note, 2026-05-29:
+
+```text
+docs/19-sharing-and-access-model-v1.md supersedes this document for MVP implementation scope.
+```
+
+The role matrix and membership/RBAC governance described here are deferred. MVP access must use owner-based workspace/certificate-library sharing, opaque share codes and capability-based grants from `docs/19-sharing-and-access-model-v1.md`. Tenant/workspace isolation, invite-token safety, auditability and revocation principles from this document remain useful background where they do not conflict with `docs/19`.
+
 ---
 
 ## 1. Purpose

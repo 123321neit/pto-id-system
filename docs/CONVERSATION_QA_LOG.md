@@ -204,7 +204,7 @@ A: В `docs/10-auth-workspace-rbac-model.md` зафиксирован draft acce
 
 Открытыми до ратификации остаются ownership transfer/recovery, multi-use invite policy первого scope, fine-grained object permissions, access/download/privacy rules для originals и персональных данных, cross-workspace transfer/export и commercial lifecycle.
 
-Статус решения: draft access and tenant-boundary baseline before Database Schema V1. Он конкретизирует уже обязательную tenant isolation и не изменяет ADR 0001-0005.
+Статус решения на момент создания: draft access and tenant-boundary baseline before Database Schema V1. Обновление 2026-05-29: MVP implementation scope superseded by `docs/19-sharing-and-access-model-v1.md`; role matrix and membership/RBAC governance are deferred, while tenant isolation, auditability and revocation remain mandatory.
 
 ---
 
@@ -700,3 +700,41 @@ Next expected step recommendation: review this object storage foundation
 technical slice, then request a separate workspace/session isolation skeleton
 task before any domain schema, uploads/file APIs, migrations or business feature
 implementation.
+
+---
+
+## 33. Owner-based sharing instead of complex RBAC for MVP
+
+### Q: Нужен ли сложный RBAC с Owner/Admin/PTO Engineer/Foreman/Viewer matrix в MVP?
+
+A: Нет. Пользователь принял новое product/architecture direction: сложный RBAC не нужен для MVP. Вместо него фиксируется простая owner-based sharing model в `docs/19-sharing-and-access-model-v1.md`.
+
+Решение:
+
+- `docs/19-sharing-and-access-model-v1.md` supersedes `docs/10-auth-workspace-rbac-model.md` for MVP implementation scope;
+- no fine-grained RBAC for MVP;
+- no `Foreman` role in MVP;
+- no `Owner/Admin/PTO Engineer/Viewer` role matrix in MVP;
+- exactly one `Global System Admin` is expected initially and is separate from business collaboration;
+- regular users own their workspaces/project data and certificate libraries;
+- access is issued by owner through opaque share codes / invite codes;
+- accepted code creates persistent resource-scoped share grant;
+- default access is view-only;
+- capabilities replace roles for grants.
+
+Two sharing flows are distinct:
+
+- workspace collaboration access to a user's workspace/project database;
+- certificate library sharing for using shared certificates while preserving provenance.
+
+Mandatory guardrails:
+
+- no cross-workspace leakage;
+- default deny when capability is missing;
+- owner can revoke grants and rotate/regenerate codes;
+- code rotation does not automatically revoke existing accepted grants unless a separate explicit action is designed;
+- audit grant creation, acceptance, capability change, revocation and write-capability use;
+- certificate file-backed evidence invariant remains;
+- source-of-truth, typed documents, registry projection, package snapshots and AI/OCR assistant-only decisions are unchanged.
+
+Статус решения: MVP access architecture amendment. Previous RBAC/membership role governance is deferred, while workspace isolation, auditability and revocation remain mandatory.

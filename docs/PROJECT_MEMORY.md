@@ -2,7 +2,7 @@
 # PTO ID SYSTEM
 # EXECUTIVE DOCUMENTATION PLATFORM
 # MASTER CONTEXT / SOURCE OF TRUTH
-# VERSION: 2026-05-29-OBJECT-STORAGE-FOUNDATION-TECHNICAL-SLICE
+# VERSION: 2026-05-29-SHARING-ACCESS-MODEL-AMENDMENT
 # STATUS: FIRST ALLOWED INFRASTRUCTURE BOOTSTRAP SCAFFOLD; CANONICAL ADR BASELINE ACCEPTED; BACKEND MODULE ARCHITECTURE SKELETON INTRODUCED; FIRST TECHNICAL FRONTEND-BACKEND STATUS SLICE INTRODUCED; DATABASE FOUNDATION TECHNICAL SLICE INTRODUCED; OBJECT STORAGE FOUNDATION TECHNICAL SLICE INTRODUCED
 # LANGUAGE: RU
 
@@ -45,6 +45,14 @@ Canonical ADR baseline accepted. Authoritative ADR references:
 - `docs/adr/0005-modular-monolith-and-bounded-contexts.md`
 
 Future implementation must comply with these ADRs. They consolidate existing accepted decisions only and do not permit production feature coding.
+
+MVP access amendment accepted:
+
+```text
+docs/19-sharing-and-access-model-v1.md supersedes docs/10-auth-workspace-rbac-model.md for MVP implementation scope
+```
+
+Future workspace/session/access tasks must use owner-based sharing, share codes and capability grants from `docs/19`, not the older role matrix.
 
 ---
 
@@ -210,29 +218,40 @@ Uploaded project documentation может быть source material и provenance
 
 Система должна быть быстрой и понятной для ПТО, а не перегруженной корпоративной логикой.
 
+### 5.8 Owner-based sharing over MVP RBAC
+
+Для MVP сложный RBAC не используется. Access model первого scope описан в `docs/19-sharing-and-access-model-v1.md`:
+
+- один `Global System Admin` для operational/admin path;
+- regular users владеют своими workspaces/project data и certificate libraries;
+- доступ другим пользователям выдаётся через share codes / invite codes;
+- accepted code creates a persistent resource-scoped share grant;
+- default access is view-only;
+- owner selects explicit capabilities вместо ролей.
+
+`docs/10-auth-workspace-rbac-model.md` сохраняется как historical/deferred RBAC reference, но его role matrix (`Owner`, `Admin`, `PTO Engineer`, `Foreman`, `Viewer`) superseded for MVP implementation scope.
+
 ---
 
-## 6. Users, workspaces and roles
+## 6. Users, workspaces and sharing
 
-`User` представляет физическое лицо, создающее аккаунт. Права на business data принадлежат не `User` напрямую, а его активному `Membership` в конкретном workspace.
+`User` представляет физическое лицо, создающее аккаунт. В MVP обычный пользователь владеет своими workspaces/project data and certificate libraries. Access for other users is granted by owner-selected share grants, not by a complex role matrix.
 
 После регистрации:
 
-- автоматически создаётся `Personal Workspace`;
-- регистрирующийся пользователь получает в нём membership с ролью `Owner`;
+- автоматически создаётся owned/personal working context;
+- регистрирующийся пользователь становится owner своих данных в этом context;
 - личный workspace позволяет полноценно вести объекты, документы, evidence, реестры и комплекты без участия организации.
 
-Пользователь может одновременно состоять в нескольких `Organization Workspace`; вступление в них происходит через invitations. Личные и организационные данные не смешиваются автоматически.
+Пользователь может подключаться к чужим workspaces/project databases или certificate libraries через share codes / invite codes. Личные данные, чужие workspaces и shared libraries не смешиваются автоматически.
 
-Workspace membership roles baseline:
+MVP access concepts:
 
-- `Owner` — accountable controller workspace;
-- `Admin` — delegated workspace administrator;
-- `PTO Engineer` — основной профессиональный пользователь документации;
-- `Foreman` — ограниченный contributor;
-- `Viewer` — read-only participant.
+- `Global System Admin` — ровно один operational/admin user, controlled by deployment/config, separate from business collaboration;
+- `Regular User` — owns own workspaces/project data/libraries;
+- `Share Grant` — capability-based access to a specific owner resource.
 
-Точный permission baseline, invite rules и вопросы для ратификации определены в `docs/10-auth-workspace-rbac-model.md`. Workspace `Admin` не означает автоматически разрешённый platform-support access к данным других tenants.
+Default permission is view-only. Owner chooses explicit capabilities for each code. No `Foreman` role and no `Owner/Admin/PTO Engineer/Viewer` matrix are implemented in MVP.
 
 ---
 
@@ -244,14 +263,16 @@ Workspace membership roles baseline:
 isolated workspace/tenant architecture
 ```
 
-`Workspace` является tenant boundary для business data и workspace-scoped authorization. Существуют:
+`Workspace` является tenant boundary для business data and resource-scoped authorization. Для MVP важно не смешивать:
 
-- `Personal Workspace` — автоматически создаваемая полноценная рабочая область физического лица;
-- `Organization Workspace` — совместная рабочая область, доступная через membership и invitations.
+- owner workspace/project database;
+- another user's connected workspace access through `WorkspaceShareGrant`;
+- owner certificate library;
+- another user's connected certificate library access through `CertificateLibraryShareGrant`.
 
 Каждый workspace имеет логически изолированные данные.
 
-Пользователь без активного membership в данном workspace не видит:
+Пользователь без ownership или accepted grant for this workspace не видит:
 
 - объекты;
 - документы;
@@ -262,9 +283,9 @@ isolated workspace/tenant architecture
 - комплекты;
 - шаблоны объекта.
 
-Один пользователь может работать в нескольких organization workspaces, но это не разрешает cross-workspace links, reuse или copy domain data без отдельной утверждённой политики.
+Один пользователь может владеть своими данными и одновременно иметь accepted grants к чужим resources, но это не разрешает cross-workspace links, reuse или copy domain data без отдельной утверждённой политики.
 
-Организационный workspace — collaboration tenant, а `CompanyProfile` / `ObjectCompanySnapshot` — реквизиты сторон в документации; одно не даёт автоматически прав на другое. Архитектура должна с самого начала учитывать workspace/tenant boundary во всех ключевых сущностях.
+Workspace/project database — collaboration tenant when shared by owner grant, а `CompanyProfile` / `ObjectCompanySnapshot` — реквизиты сторон в документации; одно не даёт автоматически прав на другое. Архитектура должна с самого начала учитывать workspace/tenant boundary во всех ключевых сущностях.
 
 ---
 
@@ -1437,8 +1458,9 @@ UI не должен быть перегружен, но система долж
 - registry projection concept;
 - Package Builder high-level model.
 - aggregate boundaries and invariants draft baseline before Database Schema V1.
-- auth, workspace, invitation, membership and RBAC draft baseline before Database Schema V1.
+- auth, workspace, invitation, membership and RBAC draft baseline before Database Schema V1, now superseded for MVP by owner-based sharing/access.
 - AI project ingestion and assistance draft baseline before Database Schema V1.
+- owner-based sharing/access amendment for MVP in `docs/19-sharing-and-access-model-v1.md`.
 - conceptual Database Schema V1, applying the required pre-schema baselines without choosing SQL, ORM, API or implementation stack.
 - lifecycle, immutability, numbering, validation, registry override safety, package determinism and AI/OCR review follow-up produced by Schema V1 review in `docs/13-domain-lifecycle-immutability-validation-v1.md`.
 - conceptual Backend/API Architecture V1 in `docs/14-backend-api-architecture-v1.md`, defining modular backend boundaries, commands/read models, consistency, concurrency, validation, async workflows and tenant-safe API policy without implementation choices.
@@ -1468,7 +1490,7 @@ UI не должен быть перегружен, но система долж
 - frontend state architecture;
 - OCR extraction schemas;
 - template placeholder/binding model;
-- fine-grained RBAC/privacy/commercial lifecycle details;
+- deferred fine-grained RBAC/privacy/commercial lifecycle details;
 - frontend component architecture.
 
 ---
@@ -1739,7 +1761,7 @@ docs/18-initial-repository-bootstrap-and-development-rules-v1.md
 | `docs/07-aosr-domain-specification.md` | Первая спецификация typed document | Формализует АОСР: blocks, validation, snapshots, revisions, registry/package behavior и открытые domain questions без выбора реализации. |
 | `docs/08-document-types-catalog.md` | Каталог document/evidence/output types | Классифицирует MVP baseline и candidate/deferred types, их source of truth, validation, registry/package and template behavior. |
 | `docs/09-aggregate-boundaries-and-invariants.md` | Boundary/invariants specification before database design | Фиксирует aggregate roots, ownership, invariants, revision/invalidation rules и baseline decisions, применённые в conceptual Schema V1. |
-| `docs/10-auth-workspace-rbac-model.md` | Access/tenant-boundary specification before database design | Фиксирует users, personal/organization workspaces, invitations, memberships, roles, isolation и access-policy inputs, применённые/оставленные открытыми в Schema V1. |
+| `docs/10-auth-workspace-rbac-model.md` | Historical/deferred RBAC reference | Role/membership matrix superseded for MVP by `docs/19-sharing-and-access-model-v1.md`; tenant isolation, token safety, audit and revocation principles remain background when compatible. |
 | `docs/11-ai-project-ingestion-and-assistance-model.md` | AI-assisted project source ingestion specification before database design | Фиксирует project source files, proposals, human confirmation, traceability, privacy/isolation/audit и связи с ИД, отражённые в Schema V1. |
 | `docs/12-database-schema-v1.md` | Conceptual Database Schema V1 before Backend/API design | Применяет обязательные baseline-границы в storage-neutral table/relationship/constraint model, сохраняя открытыми physical mapping и domain/policy decisions. |
 | `docs/13-domain-lifecycle-immutability-validation-v1.md` | Schema V1 lifecycle/immutability/validation follow-up before Backend/API design | Фиксирует storage-neutral lifecycle, historical rebuild, numbering, validation, override safety, package determinism, AI review flow и FolderTree boundary для review/acceptance. |
@@ -1748,6 +1770,7 @@ docs/18-initial-repository-bootstrap-and-development-rules-v1.md
 | `docs/16-mvp-scope-and-first-forms-v1.md` | Product MVP Scope and First Forms V1 before technology selection | Фиксирует первую production-usable поставку вокруг АОСР, certificate library, executive schemes, registry, package outputs, onboarding hints and AI-optional delivery без code/scaffold/SQL/OpenAPI или выбора стека. |
 | `docs/17-tech-stack-and-implementation-strategy-v1.md` | Tech Stack and Implementation Strategy V1 before repository bootstrap | Фиксирует pragmatic MVP stack and implementation direction: React/TypeScript/Vite, NestJS modular monolith, PostgreSQL, Redis/BullMQ, domain-scoped storage, deterministic DOCX/PDF/ZIP generation, PostgreSQL-first search and optional proposal-only AI/OCR; still no code/scaffold/migrations/OpenAPI. |
 | `docs/18-initial-repository-bootstrap-and-development-rules-v1.md` | Initial Repository Bootstrap and Development Rules V1 before first scaffold | Фиксирует final pre-scaffold gate: preconditions, invariants, first scaffold scope, infrastructure portability/no server lock-in, CI/dev gates, forbidden shortcuts, docs/16 precedence, ADR handling, Foreman restriction, AOSR template hardcode ban and architecture violation rules. |
+| `docs/19-sharing-and-access-model-v1.md` | MVP sharing/access architecture amendment | Replaces complex RBAC with owner-based workspace/certificate-library sharing, opaque share codes and capability grants. |
 | `docs/adr/*.md` | Принятые архитектурные решения | Нормативные решения по отдельным темам. Изменение принятого принципа требует нового ADR или явного пересмотра существующего. |
 | `docs/samples/*.md` | Анализ реальных примеров | Reference sources для доменной модели и будущих шаблонов/парсеров; не generated output системы. |
 
@@ -1769,13 +1792,18 @@ docs/18-initial-repository-bootstrap-and-development-rules-v1.md
 
 | Сущность / концепт | Назначение | Ключевые правила |
 | --- | --- | --- |
-| `Workspace` / `TenantContext` | Логическая граница данных и workspace-scoped authorization SaaS | `Personal Workspace` и `Organization Workspace` изолируют domain data; cross-workspace access/reuse запрещены без отдельной политики. |
-| `User` | Аккаунт физического лица | Не несёт глобальной business role; может иметь memberships в нескольких workspaces. |
-| `Personal Workspace` | Полноценная личная рабочая область | Создаётся автоматически при регистрации; пользователь получает `Owner` membership. |
-| `Organization Workspace` | Совместная рабочая область команды | Участники вступают через stored invites и memberships; creator становится `Owner`. |
-| `Membership` | Связь пользователя с workspace и источник полномочий | Права принадлежат membership; role одного workspace не переносится в другой. |
-| `Invite` | Контролируемое приглашение в organization workspace | URL не содержит прав; роль, срок, revocation, usage and email binding определяются сохранённым invite. |
-| `Role` | `Owner`, `Admin`, `PTO Engineer`, `Foreman`, `Viewer` | Permission baseline описан в `docs/10-auth-workspace-rbac-model.md` и требует ратификации до физической схемы. |
+| `Workspace` / `TenantContext` | Логическая граница данных и resource-scoped authorization SaaS | Owner workspaces/project databases изолируют domain data; accepted grants do not permit unrelated workspace access/reuse. |
+| `User` | Аккаунт физического лица | В MVP user owns own data/libraries and can accept grants to specific resources; no global business role. |
+| `Global System Admin` | Operational/admin user controlled by deployment/config | Exactly one expected initially; separate from owner/user sharing and not a business collaborator. |
+| `OwnedWorkspace` | Полноценная рабочая область/project database пользователя | User owns objects, documents, evidence, registry/package outputs and share grants in this scope. |
+| `WorkspaceShareCode` | Opaque code/link for connecting another authenticated user to an owned workspace | Capabilities are stored server-side; default view-only; code can expire, revoke and rotate. |
+| `WorkspaceShareGrant` | Persistent capability-based access to one owner workspace | Created after code acceptance; can be revoked; cannot cross workspace boundaries. |
+| `CertificateLibrary` | Owner's reusable quality evidence library | Separate from workspace sharing; file-backed certificate invariant remains. |
+| `CertificateLibraryShareCode` | Opaque code/link for connecting another user to an owner's certificate library | Separate flow from workspace collaboration; default view/use posture. |
+| `CertificateLibraryShareGrant` | Persistent capability-based access to one certificate library | Preserves source owner/provenance; does not grant workspace access. |
+| `GrantCapability` | Explicit allowed action such as `view_documents` or `use_certificates_in_documents` | Replaces MVP roles; default deny when missing. |
+| `GrantAuditEvent` | Access lifecycle and sensitive action audit event | Records code creation/acceptance/capability change/revocation and use of write capabilities. |
+| `Membership` / `Role` | Deferred RBAC concepts | Previous `Owner/Admin/PTO Engineer/Foreman/Viewer` matrix in `docs/10` is not MVP implementation scope. |
 
 ### 44.2 Project and organization context
 
@@ -2185,7 +2213,7 @@ Initial Repository Bootstrap and Development Rules V1:
 - фиксирует infrastructure portability/no server lock-in: deployment provider replaceable, server/provider-specific assumptions forbidden in domain/application code, environment/config drives database/Redis/object storage/public URLs/CORS/session/base URLs, generated artifact links resolved through storage/download service;
 - фиксирует docs/16 precedence over older docs/08 TestAct candidate wording;
 - requires canonical ADR 0001-0005 physical presence and implementation compliance;
-- блокирует active Foreman permissions without separate approval;
+- блокирует active Foreman permissions and complex RBAC for MVP; access follows `docs/19-sharing-and-access-model-v1.md`;
 - запрещает hardcoding exact first AOSR participant requirements before template review;
 - defines architecture violation and stop/correct process.
 
@@ -2211,8 +2239,8 @@ Initial Repository Bootstrap and Development Rules V1:
 14. `ProjectDrawingSet` и `ExecutiveScheme` — разные понятия.
 15. AI/OCR — assistant only; никакого auto-approve критичных metadata.
 16. Исходные документы могут содержать чувствительные реквизиты; privacy и tenant isolation обязательны.
-17. `Workspace` является tenant boundary, а workspace-права принадлежат `Membership`, не глобальному `User`.
-18. Каждый новый пользователь получает полноценный `Personal Workspace`; organization invitations не смешивают личные и командные данные.
+17. `Workspace` является tenant boundary; MVP access к чужим resources выдаётся только через resource-scoped share grants.
+18. Complex RBAC, `Foreman` role и `Owner/Admin/PTO Engineer/Viewer` matrix не входят в MVP; capabilities replace roles for grants.
 19. Project source files для AI-assisted ИД всегда scoped к `Workspace` и `Object`; upload не делает их единственным source of truth.
 20. AI extraction и error detection создают только traceable/auditable proposals; пользователь подтверждает extracted data и proposed links.
 21. `docs/12-database-schema-v1.md` является conceptual schema baseline; он не является production SQL, ORM/API contract или разрешением начать coding.
@@ -2229,6 +2257,7 @@ Initial Repository Bootstrap and Development Rules V1:
 32. Exact first AOSR participant requirements must not be hardcoded before template review.
 33. Infrastructure provider/server lock-in is forbidden: database, Redis, storage, public/download URLs, CORS, session secrets and app base URLs are config-driven; provider SDKs stay inside narrow infrastructure adapters.
 34. Canonical ADR baseline 0001-0005 in `docs/adr/` is accepted and must be followed by all future implementation work.
+35. `docs/19-sharing-and-access-model-v1.md` supersedes `docs/10-auth-workspace-rbac-model.md` for MVP implementation scope.
 
 ---
 
@@ -2255,9 +2284,9 @@ Initial Repository Bootstrap and Development Rules V1:
 | Где хранить данные компании на объекте? | Через `ObjectCompanySnapshot`. | Изменение профиля компании не переписывает исторические документы объекта. |
 | Может ли Object владеть всем сразу? | Нет. | Требуются отдельные aggregates/contexts для documents, certificates, schemes, templates и packages. |
 | Какая стадия проекта сейчас? | Infrastructure scaffold accepted; canonical ADR baseline accepted; backend module skeleton, technical status slice, database foundation technical slice and object storage foundation technical slice introduced; feature coding still blocked. | Следующий implementation step требует отдельного явного задания и проверки against project memory and ADR 0001-0005. |
-| Кто является пользователем SaaS? | Физическое лицо с одним аккаунтом и автоматическим `Personal Workspace`. | Пользователь может работать сам и состоять в нескольких organization workspaces. |
-| Где живут права доступа? | В `Membership` конкретного workspace, а не в `User` напрямую. | Один user может иметь разные роли в разных isolated tenants. |
-| Как пользователь вступает в организацию? | Через stored `Invite`, acceptance которого создаёт membership. | Invite URL не содержит доверенных прав; role/expiry/revocation/usage определяются сохранённым invite. |
+| Кто является пользователем SaaS? | Физическое лицо с одним аккаунтом и owned working context. | Пользователь может работать сам и подключаться к чужим resources через share grants. |
+| Где живут права доступа в MVP? | В resource-scoped `ShareGrant`, выданном owner через share code / invite code. | Capabilities replace roles; default access is view-only and default deny when capability missing. |
+| Что случилось с RBAC role matrix? | Superseded for MVP by `docs/19-sharing-and-access-model-v1.md`. | `Foreman` и `Owner/Admin/PTO Engineer/Viewer` matrix deferred. |
 | Какая схема данных является baseline перед Backend/API? | `docs/12-database-schema-v1.md` как storage-neutral conceptual schema. | Она применяет required aggregate/access/ingestion boundaries, но не выбирает SQL, ORM, API или implementation. |
 | Какой follow-up Schema V1 требуется перед Backend/API? | `docs/13-domain-lifecycle-immutability-validation-v1.md` как lifecycle/immutability/validation V1 policy. | Фиксирует revisions, evidence lifecycles, numbering, validation, override safety, package determinism и AI review flow; требует review/acceptance. |
 | Какой Backend/API shape следует применять до contracts? | `docs/14-backend-api-architecture-v1.md` как conceptual modular-monolith/application boundary. | Explicit domain commands, UI read models, authoritative validation, version/idempotency and async derived flows; никакого CRUD-first API или code permission. |
@@ -2287,17 +2316,20 @@ Initial Repository Bootstrap and Development Rules V1:
 
 Эти решения по заданию владельца проекта применены в `docs/12-database-schema-v1.md` как conceptual schema baseline. Их будущая замена или расширение требует явного решения; ADR 0001-0005 они не изменяют.
 
-### 51.3 Auth/workspace/RBAC baseline applied in Conceptual Database Schema V1
+### 51.3 MVP sharing/access baseline superseding RBAC
 
-| Access question | Draft baseline в `docs/10-auth-workspace-rbac-model.md` | Причина |
+| Access question | Baseline в `docs/19-sharing-and-access-model-v1.md` | Причина |
 | --- | --- | --- |
-| Как соотносятся tenant и workspace? | `Workspace` конкретизирует tenant boundary для domain data и workspace-scoped authorization. | Нужна единая изоляционная граница для personal и organization usage. |
-| Как регистрируется пользователь? | Natural-person account автоматически получает полный `Personal Workspace` и `Owner` membership. | Независимый инженер ПТО должен полноценно работать без организации. |
-| Как работает совместная организация? | `Organization Workspace` имеет memberships; user может состоять в нескольких таких workspaces. | Поддерживает SaaS для команд без смешивания tenant data. |
-| Где находятся роли? | В `Membership`; роли baseline: `Owner`, `Admin`, `PTO Engineer`, `Foreman`, `Viewer`. | Глобальный user role создавал бы риск доступа между организациями. |
-| Как выдаётся доступ? | Stored invite определяет target/role/conditions; URL несёт только opaque token/reference. | Права нельзя доверять параметрам ссылки. |
+| Нужен ли complex RBAC для MVP? | Нет; role matrix из `docs/10` superseded for MVP. | Simple UX and lower governance surface for first product scope. |
+| Кто администрирует систему? | Exactly one `Global System Admin`, controlled by deployment/config, separate from business collaboration. | Support/admin path не должен становиться обычным workspace role. |
+| Кто владеет данными? | Regular user owns own workspaces/project data and certificate libraries. | Ownership remains clear without organization governance. |
+| Как выдать доступ к workspace/project database? | Owner creates opaque share code, selects capabilities, authenticated user accepts, persistent `WorkspaceShareGrant` is created. | Rights are explicit and resource-scoped. |
+| Как выдать доступ к certificate library? | Separate certificate library share/connect flow creates `CertificateLibraryShareGrant`. | Library sharing is not workspace collaboration. |
+| Какая default permission? | View-only for workspace; view/use-only for certificate library according to selected preset. | Least authority and safer sharing. |
+| Что заменяет роли? | Explicit `GrantCapability` values such as `view_documents`, `edit_documents`, `build_packages`, `use_certificates_in_documents`. | Owner chooses actions directly; default deny when missing. |
+| Что сохраняется из старой модели? | Tenant/workspace isolation, opaque token safety, auditability and revocation. | Security guardrails remain mandatory. |
 
-Auth/workspace baseline отражён logical table families `workspace`, `membership` and `invite` в Schema V1. Permission details, invitation governance, ownership continuity, privacy/audit и commercial lifecycle остаются вопросами review перед Backend/API Architecture. Новый ADR не требуется: фундаментальные принципы ADR 0001-0005 не меняются.
+Previous membership/RBAC governance is deferred. `docs/10-auth-workspace-rbac-model.md` remains historical/deferred context, but MVP access implementation must follow `docs/19-sharing-and-access-model-v1.md`.
 
 ### 51.4 AI project ingestion/assistance baseline applied in Conceptual Database Schema V1
 
@@ -2446,10 +2478,11 @@ Lifecycle/immutability, structured numbering, validation baseline, package deter
 
 ### 52.6 Access, privacy and integrations
 
-- Какие детали применённого baseline `Workspace` as tenant boundary, automatic `Personal Workspace` и membership-owned roles нужно утвердить для first MVP scope?
-- Разрешены ли multi-use organization invites в первом scope, каковы owner transfer/recovery rules и нужна ли fine-grained object assignment policy?
-- Каковы точные права `Foreman` и `Viewer` на оригиналы evidence, outputs и lock override?
-- Какие privacy/access/audit requirements предъявляются к реальным сертификатам, схемам и персональным данным представителей?
+- Single-use или multi-use share codes входят в MVP, и какие default expiration нужны для workspace и certificate library codes?
+- Можно ли owner менять capabilities существующего grant, или нужно revoke/reissue?
+- Какие действия по write capabilities требуют дополнительного owner notification?
+- Какой exact session/cache invalidation mechanism нужен для revocation?
+- Какие privacy/access/audit requirements предъявляются к real certificate originals, schemes и personal representative data under share grants?
 - Допустимы ли когда-либо controlled copy/transfer/export data между личным и organizational workspace или между организациями?
 - Нужны ли ЭЦП/юридически значимое подписание, импорт legacy DOCX/PDF, BIM/CAD/ERP integrations, public API или offline mode, и только на каком последующем этапе?
 
@@ -2606,6 +2639,7 @@ Data Model V1 documented; open aggregate and MVP decisions require review before
 - Документ: `docs/10-auth-workspace-rbac-model.md`
 - Статус: `draft`
 - Описание: formal access, tenant-boundary, invitation, membership and role specification before Database Schema V1.
+- Текущий статус после 2026-05-29: superseded for MVP implementation scope by `docs/19-sharing-and-access-model-v1.md`; role matrix deferred.
 
 Зафиксированный прогресс:
 
@@ -3145,3 +3179,36 @@ Recommended next step: review this object storage foundation, then request a
 separate, explicitly scoped workspace/session isolation skeleton task before any
 domain schema, migration, AOSR, uploads, file APIs, queue, package, OpenAPI or
 AI work.
+
+### 2026-05-29 — Sharing and access model amendment created
+
+- Документ: `docs/19-sharing-and-access-model-v1.md`
+- Статус: `MVP architecture amendment`
+- Описание: owner-based workspace and certificate-library sharing model replacing complex RBAC for MVP.
+
+Зафиксированный прогресс:
+
+- complex RBAC removed from MVP implementation scope;
+- `docs/10-auth-workspace-rbac-model.md` superseded for MVP and retained as deferred/historical reference;
+- no `Foreman` role and no `Owner/Admin/PTO Engineer/Viewer` matrix for MVP;
+- one `Global System Admin` separated from business collaboration;
+- regular users own own workspaces/project data and certificate libraries;
+- workspace collaboration and certificate library sharing are separate flows;
+- share codes / invite codes are opaque, non-guessable and safely stored;
+- default permission is view-only;
+- owner-selected capabilities replace roles;
+- accepted code creates persistent resource-scoped share grant;
+- owner revocation, code rotation, auditability and no cross-workspace leakage are mandatory.
+
+Что требует ратификации перед implementation:
+
+- code single-use/multi-use choice and default expirations;
+- capability update versus revoke/reissue policy;
+- exact privacy/download rules for originals and representative data;
+- revocation/session invalidation mechanics;
+- system admin support-access audit/retention policy.
+
+Что не было изменено этим этапом:
+
+- source-of-truth, typed documents, certificate evidence, registry projection, package snapshot and AI/OCR assistant-only decisions;
+- physical database, Prisma schema, migrations, API routes, auth implementation, sharing implementation or business logic.

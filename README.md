@@ -46,6 +46,7 @@ docs/PROJECT_MEMORY.md
 - `docs/PROJECT_MEMORY.md`
 - `docs/CONVERSATION_QA_LOG.md`
 - `docs/AGENTS.md`
+- `docs/19-sharing-and-access-model-v1.md`
 - `docs/adr/0001-structured-data-source-of-truth.md`
 - `docs/adr/0002-typed-document-domain-model.md`
 - `docs/adr/0003-file-backed-evidence-and-derived-artifacts.md`
@@ -119,11 +120,22 @@ architecture decisions only and do not permit feature coding.
 - `docs/16-mvp-scope-and-first-forms-v1.md`
 - `docs/17-tech-stack-and-implementation-strategy-v1.md`
 - `docs/18-initial-repository-bootstrap-and-development-rules-v1.md`
+- `docs/19-sharing-and-access-model-v1.md`
 - `docs/adr/0001-structured-data-source-of-truth.md`
 - `docs/adr/0002-typed-document-domain-model.md`
 - `docs/adr/0003-file-backed-evidence-and-derived-artifacts.md`
 - `docs/adr/0004-immutable-revisions-and-package-snapshots.md`
 - `docs/adr/0005-modular-monolith-and-bounded-contexts.md`
+
+## Access-model amendment
+
+```text
+docs/19-sharing-and-access-model-v1.md supersedes docs/10-auth-workspace-rbac-model.md for MVP implementation scope
+```
+
+MVP access uses owner-based workspace/certificate-library sharing, share codes
+and capability grants instead of the previous RBAC role matrix. Future
+workspace/session work must follow `docs/19`.
 
 ## Current guardrail
 
@@ -203,7 +215,8 @@ Canonical ADR baseline is now accepted. Future implementation tasks must comply
 with canonical ADR 0001-0005 in `docs/adr/`.
 
 Feature coding remains blocked until a separate explicit feature/database/API
-task is requested and checked against the ADR baseline and project memory.
+task is requested and checked against the ADR baseline, `docs/19` access model
+and project memory.
 
 Recommended next step: review this object storage foundation technical slice, then
 request a separate, narrow workspace/session isolation skeleton task. Domain

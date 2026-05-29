@@ -10,6 +10,14 @@ Date fixed: 2026-05-28.
 
 Source of authority: `docs/PROJECT_MEMORY.md`, `docs/16-mvp-scope-and-first-forms-v1.md`, `docs/17-tech-stack-and-implementation-strategy-v1.md`, canonical ADR 0001-0005 in `docs/adr/`.
 
+Access amendment note, 2026-05-29:
+
+```text
+docs/19-sharing-and-access-model-v1.md is now required for MVP access implementation scope.
+```
+
+Any first scaffold or future workspace/session isolation task must follow owner-based sharing, share codes and capability grants from `docs/19`. Complex RBAC, active `Foreman` behavior and the `Owner/Admin/PTO Engineer/Viewer` matrix are deferred.
+
 This document is the last architecture gate before repository bootstrap. It defines enforceable rules for the first scaffold and early development. It does not create code, scaffold, packages, migrations, ORM schema, OpenAPI, Docker, CI or runtime configuration.
 
 ---
@@ -64,6 +72,7 @@ Before the first scaffold, the implementer MUST verify the existence of:
 - `docs/16-mvp-scope-and-first-forms-v1.md`;
 - `docs/17-tech-stack-and-implementation-strategy-v1.md`;
 - `docs/18-initial-repository-bootstrap-and-development-rules-v1.md`;
+- `docs/19-sharing-and-access-model-v1.md`;
 - `docs/adr/0001-structured-data-source-of-truth.md`;
 - `docs/adr/0002-typed-document-domain-model.md`;
 - `docs/adr/0003-file-backed-evidence-and-derived-artifacts.md`;
@@ -99,6 +108,7 @@ Implementation MUST preserve these invariants at all times:
 - no generic document builder;
 - no generic file manager;
 - no generic CRUD API;
+- MVP access uses owner-based sharing, share codes and capability grants from `docs/19`, not complex RBAC;
 - no silent mutation of source data from generated artifacts;
 - no DOCX/PDF roundtrip import into structured truth;
 - no cross-workspace data leakage.
@@ -122,6 +132,7 @@ The first bootstrap MUST NOT include:
 - OpenAPI;
 - real API routes beyond health/dev smoke checks if explicitly approved;
 - real auth implementation;
+- role-matrix RBAC implementation;
 - file upload implementation;
 - queue worker implementation;
 - document generation implementation;
@@ -210,7 +221,7 @@ Backend scaffold MUST NOT:
 - implement generic document update endpoints;
 - implement package build synchronously;
 - implement AI/OCR processing;
-- implement Foreman-specific active permissions;
+- implement Foreman-specific active permissions or role-matrix RBAC;
 - hardcode final AOSR participant requirements before first template review;
 - import Prisma types into public API contracts as authority;
 - make generated artifacts writable source data.
@@ -481,6 +492,7 @@ Rules:
 - dangerous commands MUST support idempotency;
 - mutable owner updates MUST use expected versions;
 - authorization MUST derive from server-side session and active membership;
+- MVP authorization MUST derive from resource ownership or accepted share-grant capability according to `docs/19`;
 - errors MUST avoid cross-workspace existence leakage;
 - validation failures MUST return explainable findings;
 - async commands MUST return operation identity/status, not pretend synchronous completion.
@@ -650,7 +662,7 @@ Audit records are domain history and MUST later cover:
 - scheme confirmation/supersession;
 - package build/release;
 - generated artifact creation/failure;
-- invite issuance/acceptance/revocation;
+- share code creation/acceptance/capability change/revocation;
 - AI proposal review if enabled.
 
 Scaffold MUST NOT fake audit compliance. If audit is not implemented, it MUST be clearly absent, not simulated.
@@ -662,8 +674,8 @@ Scaffold MUST NOT fake audit compliance. If audit is not implemented, it MUST be
 Security baseline for first implementation:
 
 - browser sessions MUST use secure HTTP-only cookie direction;
-- roles MUST be resolved server-side from active membership;
-- client-provided role claims MUST NOT be trusted;
+- owner/grant capabilities MUST be resolved server-side;
+- client-provided role or capability claims MUST NOT be trusted;
 - workspace id MUST be enforced on every command/query;
 - object id MUST be enforced for object-scoped workflows;
 - `NOT_FOUND_OR_NOT_AUTHORIZED` style leakage protection MUST be used where existence disclosure is unsafe;
@@ -675,11 +687,12 @@ Security baseline for first implementation:
 - CSRF protection MUST be considered for cookie-auth mutations;
 - rate limiting MUST be considered for auth and upload endpoints.
 
-Foreman role rule:
+MVP access rule:
 
-- `Foreman` MAY appear as documented role vocabulary only if needed.
-- Active Foreman permission behavior MUST NOT be implemented without separate approval.
-- Foreman MUST NOT accidentally inherit PTO Engineer write permissions through default role fallbacks.
+- Complex RBAC MUST NOT be implemented for MVP.
+- `Foreman` MUST NOT be implemented as active permission behavior.
+- `Owner/Admin/PTO Engineer/Viewer` matrix MUST NOT be used for MVP implementation scope.
+- Owner-based share grants and default-deny capability checks from `docs/19` are the required access model.
 
 ---
 
@@ -727,6 +740,7 @@ Deferred features MUST NOT appear in first scaffold except as documentation refe
 - generic file drive;
 - advanced RBAC/object-level permissions;
 - active Foreman workflow;
+- Owner/Admin/PTO Engineer/Viewer role matrix;
 - approvals/signatures/EDS;
 - offline-first mode;
 - real-time collaborative editing;
@@ -817,7 +831,7 @@ Examples:
 - workspace authorization is optional or client-trusted;
 - document type can change after creation;
 - TestAct is implemented before concrete approval;
-- Foreman receives active permissions without approval;
+- Foreman receives active permissions or a role matrix is implemented despite `docs/19`;
 - AOSR participant requirements are hardcoded before template review;
 - AI/OCR mutates confirmed source data automatically;
 - cross-workspace existence is leaked through errors, search or counts;
@@ -847,7 +861,7 @@ Real feature coding is still not allowed until:
 - infrastructure portability/no server lock-in rules are preserved;
 - ADR presence/replacement issue is resolved;
 - `docs/16` precedence over older TestAct candidate wording is respected;
-- Foreman active permissions remain unimplemented;
+- Foreman active permissions and complex RBAC remain unimplemented;
 - first AOSR template/participant requirements are not hardcoded before review.
 
 Once the scaffold is accepted, feature coding MUST start with the sequence in Section 24 and MUST preserve the invariants in Section 3.

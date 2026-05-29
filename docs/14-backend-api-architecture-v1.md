@@ -12,6 +12,14 @@
 
 Основание: `docs/12-database-schema-v1.md`, `docs/13-domain-lifecycle-immutability-validation-v1.md`, ADR 0001-0005, анализ АОСР и реестра.
 
+Access amendment note, 2026-05-29:
+
+```text
+docs/19-sharing-and-access-model-v1.md supersedes role/membership RBAC for MVP implementation scope.
+```
+
+Backend/API access design for MVP must use owner-based sharing, share codes and explicit grant capabilities. Any command/read-model language below that assumes `Membership` roles is deferred historical context unless it matches the capability-grant model in `docs/19`.
+
 Этот документ описывает backend как набор доменных application-модулей, команд, read models, validation и consistency boundaries. Он не является разрешением писать production code и не выбирает transport, framework, database, storage, job runner, renderer либо AI/OCR technology.
 
 Неприкосновенные принципы:
@@ -87,9 +95,9 @@ Backend/API Architecture V1 утверждает application-level форму с
 
 | Aspect | Definition |
 | --- | --- |
-| Responsibility | Идентичность физического пользователя и account lifecycle, необходимый для membership-based доступа. |
+| Responsibility | Идентичность физического пользователя и account lifecycle, необходимый для owner/grant-based доступа в MVP. |
 | Owns | Account identity, базовое состояние аккаунта, подтверждение identity согласно будущей auth policy. |
-| Does not own | Роли workspace, объекты, документы, evidence, приглашения организации либо billing. |
+| Does not own | Business resources, grant capabilities, объекты, документы, evidence либо billing. |
 | Main commands | `register_account`, `confirm_account_identity`, `disable_account` после отдельной policy; registration инициирует создание personal workspace через согласованную orchestration. |
 | Main read models | Current account header, accessible workspace switch context через Workspace/Tenant, identity state needed for invite acceptance. |
 
@@ -97,11 +105,11 @@ Backend/API Architecture V1 утверждает application-level форму с
 
 | Aspect | Definition |
 | --- | --- |
-| Responsibility | Tenant boundary, memberships, invitations и workspace-scoped authorization context. |
-| Owns | `Workspace`, `Membership`, stored `Invite`, invite acceptance/revocation state, workspace role assignment and access audit inputs. |
-| Does not own | Account identity, содержимое объектов/документов, fine-grained object RBAC пока оно не утверждено, commercial entitlement. |
-| Main commands | `create_personal_workspace`, `create_organization_workspace`, `invite_member`, `accept_invite`, `revoke_invite`, `change_membership_role`, `remove_membership`, `archive_workspace` после policy. |
-| Main read models | Workspace switcher, membership roster, pending/expired/revoked invites, authorization context for subsequent commands. |
+| Responsibility | Tenant boundary and owner-based sharing/authorization context for MVP. |
+| Owns | Owned workspace/resource scope, share codes, accepted share grants, grant capabilities and access audit inputs for MVP. |
+| Does not own | Account identity, содержимое объектов/документов, fine-grained RBAC, organization governance or commercial entitlement. |
+| Main commands | `create_owned_workspace`, `create_workspace_share_code`, `accept_workspace_share_code`, `rotate_workspace_share_code`, `revoke_workspace_share_grant`, `update_grant_capabilities` after policy. |
+| Main read models | Workspace switcher, connected workspaces, owner grant list, share-code state and effective capabilities for subsequent commands. |
 
 ### 3.3 ObjectDocumentationContext
 
@@ -536,13 +544,13 @@ Hard boundaries:
 
 | Requirement | Backend/API consequence |
 | --- | --- |
-| Workspace scope on every operation | Every command/query resolves one authoritative `workspace` and active membership before accessing business data, processing state, files or outputs. |
-| Membership-based authorization | Role/permission comes from current membership in that workspace, not from a global user flag or client-supplied role. |
+| Workspace scope on every operation | Every command/query resolves one authoritative workspace/resource scope before accessing business data, processing state, files or outputs. |
+| Owner/grant-based authorization | MVP permission comes from resource owner status or a resource-scoped share grant capability from `docs/19`, not from a global user flag or client-supplied role. |
 | Object-level context | Object-scoped modules also check that folders, documents, schemes, sources, registry/package and AI context refer to the same object when required. |
-| Stored invitation state | Invite acceptance relies on persisted target workspace, intended role, validity, revocation/usage/email conditions; a link/token never carries trusted rights. |
+| Stored share/invite state | Code acceptance relies on persisted target resource, capabilities, validity, expiration and revocation; a link/token never carries trusted rights. |
 | No cross-workspace leakage | Reads, search results, file references, build jobs, proposals, audit feeds and error detail cannot reveal another workspace's objects or file existence. |
 | Derived data remains scoped | Projection, artifact and index entry inherits tenant boundary from authoritative source; derived status is not a shortcut around authorization. |
-| Fine-grained RBAC open | Precise per-role capabilities for originals, lock override, object assignment, package release and AI review require a later policy/contract decision. |
+| Fine-grained RBAC deferred | Precise role matrix behavior is deferred; MVP uses explicit grant capabilities and default deny. |
 
 Authorization failures must be handled consistently without exposing whether an inaccessible identifier exists in another workspace.
 
