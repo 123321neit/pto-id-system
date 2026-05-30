@@ -6,13 +6,14 @@
 1. `docs/PROJECT_MEMORY.md`
 2. `docs/CONVERSATION_QA_LOG.md`
 3. `docs/19-sharing-and-access-model-v1.md`
-4. `docs/adr/0001-structured-data-source-of-truth.md`
-5. `docs/adr/0002-typed-document-domain-model.md`
-6. `docs/adr/0003-file-backed-evidence-and-derived-artifacts.md`
-7. `docs/adr/0004-immutable-revisions-and-package-snapshots.md`
-8. `docs/adr/0005-modular-monolith-and-bounded-contexts.md`
-9. `docs/samples/registry-ventilation-example.md`
-10. `docs/samples/aosr-example-analysis.md`
+4. `docs/20-auth-sharing-implementation-plan-v1.md`
+5. `docs/adr/0001-structured-data-source-of-truth.md`
+6. `docs/adr/0002-typed-document-domain-model.md`
+7. `docs/adr/0003-file-backed-evidence-and-derived-artifacts.md`
+8. `docs/adr/0004-immutable-revisions-and-package-snapshots.md`
+9. `docs/adr/0005-modular-monolith-and-bounded-contexts.md`
+10. `docs/samples/registry-ventilation-example.md`
+11. `docs/samples/aosr-example-analysis.md`
 
 ---
 
@@ -33,6 +34,7 @@
 13. Не раздувать MVP в ERP, ECM, Google Drive, generic builder или enterprise platform.
 14. Не нарушать canonical ADR baseline 0001-0005 in `docs/adr/`.
 15. Не реализовывать сложный RBAC для MVP: access model первого scope описан в `docs/19-sharing-and-access-model-v1.md`.
+16. Не начинать auth/sharing implementation без phased sequence из `docs/20-auth-sharing-implementation-plan-v1.md`.
 
 ---
 
@@ -54,7 +56,7 @@
 Текущий этап:
 
 ```text
-First allowed infrastructure/bootstrap scaffold accepted; canonical ADR baseline accepted; backend module architecture skeleton introduced; first technical frontend-backend status slice introduced; database foundation technical slice introduced; object storage foundation technical slice introduced
+First allowed infrastructure/bootstrap scaffold accepted; canonical ADR baseline accepted; backend module architecture skeleton introduced; first technical frontend-backend status slice introduced; database foundation technical slice introduced; object storage foundation technical slice introduced; auth sharing implementation plan added
 ```
 
 Разрешённый scaffold ограничен:
@@ -130,11 +132,10 @@ canonical ADR 0001-0005 in `docs/adr/`.
 Any separate feature/database/API task must comply with canonical ADR 0001-0005
 ```
 
-Recommended next step: review the object storage foundation technical slice, then
-request a separate, explicitly scoped backend application skeleton task for
-workspace/session isolation foundations. Do not start AOSR, domain Prisma
-models, migrations, uploads/file APIs, queues, package generation, OpenAPI,
-AI/OCR, or domain validation without a new task.
+Recommended next step: request a separate, explicitly scoped Phase 1 user
+identity skeleton task from `docs/20`. Do not start AOSR, domain Prisma models,
+migrations, uploads/file APIs, queues, package generation, OpenAPI, sharing
+grants, AI/OCR, or domain validation without a new task.
 
 `docs/12-database-schema-v1.md` по прямому заданию применяет baseline decisions из `docs/09-aggregate-boundaries-and-invariants.md` по:
 
@@ -154,6 +155,21 @@ Access model amendment `docs/19-sharing-and-access-model-v1.md` supersedes `docs
 - default view-only access and default deny when capability is missing.
 
 Previous membership/RBAC role matrix, `Foreman` active behavior, organization governance and fine-grained RBAC are deferred. Workspace isolation, no cross-workspace leakage, revocation and audit remain mandatory.
+
+Implementation plan `docs/20-auth-sharing-implementation-plan-v1.md` defines
+the required future sequence:
+
+1. user identity skeleton;
+2. global system admin marker;
+3. owned workspace baseline;
+4. workspace share codes;
+5. workspace share grants;
+6. certificate library share codes;
+7. certificate library share grants.
+
+No future task should skip ahead to share grants, certificate-library sharing,
+Prisma domain models, migrations or routes unless the user explicitly scopes
+that phase and its tests.
 
 Schema V1 отражает ingestion baseline из `docs/11-ai-project-ingestion-and-assistance-model.md` по:
 
@@ -228,7 +244,7 @@ Privacy/data-processing policy, access to project originals and concrete AI proc
 Следующий отдельный implementation task должен проверяться против:
 
 ```text
-canonical ADR 0001-0005 in docs/adr/
+canonical ADR 0001-0005 in docs/adr/ and docs/20-auth-sharing-implementation-plan-v1.md when auth/sharing is involved
 ```
 
 Feature coding остается заблокированным без отдельного явного задания; нельзя писать production features, SQL/migrations/ORM schema, OpenAPI, real auth/uploads/queue/storage/generation, AI/OCR или deployment files без отдельного разрешения.

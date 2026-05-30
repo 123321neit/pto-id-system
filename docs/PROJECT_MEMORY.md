@@ -2,8 +2,8 @@
 # PTO ID SYSTEM
 # EXECUTIVE DOCUMENTATION PLATFORM
 # MASTER CONTEXT / SOURCE OF TRUTH
-# VERSION: 2026-05-29-SHARING-ACCESS-MODEL-AMENDMENT
-# STATUS: FIRST ALLOWED INFRASTRUCTURE BOOTSTRAP SCAFFOLD; CANONICAL ADR BASELINE ACCEPTED; BACKEND MODULE ARCHITECTURE SKELETON INTRODUCED; FIRST TECHNICAL FRONTEND-BACKEND STATUS SLICE INTRODUCED; DATABASE FOUNDATION TECHNICAL SLICE INTRODUCED; OBJECT STORAGE FOUNDATION TECHNICAL SLICE INTRODUCED
+# VERSION: 2026-05-30-AUTH-SHARING-IMPLEMENTATION-PLAN
+# STATUS: FIRST ALLOWED INFRASTRUCTURE BOOTSTRAP SCAFFOLD; CANONICAL ADR BASELINE ACCEPTED; BACKEND MODULE ARCHITECTURE SKELETON INTRODUCED; FIRST TECHNICAL FRONTEND-BACKEND STATUS SLICE INTRODUCED; DATABASE FOUNDATION TECHNICAL SLICE INTRODUCED; OBJECT STORAGE FOUNDATION TECHNICAL SLICE INTRODUCED; AUTH SHARING IMPLEMENTATION PLAN ADDED
 # LANGUAGE: RU
 
 ---
@@ -25,7 +25,7 @@
 Текущая стадия проекта:
 
 ```text
-FIRST ALLOWED INFRASTRUCTURE BOOTSTRAP SCAFFOLD; CANONICAL ADR BASELINE ACCEPTED; BACKEND MODULE ARCHITECTURE SKELETON INTRODUCED; FIRST TECHNICAL FRONTEND-BACKEND STATUS SLICE INTRODUCED; DATABASE FOUNDATION TECHNICAL SLICE INTRODUCED; OBJECT STORAGE FOUNDATION TECHNICAL SLICE INTRODUCED
+FIRST ALLOWED INFRASTRUCTURE BOOTSTRAP SCAFFOLD; CANONICAL ADR BASELINE ACCEPTED; BACKEND MODULE ARCHITECTURE SKELETON INTRODUCED; FIRST TECHNICAL FRONTEND-BACKEND STATUS SLICE INTRODUCED; DATABASE FOUNDATION TECHNICAL SLICE INTRODUCED; OBJECT STORAGE FOUNDATION TECHNICAL SLICE INTRODUCED; AUTH SHARING IMPLEMENTATION PLAN ADDED
 ```
 
 Проект принял первый явно разрешённый infrastructure/bootstrap scaffold,
@@ -53,6 +53,16 @@ docs/19-sharing-and-access-model-v1.md supersedes docs/10-auth-workspace-rbac-mo
 ```
 
 Future workspace/session/access tasks must use owner-based sharing, share codes and capability grants from `docs/19`, not the older role matrix.
+
+Auth/sharing implementation sequencing accepted:
+
+```text
+docs/20-auth-sharing-implementation-plan-v1.md
+```
+
+Future auth/sharing work must follow Phase 1 through Phase 7 in `docs/20` and
+must not jump directly to Prisma domain models, migrations, API routes, share
+grants or certificate-library sharing without a separate scoped task.
 
 ---
 
@@ -230,6 +240,8 @@ Uploaded project documentation может быть source material и provenance
 - owner selects explicit capabilities вместо ролей.
 
 `docs/10-auth-workspace-rbac-model.md` сохраняется как historical/deferred RBAC reference, но его role matrix (`Owner`, `Admin`, `PTO Engineer`, `Foreman`, `Viewer`) superseded for MVP implementation scope.
+
+Implementation sequencing for this access model is fixed in `docs/20-auth-sharing-implementation-plan-v1.md`: user identity skeleton first, then global system admin marker, owned workspace baseline, workspace share codes, workspace share grants, certificate library share codes and certificate library share grants.
 
 ---
 
@@ -1476,6 +1488,10 @@ UI не должен быть перегружен, но система долж
   generation wiring and infrastructure-only database health status.
 - object storage foundation technical slice with infrastructure-only
   S3-compatible config health status and no uploads/file APIs.
+- auth sharing implementation plan in `docs/20-auth-sharing-implementation-plan-v1.md`,
+  defining the safe future sequence from user identity skeleton through
+  workspace/certificate-library share codes and grants without adding code,
+  schema, migrations, routes or auth/sharing implementation.
 
 Не завершено:
 
@@ -1490,7 +1506,8 @@ UI не должен быть перегружен, но система долж
 - frontend state architecture;
 - OCR extraction schemas;
 - template placeholder/binding model;
-- deferred fine-grained RBAC/privacy/commercial lifecycle details;
+- deferred fine-grained RBAC/privacy/commercial lifecycle details and the exact
+  future implementation of `docs/20` phases;
 - frontend component architecture.
 
 ---
@@ -1622,15 +1639,16 @@ Draft baseline project ingestion, proposals, confirmation, traceability and isol
 Следующий правильный этап:
 
 ```text
-Review first technical frontend-backend status slice, then request a separate workspace/session isolation skeleton task
+Request a separate Phase 1 user identity skeleton task from docs/20-auth-sharing-implementation-plan-v1.md
 ```
 
-Technical status slice уже добавлен только для проверки связи
-frontend/backend/shared/CI. Он не разрешает production feature coding, АОСР,
-database/API/storage/generation implementation, OpenAPI, auth, uploads, queues,
-AI/OCR или domain validation. Следующий implementation step должен быть отдельной
-явной задачей и проверяться against `docs/PROJECT_MEMORY.md` and canonical ADR
-0001-0005.
+Technical status, database foundation and object storage foundation slices
+already exist only for infrastructure confidence. `docs/20` is now the required
+auth/sharing implementation sequence. It does not permit immediate Prisma
+models, migrations, API routes, auth implementation, share codes or grants.
+Следующий implementation step должен быть отдельной явной задачей и проверяться
+against `docs/PROJECT_MEMORY.md`, canonical ADR 0001-0005, `docs/19` and
+`docs/20`.
 
 Pre-schema источники baseline:
 
@@ -1771,6 +1789,7 @@ docs/18-initial-repository-bootstrap-and-development-rules-v1.md
 | `docs/17-tech-stack-and-implementation-strategy-v1.md` | Tech Stack and Implementation Strategy V1 before repository bootstrap | Фиксирует pragmatic MVP stack and implementation direction: React/TypeScript/Vite, NestJS modular monolith, PostgreSQL, Redis/BullMQ, domain-scoped storage, deterministic DOCX/PDF/ZIP generation, PostgreSQL-first search and optional proposal-only AI/OCR; still no code/scaffold/migrations/OpenAPI. |
 | `docs/18-initial-repository-bootstrap-and-development-rules-v1.md` | Initial Repository Bootstrap and Development Rules V1 before first scaffold | Фиксирует final pre-scaffold gate: preconditions, invariants, first scaffold scope, infrastructure portability/no server lock-in, CI/dev gates, forbidden shortcuts, docs/16 precedence, ADR handling, Foreman restriction, AOSR template hardcode ban and architecture violation rules. |
 | `docs/19-sharing-and-access-model-v1.md` | MVP sharing/access architecture amendment | Replaces complex RBAC with owner-based workspace/certificate-library sharing, opaque share codes and capability grants. |
+| `docs/20-auth-sharing-implementation-plan-v1.md` | Auth sharing phased implementation plan | Defines safe implementation sequence for identity, global system admin marker, owned workspace, workspace share codes/grants and certificate library share codes/grants. It is documentation only and adds no code/schema/API/auth behavior. |
 | `docs/adr/*.md` | Принятые архитектурные решения | Нормативные решения по отдельным темам. Изменение принятого принципа требует нового ADR или явного пересмотра существующего. |
 | `docs/samples/*.md` | Анализ реальных примеров | Reference sources для доменной модели и будущих шаблонов/парсеров; не generated output системы. |
 
@@ -2056,6 +2075,8 @@ Sample analyses нужны как domain reference: они объясняют с
 
 Перед изменением архитектуры или реализацией агент обязан прочитать этот master context и canonical ADR baseline:
 
+- `docs/19-sharing-and-access-model-v1.md`
+- `docs/20-auth-sharing-implementation-plan-v1.md`
 - `docs/adr/0001-structured-data-source-of-truth.md`
 - `docs/adr/0002-typed-document-domain-model.md`
 - `docs/adr/0003-file-backed-evidence-and-derived-artifacts.md`
@@ -2088,6 +2109,7 @@ Sample analyses нужны как domain reference: они объясняют с
 - считать uploaded project documentation, OCR text или AI response единственным source of truth либо применять AI proposal без user confirmation;
 - ломать tenant isolation;
 - нарушать canonical ADR baseline;
+- обходить phased auth/sharing sequence in `docs/20-auth-sharing-implementation-plan-v1.md`;
 - заменять открытый архитектурный вопрос случайной технологической реализацией.
 
 ### 48.3 Decision-making behavior
@@ -2258,6 +2280,7 @@ Initial Repository Bootstrap and Development Rules V1:
 33. Infrastructure provider/server lock-in is forbidden: database, Redis, storage, public/download URLs, CORS, session secrets and app base URLs are config-driven; provider SDKs stay inside narrow infrastructure adapters.
 34. Canonical ADR baseline 0001-0005 in `docs/adr/` is accepted and must be followed by all future implementation work.
 35. `docs/19-sharing-and-access-model-v1.md` supersedes `docs/10-auth-workspace-rbac-model.md` for MVP implementation scope.
+36. `docs/20-auth-sharing-implementation-plan-v1.md` fixes auth/sharing implementation sequence; do not skip from docs to share grants, certificate-library sharing, Prisma models, migrations or API routes without separate phase-scoped approval.
 
 ---
 
@@ -2283,10 +2306,11 @@ Initial Repository Bootstrap and Development Rules V1:
 | Можно ли использовать загруженный проект для AI-assisted ИД и поиска ошибок? | Да, как Workspace/Object-scoped source material с proposals-only workflow. | Structured data остаются source of truth; extracted data/links/findings требуют user confirmation, traceability and audit. |
 | Где хранить данные компании на объекте? | Через `ObjectCompanySnapshot`. | Изменение профиля компании не переписывает исторические документы объекта. |
 | Может ли Object владеть всем сразу? | Нет. | Требуются отдельные aggregates/contexts для documents, certificates, schemes, templates и packages. |
-| Какая стадия проекта сейчас? | Infrastructure scaffold accepted; canonical ADR baseline accepted; backend module skeleton, technical status slice, database foundation technical slice and object storage foundation technical slice introduced; feature coding still blocked. | Следующий implementation step требует отдельного явного задания и проверки against project memory and ADR 0001-0005. |
+| Какая стадия проекта сейчас? | Infrastructure scaffold accepted; canonical ADR baseline accepted; backend module skeleton, technical status slice, database foundation technical slice, object storage foundation technical slice and auth sharing implementation plan introduced; feature coding still blocked. | Следующий implementation step требует отдельного явного задания и проверки against project memory, ADR 0001-0005 and `docs/20` when auth/sharing is involved. |
 | Кто является пользователем SaaS? | Физическое лицо с одним аккаунтом и owned working context. | Пользователь может работать сам и подключаться к чужим resources через share grants. |
 | Где живут права доступа в MVP? | В resource-scoped `ShareGrant`, выданном owner через share code / invite code. | Capabilities replace roles; default access is view-only and default deny when capability missing. |
 | Что случилось с RBAC role matrix? | Superseded for MVP by `docs/19-sharing-and-access-model-v1.md`. | `Foreman` и `Owner/Admin/PTO Engineer/Viewer` matrix deferred. |
+| Как внедрять auth/sharing дальше? | По `docs/20-auth-sharing-implementation-plan-v1.md`: identity skeleton, system admin marker, owned workspace, workspace share codes/grants, certificate library share codes/grants. | План защищает workspace isolation and prevents reintroducing complex RBAC. |
 | Какая схема данных является baseline перед Backend/API? | `docs/12-database-schema-v1.md` как storage-neutral conceptual schema. | Она применяет required aggregate/access/ingestion boundaries, но не выбирает SQL, ORM, API или implementation. |
 | Какой follow-up Schema V1 требуется перед Backend/API? | `docs/13-domain-lifecycle-immutability-validation-v1.md` как lifecycle/immutability/validation V1 policy. | Фиксирует revisions, evidence lifecycles, numbering, validation, override safety, package determinism и AI review flow; требует review/acceptance. |
 | Какой Backend/API shape следует применять до contracts? | `docs/14-backend-api-architecture-v1.md` как conceptual modular-monolith/application boundary. | Explicit domain commands, UI read models, authoritative validation, version/idempotency and async derived flows; никакого CRUD-first API или code permission. |
@@ -2330,6 +2354,8 @@ Initial Repository Bootstrap and Development Rules V1:
 | Что сохраняется из старой модели? | Tenant/workspace isolation, opaque token safety, auditability and revocation. | Security guardrails remain mandatory. |
 
 Previous membership/RBAC governance is deferred. `docs/10-auth-workspace-rbac-model.md` remains historical/deferred context, but MVP access implementation must follow `docs/19-sharing-and-access-model-v1.md`.
+
+Implementation sequence is fixed in `docs/20-auth-sharing-implementation-plan-v1.md`. Future coding starts with Phase 1 user identity skeleton only, then proceeds through system admin marker, owned workspace baseline, workspace share codes, workspace share grants, certificate library share codes and certificate library share grants.
 
 ### 51.4 AI project ingestion/assistance baseline applied in Conceptual Database Schema V1
 
@@ -3212,3 +3238,47 @@ AI work.
 
 - source-of-truth, typed documents, certificate evidence, registry projection, package snapshot and AI/OCR assistant-only decisions;
 - physical database, Prisma schema, migrations, API routes, auth implementation, sharing implementation or business logic.
+
+### 2026-05-30 — Auth sharing implementation plan created
+
+- Документ: `docs/20-auth-sharing-implementation-plan-v1.md`
+- Статус: `implementation planning document only`
+- Описание: safe phased plan translating `docs/19-sharing-and-access-model-v1.md`
+  into future implementation sequence without adding code, schema, migrations,
+  API routes, auth or sharing behavior.
+
+Key implementation sequence:
+
+1. User Identity Skeleton.
+2. Global System Admin Marker.
+3. Owned Workspace Baseline.
+4. Workspace Share Codes.
+5. Workspace Share Grants.
+6. Certificate Library Share Codes.
+7. Certificate Library Share Grants.
+
+Зафиксировано:
+
+- Phase 1 starts with authenticated actor identity only;
+- system admin is a separate operational marker, not a business role;
+- owned workspace access precedes sharing;
+- share codes are introduced before accepted grants;
+- workspace sharing and certificate library sharing remain separate flows;
+- future Prisma entities and API commands are conceptual and deferred;
+- access checks are owner/grant/capability based with default deny;
+- audit, token/code safety, revocation, rotation, frontend guardrails and tests are planned before implementation;
+- workspace isolation and no cross-workspace leakage remain mandatory;
+- complex RBAC must not return in MVP.
+
+Что не было введено:
+
+- no code;
+- no Prisma schema changes;
+- no migrations;
+- no API routes;
+- no auth/session implementation;
+- no share code or grant implementation;
+- no technical slice changes.
+
+Recommended next coding step: separate Phase 1 user identity skeleton task only,
+with explicit scope and tests from `docs/20`.

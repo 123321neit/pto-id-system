@@ -738,3 +738,45 @@ Mandatory guardrails:
 - source-of-truth, typed documents, registry projection, package snapshots and AI/OCR assistant-only decisions are unchanged.
 
 Статус решения: MVP access architecture amendment. Previous RBAC/membership role governance is deferred, while workspace isolation, auditability and revocation remain mandatory.
+
+---
+
+## 34. Auth sharing implementation plan
+
+### Q: Как безопасно перейти от owner-based sharing model к реализации, не добавив сразу auth, Prisma schema, API routes и сложный RBAC?
+
+A: Создан documentation-only implementation plan:
+
+- `docs/20-auth-sharing-implementation-plan-v1.md`.
+
+Он переводит `docs/19-sharing-and-access-model-v1.md` в phased sequence:
+
+1. User Identity Skeleton.
+2. Global System Admin Marker.
+3. Owned Workspace Baseline.
+4. Workspace Share Codes.
+5. Workspace Share Grants.
+6. Certificate Library Share Codes.
+7. Certificate Library Share Grants.
+
+Решение:
+
+- first implementation should start with authenticated actor identity only;
+- system admin marker remains separate from business sharing;
+- owned workspace access must exist before share codes;
+- share codes must be safe and auditable before accepted grants;
+- workspace grants and certificate library grants are separate flows;
+- access checks use owner/grant/capability, default deny and leakage-safe errors;
+- audit, token/code safety, revocation/rotation and tests are required before sharing write access;
+- future Prisma entities and API commands are conceptual only until separate implementation tasks.
+
+Что не было введено:
+
+- no code;
+- no Prisma schema or migrations;
+- no API routes or OpenAPI;
+- no auth/session implementation;
+- no sharing implementation;
+- no technical slice changes.
+
+Статус решения: implementation planning document only. Next coding recommendation is a separate Phase 1 user identity skeleton task scoped by `docs/20`.

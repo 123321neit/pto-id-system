@@ -5,7 +5,7 @@ Web-система автоматизации исполнительной до�
 Текущий статус:
 
 ```text
-FIRST ALLOWED INFRASTRUCTURE BOOTSTRAP SCAFFOLD ACCEPTED; CANONICAL ADR BASELINE ACCEPTED; BACKEND MODULE ARCHITECTURE SKELETON INTRODUCED; FIRST TECHNICAL FRONTEND-BACKEND STATUS SLICE INTRODUCED; DATABASE FOUNDATION TECHNICAL SLICE INTRODUCED; OBJECT STORAGE FOUNDATION TECHNICAL SLICE INTRODUCED
+FIRST ALLOWED INFRASTRUCTURE BOOTSTRAP SCAFFOLD ACCEPTED; CANONICAL ADR BASELINE ACCEPTED; BACKEND MODULE ARCHITECTURE SKELETON INTRODUCED; FIRST TECHNICAL FRONTEND-BACKEND STATUS SLICE INTRODUCED; DATABASE FOUNDATION TECHNICAL SLICE INTRODUCED; OBJECT STORAGE FOUNDATION TECHNICAL SLICE INTRODUCED; AUTH SHARING IMPLEMENTATION PLAN ADDED
 ```
 
 В репозитории принят первый разрешённый scaffold. Это только infrastructure/bootstrap
@@ -47,6 +47,7 @@ docs/PROJECT_MEMORY.md
 - `docs/CONVERSATION_QA_LOG.md`
 - `docs/AGENTS.md`
 - `docs/19-sharing-and-access-model-v1.md`
+- `docs/20-auth-sharing-implementation-plan-v1.md`
 - `docs/adr/0001-structured-data-source-of-truth.md`
 - `docs/adr/0002-typed-document-domain-model.md`
 - `docs/adr/0003-file-backed-evidence-and-derived-artifacts.md`
@@ -121,6 +122,7 @@ architecture decisions only and do not permit feature coding.
 - `docs/17-tech-stack-and-implementation-strategy-v1.md`
 - `docs/18-initial-repository-bootstrap-and-development-rules-v1.md`
 - `docs/19-sharing-and-access-model-v1.md`
+- `docs/20-auth-sharing-implementation-plan-v1.md`
 - `docs/adr/0001-structured-data-source-of-truth.md`
 - `docs/adr/0002-typed-document-domain-model.md`
 - `docs/adr/0003-file-backed-evidence-and-derived-artifacts.md`
@@ -136,6 +138,12 @@ docs/19-sharing-and-access-model-v1.md supersedes docs/10-auth-workspace-rbac-mo
 MVP access uses owner-based workspace/certificate-library sharing, share codes
 and capability grants instead of the previous RBAC role matrix. Future
 workspace/session work must follow `docs/19`.
+
+`docs/20-auth-sharing-implementation-plan-v1.md` is the safe phased plan for
+future implementation of that access model. It starts with user identity
+skeleton, then system admin marker, owned workspace baseline, workspace share
+codes/grants, and certificate library share codes/grants. It is documentation
+only and does not add schema, migrations, routes, auth or sharing code.
 
 ## Current guardrail
 
@@ -216,9 +224,8 @@ with canonical ADR 0001-0005 in `docs/adr/`.
 
 Feature coding remains blocked until a separate explicit feature/database/API
 task is requested and checked against the ADR baseline, `docs/19` access model
-and project memory.
+`docs/20` phased plan and project memory.
 
-Recommended next step: review this object storage foundation technical slice, then
-request a separate, narrow workspace/session isolation skeleton task. Domain
-schema, migrations, AOSR, packages, uploads/file APIs, queues and AI remain
-separate explicit tasks.
+Recommended next step: request a separate, narrow Phase 1 user identity skeleton
+task from `docs/20`. Domain schema, migrations, AOSR, packages, uploads/file
+APIs, queues, sharing grants and AI remain separate explicit tasks.
