@@ -5,7 +5,7 @@ Web-система автоматизации исполнительной до�
 Текущий статус:
 
 ```text
-FIRST ALLOWED INFRASTRUCTURE BOOTSTRAP SCAFFOLD ACCEPTED; CANONICAL ADR BASELINE ACCEPTED; BACKEND MODULE ARCHITECTURE SKELETON INTRODUCED; FIRST TECHNICAL FRONTEND-BACKEND STATUS SLICE INTRODUCED; DATABASE FOUNDATION TECHNICAL SLICE INTRODUCED; OBJECT STORAGE FOUNDATION TECHNICAL SLICE INTRODUCED; AUTH SHARING IMPLEMENTATION PLAN ADDED
+FIRST ALLOWED INFRASTRUCTURE BOOTSTRAP SCAFFOLD ACCEPTED; CANONICAL ADR BASELINE ACCEPTED; BACKEND MODULE ARCHITECTURE SKELETON INTRODUCED; FIRST TECHNICAL FRONTEND-BACKEND STATUS SLICE INTRODUCED; DATABASE FOUNDATION TECHNICAL SLICE INTRODUCED; OBJECT STORAGE FOUNDATION TECHNICAL SLICE INTRODUCED; AUTH SHARING IMPLEMENTATION PLAN ADDED; USER IDENTITY SKELETON INTRODUCED
 ```
 
 В репозитории принят первый разрешённый scaffold. Это только infrastructure/bootstrap
@@ -32,6 +32,12 @@ for storage, avoiding brittle CI/network coupling. This slice intentionally has
 no uploads, downloads, file metadata, evidence files, generated artifacts,
 provider URLs in health, Prisma models, migrations, repositories, CRUD APIs or
 business storage behavior.
+
+The user identity skeleton adds a framework-free `Actor` primitive and a
+workspace-owned current actor resolver utility/port for future commands and
+queries. It fails closed for missing or disabled actors and grants no business
+access. This is not login, registration, session/cookie/JWT/OAuth, Prisma user
+storage, an API route or frontend auth UI.
 
 Production feature coding remains blocked.
 
@@ -180,6 +186,9 @@ Scaffold включает:
   port/adapter skeleton, env-driven S3-compatible config boundary, and optional
   technical storage dependency status in `/health` through the same explicit
   non-global module wiring.
+- user identity skeleton: shared-kernel actor primitive plus workspace current
+  actor resolver port/utility and tests, with no auth/session/provider/API
+  implementation and no business authorization.
 
 The backend module skeleton includes module boundaries, README ownership notes,
 placeholder tokens/ports, `apps/api/src/ARCHITECTURE.md`, and ESLint import
@@ -211,6 +220,7 @@ The scaffold intentionally does not include:
 - migrations;
 - OpenAPI;
 - auth implementation;
+- login/register/session/cookie/JWT/OAuth implementation;
 - uploads, download APIs or business file storage implementation;
 - queue workers;
 - document generation;
@@ -224,8 +234,9 @@ with canonical ADR 0001-0005 in `docs/adr/`.
 
 Feature coding remains blocked until a separate explicit feature/database/API
 task is requested and checked against the ADR baseline, `docs/19` access model
-`docs/20` phased plan and project memory.
+`docs/20` phased plan, and project memory.
 
-Recommended next step: request a separate, narrow Phase 1 user identity skeleton
-task from `docs/20`. Domain schema, migrations, AOSR, packages, uploads/file
-APIs, queues, sharing grants and AI remain separate explicit tasks.
+Recommended next step: review this Phase 1 user identity skeleton, then request
+a separate, narrow Phase 2 global system admin marker task from `docs/20`.
+Domain schema, migrations, AOSR, packages, uploads/file APIs, queues, sharing
+codes/grants and AI remain separate explicit tasks.

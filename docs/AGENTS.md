@@ -56,7 +56,7 @@
 Текущий этап:
 
 ```text
-First allowed infrastructure/bootstrap scaffold accepted; canonical ADR baseline accepted; backend module architecture skeleton introduced; first technical frontend-backend status slice introduced; database foundation technical slice introduced; object storage foundation technical slice introduced; auth sharing implementation plan added
+First allowed infrastructure/bootstrap scaffold accepted; canonical ADR baseline accepted; backend module architecture skeleton introduced; first technical frontend-backend status slice introduced; database foundation technical slice introduced; object storage foundation technical slice introduced; auth sharing implementation plan added; user identity skeleton introduced
 ```
 
 Разрешённый scaffold ограничен:
@@ -89,6 +89,9 @@ First allowed infrastructure/bootstrap scaffold accepted; canonical ADR baseline
   S3-compatible env-driven config boundary, mocked storage health tests and
   technical `/health` dependency status through explicit non-global module
   wiring.
+- user identity skeleton:
+  framework-free `Actor` primitive, workspace current actor resolver
+  port/utility and unit tests. It fails closed and grants no business access.
 
 The technical status, database foundation and object storage foundation slices are not product
 implementation. They must not be expanded into domain readiness, АОСР,
@@ -132,10 +135,11 @@ canonical ADR 0001-0005 in `docs/adr/`.
 Any separate feature/database/API task must comply with canonical ADR 0001-0005
 ```
 
-Recommended next step: request a separate, explicitly scoped Phase 1 user
-identity skeleton task from `docs/20`. Do not start AOSR, domain Prisma models,
-migrations, uploads/file APIs, queues, package generation, OpenAPI, sharing
-grants, AI/OCR, or domain validation without a new task.
+Recommended next step: review Phase 1 user identity skeleton, then request a
+separate, explicitly scoped Phase 2 global system admin marker task from
+`docs/20`. Do not start AOSR, domain Prisma models, migrations, uploads/file
+APIs, queues, package generation, OpenAPI, sharing codes/grants, AI/OCR, or
+domain validation without a new task.
 
 `docs/12-database-schema-v1.md` по прямому заданию применяет baseline decisions из `docs/09-aggregate-boundaries-and-invariants.md` по:
 
@@ -170,6 +174,11 @@ the required future sequence:
 No future task should skip ahead to share grants, certificate-library sharing,
 Prisma domain models, migrations or routes unless the user explicitly scopes
 that phase and its tests.
+
+Current Phase 1 identity skeleton is not auth implementation: no login,
+register, password auth, magic links, OAuth, sessions/cookies/JWT, Prisma user
+model, API routes, controllers, frontend auth UI, system admin marker, workspace
+creation, share codes, grants or business access checks.
 
 Schema V1 отражает ingestion baseline из `docs/11-ai-project-ingestion-and-assistance-model.md` по:
 

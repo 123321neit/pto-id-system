@@ -780,3 +780,41 @@ A: Создан documentation-only implementation plan:
 - no technical slice changes.
 
 Статус решения: implementation planning document only. Next coding recommendation is a separate Phase 1 user identity skeleton task scoped by `docs/20`.
+
+---
+
+## 35. Phase 1 User Identity Skeleton
+
+### Q: Что должно войти в самый маленький первый кодовый шаг auth/sharing, чтобы будущие commands/queries могли говорить “current actor”, но без настоящего auth и без бизнес-доступа?
+
+A: Реализован Phase 1 user identity skeleton only.
+
+Добавлено:
+
+- framework-free `Actor` primitive in `shared-kernel`;
+- workspace-owned current actor resolver utility and port;
+- fail-closed behavior for missing actor;
+- fail-closed behavior for disabled actor;
+- tests proving request-body-style `user_id`/role/capability claims are ignored;
+- tests proving actor identity has no roles/capabilities and no encoded workspace/document/certificate access.
+
+Решение:
+
+- current actor is resolved only from trusted server-side context abstraction;
+- actor identity is attribution/precondition only, not business authorization;
+- identity alone does not authorize workspace, document, certificate library, package or file access;
+- no old RBAC roles are introduced;
+- no system admin marker is implemented yet.
+
+Что не было введено:
+
+- no login/register;
+- no password auth, magic links, OAuth, sessions, cookies or JWT;
+- no Prisma user table or migrations;
+- no API routes/controllers/current-user endpoint;
+- no frontend auth UI;
+- no workspace creation;
+- no share codes, grants or certificate sharing;
+- no AOSR/certificate/registry/package business logic.
+
+Статус решения: first narrow implementation slice after `docs/20`. Next phase requires a separate Phase 2 global system admin marker task.

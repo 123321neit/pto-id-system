@@ -9,13 +9,13 @@ uploads, package generation, AI/OCR, or domain behavior are introduced.
 
 | Module | Owns | Must not own |
 | --- | --- | --- |
-| `workspace` | Workspace boundary, membership vocabulary, tenant isolation contracts. | Business documents, evidence, registry rows, generated artifacts, provider adapters. |
+| `workspace` | Workspace boundary, current actor resolution boundary, tenant isolation contracts. | Business documents, evidence, registry rows, generated artifacts, provider adapters, login/session implementation. |
 | `documents` | Typed documents, revisions, and finalization lifecycle boundaries. | Generated artifacts, package snapshots, certificate originals, executive scheme originals. |
 | `evidence` | Certificates, executive schemes, and file-backed evidence boundaries. | Generated package ownership, typed document source data, registry source facts. |
 | `registry` | Derived registry projections and presentation-only override boundaries. | Source-of-truth fields, document/evidence mutation, package snapshots. |
 | `packages` | Package build boundary, snapshots, generated artifact ownership, async orchestration contracts. | Source document ownership, evidence originals, registry source facts, synchronous package execution. |
 | `ai` | Proposal and finding boundaries for future AI/OCR-assisted review. | Autonomous source mutation, validation suppression, evidence confirmation, finalization, package release. |
-| `shared-kernel` | Shared primitives, scope vocabulary, and framework-neutral interfaces. | Business aggregates, repositories, use cases, provider details. |
+| `shared-kernel` | Shared primitives, actor identity primitive, scope vocabulary, and framework-neutral interfaces. | Business aggregates, repositories, use cases, provider details, roles/capabilities. |
 | `infrastructure` | Provider adapter boundaries, infrastructure tokens, Prisma bootstrap, technical database health adapters, and technical object storage health adapters. | Domain ownership, source-of-truth decisions, provider types leaking into modules. |
 | `health` | Technical runtime health endpoint and technical dependency status only. | Product API contracts, domain readiness, business health semantics. |
 
@@ -90,11 +90,14 @@ behavior, repositories, or OpenAPI contracts.
 
 ## Current Status
 
-This is an architecture skeleton plus technical database and object storage
-foundation only. It
-introduces canonical backend module boundaries, placeholder tokens/ports, import
+This is an architecture skeleton plus technical database, object storage, and
+Phase 1 user identity skeleton foundation only. It introduces canonical backend
+module boundaries, placeholder tokens/ports, import
 guardrails, Prisma generation wiring, an empty Prisma schema, and a technical
 database health adapter plus a config-only technical object storage health
-adapter. It does not implement AOSR, domain Prisma models, migrations, CRUD
-APIs, auth, uploads, downloads, file metadata, package generation, AI/OCR,
-repositories, use cases, queue jobs, validation rules, or business logic.
+adapter. The identity skeleton adds only a framework-free actor primitive and a
+workspace current actor resolver utility/port; it grants no business access. It
+does not implement AOSR, domain Prisma models, migrations, CRUD APIs,
+login/register/session auth, uploads, downloads, file metadata, package
+generation, AI/OCR, repositories, use cases, queue jobs, validation rules, or
+business logic.
