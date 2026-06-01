@@ -269,6 +269,21 @@ h3 {
   text-transform: uppercase;
 }
 
+.act-preview__muted {
+  margin-bottom: 8px;
+  color: #68777b;
+  font-size: 0.86rem;
+  line-height: 1.45;
+}
+
+.act-preview__headline {
+  margin-top: 8px;
+  color: #334044;
+  font-size: 1rem;
+  font-weight: 750;
+  line-height: 1.35;
+}
+
 .act-preview dl {
   display: grid;
   gap: 13px;

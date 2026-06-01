@@ -54,11 +54,11 @@ model, not a route/controller, not a frontend screen, not share codes/grants and
 not a system-admin bypass.
 
 The first mock AOSR demo UI slice replaces the root React screen with a
-frontend-only demo workspace for user feedback. It uses in-memory mock data,
-editable basic act fields, a draft list and a conceptual preview. It is clearly
-labelled `DEMO / mock data / not production` and intentionally adds no Prisma
-schema, migrations, real auth, backend routes, persistence, uploads, document
-generation, AI, share codes or grants.
+frontend-only Russian demo workspace for user feedback. It uses in-memory mock
+data, AOSR-like editable fields, a draft list and a conceptual preview. It is
+clearly labelled `ДЕМО / демонстрационные данные / не для работы в продуктиве`
+and intentionally adds no Prisma schema, migrations, real auth, backend routes,
+persistence, uploads, document generation, AI, share codes or grants.
 
 Production feature coding remains blocked outside explicitly requested narrow
 demo/technical slices.
@@ -218,10 +218,10 @@ Scaffold включает:
 - owned workspace baseline: TypeScript-only owned workspace primitive plus
   owner-only access utilities and tests, with no persistence, Prisma model,
   migrations, routes/controllers, frontend UI, sharing, grants or admin bypass.
-- first mock AOSR demo UI slice: frontend-only React screen with in-memory demo
-  workspace/drafts, editable basic act fields, conceptual preview and rendering
-  tests, with no backend routes, persistence, uploads, generation, AI, real
-  auth, share codes or grants.
+- first mock AOSR demo UI slice: frontend-only Russian React screen with
+  in-memory demo workspace/drafts, AOSR-like editable fields, conceptual
+  preview and Testing Library interaction tests, with no backend routes,
+  persistence, uploads, generation, AI, real auth, share codes or grants.
 
 The backend module skeleton includes module boundaries, README ownership notes,
 placeholder tokens/ports, `apps/api/src/ARCHITECTURE.md`, and ESLint import

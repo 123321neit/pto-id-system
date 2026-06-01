@@ -98,11 +98,11 @@ share grants, certificate library sharing, admin support tenant browsing or
 AOSR/certificate/registry/package implementation.
 
 First mock AOSR demo UI slice introduced. The root React/Vite screen now shows
-a frontend-only demo workspace with in-memory mock AOSR drafts, editable basic
-act fields and a conceptual preview for user feedback. It is labelled
-`DEMO / mock data / not production`. This is not production AOSR implementation,
-not Phase 4 share codes, not persistence, not upload/generation/AI, not real
-auth and not a backend API.
+a frontend-only Russian demo workspace with in-memory mock AOSR drafts,
+AOSR-like editable fields and a conceptual preview for user feedback. It is
+labelled `ДЕМО / демонстрационные данные / не для работы в продуктиве`. This is
+not production AOSR implementation, not Phase 4 share codes, not persistence,
+not upload/generation/AI, not real auth and not a backend API.
 
 ---
 
@@ -3468,13 +3468,16 @@ share codes from `docs/20`.
 
 Добавлено:
 
-- root React/Vite screen showing a demo project/workspace header;
+- root React/Vite screen showing a Russian demo project/workspace header;
 - mock AOSR draft queue;
-- editable basic act fields for act number, date, object, contractor,
-  inspector, design references and work description;
+- editable AOSR-like fields for act number, act date, work period, object/area,
+  axes, elevation range, hidden works description, design documentation,
+  contractor representative, customer/construction-control representative and
+  materials/certificates plain text;
 - conceptual AOSR preview panel;
-- clear `DEMO / mock data / not production` label;
-- focused frontend tests for rendering and basic field editing.
+- clear `ДЕМО / демонстрационные данные / не для работы в продуктиве` label;
+- focused frontend tests for rendering and Testing Library/user-event field
+  editing that updates the preview.
 
 Что не было введено:
 

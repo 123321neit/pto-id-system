@@ -12,10 +12,15 @@ export interface DemoAosrDraft {
   readonly id: string;
   readonly actDate: string;
   readonly actNumber: string;
-  readonly contractorName: string;
+  readonly axes: string;
+  readonly contractorRepresentative: string;
+  readonly customerRepresentative: string;
   readonly documentReferences: string;
-  readonly inspectorName: string;
+  readonly elevationRange: string;
+  readonly materialsCertificates: string;
   readonly objectName: string;
+  readonly periodEnd: string;
+  readonly periodStart: string;
   readonly status: 'draft' | 'needs-review';
   readonly workDescription: string;
 }
@@ -23,43 +28,61 @@ export interface DemoAosrDraft {
 export type DemoAosrDraftField =
   | 'actDate'
   | 'actNumber'
-  | 'contractorName'
+  | 'axes'
+  | 'contractorRepresentative'
+  | 'customerRepresentative'
   | 'documentReferences'
-  | 'inspectorName'
+  | 'elevationRange'
+  | 'materialsCertificates'
   | 'objectName'
+  | 'periodEnd'
+  | 'periodStart'
   | 'workDescription';
 
 export const demoAosrWorkspace: DemoAosrWorkspace = {
-  demoNotice: 'DEMO / mock data / not production',
+  demoNotice: 'ДЕМО / демонстрационные данные / не для работы в продуктиве',
   drafts: [
     {
       actDate: '2026-06-01',
-      actNumber: 'AOSR-001',
-      contractorName: 'OOO Montazh Stroy',
-      documentReferences: 'RD-OV-12, RD-OV-14',
+      actNumber: 'АОСР-001',
+      axes: 'оси 1-4 / А-В',
+      contractorRepresentative: 'Иванов И.И., производитель работ ООО "Монтаж Строй"',
+      customerRepresentative: 'Петров П.П., инженер строительного контроля',
+      documentReferences: 'РД-ОВ-12 лист 4, РД-ОВ-14 лист 2',
+      elevationRange: 'отм. +3.200 - +3.850',
       id: 'aosr-draft-001',
-      inspectorName: 'Nikita Haibulin',
-      objectName: 'Ventilation chamber V-1',
+      materialsCertificates:
+        'Воздуховоды оцинкованные, сертификат М-2026-17; крепеж КМ-12, паспорт П-48',
+      objectName: 'Венткамера ВК-1, участок приточной вентиляции',
+      periodEnd: '2026-05-31',
+      periodStart: '2026-05-28',
       status: 'draft',
-      workDescription: 'Hidden ventilation duct installation before insulation.',
+      workDescription:
+        'Монтаж скрытых участков воздуховодов до закрытия теплоизоляцией и облицовкой.',
     },
     {
       actDate: '2026-06-03',
-      actNumber: 'AOSR-002',
-      contractorName: 'OOO Montazh Stroy',
-      documentReferences: 'RD-VK-03',
+      actNumber: 'АОСР-002',
+      axes: 'оси 5-7 / Г-Д',
+      contractorRepresentative: 'Сидоров С.С., мастер ООО "Монтаж Строй"',
+      customerRepresentative: 'Кузнецова А.А., представитель заказчика',
+      documentReferences: 'РД-ВК-03 лист 7',
+      elevationRange: 'отм. 0.000 - +0.600',
       id: 'aosr-draft-002',
-      inspectorName: 'Awaiting assignment',
-      objectName: 'Water supply riser B2',
+      materialsCertificates:
+        'Гильзы стальные, сертификат Г-091; противопожарный состав, паспорт ПП-22',
+      objectName: 'Стояк В2, санитарный блок 1 этажа',
+      periodEnd: '2026-06-02',
+      periodStart: '2026-06-01',
       status: 'needs-review',
-      workDescription: 'Pipe sleeve installation before concrete patching.',
+      workDescription: 'Установка гильз трубопроводов перед заделкой отверстий в перекрытии.',
     },
   ],
   id: 'workspace-demo-aosr',
-  name: 'Demo AOSR Workspace',
-  ownerName: 'Demo owner',
+  name: 'Демо-рабочая область АОСР',
+  ownerName: 'Демо-владелец',
   projectCode: 'PTO-DEMO-2026',
-  projectName: 'Clinic renovation sample project',
+  projectName: 'Реконструкция поликлиники, демонстрационный проект',
 };
 
 export function updateDemoAosrDraftField(
@@ -75,12 +98,16 @@ export function updateDemoAosrDraftField(
 
 export function buildDemoAosrPreviewLines(draft: DemoAosrDraft): readonly string[] {
   return [
-    `Act number: ${draft.actNumber}`,
-    `Date: ${draft.actDate}`,
-    `Object: ${draft.objectName}`,
-    `Contractor: ${draft.contractorName}`,
-    `Inspector: ${draft.inspectorName}`,
-    `Work: ${draft.workDescription}`,
-    `Design references: ${draft.documentReferences}`,
+    `Номер акта: ${draft.actNumber}`,
+    `Дата акта: ${draft.actDate}`,
+    `Период работ: с ${draft.periodStart} по ${draft.periodEnd}`,
+    `Объект / участок: ${draft.objectName}`,
+    `Оси: ${draft.axes}`,
+    `Отметка или диапазон отметок: ${draft.elevationRange}`,
+    `Описание скрытых работ: ${draft.workDescription}`,
+    `Проектная документация: ${draft.documentReferences}`,
+    `Представитель подрядчика: ${draft.contractorRepresentative}`,
+    `Представитель заказчика / стройконтроля: ${draft.customerRepresentative}`,
+    `Материалы / сертификаты: ${draft.materialsCertificates}`,
   ];
 }

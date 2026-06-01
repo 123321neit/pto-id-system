@@ -32,13 +32,13 @@ export function DemoAosrWorkspacePage(): React.JSX.Element {
             {demoAosrWorkspace.ownerName}
           </p>
         </div>
-        <dl className="workspace-summary" aria-label="Workspace summary">
+        <dl className="workspace-summary" aria-label="Сводка рабочей области">
           <div>
-            <dt>Drafts</dt>
+            <dt>Черновики</dt>
             <dd>{drafts.length}</dd>
           </div>
           <div>
-            <dt>Selected</dt>
+            <dt>Выбран акт</dt>
             <dd>{selectedDraft.actNumber}</dd>
           </div>
         </dl>
@@ -47,8 +47,8 @@ export function DemoAosrWorkspacePage(): React.JSX.Element {
       <div className="workspace-grid">
         <section className="draft-list-panel" aria-labelledby="draft-list-title">
           <div className="panel-heading">
-            <p className="section-kicker">AOSR</p>
-            <h2 id="draft-list-title">Draft queue</h2>
+            <p className="section-kicker">АОСР</p>
+            <h2 id="draft-list-title">Черновики актов</h2>
           </div>
           <div className="draft-list" role="list">
             {drafts.map((draft) => (
@@ -64,7 +64,7 @@ export function DemoAosrWorkspacePage(): React.JSX.Element {
                 <span className="draft-card__number">{draft.actNumber}</span>
                 <span className="draft-card__object">{draft.objectName}</span>
                 <span className={`draft-card__status draft-card__status--${draft.status}`}>
-                  {draft.status === 'draft' ? 'Draft' : 'Needs review'}
+                  {draft.status === 'draft' ? 'Черновик' : 'На проверку'}
                 </span>
               </button>
             ))}
@@ -73,12 +73,12 @@ export function DemoAosrWorkspacePage(): React.JSX.Element {
 
         <section className="act-form-panel" aria-labelledby="act-form-title">
           <div className="panel-heading">
-            <p className="section-kicker">Editable mock form</p>
-            <h2 id="act-form-title">Basic act data</h2>
+            <p className="section-kicker">Редактируемая демо-форма</p>
+            <h2 id="act-form-title">Данные акта освидетельствования</h2>
           </div>
           <div className="act-form-grid">
             <label>
-              Act number
+              Номер акта
               <input
                 name="actNumber"
                 onChange={(event) => {
@@ -88,7 +88,7 @@ export function DemoAosrWorkspacePage(): React.JSX.Element {
               />
             </label>
             <label>
-              Act date
+              Дата акта
               <input
                 name="actDate"
                 onChange={(event) => {
@@ -99,7 +99,29 @@ export function DemoAosrWorkspacePage(): React.JSX.Element {
               />
             </label>
             <label>
-              Object / area
+              Период работ: с
+              <input
+                name="periodStart"
+                onChange={(event) => {
+                  updateSelectedDraft('periodStart', event.currentTarget.value);
+                }}
+                type="date"
+                value={selectedDraft.periodStart}
+              />
+            </label>
+            <label>
+              Период работ: по
+              <input
+                name="periodEnd"
+                onChange={(event) => {
+                  updateSelectedDraft('periodEnd', event.currentTarget.value);
+                }}
+                type="date"
+                value={selectedDraft.periodEnd}
+              />
+            </label>
+            <label>
+              Объект / участок
               <input
                 name="objectName"
                 onChange={(event) => {
@@ -109,27 +131,27 @@ export function DemoAosrWorkspacePage(): React.JSX.Element {
               />
             </label>
             <label>
-              Contractor
+              Оси
               <input
-                name="contractorName"
+                name="axes"
                 onChange={(event) => {
-                  updateSelectedDraft('contractorName', event.currentTarget.value);
+                  updateSelectedDraft('axes', event.currentTarget.value);
                 }}
-                value={selectedDraft.contractorName}
+                value={selectedDraft.axes}
               />
             </label>
             <label>
-              Inspector
+              Отметка или диапазон отметок
               <input
-                name="inspectorName"
+                name="elevationRange"
                 onChange={(event) => {
-                  updateSelectedDraft('inspectorName', event.currentTarget.value);
+                  updateSelectedDraft('elevationRange', event.currentTarget.value);
                 }}
-                value={selectedDraft.inspectorName}
+                value={selectedDraft.elevationRange}
               />
             </label>
             <label>
-              Design references
+              Проектная документация
               <input
                 name="documentReferences"
                 onChange={(event) => {
@@ -138,8 +160,28 @@ export function DemoAosrWorkspacePage(): React.JSX.Element {
                 value={selectedDraft.documentReferences}
               />
             </label>
+            <label>
+              Представитель подрядчика
+              <input
+                name="contractorRepresentative"
+                onChange={(event) => {
+                  updateSelectedDraft('contractorRepresentative', event.currentTarget.value);
+                }}
+                value={selectedDraft.contractorRepresentative}
+              />
+            </label>
+            <label>
+              Представитель заказчика / стройконтроля
+              <input
+                name="customerRepresentative"
+                onChange={(event) => {
+                  updateSelectedDraft('customerRepresentative', event.currentTarget.value);
+                }}
+                value={selectedDraft.customerRepresentative}
+              />
+            </label>
             <label className="act-form-grid__wide">
-              Work description
+              Описание скрытых работ
               <textarea
                 name="workDescription"
                 onChange={(event) => {
@@ -149,17 +191,34 @@ export function DemoAosrWorkspacePage(): React.JSX.Element {
                 value={selectedDraft.workDescription}
               />
             </label>
+            <label className="act-form-grid__wide">
+              Материалы / сертификаты
+              <textarea
+                name="materialsCertificates"
+                onChange={(event) => {
+                  updateSelectedDraft('materialsCertificates', event.currentTarget.value);
+                }}
+                rows={4}
+                value={selectedDraft.materialsCertificates}
+              />
+            </label>
           </div>
         </section>
 
         <section className="preview-panel" aria-labelledby="preview-title">
           <div className="panel-heading">
-            <p className="section-kicker">Concept preview</p>
-            <h2 id="preview-title">AOSR act view</h2>
+            <p className="section-kicker">Концептуальный предпросмотр</p>
+            <h2 id="preview-title">Как будет выглядеть АОСР</h2>
           </div>
-          <article className="act-preview" aria-label="AOSR conceptual preview">
+          <article className="act-preview" aria-label="Концептуальный предпросмотр АОСР">
             <p className="act-preview__label">{demoAosrWorkspace.demoNotice}</p>
-            <h3>Act of hidden works inspection</h3>
+            <p className="act-preview__muted">
+              Предпросмотр структуры, не официальный печатный шаблон
+            </p>
+            <h3>Акт освидетельствования скрытых работ</h3>
+            <p className="act-preview__headline">
+              {selectedDraft.actNumber} от {selectedDraft.actDate}
+            </p>
             <dl>
               {buildDemoAosrPreviewLines(selectedDraft).map((line) => {
                 const [term, value] = splitPreviewLine(line);
@@ -186,7 +245,7 @@ function getSelectedDraft(
   const selectedDraft = drafts.find((draft) => draft.id === selectedDraftId) ?? drafts[0];
 
   if (!selectedDraft) {
-    throw new Error('Demo AOSR workspace requires at least one draft.');
+    throw new Error('Для демо-рабочей области АОСР нужен хотя бы один черновик.');
   }
 
   return selectedDraft;
