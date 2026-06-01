@@ -56,7 +56,7 @@
 Текущий этап:
 
 ```text
-First allowed infrastructure/bootstrap scaffold accepted; canonical ADR baseline accepted; backend module architecture skeleton introduced; first technical frontend-backend status slice introduced; database foundation technical slice introduced; object storage foundation technical slice introduced; auth sharing implementation plan added; user identity skeleton introduced
+First allowed infrastructure/bootstrap scaffold accepted; canonical ADR baseline accepted; backend module architecture skeleton introduced; first technical frontend-backend status slice introduced; database foundation technical slice introduced; object storage foundation technical slice introduced; auth sharing implementation plan added; user identity skeleton introduced; global system admin marker introduced
 ```
 
 Разрешённый scaffold ограничен:
@@ -92,6 +92,11 @@ First allowed infrastructure/bootstrap scaffold accepted; canonical ADR baseline
 - user identity skeleton:
   framework-free `Actor` primitive, workspace current actor resolver
   port/utility and unit tests. It fails closed and grants no business access.
+- global system admin marker:
+  optional `SYSTEM_ADMIN_ACTOR_ID` config and framework-free workspace
+  `admin-path` marker utility. Missing config means no admin; disabled actors
+  fail closed; the marker is not a role, capability, workspace owner, business
+  access bypass, route, UI, Prisma model or auth/session implementation.
 
 The technical status, database foundation and object storage foundation slices are not product
 implementation. They must not be expanded into domain readiness, АОСР,
@@ -121,6 +126,7 @@ canonical ADR 0001-0005 in `docs/adr/`.
 - domain Prisma models or migrations;
 - OpenAPI;
 - real auth;
+- admin routes/controllers, admin UI or support tenant browsing;
 - uploads, download APIs or business file storage implementation;
 - queue workers;
 - document generation;
@@ -135,8 +141,8 @@ canonical ADR 0001-0005 in `docs/adr/`.
 Any separate feature/database/API task must comply with canonical ADR 0001-0005
 ```
 
-Recommended next step: review Phase 1 user identity skeleton, then request a
-separate, explicitly scoped Phase 2 global system admin marker task from
+Recommended next step: review Phase 2 global system admin marker, then request a
+separate, explicitly scoped Phase 3 owned workspace baseline task from
 `docs/20`. Do not start AOSR, domain Prisma models, migrations, uploads/file
 APIs, queues, package generation, OpenAPI, sharing codes/grants, AI/OCR, or
 domain validation without a new task.
@@ -175,10 +181,12 @@ No future task should skip ahead to share grants, certificate-library sharing,
 Prisma domain models, migrations or routes unless the user explicitly scopes
 that phase and its tests.
 
-Current Phase 1 identity skeleton is not auth implementation: no login,
-register, password auth, magic links, OAuth, sessions/cookies/JWT, Prisma user
-model, API routes, controllers, frontend auth UI, system admin marker, workspace
-creation, share codes, grants or business access checks.
+Current Phase 1 identity skeleton and Phase 2 admin marker are not auth
+implementation: no login, register, password auth, magic links, OAuth,
+sessions/cookies/JWT, Prisma user model, API routes, controllers, frontend auth
+UI, workspace creation, share codes, grants or business access checks. The
+admin marker is admin-path only and must not be checked inside normal business
+owner/grant utilities.
 
 Schema V1 отражает ingestion baseline из `docs/11-ai-project-ingestion-and-assistance-model.md` по:
 

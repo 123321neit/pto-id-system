@@ -817,4 +817,44 @@ A: Реализован Phase 1 user identity skeleton only.
 - no share codes, grants or certificate sharing;
 - no AOSR/certificate/registry/package business logic.
 
-Статус решения: first narrow implementation slice after `docs/20`. Next phase requires a separate Phase 2 global system admin marker task.
+Статус решения: first narrow implementation slice after `docs/20`. Historical next phase after this slice was Phase 2 global system admin marker.
+
+---
+
+## 36. Phase 2 Global System Admin Marker
+
+### Q: What is the smallest safe Phase 2 slice after the user identity skeleton?
+
+A: Реализован global system admin marker only.
+
+Добавлено:
+
+- optional deployment/config key `SYSTEM_ADMIN_ACTOR_ID`;
+- framework-free workspace `admin-path` utility for checking whether the
+  resolved actor is the single configured active global system admin;
+- tests for missing config, regular actor denial, configured active actor allow,
+  configured disabled actor denial, multiple configured ids rejection and ignored
+  client-supplied admin/role/capability claims.
+
+Решение:
+
+- missing admin config means no actor is system admin;
+- exactly one admin actor id may be configured;
+- disabled/unavailable actor cannot be system admin;
+- admin marker is not a role, capability, workspace owner or share grant;
+- normal business owner/grant access utilities must not check this marker.
+
+Что не было введено:
+
+- no admin routes/controllers;
+- no admin panel or frontend admin UI;
+- no support tenant browsing;
+- no owner/grant bypass in business flows;
+- no workspace access implementation;
+- no share codes or grants;
+- no Prisma `User`/`SystemAdmin` model or migrations;
+- no auth/session/login/register implementation;
+- no business API and no RBAC roles.
+
+Статус решения: narrow Phase 2 marker slice after `docs/20`. Next phase requires
+a separate Phase 3 owned workspace baseline task.

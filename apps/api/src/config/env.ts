@@ -14,6 +14,7 @@ const apiEnvKeys = [
   'PUBLIC_API_BASE_URL',
   'REDIS_URL',
   'SESSION_SECRET',
+  'SYSTEM_ADMIN_ACTOR_ID',
 ] as const satisfies readonly (keyof ApiEnv)[];
 
 type ApiEnvKey = (typeof apiEnvKeys)[number];

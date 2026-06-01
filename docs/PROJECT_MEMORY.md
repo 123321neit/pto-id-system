@@ -2,8 +2,8 @@
 # PTO ID SYSTEM
 # EXECUTIVE DOCUMENTATION PLATFORM
 # MASTER CONTEXT / SOURCE OF TRUTH
-# VERSION: 2026-05-30-USER-IDENTITY-SKELETON
-# STATUS: FIRST ALLOWED INFRASTRUCTURE BOOTSTRAP SCAFFOLD; CANONICAL ADR BASELINE ACCEPTED; BACKEND MODULE ARCHITECTURE SKELETON INTRODUCED; FIRST TECHNICAL FRONTEND-BACKEND STATUS SLICE INTRODUCED; DATABASE FOUNDATION TECHNICAL SLICE INTRODUCED; OBJECT STORAGE FOUNDATION TECHNICAL SLICE INTRODUCED; AUTH SHARING IMPLEMENTATION PLAN ADDED; USER IDENTITY SKELETON INTRODUCED
+# VERSION: 2026-06-01-GLOBAL-SYSTEM-ADMIN-MARKER
+# STATUS: FIRST ALLOWED INFRASTRUCTURE BOOTSTRAP SCAFFOLD; CANONICAL ADR BASELINE ACCEPTED; BACKEND MODULE ARCHITECTURE SKELETON INTRODUCED; FIRST TECHNICAL FRONTEND-BACKEND STATUS SLICE INTRODUCED; DATABASE FOUNDATION TECHNICAL SLICE INTRODUCED; OBJECT STORAGE FOUNDATION TECHNICAL SLICE INTRODUCED; AUTH SHARING IMPLEMENTATION PLAN ADDED; USER IDENTITY SKELETON INTRODUCED; GLOBAL SYSTEM ADMIN MARKER INTRODUCED
 # LANGUAGE: RU
 
 ---
@@ -25,7 +25,7 @@
 Текущая стадия проекта:
 
 ```text
-FIRST ALLOWED INFRASTRUCTURE BOOTSTRAP SCAFFOLD; CANONICAL ADR BASELINE ACCEPTED; BACKEND MODULE ARCHITECTURE SKELETON INTRODUCED; FIRST TECHNICAL FRONTEND-BACKEND STATUS SLICE INTRODUCED; DATABASE FOUNDATION TECHNICAL SLICE INTRODUCED; OBJECT STORAGE FOUNDATION TECHNICAL SLICE INTRODUCED; AUTH SHARING IMPLEMENTATION PLAN ADDED; USER IDENTITY SKELETON INTRODUCED
+FIRST ALLOWED INFRASTRUCTURE BOOTSTRAP SCAFFOLD; CANONICAL ADR BASELINE ACCEPTED; BACKEND MODULE ARCHITECTURE SKELETON INTRODUCED; FIRST TECHNICAL FRONTEND-BACKEND STATUS SLICE INTRODUCED; DATABASE FOUNDATION TECHNICAL SLICE INTRODUCED; OBJECT STORAGE FOUNDATION TECHNICAL SLICE INTRODUCED; AUTH SHARING IMPLEMENTATION PLAN ADDED; USER IDENTITY SKELETON INTRODUCED; GLOBAL SYSTEM ADMIN MARKER INTRODUCED
 ```
 
 Проект принял первый явно разрешённый infrastructure/bootstrap scaffold,
@@ -70,6 +70,15 @@ closed for missing/disabled actors and grants no business access. It is not
 login, registration, password auth, magic links, OAuth, sessions/cookies/JWT,
 Prisma user persistence, API route/controller work, system admin, workspace
 creation, share codes, grants or business authorization.
+
+Phase 2 global system admin marker introduced. It provides optional
+deployment/config key `SYSTEM_ADMIN_ACTOR_ID` and a framework-free workspace
+`admin-path` marker utility that can identify the one configured active actor.
+Missing config means no actor is system admin, and disabled/unavailable actors
+fail closed. The marker does not mutate `Actor` with roles/capabilities, does
+not imply workspace ownership, does not bypass owner/grant business access, and
+does not add admin routes, admin UI, support tenant browsing, Prisma models,
+migrations, auth/session implementation, share codes or grants.
 
 ---
 
@@ -1502,6 +1511,10 @@ UI не должен быть перегружен, но система долж
 - Phase 1 user identity skeleton in the backend: shared-kernel `Actor`
   primitive and workspace current actor resolver utility/port with fail-closed
   tests and no business access.
+- Phase 2 global system admin marker in the backend: optional
+  `SYSTEM_ADMIN_ACTOR_ID` config and workspace `admin-path` marker utility with
+  tests for missing config, regular actor denial, configured active actor allow,
+  disabled actor denial and ignored client-supplied admin/role/capability claims.
 
 Не завершено:
 
@@ -1519,8 +1532,7 @@ UI не должен быть перегружен, но система долж
 - deferred fine-grained RBAC/privacy/commercial lifecycle details and the exact
   future implementation of `docs/20` phases;
 - frontend component architecture.
-- remaining `docs/20` phases: global system admin marker, owned workspace
-  baseline, share codes and grants.
+- remaining `docs/20` phases: owned workspace baseline, share codes and grants.
 
 ---
 
@@ -1651,12 +1663,12 @@ Draft baseline project ingestion, proposals, confirmation, traceability and isol
 Следующий правильный этап:
 
 ```text
-Review Phase 1 user identity skeleton, then request a separate Phase 2 global system admin marker task from docs/20-auth-sharing-implementation-plan-v1.md
+Review Phase 2 global system admin marker, then request a separate Phase 3 owned workspace baseline task from docs/20-auth-sharing-implementation-plan-v1.md
 ```
 
-Technical status, database foundation, object storage foundation and Phase 1
-identity skeleton slices already exist only for infrastructure/access
-foundation confidence. `docs/20` remains the required auth/sharing
+Technical status, database foundation, object storage foundation, Phase 1
+identity skeleton and Phase 2 global system admin marker slices already exist
+only for infrastructure/access foundation confidence. `docs/20` remains the required auth/sharing
 implementation sequence. It does not permit immediate Prisma models, migrations,
 API routes, login/session implementation, share codes or grants.
 Следующий implementation step должен быть отдельной явной задачей и проверяться
@@ -2298,6 +2310,10 @@ Initial Repository Bootstrap and Development Rules V1:
 35. `docs/19-sharing-and-access-model-v1.md` supersedes `docs/10-auth-workspace-rbac-model.md` for MVP implementation scope.
 36. `docs/20-auth-sharing-implementation-plan-v1.md` fixes auth/sharing implementation sequence; do not skip from docs to share grants, certificate-library sharing, Prisma models, migrations or API routes without separate phase-scoped approval.
 37. Phase 1 user identity skeleton is only `Actor` primitive plus current actor resolver utility/port; identity alone grants no workspace, document, certificate, package or file access.
+38. Phase 2 global system admin marker is only optional `SYSTEM_ADMIN_ACTOR_ID`
+    config plus workspace `admin-path` utility; it is not a business access
+    bypass, workspace owner, role/capability, route, UI, Prisma model, migration
+    or auth/session implementation.
 
 ---
 
@@ -2323,12 +2339,13 @@ Initial Repository Bootstrap and Development Rules V1:
 | Можно ли использовать загруженный проект для AI-assisted ИД и поиска ошибок? | Да, как Workspace/Object-scoped source material с proposals-only workflow. | Structured data остаются source of truth; extracted data/links/findings требуют user confirmation, traceability and audit. |
 | Где хранить данные компании на объекте? | Через `ObjectCompanySnapshot`. | Изменение профиля компании не переписывает исторические документы объекта. |
 | Может ли Object владеть всем сразу? | Нет. | Требуются отдельные aggregates/contexts для documents, certificates, schemes, templates и packages. |
-| Какая стадия проекта сейчас? | Infrastructure scaffold accepted; canonical ADR baseline accepted; backend module skeleton, technical status slice, database foundation technical slice, object storage foundation technical slice, auth sharing implementation plan and Phase 1 user identity skeleton introduced; feature coding still blocked beyond the explicitly scoped skeleton. | Следующий implementation step требует отдельного явного задания и проверки against project memory, ADR 0001-0005 and `docs/20` when auth/sharing is involved. |
+| Какая стадия проекта сейчас? | Infrastructure scaffold accepted; canonical ADR baseline accepted; backend module skeleton, technical status slice, database foundation technical slice, object storage foundation technical slice, auth sharing implementation plan, Phase 1 user identity skeleton and Phase 2 global system admin marker introduced; feature coding still blocked beyond explicitly scoped slices. | Следующий implementation step требует отдельного явного задания и проверки against project memory, ADR 0001-0005 and `docs/20` when auth/sharing is involved. |
 | Кто является пользователем SaaS? | Физическое лицо с одним аккаунтом и owned working context. | Пользователь может работать сам и подключаться к чужим resources через share grants. |
 | Где живут права доступа в MVP? | В resource-scoped `ShareGrant`, выданном owner через share code / invite code. | Capabilities replace roles; default access is view-only and default deny when capability missing. |
 | Что случилось с RBAC role matrix? | Superseded for MVP by `docs/19-sharing-and-access-model-v1.md`. | `Foreman` и `Owner/Admin/PTO Engineer/Viewer` matrix deferred. |
 | Как внедрять auth/sharing дальше? | По `docs/20-auth-sharing-implementation-plan-v1.md`: identity skeleton, system admin marker, owned workspace, workspace share codes/grants, certificate library share codes/grants. | План защищает workspace isolation and prevents reintroducing complex RBAC. |
 | Что уже сделано по Phase 1? | Backend actor primitive and current actor resolver utility/port. | Missing/disabled actors fail closed; request-body-style claims are ignored; no business access, auth/session, Prisma or routes were added. |
+| Что уже сделано по Phase 2? | Optional `SYSTEM_ADMIN_ACTOR_ID` config and framework-free workspace `admin-path` marker utility. | Missing config means no admin; only the configured active actor is marked; disabled actors and client-supplied admin/role/capability claims do not authorize admin; no business access, workspace ownership, auth/session, Prisma, route or UI was added. |
 | Какая схема данных является baseline перед Backend/API? | `docs/12-database-schema-v1.md` как storage-neutral conceptual schema. | Она применяет required aggregate/access/ingestion boundaries, но не выбирает SQL, ORM, API или implementation. |
 | Какой follow-up Schema V1 требуется перед Backend/API? | `docs/13-domain-lifecycle-immutability-validation-v1.md` как lifecycle/immutability/validation V1 policy. | Фиксирует revisions, evidence lifecycles, numbering, validation, override safety, package determinism и AI review flow; требует review/acceptance. |
 | Какой Backend/API shape следует применять до contracts? | `docs/14-backend-api-architecture-v1.md` как conceptual modular-monolith/application boundary. | Explicit domain commands, UI read models, authoritative validation, version/idempotency and async derived flows; никакого CRUD-first API или code permission. |
@@ -2373,7 +2390,7 @@ Initial Repository Bootstrap and Development Rules V1:
 
 Previous membership/RBAC governance is deferred. `docs/10-auth-workspace-rbac-model.md` remains historical/deferred context, but MVP access implementation must follow `docs/19-sharing-and-access-model-v1.md`.
 
-Implementation sequence is fixed in `docs/20-auth-sharing-implementation-plan-v1.md`. Future coding starts with Phase 1 user identity skeleton only, then proceeds through system admin marker, owned workspace baseline, workspace share codes, workspace share grants, certificate library share codes and certificate library share grants.
+Implementation sequence is fixed in `docs/20-auth-sharing-implementation-plan-v1.md`. Phase 1 user identity skeleton and Phase 2 global system admin marker are now introduced; future coding must continue with a separate Phase 3 owned workspace baseline task, then workspace share codes, workspace share grants, certificate library share codes and certificate library share grants.
 
 ### 51.4 AI project ingestion/assistance baseline applied in Conceptual Database Schema V1
 
@@ -3330,11 +3347,45 @@ with explicit scope and tests from `docs/20`.
 - no migrations;
 - no API routes, controllers or current-user endpoint;
 - no frontend auth UI;
-- no global system admin implementation;
+- no global system admin implementation in Phase 1;
 - no workspace creation;
 - no share codes or grants;
 - no certificate sharing;
 - no business access checks for AOSR, certificates, registry, packages or files.
 
-Next required phase, only after a separate explicit task: Phase 2 global system
-admin marker from `docs/20`.
+Historical note: the next phase after this slice was Phase 2 global system admin
+marker from `docs/20`.
+
+### 2026-06-01 — Phase 2 global system admin marker introduced
+
+- Статус: `Phase 2 global system admin marker only`
+- Описание: smallest backend/admin-path slice for determining whether a
+  resolved active actor is the single configured global system admin.
+
+Добавлено:
+
+- optional `SYSTEM_ADMIN_ACTOR_ID` env/config key in the shared API env schema
+  and env examples;
+- `apps/api/src/workspace/admin/system-admin.ts` with framework-free
+  `admin-path` marker config and checks;
+- tests proving missing config means no admin, a regular actor is not admin, the
+  configured active actor is admin, a configured disabled actor is not admin,
+  multiple configured ids are rejected, and client-supplied admin/role/capability
+  claims are ignored;
+- README, workspace/module architecture docs, project memory and QA log updates.
+
+Что не было введено:
+
+- no admin routes/controllers;
+- no admin UI;
+- no support tenant browsing;
+- no owner/grant business access bypass;
+- no workspace ownership or workspace access checks;
+- no share codes or grants;
+- no Prisma models or migrations;
+- no auth/session/login/register implementation;
+- no business APIs;
+- no RBAC roles or multi-admin governance.
+
+Next required phase, only after a separate explicit task: Phase 3 owned
+workspace baseline from `docs/20`.

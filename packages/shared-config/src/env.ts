@@ -20,6 +20,15 @@ const optionalTextSchema = z
   .optional()
   .or(z.literal('').transform(() => undefined));
 
+const optionalSingleActorIdSchema = optionalTextSchema.superRefine((value, context) => {
+  if (value?.includes(',') === true) {
+    context.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: 'must configure exactly one actor id',
+    });
+  }
+});
+
 const csvListSchema = z
   .string()
   .optional()
@@ -55,6 +64,7 @@ export const apiEnvSchema = z
     PUBLIC_API_BASE_URL: optionalUrlSchema,
     REDIS_URL: optionalTextSchema,
     SESSION_SECRET: optionalTextSchema,
+    SYSTEM_ADMIN_ACTOR_ID: optionalSingleActorIdSchema,
   })
   .strict()
   .superRefine((value, context) => {

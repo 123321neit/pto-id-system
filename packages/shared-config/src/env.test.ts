@@ -18,6 +18,7 @@ describe('apiEnvSchema', () => {
       OBJECT_STORAGE_BUCKET: '',
       OBJECT_STORAGE_ENDPOINT: '',
       OBJECT_STORAGE_REGION: '',
+      SYSTEM_ADMIN_ACTOR_ID: '',
       NODE_ENV: 'development',
     });
 
@@ -25,6 +26,25 @@ describe('apiEnvSchema', () => {
     expect(parsed.OBJECT_STORAGE_BUCKET).toBeUndefined();
     expect(parsed.OBJECT_STORAGE_ENDPOINT).toBeUndefined();
     expect(parsed.OBJECT_STORAGE_REGION).toBeUndefined();
+    expect(parsed.SYSTEM_ADMIN_ACTOR_ID).toBeUndefined();
+  });
+
+  it('accepts exactly one optional system admin actor id', () => {
+    const parsed = parseEnv(apiEnvSchema, {
+      NODE_ENV: 'development',
+      SYSTEM_ADMIN_ACTOR_ID: ' configured_admin ',
+    });
+
+    expect(parsed.SYSTEM_ADMIN_ACTOR_ID).toBe('configured_admin');
+  });
+
+  it('rejects multiple system admin actor ids', () => {
+    expect(() =>
+      parseEnv(apiEnvSchema, {
+        NODE_ENV: 'development',
+        SYSTEM_ADMIN_ACTOR_ID: 'admin_one,admin_two',
+      }),
+    ).toThrow(/SYSTEM_ADMIN_ACTOR_ID/);
   });
 
   it('fails closed for production infrastructure configuration', () => {

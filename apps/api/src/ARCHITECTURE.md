@@ -9,7 +9,7 @@ uploads, package generation, AI/OCR, or domain behavior are introduced.
 
 | Module | Owns | Must not own |
 | --- | --- | --- |
-| `workspace` | Workspace boundary, current actor resolution boundary, tenant isolation contracts. | Business documents, evidence, registry rows, generated artifacts, provider adapters, login/session implementation. |
+| `workspace` | Workspace boundary, current actor resolution boundary, admin-path system admin marker boundary, tenant isolation contracts. | Business documents, evidence, registry rows, generated artifacts, provider adapters, login/session implementation, admin routes, support tenant browsing, business access bypasses. |
 | `documents` | Typed documents, revisions, and finalization lifecycle boundaries. | Generated artifacts, package snapshots, certificate originals, executive scheme originals. |
 | `evidence` | Certificates, executive schemes, and file-backed evidence boundaries. | Generated package ownership, typed document source data, registry source facts. |
 | `registry` | Derived registry projections and presentation-only override boundaries. | Source-of-truth fields, document/evidence mutation, package snapshots. |
@@ -90,14 +90,19 @@ behavior, repositories, or OpenAPI contracts.
 
 ## Current Status
 
-This is an architecture skeleton plus technical database, object storage, and
-Phase 1 user identity skeleton foundation only. It introduces canonical backend
+This is an architecture skeleton plus technical database, object storage, Phase
+1 user identity skeleton, and Phase 2 global system admin marker foundation
+only. It introduces canonical backend
 module boundaries, placeholder tokens/ports, import
 guardrails, Prisma generation wiring, an empty Prisma schema, and a technical
 database health adapter plus a config-only technical object storage health
 adapter. The identity skeleton adds only a framework-free actor primitive and a
-workspace current actor resolver utility/port; it grants no business access. It
-does not implement AOSR, domain Prisma models, migrations, CRUD APIs,
-login/register/session auth, uploads, downloads, file metadata, package
-generation, AI/OCR, repositories, use cases, queue jobs, validation rules, or
-business logic.
+workspace current actor resolver utility/port. The admin marker adds only an
+optional `SYSTEM_ADMIN_ACTOR_ID` config key plus a framework-free workspace
+`admin-path` utility for identifying the one configured active actor. Neither
+identity nor the admin marker grants business access, workspace ownership or
+share grants. This status does not implement AOSR, domain Prisma models,
+migrations, CRUD APIs, login/register/session auth, admin routes, admin UI,
+support tenant browsing, uploads, downloads, file metadata, package generation,
+AI/OCR, repositories, use cases, queue jobs, validation rules, or business
+logic.

@@ -10,11 +10,13 @@ describe('api env input', () => {
       apiEnvSchema,
       readApiEnvInput({
         NODE_ENV: 'development',
+        SYSTEM_ADMIN_ACTOR_ID: 'configured_admin',
         UNRELATED_PROCESS_KEY: 'ignored',
       }),
     );
 
     expect(parsed.NODE_ENV).toBe('development');
     expect(parsed.API_PORT).toBe(3001);
+    expect(parsed.SYSTEM_ADMIN_ACTOR_ID).toBe('configured_admin');
   });
 });
