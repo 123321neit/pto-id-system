@@ -5,7 +5,7 @@ Web-система автоматизации исполнительной до�
 Текущий статус:
 
 ```text
-FIRST ALLOWED INFRASTRUCTURE BOOTSTRAP SCAFFOLD ACCEPTED; CANONICAL ADR BASELINE ACCEPTED; BACKEND MODULE ARCHITECTURE SKELETON INTRODUCED; FIRST TECHNICAL FRONTEND-BACKEND STATUS SLICE INTRODUCED; DATABASE FOUNDATION TECHNICAL SLICE INTRODUCED; OBJECT STORAGE FOUNDATION TECHNICAL SLICE INTRODUCED; AUTH SHARING IMPLEMENTATION PLAN ADDED; USER IDENTITY SKELETON INTRODUCED; GLOBAL SYSTEM ADMIN MARKER INTRODUCED; OWNED WORKSPACE BASELINE INTRODUCED
+FIRST ALLOWED INFRASTRUCTURE BOOTSTRAP SCAFFOLD ACCEPTED; CANONICAL ADR BASELINE ACCEPTED; BACKEND MODULE ARCHITECTURE SKELETON INTRODUCED; FIRST TECHNICAL FRONTEND-BACKEND STATUS SLICE INTRODUCED; DATABASE FOUNDATION TECHNICAL SLICE INTRODUCED; OBJECT STORAGE FOUNDATION TECHNICAL SLICE INTRODUCED; AUTH SHARING IMPLEMENTATION PLAN ADDED; USER IDENTITY SKELETON INTRODUCED; GLOBAL SYSTEM ADMIN MARKER INTRODUCED; OWNED WORKSPACE BASELINE INTRODUCED; FIRST MOCK AOSR DEMO UI SLICE INTRODUCED
 ```
 
 В репозитории принят первый разрешённый scaffold. Это только infrastructure/bootstrap
@@ -53,7 +53,15 @@ non-owner or wrong-scope access. This is not workspace persistence, not a Prisma
 model, not a route/controller, not a frontend screen, not share codes/grants and
 not a system-admin bypass.
 
-Production feature coding remains blocked.
+The first mock AOSR demo UI slice replaces the root React screen with a
+frontend-only demo workspace for user feedback. It uses in-memory mock data,
+editable basic act fields, a draft list and a conceptual preview. It is clearly
+labelled `DEMO / mock data / not production` and intentionally adds no Prisma
+schema, migrations, real auth, backend routes, persistence, uploads, document
+generation, AI, share codes or grants.
+
+Production feature coding remains blocked outside explicitly requested narrow
+demo/technical slices.
 
 Главный источник знаний проекта:
 
@@ -210,17 +218,22 @@ Scaffold включает:
 - owned workspace baseline: TypeScript-only owned workspace primitive plus
   owner-only access utilities and tests, with no persistence, Prisma model,
   migrations, routes/controllers, frontend UI, sharing, grants or admin bypass.
+- first mock AOSR demo UI slice: frontend-only React screen with in-memory demo
+  workspace/drafts, editable basic act fields, conceptual preview and rendering
+  tests, with no backend routes, persistence, uploads, generation, AI, real
+  auth, share codes or grants.
 
 The backend module skeleton includes module boundaries, README ownership notes,
 placeholder tokens/ports, `apps/api/src/ARCHITECTURE.md`, and ESLint import
 guardrails. It intentionally does not include business/domain implementation.
 
 The technical status, database foundation and object storage foundation slices
-intentionally do not add product screens, domain readiness, business commands,
-CRUD APIs, OpenAPI, domain database state, file APIs or real use cases. They
-exist only to validate frontend -> backend connectivity, shared types,
-env-driven API/storage configuration, Prisma client generation and
-infrastructure health boundaries.
+intentionally do not add domain readiness, business commands, CRUD APIs,
+OpenAPI, domain database state, file APIs or real use cases. They exist only to
+validate frontend -> backend connectivity, shared types, env-driven API/storage
+configuration, Prisma client generation and infrastructure health boundaries.
+The AOSR demo screen is separate: it is a frontend-only mock for feedback, not a
+production workflow.
 
 GitHub Actions CI is committed at `.github/workflows/ci.yml`. It runs on
 `push` and `pull_request` with Node 22, Corepack, `pnpm install
@@ -235,7 +248,7 @@ corepack pnpm ci:check
 
 The scaffold intentionally does not include:
 
-- AOSR implementation;
+- production AOSR implementation;
 - certificates implementation;
 - package builder implementation;
 - migrations;
@@ -256,9 +269,10 @@ with canonical ADR 0001-0005 in `docs/adr/`.
 
 Feature coding remains blocked until a separate explicit feature/database/API
 task is requested and checked against the ADR baseline, `docs/19` access model
-`docs/20` phased plan, and project memory.
+`docs/20` phased plan, and project memory. The current AOSR screen is mock UI
+only and must not be treated as domain implementation.
 
-Recommended next step: review this Phase 3 owned workspace baseline, then
-request a separate, narrow Phase 4 workspace share codes task from `docs/20`.
-Domain schema, migrations, AOSR, packages, uploads/file APIs, queues, sharing
-codes/grants and AI remain separate explicit tasks.
+Recommended next step: collect user feedback on the mock AOSR demo screen.
+Phase 4 workspace share codes, domain schema, migrations, production AOSR,
+packages, uploads/file APIs, queues, sharing grants and AI remain separate
+explicit tasks.

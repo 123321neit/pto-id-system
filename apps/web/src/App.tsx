@@ -1,10 +1,10 @@
 import { RouterProvider, createBrowserRouter } from 'react-router-dom';
 
-import { PlaceholderPage } from './pages/PlaceholderPage.js';
+import { DemoAosrWorkspacePage } from './aosr-demo/DemoAosrWorkspacePage.js';
 
 const router = createBrowserRouter([
   {
-    element: <PlaceholderPage />,
+    element: <DemoAosrWorkspacePage />,
     path: '/',
   },
 ]);

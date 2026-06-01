@@ -6,9 +6,9 @@
 
 # MASTER CONTEXT / SOURCE OF TRUTH
 
-# VERSION: 2026-06-01-OWNED-WORKSPACE-BASELINE
+# VERSION: 2026-06-01-MOCK-AOSR-DEMO-UI
 
-# STATUS: FIRST ALLOWED INFRASTRUCTURE BOOTSTRAP SCAFFOLD; CANONICAL ADR BASELINE ACCEPTED; BACKEND MODULE ARCHITECTURE SKELETON INTRODUCED; FIRST TECHNICAL FRONTEND-BACKEND STATUS SLICE INTRODUCED; DATABASE FOUNDATION TECHNICAL SLICE INTRODUCED; OBJECT STORAGE FOUNDATION TECHNICAL SLICE INTRODUCED; AUTH SHARING IMPLEMENTATION PLAN ADDED; USER IDENTITY SKELETON INTRODUCED; GLOBAL SYSTEM ADMIN MARKER INTRODUCED; OWNED WORKSPACE BASELINE INTRODUCED
+# STATUS: FIRST ALLOWED INFRASTRUCTURE BOOTSTRAP SCAFFOLD; CANONICAL ADR BASELINE ACCEPTED; BACKEND MODULE ARCHITECTURE SKELETON INTRODUCED; FIRST TECHNICAL FRONTEND-BACKEND STATUS SLICE INTRODUCED; DATABASE FOUNDATION TECHNICAL SLICE INTRODUCED; OBJECT STORAGE FOUNDATION TECHNICAL SLICE INTRODUCED; AUTH SHARING IMPLEMENTATION PLAN ADDED; USER IDENTITY SKELETON INTRODUCED; GLOBAL SYSTEM ADMIN MARKER INTRODUCED; OWNED WORKSPACE BASELINE INTRODUCED; FIRST MOCK AOSR DEMO UI SLICE INTRODUCED
 
 # LANGUAGE: RU
 
@@ -31,16 +31,17 @@
 Текущая стадия проекта:
 
 ```text
-FIRST ALLOWED INFRASTRUCTURE BOOTSTRAP SCAFFOLD; CANONICAL ADR BASELINE ACCEPTED; BACKEND MODULE ARCHITECTURE SKELETON INTRODUCED; FIRST TECHNICAL FRONTEND-BACKEND STATUS SLICE INTRODUCED; DATABASE FOUNDATION TECHNICAL SLICE INTRODUCED; OBJECT STORAGE FOUNDATION TECHNICAL SLICE INTRODUCED; AUTH SHARING IMPLEMENTATION PLAN ADDED; USER IDENTITY SKELETON INTRODUCED; GLOBAL SYSTEM ADMIN MARKER INTRODUCED; OWNED WORKSPACE BASELINE INTRODUCED
+FIRST ALLOWED INFRASTRUCTURE BOOTSTRAP SCAFFOLD; CANONICAL ADR BASELINE ACCEPTED; BACKEND MODULE ARCHITECTURE SKELETON INTRODUCED; FIRST TECHNICAL FRONTEND-BACKEND STATUS SLICE INTRODUCED; DATABASE FOUNDATION TECHNICAL SLICE INTRODUCED; OBJECT STORAGE FOUNDATION TECHNICAL SLICE INTRODUCED; AUTH SHARING IMPLEMENTATION PLAN ADDED; USER IDENTITY SKELETON INTRODUCED; GLOBAL SYSTEM ADMIN MARKER INTRODUCED; OWNED WORKSPACE BASELINE INTRODUCED; FIRST MOCK AOSR DEMO UI SLICE INTRODUCED
 ```
 
 Проект принял первый явно разрешённый infrastructure/bootstrap scaffold,
 отдельный backend module architecture skeleton, первый маленький technical
-frontend-backend status slice, database foundation technical slice и object
-storage foundation technical slice. Это не feature coding и не production MVP
-implementation. Главная цель текущего этапа — удерживать минимальную
-инженерную основу репозитория без доменной реализации до отдельного
-feature/database/API задания.
+frontend-backend status slice, database foundation technical slice, object
+storage foundation technical slice и первый mock AOSR demo UI slice. Это не
+production MVP implementation. Главная цель текущего этапа — удерживать
+минимальную инженерную основу репозитория и собирать feedback по frontend demo
+без доменной persistence/API реализации до отдельного feature/database/API
+задания.
 
 Canonical ADR baseline accepted. Authoritative ADR references:
 
@@ -95,6 +96,13 @@ accepted as workspace ownership. This is not Prisma persistence, migrations,
 routes/controllers, frontend UI, auth/session implementation, share codes,
 share grants, certificate library sharing, admin support tenant browsing or
 AOSR/certificate/registry/package implementation.
+
+First mock AOSR demo UI slice introduced. The root React/Vite screen now shows
+a frontend-only demo workspace with in-memory mock AOSR drafts, editable basic
+act fields and a conceptual preview for user feedback. It is labelled
+`DEMO / mock data / not production`. This is not production AOSR implementation,
+not Phase 4 share codes, not persistence, not upload/generation/AI, not real
+auth and not a backend API.
 
 ---
 
@@ -3451,3 +3459,36 @@ baseline from `docs/20`.
 
 Next required phase, only after a separate explicit task: Phase 4 workspace
 share codes from `docs/20`.
+
+### 2026-06-01 — First mock AOSR demo UI slice introduced
+
+- Статус: `Mock AOSR demo UI only`
+- Описание: first frontend-only application slice for user feedback, using
+  in-memory mock data and no production workflow behavior.
+
+Добавлено:
+
+- root React/Vite screen showing a demo project/workspace header;
+- mock AOSR draft queue;
+- editable basic act fields for act number, date, object, contractor,
+  inspector, design references and work description;
+- conceptual AOSR preview panel;
+- clear `DEMO / mock data / not production` label;
+- focused frontend tests for rendering and basic field editing.
+
+Что не было введено:
+
+- no Phase 4 workspace share codes;
+- no share grants;
+- no Prisma schema changes;
+- no migrations;
+- no backend routes/controllers;
+- no real auth/session/login/register;
+- no persistence;
+- no uploads;
+- no document generation;
+- no AI/OCR;
+- no production AOSR domain implementation.
+
+Next step: collect feedback on the demo screen. Phase 4 share codes and
+production domain/API/persistence work remain separate explicit tasks.
