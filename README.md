@@ -5,7 +5,7 @@ Web-система автоматизации исполнительной до�
 Текущий статус:
 
 ```text
-FIRST ALLOWED INFRASTRUCTURE BOOTSTRAP SCAFFOLD ACCEPTED; CANONICAL ADR BASELINE ACCEPTED; BACKEND MODULE ARCHITECTURE SKELETON INTRODUCED; FIRST TECHNICAL FRONTEND-BACKEND STATUS SLICE INTRODUCED; DATABASE FOUNDATION TECHNICAL SLICE INTRODUCED; OBJECT STORAGE FOUNDATION TECHNICAL SLICE INTRODUCED; AUTH SHARING IMPLEMENTATION PLAN ADDED; USER IDENTITY SKELETON INTRODUCED; GLOBAL SYSTEM ADMIN MARKER INTRODUCED
+FIRST ALLOWED INFRASTRUCTURE BOOTSTRAP SCAFFOLD ACCEPTED; CANONICAL ADR BASELINE ACCEPTED; BACKEND MODULE ARCHITECTURE SKELETON INTRODUCED; FIRST TECHNICAL FRONTEND-BACKEND STATUS SLICE INTRODUCED; DATABASE FOUNDATION TECHNICAL SLICE INTRODUCED; OBJECT STORAGE FOUNDATION TECHNICAL SLICE INTRODUCED; AUTH SHARING IMPLEMENTATION PLAN ADDED; USER IDENTITY SKELETON INTRODUCED; GLOBAL SYSTEM ADMIN MARKER INTRODUCED; OWNED WORKSPACE BASELINE INTRODUCED
 ```
 
 В репозитории принят первый разрешённый scaffold. Это только infrastructure/bootstrap
@@ -45,6 +45,13 @@ can identify the one configured active actor for future admin-only paths. Missin
 config means no actor is system admin. The marker is not workspace ownership,
 not a business access bypass, not a role/capability on `Actor`, not an API route,
 not an admin panel and not auth/session implementation.
+
+The owned workspace baseline adds a TypeScript-only `OwnedWorkspace` primitive
+and framework-free owner-only access utilities. Owner checks return
+leakage-safe `NOT_FOUND_OR_NOT_AUTHORIZED` denial for missing, disabled,
+non-owner or wrong-scope access. This is not workspace persistence, not a Prisma
+model, not a route/controller, not a frontend screen, not share codes/grants and
+not a system-admin bypass.
 
 Production feature coding remains blocked.
 
@@ -200,6 +207,9 @@ Scaffold включает:
   workspace `admin-path` marker utility and tests, with no admin routes, admin
   UI, Prisma model, business access bypass, workspace ownership, share grants or
   auth/session implementation.
+- owned workspace baseline: TypeScript-only owned workspace primitive plus
+  owner-only access utilities and tests, with no persistence, Prisma model,
+  migrations, routes/controllers, frontend UI, sharing, grants or admin bypass.
 
 The backend module skeleton includes module boundaries, README ownership notes,
 placeholder tokens/ports, `apps/api/src/ARCHITECTURE.md`, and ESLint import
@@ -248,7 +258,7 @@ Feature coding remains blocked until a separate explicit feature/database/API
 task is requested and checked against the ADR baseline, `docs/19` access model
 `docs/20` phased plan, and project memory.
 
-Recommended next step: review this Phase 2 global system admin marker, then
-request a separate, narrow Phase 3 owned workspace baseline task from `docs/20`.
+Recommended next step: review this Phase 3 owned workspace baseline, then
+request a separate, narrow Phase 4 workspace share codes task from `docs/20`.
 Domain schema, migrations, AOSR, packages, uploads/file APIs, queues, sharing
 codes/grants and AI remain separate explicit tasks.

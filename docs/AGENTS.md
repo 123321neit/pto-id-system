@@ -1,4 +1,5 @@
 # AGENTS.md
+
 # Instructions for Codex / ChatGPT / Cursor / other AI agents
 
 Перед любой работой по проекту PTO ID System агент обязан прочитать:
@@ -56,7 +57,7 @@
 Текущий этап:
 
 ```text
-First allowed infrastructure/bootstrap scaffold accepted; canonical ADR baseline accepted; backend module architecture skeleton introduced; first technical frontend-backend status slice introduced; database foundation technical slice introduced; object storage foundation technical slice introduced; auth sharing implementation plan added; user identity skeleton introduced; global system admin marker introduced
+First allowed infrastructure/bootstrap scaffold accepted; canonical ADR baseline accepted; backend module architecture skeleton introduced; first technical frontend-backend status slice introduced; database foundation technical slice introduced; object storage foundation technical slice introduced; auth sharing implementation plan added; user identity skeleton introduced; global system admin marker introduced; owned workspace baseline introduced
 ```
 
 Разрешённый scaffold ограничен:
@@ -97,6 +98,12 @@ First allowed infrastructure/bootstrap scaffold accepted; canonical ADR baseline
   `admin-path` marker utility. Missing config means no admin; disabled actors
   fail closed; the marker is not a role, capability, workspace owner, business
   access bypass, route, UI, Prisma model or auth/session implementation.
+- owned workspace baseline:
+  TypeScript-only `OwnedWorkspace` primitive and owner-only access utilities.
+  Missing/disabled/non-owner/wrong-scope access returns leakage-safe
+  `NOT_FOUND_OR_NOT_AUTHORIZED`; no Prisma model, migration, route/controller,
+  frontend UI, share code, share grant, RBAC matrix or system-admin bypass is
+  implemented.
 
 The technical status, database foundation and object storage foundation slices are not product
 implementation. They must not be expanded into domain readiness, АОСР,
@@ -141,8 +148,8 @@ canonical ADR 0001-0005 in `docs/adr/`.
 Any separate feature/database/API task must comply with canonical ADR 0001-0005
 ```
 
-Recommended next step: review Phase 2 global system admin marker, then request a
-separate, explicitly scoped Phase 3 owned workspace baseline task from
+Recommended next step: review Phase 3 owned workspace baseline, then request a
+separate, explicitly scoped Phase 4 workspace share codes task from
 `docs/20`. Do not start AOSR, domain Prisma models, migrations, uploads/file
 APIs, queues, package generation, OpenAPI, sharing codes/grants, AI/OCR, or
 domain validation without a new task.
@@ -181,12 +188,13 @@ No future task should skip ahead to share grants, certificate-library sharing,
 Prisma domain models, migrations or routes unless the user explicitly scopes
 that phase and its tests.
 
-Current Phase 1 identity skeleton and Phase 2 admin marker are not auth
+Current Phase 1 identity skeleton, Phase 2 admin marker and Phase 3 owned
+workspace baseline are not auth implementation or product workspace
 implementation: no login, register, password auth, magic links, OAuth,
 sessions/cookies/JWT, Prisma user model, API routes, controllers, frontend auth
-UI, workspace creation, share codes, grants or business access checks. The
-admin marker is admin-path only and must not be checked inside normal business
-owner/grant utilities.
+UI, persistent workspace creation, share codes or grants. The admin marker is
+admin-path only and must not be checked inside normal business owner/grant
+utilities.
 
 Schema V1 отражает ingestion baseline из `docs/11-ai-project-ingestion-and-assistance-model.md` по:
 

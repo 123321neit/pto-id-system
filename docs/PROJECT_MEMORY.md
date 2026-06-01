@@ -1,9 +1,15 @@
 # PROJECT_MEMORY
+
 # PTO ID SYSTEM
+
 # EXECUTIVE DOCUMENTATION PLATFORM
+
 # MASTER CONTEXT / SOURCE OF TRUTH
-# VERSION: 2026-06-01-GLOBAL-SYSTEM-ADMIN-MARKER
-# STATUS: FIRST ALLOWED INFRASTRUCTURE BOOTSTRAP SCAFFOLD; CANONICAL ADR BASELINE ACCEPTED; BACKEND MODULE ARCHITECTURE SKELETON INTRODUCED; FIRST TECHNICAL FRONTEND-BACKEND STATUS SLICE INTRODUCED; DATABASE FOUNDATION TECHNICAL SLICE INTRODUCED; OBJECT STORAGE FOUNDATION TECHNICAL SLICE INTRODUCED; AUTH SHARING IMPLEMENTATION PLAN ADDED; USER IDENTITY SKELETON INTRODUCED; GLOBAL SYSTEM ADMIN MARKER INTRODUCED
+
+# VERSION: 2026-06-01-OWNED-WORKSPACE-BASELINE
+
+# STATUS: FIRST ALLOWED INFRASTRUCTURE BOOTSTRAP SCAFFOLD; CANONICAL ADR BASELINE ACCEPTED; BACKEND MODULE ARCHITECTURE SKELETON INTRODUCED; FIRST TECHNICAL FRONTEND-BACKEND STATUS SLICE INTRODUCED; DATABASE FOUNDATION TECHNICAL SLICE INTRODUCED; OBJECT STORAGE FOUNDATION TECHNICAL SLICE INTRODUCED; AUTH SHARING IMPLEMENTATION PLAN ADDED; USER IDENTITY SKELETON INTRODUCED; GLOBAL SYSTEM ADMIN MARKER INTRODUCED; OWNED WORKSPACE BASELINE INTRODUCED
+
 # LANGUAGE: RU
 
 ---
@@ -25,7 +31,7 @@
 Текущая стадия проекта:
 
 ```text
-FIRST ALLOWED INFRASTRUCTURE BOOTSTRAP SCAFFOLD; CANONICAL ADR BASELINE ACCEPTED; BACKEND MODULE ARCHITECTURE SKELETON INTRODUCED; FIRST TECHNICAL FRONTEND-BACKEND STATUS SLICE INTRODUCED; DATABASE FOUNDATION TECHNICAL SLICE INTRODUCED; OBJECT STORAGE FOUNDATION TECHNICAL SLICE INTRODUCED; AUTH SHARING IMPLEMENTATION PLAN ADDED; USER IDENTITY SKELETON INTRODUCED; GLOBAL SYSTEM ADMIN MARKER INTRODUCED
+FIRST ALLOWED INFRASTRUCTURE BOOTSTRAP SCAFFOLD; CANONICAL ADR BASELINE ACCEPTED; BACKEND MODULE ARCHITECTURE SKELETON INTRODUCED; FIRST TECHNICAL FRONTEND-BACKEND STATUS SLICE INTRODUCED; DATABASE FOUNDATION TECHNICAL SLICE INTRODUCED; OBJECT STORAGE FOUNDATION TECHNICAL SLICE INTRODUCED; AUTH SHARING IMPLEMENTATION PLAN ADDED; USER IDENTITY SKELETON INTRODUCED; GLOBAL SYSTEM ADMIN MARKER INTRODUCED; OWNED WORKSPACE BASELINE INTRODUCED
 ```
 
 Проект принял первый явно разрешённый infrastructure/bootstrap scaffold,
@@ -79,6 +85,16 @@ fail closed. The marker does not mutate `Actor` with roles/capabilities, does
 not imply workspace ownership, does not bypass owner/grant business access, and
 does not add admin routes, admin UI, support tenant browsing, Prisma models,
 migrations, auth/session implementation, share codes or grants.
+
+Phase 3 owned workspace baseline introduced. It provides a TypeScript-only
+`OwnedWorkspace` primitive and framework-free owner-only access utilities.
+Owner checks return leakage-safe `NOT_FOUND_OR_NOT_AUTHORIZED` denial for
+missing, disabled, non-owner or wrong-scope access. Child resource lookup must
+come only after workspace ownership is verified. The system admin marker is not
+accepted as workspace ownership. This is not Prisma persistence, migrations,
+routes/controllers, frontend UI, auth/session implementation, share codes,
+share grants, certificate library sharing, admin support tenant browsing or
+AOSR/certificate/registry/package implementation.
 
 ---
 
@@ -1515,6 +1531,11 @@ UI не должен быть перегружен, но система долж
   `SYSTEM_ADMIN_ACTOR_ID` config and workspace `admin-path` marker utility with
   tests for missing config, regular actor denial, configured active actor allow,
   disabled actor denial and ignored client-supplied admin/role/capability claims.
+- Phase 3 owned workspace baseline in the backend: TypeScript-only
+  `OwnedWorkspace` primitive and owner-only access utilities with leakage-safe
+  `NOT_FOUND_OR_NOT_AUTHORIZED` denial, child-scope verification before child
+  lookup, fail-closed current actor behavior, no admin marker bypass and no
+  old RBAC role/capability/membership authorization.
 
 Не завершено:
 
@@ -1532,7 +1553,8 @@ UI не должен быть перегружен, но система долж
 - deferred fine-grained RBAC/privacy/commercial lifecycle details and the exact
   future implementation of `docs/20` phases;
 - frontend component architecture.
-- remaining `docs/20` phases: owned workspace baseline, share codes and grants.
+- remaining `docs/20` phases: workspace share codes and grants, certificate
+  library share codes and grants.
 
 ---
 
@@ -1788,35 +1810,35 @@ docs/18-initial-repository-bootstrap-and-development-rules-v1.md
 
 ### 43.1 Canonical knowledge structure
 
-| Путь | Роль в проекте | Политика использования |
-| --- | --- | --- |
-| `README.md` | Входная страница репозитория | Кратко объясняет назначение проекта и ведёт к master context. Не является полным архитектурным описанием. |
-| `docs/PROJECT_MEMORY.md` | Единый master context | Канонический источник продуктовых и архитектурных решений, терминов, текущего статуса и правил для агентов. |
-| `docs/CONVERSATION_QA_LOG.md` | Журнал вопросов и решений | Хранит происхождение важных решений. Новые значимые ответы пользователя должны попадать сюда и затем отражаться в master context. |
-| `docs/AGENTS.md` | Быстрые инструкции агентам | Краткая operational entry point. При расхождении с master context приоритет у `PROJECT_MEMORY.md`. |
-| `docs/00-project-memory.md` | Ранняя фиксация принципов | Сохраняется как базовый архитектурный источник. Активные положения интегрированы в этот файл. |
-| `docs/01-architecture-overview.md` | Архитектурный обзор слоёв | Детализирует domain/application/projection/generation/storage layers. |
-| `docs/02-domain-model.md` | Исходное описание доменной модели | Используется при проектировании Data Model v1; положения включены в индексы ниже. |
-| `docs/03-registry-model.md` | Исходное описание реестров | Подтверждает derived projection policy. |
-| `docs/04-roadmap-and-open-questions.md` | Roadmap и ранние вопросы | Используется как источник незакрытых вопросов; актуальный консолидированный список приведён ниже. |
-| `docs/05-codex-agent-instructions.md` | Ранние инструкции Codex | Не удаляется; актуальные обязательные правила собраны в master context и `docs/AGENTS.md`. |
-| `docs/06-data-model-v1.md` | Первая формальная концептуальная модель данных | Фиксирует aggregate roots/boundaries, entities, ownership, snapshots, revisions и projections без выбора БД, API или стека. |
-| `docs/07-aosr-domain-specification.md` | Первая спецификация typed document | Формализует АОСР: blocks, validation, snapshots, revisions, registry/package behavior и открытые domain questions без выбора реализации. |
-| `docs/08-document-types-catalog.md` | Каталог document/evidence/output types | Классифицирует MVP baseline и candidate/deferred types, их source of truth, validation, registry/package and template behavior. |
-| `docs/09-aggregate-boundaries-and-invariants.md` | Boundary/invariants specification before database design | Фиксирует aggregate roots, ownership, invariants, revision/invalidation rules и baseline decisions, применённые в conceptual Schema V1. |
-| `docs/10-auth-workspace-rbac-model.md` | Historical/deferred RBAC reference | Role/membership matrix superseded for MVP by `docs/19-sharing-and-access-model-v1.md`; tenant isolation, token safety, audit and revocation principles remain background when compatible. |
-| `docs/11-ai-project-ingestion-and-assistance-model.md` | AI-assisted project source ingestion specification before database design | Фиксирует project source files, proposals, human confirmation, traceability, privacy/isolation/audit и связи с ИД, отражённые в Schema V1. |
-| `docs/12-database-schema-v1.md` | Conceptual Database Schema V1 before Backend/API design | Применяет обязательные baseline-границы в storage-neutral table/relationship/constraint model, сохраняя открытыми physical mapping и domain/policy decisions. |
-| `docs/13-domain-lifecycle-immutability-validation-v1.md` | Schema V1 lifecycle/immutability/validation follow-up before Backend/API design | Фиксирует storage-neutral lifecycle, historical rebuild, numbering, validation, override safety, package determinism, AI review flow и FolderTree boundary для review/acceptance. |
-| `docs/14-backend-api-architecture-v1.md` | Conceptual Backend/API Architecture V1 before command/read-model contract design | Фиксирует modular-monolith modules, command/query boundary, UI read models, transactions/concurrency, validation, async outputs/AI and tenant-safe API principles без кода или technology selection. |
-| `docs/15-api-command-readmodel-contracts-v1.md` | Conceptual API Command/Read Model Contracts V1 before MVP forms | Фиксирует command/result/error/async semantics, intent contracts, expected versions/idempotency, validation findings, screen reads and scope rules без OpenAPI, code или technology selection. |
-| `docs/16-mvp-scope-and-first-forms-v1.md` | Product MVP Scope and First Forms V1 before technology selection | Фиксирует первую production-usable поставку вокруг АОСР, certificate library, executive schemes, registry, package outputs, onboarding hints and AI-optional delivery без code/scaffold/SQL/OpenAPI или выбора стека. |
-| `docs/17-tech-stack-and-implementation-strategy-v1.md` | Tech Stack and Implementation Strategy V1 before repository bootstrap | Фиксирует pragmatic MVP stack and implementation direction: React/TypeScript/Vite, NestJS modular monolith, PostgreSQL, Redis/BullMQ, domain-scoped storage, deterministic DOCX/PDF/ZIP generation, PostgreSQL-first search and optional proposal-only AI/OCR; still no code/scaffold/migrations/OpenAPI. |
-| `docs/18-initial-repository-bootstrap-and-development-rules-v1.md` | Initial Repository Bootstrap and Development Rules V1 before first scaffold | Фиксирует final pre-scaffold gate: preconditions, invariants, first scaffold scope, infrastructure portability/no server lock-in, CI/dev gates, forbidden shortcuts, docs/16 precedence, ADR handling, Foreman restriction, AOSR template hardcode ban and architecture violation rules. |
-| `docs/19-sharing-and-access-model-v1.md` | MVP sharing/access architecture amendment | Replaces complex RBAC with owner-based workspace/certificate-library sharing, opaque share codes and capability grants. |
-| `docs/20-auth-sharing-implementation-plan-v1.md` | Auth sharing phased implementation plan | Defines safe implementation sequence for identity, global system admin marker, owned workspace, workspace share codes/grants and certificate library share codes/grants. It is documentation only and adds no code/schema/API/auth behavior. |
-| `docs/adr/*.md` | Принятые архитектурные решения | Нормативные решения по отдельным темам. Изменение принятого принципа требует нового ADR или явного пересмотра существующего. |
-| `docs/samples/*.md` | Анализ реальных примеров | Reference sources для доменной модели и будущих шаблонов/парсеров; не generated output системы. |
+| Путь                                                               | Роль в проекте                                                                   | Политика использования                                                                                                                                                                                                                                                                                    |
+| ------------------------------------------------------------------ | -------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `README.md`                                                        | Входная страница репозитория                                                     | Кратко объясняет назначение проекта и ведёт к master context. Не является полным архитектурным описанием.                                                                                                                                                                                                 |
+| `docs/PROJECT_MEMORY.md`                                           | Единый master context                                                            | Канонический источник продуктовых и архитектурных решений, терминов, текущего статуса и правил для агентов.                                                                                                                                                                                               |
+| `docs/CONVERSATION_QA_LOG.md`                                      | Журнал вопросов и решений                                                        | Хранит происхождение важных решений. Новые значимые ответы пользователя должны попадать сюда и затем отражаться в master context.                                                                                                                                                                         |
+| `docs/AGENTS.md`                                                   | Быстрые инструкции агентам                                                       | Краткая operational entry point. При расхождении с master context приоритет у `PROJECT_MEMORY.md`.                                                                                                                                                                                                        |
+| `docs/00-project-memory.md`                                        | Ранняя фиксация принципов                                                        | Сохраняется как базовый архитектурный источник. Активные положения интегрированы в этот файл.                                                                                                                                                                                                             |
+| `docs/01-architecture-overview.md`                                 | Архитектурный обзор слоёв                                                        | Детализирует domain/application/projection/generation/storage layers.                                                                                                                                                                                                                                     |
+| `docs/02-domain-model.md`                                          | Исходное описание доменной модели                                                | Используется при проектировании Data Model v1; положения включены в индексы ниже.                                                                                                                                                                                                                         |
+| `docs/03-registry-model.md`                                        | Исходное описание реестров                                                       | Подтверждает derived projection policy.                                                                                                                                                                                                                                                                   |
+| `docs/04-roadmap-and-open-questions.md`                            | Roadmap и ранние вопросы                                                         | Используется как источник незакрытых вопросов; актуальный консолидированный список приведён ниже.                                                                                                                                                                                                         |
+| `docs/05-codex-agent-instructions.md`                              | Ранние инструкции Codex                                                          | Не удаляется; актуальные обязательные правила собраны в master context и `docs/AGENTS.md`.                                                                                                                                                                                                                |
+| `docs/06-data-model-v1.md`                                         | Первая формальная концептуальная модель данных                                   | Фиксирует aggregate roots/boundaries, entities, ownership, snapshots, revisions и projections без выбора БД, API или стека.                                                                                                                                                                               |
+| `docs/07-aosr-domain-specification.md`                             | Первая спецификация typed document                                               | Формализует АОСР: blocks, validation, snapshots, revisions, registry/package behavior и открытые domain questions без выбора реализации.                                                                                                                                                                  |
+| `docs/08-document-types-catalog.md`                                | Каталог document/evidence/output types                                           | Классифицирует MVP baseline и candidate/deferred types, их source of truth, validation, registry/package and template behavior.                                                                                                                                                                           |
+| `docs/09-aggregate-boundaries-and-invariants.md`                   | Boundary/invariants specification before database design                         | Фиксирует aggregate roots, ownership, invariants, revision/invalidation rules и baseline decisions, применённые в conceptual Schema V1.                                                                                                                                                                   |
+| `docs/10-auth-workspace-rbac-model.md`                             | Historical/deferred RBAC reference                                               | Role/membership matrix superseded for MVP by `docs/19-sharing-and-access-model-v1.md`; tenant isolation, token safety, audit and revocation principles remain background when compatible.                                                                                                                 |
+| `docs/11-ai-project-ingestion-and-assistance-model.md`             | AI-assisted project source ingestion specification before database design        | Фиксирует project source files, proposals, human confirmation, traceability, privacy/isolation/audit и связи с ИД, отражённые в Schema V1.                                                                                                                                                                |
+| `docs/12-database-schema-v1.md`                                    | Conceptual Database Schema V1 before Backend/API design                          | Применяет обязательные baseline-границы в storage-neutral table/relationship/constraint model, сохраняя открытыми physical mapping и domain/policy decisions.                                                                                                                                             |
+| `docs/13-domain-lifecycle-immutability-validation-v1.md`           | Schema V1 lifecycle/immutability/validation follow-up before Backend/API design  | Фиксирует storage-neutral lifecycle, historical rebuild, numbering, validation, override safety, package determinism, AI review flow и FolderTree boundary для review/acceptance.                                                                                                                         |
+| `docs/14-backend-api-architecture-v1.md`                           | Conceptual Backend/API Architecture V1 before command/read-model contract design | Фиксирует modular-monolith modules, command/query boundary, UI read models, transactions/concurrency, validation, async outputs/AI and tenant-safe API principles без кода или technology selection.                                                                                                      |
+| `docs/15-api-command-readmodel-contracts-v1.md`                    | Conceptual API Command/Read Model Contracts V1 before MVP forms                  | Фиксирует command/result/error/async semantics, intent contracts, expected versions/idempotency, validation findings, screen reads and scope rules без OpenAPI, code или technology selection.                                                                                                            |
+| `docs/16-mvp-scope-and-first-forms-v1.md`                          | Product MVP Scope and First Forms V1 before technology selection                 | Фиксирует первую production-usable поставку вокруг АОСР, certificate library, executive schemes, registry, package outputs, onboarding hints and AI-optional delivery без code/scaffold/SQL/OpenAPI или выбора стека.                                                                                     |
+| `docs/17-tech-stack-and-implementation-strategy-v1.md`             | Tech Stack and Implementation Strategy V1 before repository bootstrap            | Фиксирует pragmatic MVP stack and implementation direction: React/TypeScript/Vite, NestJS modular monolith, PostgreSQL, Redis/BullMQ, domain-scoped storage, deterministic DOCX/PDF/ZIP generation, PostgreSQL-first search and optional proposal-only AI/OCR; still no code/scaffold/migrations/OpenAPI. |
+| `docs/18-initial-repository-bootstrap-and-development-rules-v1.md` | Initial Repository Bootstrap and Development Rules V1 before first scaffold      | Фиксирует final pre-scaffold gate: preconditions, invariants, first scaffold scope, infrastructure portability/no server lock-in, CI/dev gates, forbidden shortcuts, docs/16 precedence, ADR handling, Foreman restriction, AOSR template hardcode ban and architecture violation rules.                  |
+| `docs/19-sharing-and-access-model-v1.md`                           | MVP sharing/access architecture amendment                                        | Replaces complex RBAC with owner-based workspace/certificate-library sharing, opaque share codes and capability grants.                                                                                                                                                                                   |
+| `docs/20-auth-sharing-implementation-plan-v1.md`                   | Auth sharing phased implementation plan                                          | Defines safe implementation sequence for identity, global system admin marker, owned workspace, workspace share codes/grants and certificate library share codes/grants. It is documentation only and adds no code/schema/API/auth behavior.                                                              |
+| `docs/adr/*.md`                                                    | Принятые архитектурные решения                                                   | Нормативные решения по отдельным темам. Изменение принятого принципа требует нового ADR или явного пересмотра существующего.                                                                                                                                                                              |
+| `docs/samples/*.md`                                                | Анализ реальных примеров                                                         | Reference sources для доменной модели и будущих шаблонов/парсеров; не generated output системы.                                                                                                                                                                                                           |
 
 ### 43.2 Rules for repository changes
 
@@ -1834,61 +1856,61 @@ docs/18-initial-repository-bootstrap-and-development-rules-v1.md
 
 ### 44.1 Workspace tenant and access context
 
-| Сущность / концепт | Назначение | Ключевые правила |
-| --- | --- | --- |
-| `Workspace` / `TenantContext` | Логическая граница данных и resource-scoped authorization SaaS | Owner workspaces/project databases изолируют domain data; accepted grants do not permit unrelated workspace access/reuse. |
-| `User` | Аккаунт физического лица | В MVP user owns own data/libraries and can accept grants to specific resources; no global business role. |
-| `Global System Admin` | Operational/admin user controlled by deployment/config | Exactly one expected initially; separate from owner/user sharing and not a business collaborator. |
-| `OwnedWorkspace` | Полноценная рабочая область/project database пользователя | User owns objects, documents, evidence, registry/package outputs and share grants in this scope. |
-| `WorkspaceShareCode` | Opaque code/link for connecting another authenticated user to an owned workspace | Capabilities are stored server-side; default view-only; code can expire, revoke and rotate. |
-| `WorkspaceShareGrant` | Persistent capability-based access to one owner workspace | Created after code acceptance; can be revoked; cannot cross workspace boundaries. |
-| `CertificateLibrary` | Owner's reusable quality evidence library | Separate from workspace sharing; file-backed certificate invariant remains. |
-| `CertificateLibraryShareCode` | Opaque code/link for connecting another user to an owner's certificate library | Separate flow from workspace collaboration; default view/use posture. |
-| `CertificateLibraryShareGrant` | Persistent capability-based access to one certificate library | Preserves source owner/provenance; does not grant workspace access. |
-| `GrantCapability` | Explicit allowed action such as `view_documents` or `use_certificates_in_documents` | Replaces MVP roles; default deny when missing. |
-| `GrantAuditEvent` | Access lifecycle and sensitive action audit event | Records code creation/acceptance/capability change/revocation and use of write capabilities. |
-| `Membership` / `Role` | Deferred RBAC concepts | Previous `Owner/Admin/PTO Engineer/Foreman/Viewer` matrix in `docs/10` is not MVP implementation scope. |
+| Сущность / концепт             | Назначение                                                                          | Ключевые правила                                                                                                          |
+| ------------------------------ | ----------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| `Workspace` / `TenantContext`  | Логическая граница данных и resource-scoped authorization SaaS                      | Owner workspaces/project databases изолируют domain data; accepted grants do not permit unrelated workspace access/reuse. |
+| `User`                         | Аккаунт физического лица                                                            | В MVP user owns own data/libraries and can accept grants to specific resources; no global business role.                  |
+| `Global System Admin`          | Operational/admin user controlled by deployment/config                              | Exactly one expected initially; separate from owner/user sharing and not a business collaborator.                         |
+| `OwnedWorkspace`               | Полноценная рабочая область/project database пользователя                           | User owns objects, documents, evidence, registry/package outputs and share grants in this scope.                          |
+| `WorkspaceShareCode`           | Opaque code/link for connecting another authenticated user to an owned workspace    | Capabilities are stored server-side; default view-only; code can expire, revoke and rotate.                               |
+| `WorkspaceShareGrant`          | Persistent capability-based access to one owner workspace                           | Created after code acceptance; can be revoked; cannot cross workspace boundaries.                                         |
+| `CertificateLibrary`           | Owner's reusable quality evidence library                                           | Separate from workspace sharing; file-backed certificate invariant remains.                                               |
+| `CertificateLibraryShareCode`  | Opaque code/link for connecting another user to an owner's certificate library      | Separate flow from workspace collaboration; default view/use posture.                                                     |
+| `CertificateLibraryShareGrant` | Persistent capability-based access to one certificate library                       | Preserves source owner/provenance; does not grant workspace access.                                                       |
+| `GrantCapability`              | Explicit allowed action such as `view_documents` or `use_certificates_in_documents` | Replaces MVP roles; default deny when missing.                                                                            |
+| `GrantAuditEvent`              | Access lifecycle and sensitive action audit event                                   | Records code creation/acceptance/capability change/revocation and use of write capabilities.                              |
+| `Membership` / `Role`          | Deferred RBAC concepts                                                              | Previous `Owner/Admin/PTO Engineer/Foreman/Viewer` matrix in `docs/10` is not MVP implementation scope.                   |
 
 ### 44.2 Project and organization context
 
-| Сущность / концепт | Назначение | Source of truth / связи |
-| --- | --- | --- |
-| `Object` / `Project` | Строительный объект, основной пользовательский контейнер | Владеет настройками и ссылками, но не должен содержать все документы как giant aggregate. |
-| `EngineeringSystem` | Раздел или система: ОВиК, ВК, вентиляция, отопление, водоснабжение, канализация | Связан с объектом, работами, документами и схемами. |
-| `FolderTree` / `Folder` | Самостоятельный object-scoped aggregate и его business collection nodes | Draft baseline `docs/09-aggregate-boundaries-and-invariants.md`: владеет hierarchy/placement, move, duplicate и soft delete; не владеет lifecycle документов. |
-| `CompanyProfile` | Переиспользуемая карточка компании внутри tenant | Может меняться для будущих объектов; не должна ретроспективно менять исторические документы. |
-| `ObjectCompanySnapshot` | Зафиксированные данные компании на объекте | Используется документами и реестром для исторически устойчивого рендера. |
-| `Representative` | Представитель/подписант и его полномочия | Допускаются global, object и temporary representatives; важны порядок и overrides. |
-| `RegistrySignerSnapshot` | Выбранный подписант конкретного реестра | Подписант реестра может отличаться от подписантов актов. |
-| `ProjectDrawingSet` | Комплект рабочих чертежей, по которым выполняются работы | Draft baseline: owned entity в `ObjectDocumentationContext`; не является исполнительной схемой; участвует в АОСР и блоке реестра. |
-| `ProjectSourceFile` | Загруженный project source material: PDF, drawing, specification или future supported source | Принадлежит конкретным `Workspace` и `Object`; служит provenance/reference context, но не становится единственным source of truth. |
+| Сущность / концепт       | Назначение                                                                                   | Source of truth / связи                                                                                                                                       |
+| ------------------------ | -------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Object` / `Project`     | Строительный объект, основной пользовательский контейнер                                     | Владеет настройками и ссылками, но не должен содержать все документы как giant aggregate.                                                                     |
+| `EngineeringSystem`      | Раздел или система: ОВиК, ВК, вентиляция, отопление, водоснабжение, канализация              | Связан с объектом, работами, документами и схемами.                                                                                                           |
+| `FolderTree` / `Folder`  | Самостоятельный object-scoped aggregate и его business collection nodes                      | Draft baseline `docs/09-aggregate-boundaries-and-invariants.md`: владеет hierarchy/placement, move, duplicate и soft delete; не владеет lifecycle документов. |
+| `CompanyProfile`         | Переиспользуемая карточка компании внутри tenant                                             | Может меняться для будущих объектов; не должна ретроспективно менять исторические документы.                                                                  |
+| `ObjectCompanySnapshot`  | Зафиксированные данные компании на объекте                                                   | Используется документами и реестром для исторически устойчивого рендера.                                                                                      |
+| `Representative`         | Представитель/подписант и его полномочия                                                     | Допускаются global, object и temporary representatives; важны порядок и overrides.                                                                            |
+| `RegistrySignerSnapshot` | Выбранный подписант конкретного реестра                                                      | Подписант реестра может отличаться от подписантов актов.                                                                                                      |
+| `ProjectDrawingSet`      | Комплект рабочих чертежей, по которым выполняются работы                                     | Draft baseline: owned entity в `ObjectDocumentationContext`; не является исполнительной схемой; участвует в АОСР и блоке реестра.                             |
+| `ProjectSourceFile`      | Загруженный project source material: PDF, drawing, specification или future supported source | Принадлежит конкретным `Workspace` и `Object`; служит provenance/reference context, но не становится единственным source of truth.                            |
 
 ### 44.3 Work and documentation aggregates
 
-| Сущность / концепт | Назначение | Ключевые правила |
-| --- | --- | --- |
-| `WorkItem` / work statement | Выполненная работа/участок/результат СМР | Draft baseline: самостоятельный aggregate root для V1 не вводится; работа, утверждаемая актом, хранится в typed `Document` payload, а reusable WorkItem остаётся future candidate. |
-| `Document` | Общая оболочка typed document | Содержит immutable `document_type`, status, number/date, typed payload, links, template version и revision. |
-| `AOSR` | Акт освидетельствования скрытых работ | Typed document, связывает работу, представителей, проектную документацию, материалы, сертификаты, схемы и разрешение последующих работ. |
-| `TestAct` | Акт испытаний | Typed document, фиксирует объект/методику/параметры/результаты испытаний и заключение. |
-| `TechnicalReadinessAct` | Акт технической готовности | Обнаружен в sample-реестре; включение в MVP и подробная schema ещё требуют проработки. |
-| `ExecutiveScheme` | Исполнительная схема | PDF/file + structured metadata; при замене создаётся новый файл/объект, а не правка чертежа системой. |
-| `Certificate` | Сертификат, декларация, паспорт, письмо или иной документ качества | Library aggregate с физическим файлом и metadata; переиспользуется в нескольких документах/объектах. |
-| `Material` | Материал или оборудование | Справочная/проектная сущность; обязательность каталога в MVP остаётся вопросом. |
-| `MaterialUsage` | Факт применения материала в работе | Связывает конкретную работу, количество/партию/место применения и подтверждающие сертификаты. |
+| Сущность / концепт          | Назначение                                                         | Ключевые правила                                                                                                                                                                   |
+| --------------------------- | ------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `WorkItem` / work statement | Выполненная работа/участок/результат СМР                           | Draft baseline: самостоятельный aggregate root для V1 не вводится; работа, утверждаемая актом, хранится в typed `Document` payload, а reusable WorkItem остаётся future candidate. |
+| `Document`                  | Общая оболочка typed document                                      | Содержит immutable `document_type`, status, number/date, typed payload, links, template version и revision.                                                                        |
+| `AOSR`                      | Акт освидетельствования скрытых работ                              | Typed document, связывает работу, представителей, проектную документацию, материалы, сертификаты, схемы и разрешение последующих работ.                                            |
+| `TestAct`                   | Акт испытаний                                                      | Typed document, фиксирует объект/методику/параметры/результаты испытаний и заключение.                                                                                             |
+| `TechnicalReadinessAct`     | Акт технической готовности                                         | Обнаружен в sample-реестре; включение в MVP и подробная schema ещё требуют проработки.                                                                                             |
+| `ExecutiveScheme`           | Исполнительная схема                                               | PDF/file + structured metadata; при замене создаётся новый файл/объект, а не правка чертежа системой.                                                                              |
+| `Certificate`               | Сертификат, декларация, паспорт, письмо или иной документ качества | Library aggregate с физическим файлом и metadata; переиспользуется в нескольких документах/объектах.                                                                               |
+| `Material`                  | Материал или оборудование                                          | Справочная/проектная сущность; обязательность каталога в MVP остаётся вопросом.                                                                                                    |
+| `MaterialUsage`             | Факт применения материала в работе                                 | Связывает конкретную работу, количество/партию/место применения и подтверждающие сертификаты.                                                                                      |
 
 ### 44.4 Output, rendering and lifecycle concepts
 
-| Сущность / концепт | Назначение | Ключевые правила |
-| --- | --- | --- |
-| `RegistryProjection` | Вычисляемое представление состава документации | Никогда не source of truth; строится из domain data и override layer. |
-| `RegistryOverride` | Управляемые печатные/порядковые изменения реестра | Позволяет порядок, скрытие, примечания и подписанта; не переписывает source fields. |
-| `Package` / `PackageSnapshot` | Комплект ИД и зафиксированный результат сборки | Snapshot-based, asynchronous build, invalidation при изменении зависимостей. |
-| `Template` / `TemplateVersion` | Правило визуального формирования документа | Version immutable after first use; новая форма означает новую версию. |
-| `GeneratedArtifact` | DOCX, PDF, ZIP, export или package output | Производен от structured data, template version и snapshot context. |
-| `DocumentLock` | Application-level lock редактирования | Отдельно от `Document`, содержит TTL/heartbeat и не меняет revision. |
-| `ActivityHistory` | Audit/activity history | Должна фиксировать ключевые изменения, генерации, подтверждение OCR и invalidation snapshots. |
-| `OCRExtractionProposal` | Предложенные AI/OCR metadata | Только assistant output; активными данные становятся после подтверждения пользователя. |
+| Сущность / концепт             | Назначение                                                                      | Ключевые правила                                                                                         |
+| ------------------------------ | ------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| `RegistryProjection`           | Вычисляемое представление состава документации                                  | Никогда не source of truth; строится из domain data и override layer.                                    |
+| `RegistryOverride`             | Управляемые печатные/порядковые изменения реестра                               | Позволяет порядок, скрытие, примечания и подписанта; не переписывает source fields.                      |
+| `Package` / `PackageSnapshot`  | Комплект ИД и зафиксированный результат сборки                                  | Snapshot-based, asynchronous build, invalidation при изменении зависимостей.                             |
+| `Template` / `TemplateVersion` | Правило визуального формирования документа                                      | Version immutable after first use; новая форма означает новую версию.                                    |
+| `GeneratedArtifact`            | DOCX, PDF, ZIP, export или package output                                       | Производен от structured data, template version и snapshot context.                                      |
+| `DocumentLock`                 | Application-level lock редактирования                                           | Отдельно от `Document`, содержит TTL/heartbeat и не меняет revision.                                     |
+| `ActivityHistory`              | Audit/activity history                                                          | Должна фиксировать ключевые изменения, генерации, подтверждение OCR и invalidation snapshots.            |
+| `OCRExtractionProposal`        | Предложенные AI/OCR metadata                                                    | Только assistant output; активными данные становятся после подтверждения пользователя.                   |
 | `AIConsistencyFindingProposal` | Предложение о missing evidence, mismatch, incompleteness или иной inconsistency | Только reviewable finding с source citation; не является автоматически ошибкой или engineering approval. |
 
 ### 44.5 Aggregate boundary guardrails
@@ -1941,13 +1963,13 @@ docs/18-initial-repository-bootstrap-and-development-rules-v1.md
 
 Цветовая логика АОСР является зафиксированным input-to-domain mapping:
 
-| Цвет в исходном обсуждении | Семантика | Правило хранения |
-| --- | --- | --- |
-| Жёлтый | Объектные данные и реквизиты объекта | Вводятся на уровне объекта и используются через object context/snapshot. |
-| Зелёный | Представители и подписанты | Определяются на объекте, допускают document override; подстрочный текст editable; порядок обязателен. |
-| Серый | Номер акта | Управляется numbering engine: prefix, sequence, suffix, rendered number. |
-| Фиолетовый | Дата акта | Поле документа; default может быть текущей датой; допускается массовое изменение в папке. |
-| Бирюзовый | Переменные данные конкретного акта | Работы, проектные ссылки, материалы, сертификаты, дальнейшие работы, приложения, примечания. |
+| Цвет в исходном обсуждении | Семантика                            | Правило хранения                                                                                      |
+| -------------------------- | ------------------------------------ | ----------------------------------------------------------------------------------------------------- |
+| Жёлтый                     | Объектные данные и реквизиты объекта | Вводятся на уровне объекта и используются через object context/snapshot.                              |
+| Зелёный                    | Представители и подписанты           | Определяются на объекте, допускают document override; подстрочный текст editable; порядок обязателен. |
+| Серый                      | Номер акта                           | Управляется numbering engine: prefix, sequence, suffix, rendered number.                              |
+| Фиолетовый                 | Дата акта                            | Поле документа; default может быть текущей датой; допускается массовое изменение в папке.             |
+| Бирюзовый                  | Переменные данные конкретного акта   | Работы, проектные ссылки, материалы, сертификаты, дальнейшие работы, приложения, примечания.          |
 
 Непреложное правило: certificate number в печатном АОСР является rendered value связи с `Certificate`; нельзя вводить его как ничем не подтверждённую строку.
 
@@ -2017,27 +2039,27 @@ Registry = derived projection, never source of truth
 
 ### 46.2 Projection blocks and data ownership
 
-| Блок реестра | Source data | Что нельзя делать |
-| --- | --- | --- |
-| Шапка объекта | `Object`, object settings | Не хранить единственную копию объекта в тексте реестра. |
-| Подрядчик/исполнители | `ObjectCompanySnapshot`, contract/work settings | Не подтягивать будущие изменения `CompanyProfile` в исторический комплект. |
-| Комплект рабочих чертежей | `ProjectDrawingSet` | Не смешивать с `ExecutiveScheme`. |
-| Сертификаты/документы качества | `Certificate Library`, act refs, package scope | Не показывать номер без существующего файла library item. |
-| Акты | Typed `Document` aggregates | Не редактировать date/number/status только в строке проекции. |
-| Исполнительные схемы | `ExecutiveScheme` | Не подменять metadata свободным текстом в реестре. |
-| Подписант | `RegistrySignerSnapshot` / selected representative | Не предполагать, что это всегда подписант акта. |
+| Блок реестра                   | Source data                                        | Что нельзя делать                                                          |
+| ------------------------------ | -------------------------------------------------- | -------------------------------------------------------------------------- |
+| Шапка объекта                  | `Object`, object settings                          | Не хранить единственную копию объекта в тексте реестра.                    |
+| Подрядчик/исполнители          | `ObjectCompanySnapshot`, contract/work settings    | Не подтягивать будущие изменения `CompanyProfile` в исторический комплект. |
+| Комплект рабочих чертежей      | `ProjectDrawingSet`                                | Не смешивать с `ExecutiveScheme`.                                          |
+| Сертификаты/документы качества | `Certificate Library`, act refs, package scope     | Не показывать номер без существующего файла library item.                  |
+| Акты                           | Typed `Document` aggregates                        | Не редактировать date/number/status только в строке проекции.              |
+| Исполнительные схемы           | `ExecutiveScheme`                                  | Не подменять metadata свободным текстом в реестре.                         |
+| Подписант                      | `RegistrySignerSnapshot` / selected representative | Не предполагать, что это всегда подписант акта.                            |
 
 ### 46.3 Color logic of the real registry example
 
 Цветовая логика, объяснённая пользователем при разборе реестра вентиляции, является доменным ориентиром:
 
-| Цвет | Блок | Вывод для модели |
-| --- | --- | --- |
-| Жёлтый | Объектные данные | Проецируются из object data, вводимых один раз на объект. |
-| Красный | Сертификаты и документы качества | Проецируются из Certificate Library и document/package links. |
-| Серый | Акты | Проецируются из typed `Document` aggregates. |
-| Зелёный | Исполнительные чертежи/схемы | Проецируются из `ExecutiveScheme`. |
-| Тёмно-красный | Лицо, подписывающее реестр | Проецируется из signer snapshot/selected representative. |
+| Цвет          | Блок                             | Вывод для модели                                              |
+| ------------- | -------------------------------- | ------------------------------------------------------------- |
+| Жёлтый        | Объектные данные                 | Проецируются из object data, вводимых один раз на объект.     |
+| Красный       | Сертификаты и документы качества | Проецируются из Certificate Library и document/package links. |
+| Серый         | Акты                             | Проецируются из typed `Document` aggregates.                  |
+| Зелёный       | Исполнительные чертежи/схемы     | Проецируются из `ExecutiveScheme`.                            |
+| Тёмно-красный | Лицо, подписывающее реестр       | Проецируется из signer snapshot/selected representative.      |
 
 ### 46.4 Editable surface and override layer
 
@@ -2314,6 +2336,10 @@ Initial Repository Bootstrap and Development Rules V1:
     config plus workspace `admin-path` utility; it is not a business access
     bypass, workspace owner, role/capability, route, UI, Prisma model, migration
     or auth/session implementation.
+39. Phase 3 owned workspace baseline is only TypeScript ownership primitive and
+    owner-only access utility; it is not persistent workspace creation, Prisma,
+    migrations, routes/controllers, frontend UI, share codes/grants, admin
+    support tenant browsing or business feature implementation.
 
 ---
 
@@ -2321,165 +2347,166 @@ Initial Repository Bootstrap and Development Rules V1:
 
 Этот реестр включает решения из `CONVERSATION_QA_LOG.md`, ADR и source analyses, чтобы новый агент не возвращался к уже закрытым вопросам.
 
-| Вопрос / тема | Принятое решение | Архитектурное следствие |
-| --- | --- | --- |
-| Нужен ли единый master context? | Да, `docs/PROJECT_MEMORY.md` является главным источником знаний. | Новые значимые решения консолидируются здесь. |
-| Что является source of truth? | Structured data. | DOCX/PDF/registry/package — generated or derived outputs. |
-| Должен ли реестр быть отдельным редактируемым документом? | Нет, registry is derived projection. | Разрешены overrides порядка/видимости/примечаний, но не ручная замена source fields. |
-| Как трактовать цветовую разметку АОСР? | Жёлтый object, зелёный representatives, серый number, фиолетовый date, бирюзовый variable document data. | Разметка формирует boundaries данных документа и объекта. |
-| Можно ли вписать certificate number без сертификата? | Нет. | Certificate Library item с физическим файлом обязателен до ссылки из акта/реестра. |
-| На какую дату валидировать сертификат? | На дату документа, не на сегодняшнюю дату. | Исторически корректный документ сохраняет валидность; просрочка для нового документа даёт warning. |
-| Можно ли править final document? | Да. | `final` — validated published revision, правка вызывает `revision++`, revalidation и invalidation package snapshots. |
-| Можно ли изменить template version после использования? | Нет. | Used template version immutable; новая форма оформляется новой версией. |
-| Как собирать комплект ИД? | Автоматически, snapshot-based, async background job. | Нужны dependency invalidation, progress/status, retry и cached snapshots. |
-| Как хранить ExecutiveScheme? | File/PDF + structured metadata. | На старте metadata ручные; изменившаяся схема создаётся как новый файл/объект. |
-| Что такое ProjectDrawingSet? | Отдельный concept для рабочих чертежей; не ExecutiveScheme. | Используется как источник блока реестра и ссылок АОСР. |
-| Как должен ощущаться интерфейс? | Пользователь работает с комплектом ИД, а не с CRM-таблицей. | UX document-centric, complexity structured model скрывается. |
-| Каково назначение OCR/AI? | Assistant only. | Извлечённые metadata активируются только после пользовательского подтверждения. |
-| Можно ли использовать загруженный проект для AI-assisted ИД и поиска ошибок? | Да, как Workspace/Object-scoped source material с proposals-only workflow. | Structured data остаются source of truth; extracted data/links/findings требуют user confirmation, traceability and audit. |
-| Где хранить данные компании на объекте? | Через `ObjectCompanySnapshot`. | Изменение профиля компании не переписывает исторические документы объекта. |
-| Может ли Object владеть всем сразу? | Нет. | Требуются отдельные aggregates/contexts для documents, certificates, schemes, templates и packages. |
-| Какая стадия проекта сейчас? | Infrastructure scaffold accepted; canonical ADR baseline accepted; backend module skeleton, technical status slice, database foundation technical slice, object storage foundation technical slice, auth sharing implementation plan, Phase 1 user identity skeleton and Phase 2 global system admin marker introduced; feature coding still blocked beyond explicitly scoped slices. | Следующий implementation step требует отдельного явного задания и проверки against project memory, ADR 0001-0005 and `docs/20` when auth/sharing is involved. |
-| Кто является пользователем SaaS? | Физическое лицо с одним аккаунтом и owned working context. | Пользователь может работать сам и подключаться к чужим resources через share grants. |
-| Где живут права доступа в MVP? | В resource-scoped `ShareGrant`, выданном owner через share code / invite code. | Capabilities replace roles; default access is view-only and default deny when capability missing. |
-| Что случилось с RBAC role matrix? | Superseded for MVP by `docs/19-sharing-and-access-model-v1.md`. | `Foreman` и `Owner/Admin/PTO Engineer/Viewer` matrix deferred. |
-| Как внедрять auth/sharing дальше? | По `docs/20-auth-sharing-implementation-plan-v1.md`: identity skeleton, system admin marker, owned workspace, workspace share codes/grants, certificate library share codes/grants. | План защищает workspace isolation and prevents reintroducing complex RBAC. |
-| Что уже сделано по Phase 1? | Backend actor primitive and current actor resolver utility/port. | Missing/disabled actors fail closed; request-body-style claims are ignored; no business access, auth/session, Prisma or routes were added. |
-| Что уже сделано по Phase 2? | Optional `SYSTEM_ADMIN_ACTOR_ID` config and framework-free workspace `admin-path` marker utility. | Missing config means no admin; only the configured active actor is marked; disabled actors and client-supplied admin/role/capability claims do not authorize admin; no business access, workspace ownership, auth/session, Prisma, route or UI was added. |
-| Какая схема данных является baseline перед Backend/API? | `docs/12-database-schema-v1.md` как storage-neutral conceptual schema. | Она применяет required aggregate/access/ingestion boundaries, но не выбирает SQL, ORM, API или implementation. |
-| Какой follow-up Schema V1 требуется перед Backend/API? | `docs/13-domain-lifecycle-immutability-validation-v1.md` как lifecycle/immutability/validation V1 policy. | Фиксирует revisions, evidence lifecycles, numbering, validation, override safety, package determinism и AI review flow; требует review/acceptance. |
-| Какой Backend/API shape следует применять до contracts? | `docs/14-backend-api-architecture-v1.md` как conceptual modular-monolith/application boundary. | Explicit domain commands, UI read models, authoritative validation, version/idempotency and async derived flows; никакого CRUD-first API или code permission. |
-| Какой command/read-model contract применяется до MVP forms? | `docs/15-api-command-readmodel-contracts-v1.md` как conceptual contract layer. | Envelope/results/errors/async operations, intent semantics, validation findings and UI reads зафиксированы без routes/OpenAPI/code. |
-| Какой first MVP scope принят к review? | `docs/16-mvp-scope-and-first-forms-v1.md`. | АОСР mandatory first-class form; certificate library, executive schemes, derived registry, package outputs and onboarding hints входят; `TestAct`/`TechnicalReadinessAct`, AI/OCR dependency and enterprise/platform features deferred. |
-| Какой stack/implementation direction выбран для MVP? | `docs/17-tech-stack-and-implementation-strategy-v1.md`. | React/TypeScript/Vite frontend, NestJS modular monolith backend, PostgreSQL, Redis/BullMQ, domain-scoped storage, deterministic DOCX/PDF/ZIP generation, PostgreSQL-first search and optional proposal-only AI/OCR. Feature coding remains blocked without separate explicit task. |
-| Какие правила первого scaffold действуют? | `docs/18-initial-repository-bootstrap-and-development-rules-v1.md`. | First scaffold limited to tooling/app shells/placeholders. Database and object storage foundations now have separately authorized technical health boundaries only; no domain models, migrations, OpenAPI, real auth/uploads/file APIs/queue/generation, AI/OCR or deployment infra without separate approval. |
-| Какие ADR являются canonical baseline? | `docs/adr/0001-structured-data-source-of-truth.md`, `docs/adr/0002-typed-document-domain-model.md`, `docs/adr/0003-file-backed-evidence-and-derived-artifacts.md`, `docs/adr/0004-immutable-revisions-and-package-snapshots.md`, `docs/adr/0005-modular-monolith-and-bounded-contexts.md`. | Future implementation must comply with these files; they consolidate existing decisions only and do not add feature/code permission. |
+| Вопрос / тема                                                                | Принятое решение                                                                                                                                                                                                                                                                                                                                                                                                        | Архитектурное следствие                                                                                                                                                                                                                                                                                        |
+| ---------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Нужен ли единый master context?                                              | Да, `docs/PROJECT_MEMORY.md` является главным источником знаний.                                                                                                                                                                                                                                                                                                                                                        | Новые значимые решения консолидируются здесь.                                                                                                                                                                                                                                                                  |
+| Что является source of truth?                                                | Structured data.                                                                                                                                                                                                                                                                                                                                                                                                        | DOCX/PDF/registry/package — generated or derived outputs.                                                                                                                                                                                                                                                      |
+| Должен ли реестр быть отдельным редактируемым документом?                    | Нет, registry is derived projection.                                                                                                                                                                                                                                                                                                                                                                                    | Разрешены overrides порядка/видимости/примечаний, но не ручная замена source fields.                                                                                                                                                                                                                           |
+| Как трактовать цветовую разметку АОСР?                                       | Жёлтый object, зелёный representatives, серый number, фиолетовый date, бирюзовый variable document data.                                                                                                                                                                                                                                                                                                                | Разметка формирует boundaries данных документа и объекта.                                                                                                                                                                                                                                                      |
+| Можно ли вписать certificate number без сертификата?                         | Нет.                                                                                                                                                                                                                                                                                                                                                                                                                    | Certificate Library item с физическим файлом обязателен до ссылки из акта/реестра.                                                                                                                                                                                                                             |
+| На какую дату валидировать сертификат?                                       | На дату документа, не на сегодняшнюю дату.                                                                                                                                                                                                                                                                                                                                                                              | Исторически корректный документ сохраняет валидность; просрочка для нового документа даёт warning.                                                                                                                                                                                                             |
+| Можно ли править final document?                                             | Да.                                                                                                                                                                                                                                                                                                                                                                                                                     | `final` — validated published revision, правка вызывает `revision++`, revalidation и invalidation package snapshots.                                                                                                                                                                                           |
+| Можно ли изменить template version после использования?                      | Нет.                                                                                                                                                                                                                                                                                                                                                                                                                    | Used template version immutable; новая форма оформляется новой версией.                                                                                                                                                                                                                                        |
+| Как собирать комплект ИД?                                                    | Автоматически, snapshot-based, async background job.                                                                                                                                                                                                                                                                                                                                                                    | Нужны dependency invalidation, progress/status, retry и cached snapshots.                                                                                                                                                                                                                                      |
+| Как хранить ExecutiveScheme?                                                 | File/PDF + structured metadata.                                                                                                                                                                                                                                                                                                                                                                                         | На старте metadata ручные; изменившаяся схема создаётся как новый файл/объект.                                                                                                                                                                                                                                 |
+| Что такое ProjectDrawingSet?                                                 | Отдельный concept для рабочих чертежей; не ExecutiveScheme.                                                                                                                                                                                                                                                                                                                                                             | Используется как источник блока реестра и ссылок АОСР.                                                                                                                                                                                                                                                         |
+| Как должен ощущаться интерфейс?                                              | Пользователь работает с комплектом ИД, а не с CRM-таблицей.                                                                                                                                                                                                                                                                                                                                                             | UX document-centric, complexity structured model скрывается.                                                                                                                                                                                                                                                   |
+| Каково назначение OCR/AI?                                                    | Assistant only.                                                                                                                                                                                                                                                                                                                                                                                                         | Извлечённые metadata активируются только после пользовательского подтверждения.                                                                                                                                                                                                                                |
+| Можно ли использовать загруженный проект для AI-assisted ИД и поиска ошибок? | Да, как Workspace/Object-scoped source material с proposals-only workflow.                                                                                                                                                                                                                                                                                                                                              | Structured data остаются source of truth; extracted data/links/findings требуют user confirmation, traceability and audit.                                                                                                                                                                                     |
+| Где хранить данные компании на объекте?                                      | Через `ObjectCompanySnapshot`.                                                                                                                                                                                                                                                                                                                                                                                          | Изменение профиля компании не переписывает исторические документы объекта.                                                                                                                                                                                                                                     |
+| Может ли Object владеть всем сразу?                                          | Нет.                                                                                                                                                                                                                                                                                                                                                                                                                    | Требуются отдельные aggregates/contexts для documents, certificates, schemes, templates и packages.                                                                                                                                                                                                            |
+| Какая стадия проекта сейчас?                                                 | Infrastructure scaffold accepted; canonical ADR baseline accepted; backend module skeleton, technical status slice, database foundation technical slice, object storage foundation technical slice, auth sharing implementation plan, Phase 1 user identity skeleton, Phase 2 global system admin marker and Phase 3 owned workspace baseline introduced; feature coding still blocked beyond explicitly scoped slices. | Следующий implementation step требует отдельного явного задания и проверки against project memory, ADR 0001-0005 and `docs/20` when auth/sharing is involved.                                                                                                                                                  |
+| Кто является пользователем SaaS?                                             | Физическое лицо с одним аккаунтом и owned working context.                                                                                                                                                                                                                                                                                                                                                              | Пользователь может работать сам и подключаться к чужим resources через share grants.                                                                                                                                                                                                                           |
+| Где живут права доступа в MVP?                                               | В resource-scoped `ShareGrant`, выданном owner через share code / invite code.                                                                                                                                                                                                                                                                                                                                          | Capabilities replace roles; default access is view-only and default deny when capability missing.                                                                                                                                                                                                              |
+| Что случилось с RBAC role matrix?                                            | Superseded for MVP by `docs/19-sharing-and-access-model-v1.md`.                                                                                                                                                                                                                                                                                                                                                         | `Foreman` и `Owner/Admin/PTO Engineer/Viewer` matrix deferred.                                                                                                                                                                                                                                                 |
+| Как внедрять auth/sharing дальше?                                            | По `docs/20-auth-sharing-implementation-plan-v1.md`: identity skeleton, system admin marker, owned workspace, workspace share codes/grants, certificate library share codes/grants.                                                                                                                                                                                                                                     | План защищает workspace isolation and prevents reintroducing complex RBAC.                                                                                                                                                                                                                                     |
+| Что уже сделано по Phase 1?                                                  | Backend actor primitive and current actor resolver utility/port.                                                                                                                                                                                                                                                                                                                                                        | Missing/disabled actors fail closed; request-body-style claims are ignored; no business access, auth/session, Prisma or routes were added.                                                                                                                                                                     |
+| Что уже сделано по Phase 2?                                                  | Optional `SYSTEM_ADMIN_ACTOR_ID` config and framework-free workspace `admin-path` marker utility.                                                                                                                                                                                                                                                                                                                       | Missing config means no admin; only the configured active actor is marked; disabled actors and client-supplied admin/role/capability claims do not authorize admin; no business access, workspace ownership, auth/session, Prisma, route or UI was added.                                                      |
+| Что уже сделано по Phase 3?                                                  | TypeScript-only `OwnedWorkspace` primitive and framework-free owner-only access utilities.                                                                                                                                                                                                                                                                                                                              | Owner can access own workspace; non-owner/missing/disabled/wrong-scope access gets `NOT_FOUND_OR_NOT_AUTHORIZED`; child ids are not resolved before ownership verification; system admin marker and RBAC claims are ignored. No Prisma, migration, route, UI, sharing or business feature was added.           |
+| Какая схема данных является baseline перед Backend/API?                      | `docs/12-database-schema-v1.md` как storage-neutral conceptual schema.                                                                                                                                                                                                                                                                                                                                                  | Она применяет required aggregate/access/ingestion boundaries, но не выбирает SQL, ORM, API или implementation.                                                                                                                                                                                                 |
+| Какой follow-up Schema V1 требуется перед Backend/API?                       | `docs/13-domain-lifecycle-immutability-validation-v1.md` как lifecycle/immutability/validation V1 policy.                                                                                                                                                                                                                                                                                                               | Фиксирует revisions, evidence lifecycles, numbering, validation, override safety, package determinism и AI review flow; требует review/acceptance.                                                                                                                                                             |
+| Какой Backend/API shape следует применять до contracts?                      | `docs/14-backend-api-architecture-v1.md` как conceptual modular-monolith/application boundary.                                                                                                                                                                                                                                                                                                                          | Explicit domain commands, UI read models, authoritative validation, version/idempotency and async derived flows; никакого CRUD-first API или code permission.                                                                                                                                                  |
+| Какой command/read-model contract применяется до MVP forms?                  | `docs/15-api-command-readmodel-contracts-v1.md` как conceptual contract layer.                                                                                                                                                                                                                                                                                                                                          | Envelope/results/errors/async operations, intent semantics, validation findings and UI reads зафиксированы без routes/OpenAPI/code.                                                                                                                                                                            |
+| Какой first MVP scope принят к review?                                       | `docs/16-mvp-scope-and-first-forms-v1.md`.                                                                                                                                                                                                                                                                                                                                                                              | АОСР mandatory first-class form; certificate library, executive schemes, derived registry, package outputs and onboarding hints входят; `TestAct`/`TechnicalReadinessAct`, AI/OCR dependency and enterprise/platform features deferred.                                                                        |
+| Какой stack/implementation direction выбран для MVP?                         | `docs/17-tech-stack-and-implementation-strategy-v1.md`.                                                                                                                                                                                                                                                                                                                                                                 | React/TypeScript/Vite frontend, NestJS modular monolith backend, PostgreSQL, Redis/BullMQ, domain-scoped storage, deterministic DOCX/PDF/ZIP generation, PostgreSQL-first search and optional proposal-only AI/OCR. Feature coding remains blocked without separate explicit task.                             |
+| Какие правила первого scaffold действуют?                                    | `docs/18-initial-repository-bootstrap-and-development-rules-v1.md`.                                                                                                                                                                                                                                                                                                                                                     | First scaffold limited to tooling/app shells/placeholders. Database and object storage foundations now have separately authorized technical health boundaries only; no domain models, migrations, OpenAPI, real auth/uploads/file APIs/queue/generation, AI/OCR or deployment infra without separate approval. |
+| Какие ADR являются canonical baseline?                                       | `docs/adr/0001-structured-data-source-of-truth.md`, `docs/adr/0002-typed-document-domain-model.md`, `docs/adr/0003-file-backed-evidence-and-derived-artifacts.md`, `docs/adr/0004-immutable-revisions-and-package-snapshots.md`, `docs/adr/0005-modular-monolith-and-bounded-contexts.md`.                                                                                                                              | Future implementation must comply with these files; they consolidate existing decisions only and do not add feature/code permission.                                                                                                                                                                           |
 
 ### 51.1 Accepted ADR register
 
-| ADR | Решение | Статус |
-| --- | --- | --- |
-| ADR 0001 | `docs/adr/0001-structured-data-source-of-truth.md`: structured data являются source of truth; DOCX/PDF/registry/package/generated outputs are derived; no DOCX roundtrip import and no editable-source registry. | Принято; canonical. |
-| ADR 0002 | `docs/adr/0002-typed-document-domain-model.md`: typed document domain model; AOSR first-class typed document; no generic low-code builder, generic document engine or generic CRUD domain. | Принято; canonical. |
+| ADR      | Решение                                                                                                                                                                                                                              | Статус              |
+| -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------- |
+| ADR 0001 | `docs/adr/0001-structured-data-source-of-truth.md`: structured data являются source of truth; DOCX/PDF/registry/package/generated outputs are derived; no DOCX roundtrip import and no editable-source registry.                     | Принято; canonical. |
+| ADR 0002 | `docs/adr/0002-typed-document-domain-model.md`: typed document domain model; AOSR first-class typed document; no generic low-code builder, generic document engine or generic CRUD domain.                                           | Принято; canonical. |
 | ADR 0003 | `docs/adr/0003-file-backed-evidence-and-derived-artifacts.md`: certificates and executive schemes are file-backed evidence; generated artifacts are derived; no evidence without physical file; storage/provider isolation required. | Принято; canonical. |
-| ADR 0004 | `docs/adr/0004-immutable-revisions-and-package-snapshots.md`: final edits create new revisions; released revisions and package snapshots are immutable; no silent mutation/history rewrite. | Принято; canonical. |
-| ADR 0005 | `docs/adr/0005-modular-monolith-and-bounded-contexts.md`: modular monolith first with bounded contexts; no premature microservices/event sourcing/CQRS split; infrastructure adapters isolated. | Принято; canonical. |
+| ADR 0004 | `docs/adr/0004-immutable-revisions-and-package-snapshots.md`: final edits create new revisions; released revisions and package snapshots are immutable; no silent mutation/history rewrite.                                          | Принято; canonical. |
+| ADR 0005 | `docs/adr/0005-modular-monolith-and-bounded-contexts.md`: modular monolith first with bounded contexts; no premature microservices/event sourcing/CQRS split; infrastructure adapters isolated.                                      | Принято; canonical. |
 
 ### 51.2 Boundary baseline applied in Conceptual Database Schema V1
 
-| Вопрос границы | Draft baseline в `docs/09-aggregate-boundaries-and-invariants.md` | Причина |
-| --- | --- | --- |
-| Является ли `FolderTree` отдельным aggregate? | Да, object-scoped aggregate root. | Tree operations имеют собственные инварианты и не должны менять `Object` или document content. |
-| Является ли `WorkItem` отдельным aggregate root для V1? | Нет; meaning работы, утверждаемой актом, принадлежит typed `Document` payload. | Shared work lifecycle ещё не подтверждён; released act должен быть автономно воспроизводим. |
-| Где живёт `ProjectDrawingSet`? | Owned entity в `ObjectDocumentationContext`. | Это общий проектный basis объекта, не file-backed as-built evidence и пока не независимый lifecycle. |
+| Вопрос границы                                          | Draft baseline в `docs/09-aggregate-boundaries-and-invariants.md`              | Причина                                                                                              |
+| ------------------------------------------------------- | ------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------- |
+| Является ли `FolderTree` отдельным aggregate?           | Да, object-scoped aggregate root.                                              | Tree operations имеют собственные инварианты и не должны менять `Object` или document content.       |
+| Является ли `WorkItem` отдельным aggregate root для V1? | Нет; meaning работы, утверждаемой актом, принадлежит typed `Document` payload. | Shared work lifecycle ещё не подтверждён; released act должен быть автономно воспроизводим.          |
+| Где живёт `ProjectDrawingSet`?                          | Owned entity в `ObjectDocumentationContext`.                                   | Это общий проектный basis объекта, не file-backed as-built evidence и пока не независимый lifecycle. |
 
 Эти решения по заданию владельца проекта применены в `docs/12-database-schema-v1.md` как conceptual schema baseline. Их будущая замена или расширение требует явного решения; ADR 0001-0005 они не изменяют.
 
 ### 51.3 MVP sharing/access baseline superseding RBAC
 
-| Access question | Baseline в `docs/19-sharing-and-access-model-v1.md` | Причина |
-| --- | --- | --- |
-| Нужен ли complex RBAC для MVP? | Нет; role matrix из `docs/10` superseded for MVP. | Simple UX and lower governance surface for first product scope. |
-| Кто администрирует систему? | Exactly one `Global System Admin`, controlled by deployment/config, separate from business collaboration. | Support/admin path не должен становиться обычным workspace role. |
-| Кто владеет данными? | Regular user owns own workspaces/project data and certificate libraries. | Ownership remains clear without organization governance. |
-| Как выдать доступ к workspace/project database? | Owner creates opaque share code, selects capabilities, authenticated user accepts, persistent `WorkspaceShareGrant` is created. | Rights are explicit and resource-scoped. |
-| Как выдать доступ к certificate library? | Separate certificate library share/connect flow creates `CertificateLibraryShareGrant`. | Library sharing is not workspace collaboration. |
-| Какая default permission? | View-only for workspace; view/use-only for certificate library according to selected preset. | Least authority and safer sharing. |
-| Что заменяет роли? | Explicit `GrantCapability` values such as `view_documents`, `edit_documents`, `build_packages`, `use_certificates_in_documents`. | Owner chooses actions directly; default deny when missing. |
-| Что сохраняется из старой модели? | Tenant/workspace isolation, opaque token safety, auditability and revocation. | Security guardrails remain mandatory. |
+| Access question                                 | Baseline в `docs/19-sharing-and-access-model-v1.md`                                                                              | Причина                                                          |
+| ----------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------- |
+| Нужен ли complex RBAC для MVP?                  | Нет; role matrix из `docs/10` superseded for MVP.                                                                                | Simple UX and lower governance surface for first product scope.  |
+| Кто администрирует систему?                     | Exactly one `Global System Admin`, controlled by deployment/config, separate from business collaboration.                        | Support/admin path не должен становиться обычным workspace role. |
+| Кто владеет данными?                            | Regular user owns own workspaces/project data and certificate libraries.                                                         | Ownership remains clear without organization governance.         |
+| Как выдать доступ к workspace/project database? | Owner creates opaque share code, selects capabilities, authenticated user accepts, persistent `WorkspaceShareGrant` is created.  | Rights are explicit and resource-scoped.                         |
+| Как выдать доступ к certificate library?        | Separate certificate library share/connect flow creates `CertificateLibraryShareGrant`.                                          | Library sharing is not workspace collaboration.                  |
+| Какая default permission?                       | View-only for workspace; view/use-only for certificate library according to selected preset.                                     | Least authority and safer sharing.                               |
+| Что заменяет роли?                              | Explicit `GrantCapability` values such as `view_documents`, `edit_documents`, `build_packages`, `use_certificates_in_documents`. | Owner chooses actions directly; default deny when missing.       |
+| Что сохраняется из старой модели?               | Tenant/workspace isolation, opaque token safety, auditability and revocation.                                                    | Security guardrails remain mandatory.                            |
 
 Previous membership/RBAC governance is deferred. `docs/10-auth-workspace-rbac-model.md` remains historical/deferred context, but MVP access implementation must follow `docs/19-sharing-and-access-model-v1.md`.
 
-Implementation sequence is fixed in `docs/20-auth-sharing-implementation-plan-v1.md`. Phase 1 user identity skeleton and Phase 2 global system admin marker are now introduced; future coding must continue with a separate Phase 3 owned workspace baseline task, then workspace share codes, workspace share grants, certificate library share codes and certificate library share grants.
+Implementation sequence is fixed in `docs/20-auth-sharing-implementation-plan-v1.md`. Phase 1 user identity skeleton, Phase 2 global system admin marker and Phase 3 owned workspace baseline are now introduced; future coding must continue with a separate Phase 4 workspace share codes task, then workspace share grants, certificate library share codes and certificate library share grants.
 
 ### 51.4 AI project ingestion/assistance baseline applied in Conceptual Database Schema V1
 
-| Ingestion question | Draft baseline в `docs/11-ai-project-ingestion-and-assistance-model.md` | Причина |
-| --- | --- | --- |
-| Где живут uploaded project files? | Каждый source file scoped to one `Workspace` and one `Object`. | Project content должен соблюдать tenant isolation и object context. |
-| Становится ли загруженный проект source of truth? | Он является source material/provenance, но confirmed structured data and relations остаются source of truth. | Нельзя заменить domain model файлом или AI interpretation. |
-| Что может сделать AI/OCR? | Создать extraction proposals и consistency findings with source citations. | AI помогает анализу, но не утверждает инженерный факт. |
-| Как proposal влияет на ИД? | Только после user confirmation, permission checks, validation and audit appropriate to target owner. | Документы/evidence/released history должны оставаться контролируемыми. |
-| Какие связи поддерживаются концептуально? | Project context может предлагать ссылки к `ProjectDrawingSet`, document-owned work, `AOSR`, `TestAct`, evidence expectations and scheme comparisons. | Project file не становится `Certificate` или `ExecutiveScheme` и не нарушает ownership boundaries. |
+| Ingestion question                                | Draft baseline в `docs/11-ai-project-ingestion-and-assistance-model.md`                                                                              | Причина                                                                                            |
+| ------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| Где живут uploaded project files?                 | Каждый source file scoped to one `Workspace` and one `Object`.                                                                                       | Project content должен соблюдать tenant isolation и object context.                                |
+| Становится ли загруженный проект source of truth? | Он является source material/provenance, но confirmed structured data and relations остаются source of truth.                                         | Нельзя заменить domain model файлом или AI interpretation.                                         |
+| Что может сделать AI/OCR?                         | Создать extraction proposals и consistency findings with source citations.                                                                           | AI помогает анализу, но не утверждает инженерный факт.                                             |
+| Как proposal влияет на ИД?                        | Только после user confirmation, permission checks, validation and audit appropriate to target owner.                                                 | Документы/evidence/released history должны оставаться контролируемыми.                             |
+| Какие связи поддерживаются концептуально?         | Project context может предлагать ссылки к `ProjectDrawingSet`, document-owned work, `AOSR`, `TestAct`, evidence expectations and scheme comparisons. | Project file не становится `Certificate` или `ExecutiveScheme` и не нарушает ownership boundaries. |
 
 Этот baseline развивает принятые правила structured source of truth, AI assistant only и tenant isolation и отражён project-source/proposal/finding/citation table families Schema V1. Privacy/data-processing, source citation, access/audit and MVP material scope требуют review перед Backend/API Architecture; новый ADR не требуется.
 
 ### 51.5 Lifecycle/immutability/validation follow-up documented after Schema V1 review
 
-| Review topic | V1 policy в `docs/13-domain-lifecycle-immutability-validation-v1.md` | Что не утверждается этим решением |
-| --- | --- | --- |
-| Document lifecycle and final editing | `final` is validated published revision; correction creates next revision, invalidates current package use and preserves immutable historical revision. | Concrete first act forms/required field sets. |
-| Evidence and historical immutability | `Certificate`/`ExecutiveScheme` are file-backed; historical file references and released package snapshots cannot be silently overwritten. | Full retention/legal/privacy/access policy. |
-| Numbering | Object/folder scope, structured prefix/sequence/suffix/rendered value, renumber, move choice and clone strategies are required. | API/transaction/collision implementation details. |
-| Validation | `ERROR` blocks relevant final/build release, `WARNING` does not by baseline; certificate expiry is evaluated by document date; missing certificate file is `ERROR`. | Customer-specific readiness strengthening and exact typed-form rules. |
-| Registry override | Presentation/configuration only; source fact changes and hiding domain errors are forbidden; `custom_display_title` is deferred. | Physical persistence/UI/export scope. |
-| Package determinism | Async builds produce immutable dependency-manifest snapshots; changed dependencies require new build/snapshot. | Queue, renderer, storage and binary-reproducibility mechanism. |
-| AI/OCR review | Proposals/findings retain citations, confidence, extractor/model/version and review state; explicit user acceptance is mandatory. | Provider, consent/privacy, supported processing scope and retention period. |
-| FolderTree boundary | Business collection and cloning boundary only; it never owns document lifecycle or becomes a generic drive. | Broader UX details. |
+| Review topic                         | V1 policy в `docs/13-domain-lifecycle-immutability-validation-v1.md`                                                                                                | Что не утверждается этим решением                                           |
+| ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------- |
+| Document lifecycle and final editing | `final` is validated published revision; correction creates next revision, invalidates current package use and preserves immutable historical revision.             | Concrete first act forms/required field sets.                               |
+| Evidence and historical immutability | `Certificate`/`ExecutiveScheme` are file-backed; historical file references and released package snapshots cannot be silently overwritten.                          | Full retention/legal/privacy/access policy.                                 |
+| Numbering                            | Object/folder scope, structured prefix/sequence/suffix/rendered value, renumber, move choice and clone strategies are required.                                     | API/transaction/collision implementation details.                           |
+| Validation                           | `ERROR` blocks relevant final/build release, `WARNING` does not by baseline; certificate expiry is evaluated by document date; missing certificate file is `ERROR`. | Customer-specific readiness strengthening and exact typed-form rules.       |
+| Registry override                    | Presentation/configuration only; source fact changes and hiding domain errors are forbidden; `custom_display_title` is deferred.                                    | Physical persistence/UI/export scope.                                       |
+| Package determinism                  | Async builds produce immutable dependency-manifest snapshots; changed dependencies require new build/snapshot.                                                      | Queue, renderer, storage and binary-reproducibility mechanism.              |
+| AI/OCR review                        | Proposals/findings retain citations, confidence, extractor/model/version and review state; explicit user acceptance is mandatory.                                   | Provider, consent/privacy, supported processing scope and retention period. |
+| FolderTree boundary                  | Business collection and cloning boundary only; it never owns document lifecycle or becomes a generic drive.                                                         | Broader UX details.                                                         |
 
 Этот follow-up стал policy input для созданного по прямому переходу владельца проекта Backend/API Architecture V1. Он конкретизирует existing guardrails, не изменяя ADR 0001-0005 и не разрешая implementation.
 
 ### 51.6 Backend/API Architecture V1 documented for review
 
-| Architecture topic | V1 direction в `docs/14-backend-api-architecture-v1.md` | What remains open |
-| --- | --- | --- |
-| Deployment/module shape | Modular monolith first with bounded modules for tenant, object, folders, typed documents, evidence, schemes, registry, package, templates, artifacts, sources, AI, validation, search and audit. | Framework/runtime/deployment and later split criteria. |
-| Mutation API | Explicit PTO domain commands instead of CRUD/table endpoints or generic document/file APIs. | Exact command payload/result and transport route contracts. |
-| Query API | UI-oriented read models for editor, pickers, registry, package, validation, artifacts, AI queue, activity and search. | Exact fields, pagination/filtering and frontend state. |
-| Consistency/versioning | Atomic document release and successful snapshot creation; eventual derived generation/search/AI; optimistic versions, immutable references and stale markers. | Persistence/transaction/lock implementation and user conflict UX. |
-| Validation and outputs | Server-authoritative gates, async package/artifact workflows, no mutation from outputs or AI. | Renderer/storage/queue/AI policy and first form readiness details. |
-| Authorization | Every command/query scoped through workspace membership and object context where applicable. | Fine-grained RBAC, sensitive download/access and invite/governance detail. |
+| Architecture topic      | V1 direction в `docs/14-backend-api-architecture-v1.md`                                                                                                                                          | What remains open                                                          |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------- |
+| Deployment/module shape | Modular monolith first with bounded modules for tenant, object, folders, typed documents, evidence, schemes, registry, package, templates, artifacts, sources, AI, validation, search and audit. | Framework/runtime/deployment and later split criteria.                     |
+| Mutation API            | Explicit PTO domain commands instead of CRUD/table endpoints or generic document/file APIs.                                                                                                      | Exact command payload/result and transport route contracts.                |
+| Query API               | UI-oriented read models for editor, pickers, registry, package, validation, artifacts, AI queue, activity and search.                                                                            | Exact fields, pagination/filtering and frontend state.                     |
+| Consistency/versioning  | Atomic document release and successful snapshot creation; eventual derived generation/search/AI; optimistic versions, immutable references and stale markers.                                    | Persistence/transaction/lock implementation and user conflict UX.          |
+| Validation and outputs  | Server-authoritative gates, async package/artifact workflows, no mutation from outputs or AI.                                                                                                    | Renderer/storage/queue/AI policy and first form readiness details.         |
+| Authorization           | Every command/query scoped through workspace membership and object context where applicable.                                                                                                     | Fine-grained RBAC, sensitive download/access and invite/governance detail. |
 
 Документ подготовлен для review и не разрешает coding, backend scaffold, SQL/migrations/ORM, physical API implementation или technology/provider choices. После его принятия рекомендуемый следующий этап — `docs/15-api-command-readmodel-contracts-v1.md`.
 
 ### 51.7 API Command/Read Model Contracts V1 documented for review
 
-| Contract topic | V1 direction в `docs/15-api-command-readmodel-contracts-v1.md` | What remains open |
-| --- | --- | --- |
-| Common command/outcome vocabulary | Commands are scoped by workspace/object/membership, versions and idempotency; results expose affected ids, findings, invalidations, async and audit references. | Transport/serialization/auth implementation and client UX details. |
-| Errors and async work | Named error contract covers validation/conflict/access/idempotency/policy/file/override failures; package/artifact/AI/index operations never mutate sources. | Queue/runtime/provider/failure telemetry and privacy policy. |
-| Domain command intents | Typed documents, folders/numbering, evidence/schemes, registry, packages, artifacts, AI/OCR and invites have payload/result semantics. | Concrete first typed forms, detailed permissions and retention/correction policy. |
-| Read models and validation | Main PTO screens and `ValidationFinding` fields/gates/provenance are defined; registry/read outputs remain derived. | Frontend implementation, search/index policy and customer-specific acknowledgement/readiness rules. |
-| Versioning/authorization | Working versus immutable references, idempotent dangerous commands, tenant/object scope and leakage protection are explicit. | Fine-grained RBAC, original-file access, cross-workspace export and physical enforcement. |
+| Contract topic                    | V1 direction в `docs/15-api-command-readmodel-contracts-v1.md`                                                                                                  | What remains open                                                                                   |
+| --------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| Common command/outcome vocabulary | Commands are scoped by workspace/object/membership, versions and idempotency; results expose affected ids, findings, invalidations, async and audit references. | Transport/serialization/auth implementation and client UX details.                                  |
+| Errors and async work             | Named error contract covers validation/conflict/access/idempotency/policy/file/override failures; package/artifact/AI/index operations never mutate sources.    | Queue/runtime/provider/failure telemetry and privacy policy.                                        |
+| Domain command intents            | Typed documents, folders/numbering, evidence/schemes, registry, packages, artifacts, AI/OCR and invites have payload/result semantics.                          | Concrete first typed forms, detailed permissions and retention/correction policy.                   |
+| Read models and validation        | Main PTO screens and `ValidationFinding` fields/gates/provenance are defined; registry/read outputs remain derived.                                             | Frontend implementation, search/index policy and customer-specific acknowledgement/readiness rules. |
+| Versioning/authorization          | Working versus immutable references, idempotent dangerous commands, tenant/object scope and leakage protection are explicit.                                    | Fine-grained RBAC, original-file access, cross-workspace export and physical enforcement.           |
 
 Документ подготовлен для review и не разрешает production code, backend/frontend scaffold, SQL/migrations/ORM, OpenAPI, concrete routes или technology/provider choices. После его принятия рекомендуемый следующий этап — `docs/16-mvp-scope-and-first-forms-v1.md`.
 
 ### 51.8 MVP Scope and First Forms V1 documented for review
 
-| MVP topic | V1 direction в `docs/16-mvp-scope-and-first-forms-v1.md` | What remains open |
-| --- | --- | --- |
-| First production scope | АОСР is mandatory first-class typed form; first workflow runs object -> AOSR -> evidence/schemes -> registry -> package output. | Review/acceptance of scope and exact first template baseline. |
-| First evidence scope | Certificate library and ExecutiveScheme are file-backed MVP foundations; certificate numbers cannot be standalone truth. | Detailed retention/supersession/privacy and original-file access policy. |
-| Deferred forms | `TestAct` family and `TechnicalReadinessAct` are not first generated/finalizable typed forms without separate concrete form ratification. | Which exact test act enters a later release. |
-| Generated outputs | AOSR DOCX/PDF, registry export and ZIP package are MVP outputs; template marketplace and visual editor are excluded. | Rendering/storage/queue/template implementation in later tech strategy. |
-| AI/OCR policy | MVP must work without AI/OCR; any AI/OCR remains optional/deferred, proposal-only and never autonomous. | Approved processing/provider/privacy policy before real file processing. |
-| UX/onboarding | First-run guidance, contextual hints/tooltips, empty states, validation explanation and "do not show again" are MVP UX decisions. | Exact frontend state, lock/autosave UX and component implementation. |
+| MVP topic              | V1 direction в `docs/16-mvp-scope-and-first-forms-v1.md`                                                                                  | What remains open                                                        |
+| ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
+| First production scope | АОСР is mandatory first-class typed form; first workflow runs object -> AOSR -> evidence/schemes -> registry -> package output.           | Review/acceptance of scope and exact first template baseline.            |
+| First evidence scope   | Certificate library and ExecutiveScheme are file-backed MVP foundations; certificate numbers cannot be standalone truth.                  | Detailed retention/supersession/privacy and original-file access policy. |
+| Deferred forms         | `TestAct` family and `TechnicalReadinessAct` are not first generated/finalizable typed forms without separate concrete form ratification. | Which exact test act enters a later release.                             |
+| Generated outputs      | AOSR DOCX/PDF, registry export and ZIP package are MVP outputs; template marketplace and visual editor are excluded.                      | Rendering/storage/queue/template implementation in later tech strategy.  |
+| AI/OCR policy          | MVP must work without AI/OCR; any AI/OCR remains optional/deferred, proposal-only and never autonomous.                                   | Approved processing/provider/privacy policy before real file processing. |
+| UX/onboarding          | First-run guidance, contextual hints/tooltips, empty states, validation explanation and "do not show again" are MVP UX decisions.         | Exact frontend state, lock/autosave UX and component implementation.     |
 
 Документ подготовлен для review и не разрешает production code, backend/frontend scaffold, SQL/migrations/ORM, OpenAPI, concrete routes или database/provider/renderer/queue/AI choices. После его принятия рекомендуемый следующий этап — `docs/17-tech-stack-and-implementation-strategy-v1.md`.
 
 ### 51.9 Tech Stack and Implementation Strategy V1 documented for review
 
-| Implementation topic | V1 direction в `docs/17-tech-stack-and-implementation-strategy-v1.md` | What remains open |
-| --- | --- | --- |
-| Frontend | React + TypeScript + Vite; React Hook Form, TanStack Query/Table, restrained UI primitives and backend-authoritative validation UX. | Actual scaffold, exact component library styling, route structure and frontend implementation. |
-| Backend | TypeScript on Node.js LTS with NestJS modular monolith and HTTP JSON command/query API. | Actual app scaffold, concrete controllers/routes, OpenAPI and module code. |
-| Database | PostgreSQL, controlled JSONB, explicit transactions, optimistic versions and immutable snapshots; Prisma-style TypeScript persistence likely after bootstrap. | Physical ORM schema, migrations, indexes and production mapping. |
-| Async/files/generation | Redis/BullMQ workers, domain-scoped storage, DOCX templates, backend PDF conversion and ZIP package snapshots. | Installed dependencies, converter packaging, storage provider config and generation code. |
-| Search and AI | PostgreSQL relational/full-text/trigram search first; semantic/vector search deferred; AI/OCR optional proposal-only. | Provider/privacy policy, exact processing scope and future indexing architecture. |
-| Coding gate | Recommended milestones are documented, but coding/scaffold remains blocked. | Review/acceptance of `docs/17` and creation/acceptance of `docs/18-initial-repository-bootstrap-and-development-rules-v1.md`. |
+| Implementation topic   | V1 direction в `docs/17-tech-stack-and-implementation-strategy-v1.md`                                                                                         | What remains open                                                                                                             |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| Frontend               | React + TypeScript + Vite; React Hook Form, TanStack Query/Table, restrained UI primitives and backend-authoritative validation UX.                           | Actual scaffold, exact component library styling, route structure and frontend implementation.                                |
+| Backend                | TypeScript on Node.js LTS with NestJS modular monolith and HTTP JSON command/query API.                                                                       | Actual app scaffold, concrete controllers/routes, OpenAPI and module code.                                                    |
+| Database               | PostgreSQL, controlled JSONB, explicit transactions, optimistic versions and immutable snapshots; Prisma-style TypeScript persistence likely after bootstrap. | Physical ORM schema, migrations, indexes and production mapping.                                                              |
+| Async/files/generation | Redis/BullMQ workers, domain-scoped storage, DOCX templates, backend PDF conversion and ZIP package snapshots.                                                | Installed dependencies, converter packaging, storage provider config and generation code.                                     |
+| Search and AI          | PostgreSQL relational/full-text/trigram search first; semantic/vector search deferred; AI/OCR optional proposal-only.                                         | Provider/privacy policy, exact processing scope and future indexing architecture.                                             |
+| Coding gate            | Recommended milestones are documented, but coding/scaffold remains blocked.                                                                                   | Review/acceptance of `docs/17` and creation/acceptance of `docs/18-initial-repository-bootstrap-and-development-rules-v1.md`. |
 
 Документ подготовлен для review и не разрешает production code, backend/frontend scaffold, source folders, package manifests, SQL/migrations/ORM, OpenAPI, Docker/CI/deployment files или repository bootstrap. После его принятия рекомендуемый следующий этап — `docs/18-initial-repository-bootstrap-and-development-rules-v1.md`.
 
 ### 51.10 Initial Repository Bootstrap and Development Rules V1 documented for review
 
-| Bootstrap topic | V1 direction в `docs/18-initial-repository-bootstrap-and-development-rules-v1.md` | What remains open |
-| --- | --- | --- |
-| Coding preconditions | Docs/18 acceptance and a separate explicit first scaffold task are required. | Actual scaffold execution. |
-| First scaffold scope | Only tooling, app shells, placeholders, local scripts and optional CI gates are allowed. | Feature implementation requires a separate explicit task and ADR compliance check. |
-| Scope corruption controls | Docs/16 overrides older docs/08 TestAct candidate wording; Foreman active permissions blocked; AOSR participant requirements not hardcoded before template review. | Template review and later permission policy. |
-| Architecture invariants | Structured data source of truth, typed AOSR first, registry derived, immutable snapshots/revisions, AI proposal-only, modular monolith and no cross-workspace leakage. | Concrete implementation details. |
-| Infrastructure portability | Deployment provider is replaceable; server-specific assumptions, hardcoded hosts/paths and provider SDK leakage outside infrastructure adapters are forbidden. | Concrete deployment provider/config values. |
-| ADR handling | Canonical ADR 0001-0005 physical files exist in `docs/adr/` and are authoritative implementation references. | Future implementation must comply; changing accepted principles requires explicit ADR review. |
+| Bootstrap topic            | V1 direction в `docs/18-initial-repository-bootstrap-and-development-rules-v1.md`                                                                                      | What remains open                                                                             |
+| -------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| Coding preconditions       | Docs/18 acceptance and a separate explicit first scaffold task are required.                                                                                           | Actual scaffold execution.                                                                    |
+| First scaffold scope       | Only tooling, app shells, placeholders, local scripts and optional CI gates are allowed.                                                                               | Feature implementation requires a separate explicit task and ADR compliance check.            |
+| Scope corruption controls  | Docs/16 overrides older docs/08 TestAct candidate wording; Foreman active permissions blocked; AOSR participant requirements not hardcoded before template review.     | Template review and later permission policy.                                                  |
+| Architecture invariants    | Structured data source of truth, typed AOSR first, registry derived, immutable snapshots/revisions, AI proposal-only, modular monolith and no cross-workspace leakage. | Concrete implementation details.                                                              |
+| Infrastructure portability | Deployment provider is replaceable; server-specific assumptions, hardcoded hosts/paths and provider SDK leakage outside infrastructure adapters are forbidden.         | Concrete deployment provider/config values.                                                   |
+| ADR handling               | Canonical ADR 0001-0005 physical files exist in `docs/adr/` and are authoritative implementation references.                                                           | Future implementation must comply; changing accepted principles requires explicit ADR review. |
 
 Документ подготовлен для review и не разрешает production code/scaffold by itself. После его принятия следующий шаг — отдельное явно ограниченное first scaffold task; feature coding remains blocked until scaffold is accepted.
 
@@ -3387,5 +3414,40 @@ marker from `docs/20`.
 - no business APIs;
 - no RBAC roles or multi-admin governance.
 
-Next required phase, only after a separate explicit task: Phase 3 owned
-workspace baseline from `docs/20`.
+Historical note: the next phase after this slice was Phase 3 owned workspace
+baseline from `docs/20`.
+
+### 2026-06-01 — Phase 3 owned workspace baseline introduced
+
+- Статус: `Phase 3 owned workspace baseline only`
+- Описание: smallest workspace owner-access skeleton for regular-user owned
+  workspaces without collaboration, persistence or business feature behavior.
+
+Добавлено:
+
+- `apps/api/src/workspace/ownership/owned-workspace.ts` with TypeScript-only
+  `OwnedWorkspace`, `OwnedWorkspaceId`, owner-only access decisions and
+  `NOT_FOUND_OR_NOT_AUTHORIZED` denial vocabulary;
+- child-scope guard utility requiring workspace ownership before document,
+  object or folder child lookup;
+- tests proving owner access, non-owner denial, guessed child ids are not
+  resolved before ownership verification, missing/disabled actor fail-closed
+  behavior through current actor resolution, system admin marker is not accepted
+  as owner, and old RBAC role/capability/membership claims are ignored;
+- README, workspace/module architecture docs, project memory and QA log updates.
+
+Что не было введено:
+
+- no Prisma schema changes;
+- no migrations;
+- no API routes/controllers;
+- no frontend UI;
+- no auth/session/login/register implementation;
+- no share codes or grants;
+- no certificate library sharing;
+- no admin support tenant browsing;
+- no `SYSTEM_ADMIN_ACTOR_ID` business access bypass;
+- no AOSR/certificate/registry/package implementation.
+
+Next required phase, only after a separate explicit task: Phase 4 workspace
+share codes from `docs/20`.

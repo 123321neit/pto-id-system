@@ -1,6 +1,9 @@
 # CONVERSATION_QA_LOG
+
 # PTO ID System
+
 # Consolidated decisions from user/assistant discussion
+
 # Version: 2026-05-28-CANONICAL-ADR-BASELINE
 
 Этот файл фиксирует важные вопросы, ответы и решения, которые появились в переписке и проектной памяти. Его цель — не заменить `PROJECT_MEMORY.md`, а сохранить ход принятия решений.
@@ -856,5 +859,48 @@ A: Реализован global system admin marker only.
 - no auth/session/login/register implementation;
 - no business API and no RBAC roles.
 
-Статус решения: narrow Phase 2 marker slice after `docs/20`. Next phase requires
-a separate Phase 3 owned workspace baseline task.
+Статус решения: narrow Phase 2 marker slice after `docs/20`. Historical next
+phase after this slice was Phase 3 owned workspace baseline.
+
+---
+
+## 37. Phase 3 Owned Workspace Baseline
+
+### Q: What is the smallest safe Phase 3 slice after the global system admin marker?
+
+A: Реализован owned workspace baseline only.
+
+Добавлено:
+
+- TypeScript-only `OwnedWorkspace` primitive and branded `OwnedWorkspaceId`;
+- owner-only access utilities with leakage-safe `NOT_FOUND_OR_NOT_AUTHORIZED`
+  denial;
+- child-scope guard requiring workspace ownership before document/object/folder
+  child lookup;
+- tests for owner access, non-owner denial, guessed child ids not resolved
+  before ownership verification, missing/disabled actor fail-closed behavior,
+  system admin marker not accepted as owner and ignored RBAC role/capability/
+  membership claims.
+
+Решение:
+
+- owner id is the only Phase 3 workspace authority;
+- disabled or missing actors fail closed through existing current actor
+  resolution;
+- normal owner checks do not consult `SYSTEM_ADMIN_ACTOR_ID`;
+- child ids must not be looked up until workspace owner access is verified;
+- old `Membership`/role/capability matrix is not used for authorization.
+
+Что не было введено:
+
+- no Prisma schema changes or migrations;
+- no API routes/controllers;
+- no frontend UI;
+- no auth/session/login/register implementation;
+- no share codes or grants;
+- no certificate library sharing;
+- no admin support tenant browsing or business bypass;
+- no AOSR/certificate/registry/package implementation.
+
+Статус решения: narrow Phase 3 skeleton after `docs/20`. Next phase requires a
+separate Phase 4 workspace share codes task.
