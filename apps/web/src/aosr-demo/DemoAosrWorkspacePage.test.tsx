@@ -21,33 +21,54 @@ describe('DemoAosrWorkspacePage', () => {
     expect(
       screen.getAllByText('ДЕМО / демонстрационные данные / не для работы в продуктиве'),
     ).toHaveLength(2);
-    expect(screen.getByText('Реконструкция поликлиники, демонстрационный проект')).toBeTruthy();
+    expect(screen.getAllByText('Реконструкция поликлиники, демонстрационный проект')).toHaveLength(
+      2,
+    );
     expect(screen.getByRole('heading', { name: 'Черновики актов' })).toBeTruthy();
     expect(screen.getByRole('heading', { name: 'Данные акта освидетельствования' })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: 'Общие данные акта' })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: 'Данные объекта и места работ' })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: 'Выполненные скрытые работы' })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: 'Проектная документация' })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: 'Материалы и сертификаты' })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: '4. Проектная документация' })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: '5. Материалы и сертификаты' })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: 'Представители / подписанты' })).toBeTruthy();
     expect(
       screen.getByRole('heading', { name: 'Акт освидетельствования скрытых работ' }),
     ).toBeTruthy();
+    expect(screen.getByText('Позже здесь будет реальный PDF/печатная форма акта')).toBeTruthy();
     expect(screen.getByDisplayValue('АОСР-001')).toBeTruthy();
   });
 
-  it('updates the conceptual preview when a user edits a field', async () => {
+  it('updates the document-like preview when a user edits fields', async () => {
     const user = userEvent.setup();
 
     render(<DemoAosrWorkspacePage />);
 
-    const preview = screen.getByLabelText('Концептуальный предпросмотр АОСР');
+    const preview = screen.getByLabelText('Демо-предпросмотр печатной формы АОСР');
     const actNumberInput = screen.getByRole('textbox', { name: 'Номер акта' });
+    const objectInput = screen.getByRole('textbox', { name: 'Объект / участок' });
     const workDescriptionInput = screen.getByRole('textbox', {
       name: 'Описание скрытых работ',
+    });
+    const materialsInput = screen.getByRole('textbox', {
+      name: 'Материалы / сертификаты простым текстом',
     });
 
     await user.clear(actNumberInput);
     await user.type(actNumberInput, 'АОСР-777');
+    await user.clear(objectInput);
+    await user.type(objectInput, 'Техподполье, участок ИТП');
     await user.clear(workDescriptionInput);
     await user.type(workDescriptionInput, 'Проверены скрытые крепления воздуховодов.');
+    await user.clear(materialsInput);
+    await user.type(materialsInput, 'Крепеж КМ-14, сертификат С-777.');
 
     expect(within(preview).getByText('АОСР-777 от 2026-06-01')).toBeTruthy();
+    expect(preview.textContent).toContain('Техподполье, участок ИТП');
     expect(preview.textContent).toContain('Проверены скрытые крепления воздуховодов.');
+    expect(preview.textContent).toContain('Крепеж КМ-14, сертификат С-777.');
   });
 
   it('updates editable act data without mutating the source mock draft', () => {

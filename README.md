@@ -55,9 +55,10 @@ not a system-admin bypass.
 
 The first mock AOSR demo UI slice replaces the root React screen with a
 frontend-only Russian demo workspace for user feedback. It uses in-memory mock
-data, AOSR-like editable fields, a draft list and a conceptual preview. It is
-clearly labelled `ДЕМО / демонстрационные данные / не для работы в продуктиве`
-and intentionally adds no Prisma schema, migrations, real auth, backend routes,
+data, AOSR-like editable fields ordered by act flow, a draft list and a
+document-like demo preview that resembles a printed act page. It is clearly
+labelled `ДЕМО / демонстрационные данные / не для работы в продуктиве` and
+intentionally adds no Prisma schema, migrations, real auth, backend routes,
 persistence, uploads, document generation, AI, share codes or grants.
 
 Production feature coding remains blocked outside explicitly requested narrow
@@ -219,9 +220,10 @@ Scaffold включает:
   owner-only access utilities and tests, with no persistence, Prisma model,
   migrations, routes/controllers, frontend UI, sharing, grants or admin bypass.
 - first mock AOSR demo UI slice: frontend-only Russian React screen with
-  in-memory demo workspace/drafts, AOSR-like editable fields, conceptual
-  preview and Testing Library interaction tests, with no backend routes,
-  persistence, uploads, generation, AI, real auth, share codes or grants.
+  in-memory demo workspace/drafts, AOSR-like editable fields ordered by act
+  flow, document-like printed-page preview and Testing Library interaction
+  tests, with no backend routes, persistence, uploads, generation, AI, real
+  auth, share codes or grants.
 
 The backend module skeleton includes module boundaries, README ownership notes,
 placeholder tokens/ports, `apps/api/src/ARCHITECTURE.md`, and ESLint import

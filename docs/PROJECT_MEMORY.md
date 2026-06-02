@@ -99,10 +99,11 @@ AOSR/certificate/registry/package implementation.
 
 First mock AOSR demo UI slice introduced. The root React/Vite screen now shows
 a frontend-only Russian demo workspace with in-memory mock AOSR drafts,
-AOSR-like editable fields and a conceptual preview for user feedback. It is
-labelled `ДЕМО / демонстрационные данные / не для работы в продуктиве`. This is
-not production AOSR implementation, not Phase 4 share codes, not persistence,
-not upload/generation/AI, not real auth and not a backend API.
+AOSR-like editable fields ordered by act flow and a document-like printed-page
+preview for user feedback. It is labelled
+`ДЕМО / демонстрационные данные / не для работы в продуктиве`. This is not
+production AOSR implementation, not Phase 4 share codes, not persistence, not
+upload/generation/AI, not real auth and not a backend API.
 
 ---
 
@@ -3474,10 +3475,11 @@ share codes from `docs/20`.
   axes, elevation range, hidden works description, design documentation,
   contractor representative, customer/construction-control representative and
   materials/certificates plain text;
-- conceptual AOSR preview panel;
+- document-like AOSR preview area resembling a printed act/PDF page, with a
+  placeholder that a real PDF/printed form will come later;
 - clear `ДЕМО / демонстрационные данные / не для работы в продуктиве` label;
 - focused frontend tests for rendering and Testing Library/user-event field
-  editing that updates the preview.
+  editing that updates the document-like preview.
 
 Что не было введено:
 

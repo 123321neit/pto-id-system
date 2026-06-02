@@ -1,7 +1,6 @@
 import { useState } from 'react';
 
 import {
-  buildDemoAosrPreviewLines,
   demoAosrWorkspace,
   updateDemoAosrDraftField,
   type DemoAosrDraft,
@@ -76,161 +75,249 @@ export function DemoAosrWorkspacePage(): React.JSX.Element {
             <p className="section-kicker">Редактируемая демо-форма</p>
             <h2 id="act-form-title">Данные акта освидетельствования</h2>
           </div>
-          <div className="act-form-grid">
-            <label>
-              Номер акта
-              <input
-                name="actNumber"
-                onChange={(event) => {
-                  updateSelectedDraft('actNumber', event.currentTarget.value);
-                }}
-                value={selectedDraft.actNumber}
-              />
-            </label>
-            <label>
-              Дата акта
-              <input
-                name="actDate"
-                onChange={(event) => {
-                  updateSelectedDraft('actDate', event.currentTarget.value);
-                }}
-                type="date"
-                value={selectedDraft.actDate}
-              />
-            </label>
-            <label>
-              Период работ: с
-              <input
-                name="periodStart"
-                onChange={(event) => {
-                  updateSelectedDraft('periodStart', event.currentTarget.value);
-                }}
-                type="date"
-                value={selectedDraft.periodStart}
-              />
-            </label>
-            <label>
-              Период работ: по
-              <input
-                name="periodEnd"
-                onChange={(event) => {
-                  updateSelectedDraft('periodEnd', event.currentTarget.value);
-                }}
-                type="date"
-                value={selectedDraft.periodEnd}
-              />
-            </label>
-            <label>
-              Объект / участок
-              <input
-                name="objectName"
-                onChange={(event) => {
-                  updateSelectedDraft('objectName', event.currentTarget.value);
-                }}
-                value={selectedDraft.objectName}
-              />
-            </label>
-            <label>
-              Оси
-              <input
-                name="axes"
-                onChange={(event) => {
-                  updateSelectedDraft('axes', event.currentTarget.value);
-                }}
-                value={selectedDraft.axes}
-              />
-            </label>
-            <label>
-              Отметка или диапазон отметок
-              <input
-                name="elevationRange"
-                onChange={(event) => {
-                  updateSelectedDraft('elevationRange', event.currentTarget.value);
-                }}
-                value={selectedDraft.elevationRange}
-              />
-            </label>
-            <label>
-              Проектная документация
-              <input
-                name="documentReferences"
-                onChange={(event) => {
-                  updateSelectedDraft('documentReferences', event.currentTarget.value);
-                }}
-                value={selectedDraft.documentReferences}
-              />
-            </label>
-            <label>
-              Представитель подрядчика
-              <input
-                name="contractorRepresentative"
-                onChange={(event) => {
-                  updateSelectedDraft('contractorRepresentative', event.currentTarget.value);
-                }}
-                value={selectedDraft.contractorRepresentative}
-              />
-            </label>
-            <label>
-              Представитель заказчика / стройконтроля
-              <input
-                name="customerRepresentative"
-                onChange={(event) => {
-                  updateSelectedDraft('customerRepresentative', event.currentTarget.value);
-                }}
-                value={selectedDraft.customerRepresentative}
-              />
-            </label>
-            <label className="act-form-grid__wide">
-              Описание скрытых работ
-              <textarea
-                name="workDescription"
-                onChange={(event) => {
-                  updateSelectedDraft('workDescription', event.currentTarget.value);
-                }}
-                rows={5}
-                value={selectedDraft.workDescription}
-              />
-            </label>
-            <label className="act-form-grid__wide">
-              Материалы / сертификаты
-              <textarea
-                name="materialsCertificates"
-                onChange={(event) => {
-                  updateSelectedDraft('materialsCertificates', event.currentTarget.value);
-                }}
-                rows={4}
-                value={selectedDraft.materialsCertificates}
-              />
-            </label>
+
+          <div className="form-sections">
+            <section className="form-section" aria-labelledby="general-act-data-title">
+              <h3 id="general-act-data-title">Общие данные акта</h3>
+              <div className="act-form-grid">
+                <label>
+                  Номер акта
+                  <input
+                    name="actNumber"
+                    onChange={(event) => {
+                      updateSelectedDraft('actNumber', event.currentTarget.value);
+                    }}
+                    value={selectedDraft.actNumber}
+                  />
+                </label>
+                <label>
+                  Дата акта
+                  <input
+                    name="actDate"
+                    onChange={(event) => {
+                      updateSelectedDraft('actDate', event.currentTarget.value);
+                    }}
+                    type="date"
+                    value={selectedDraft.actDate}
+                  />
+                </label>
+                <label>
+                  Период работ: с
+                  <input
+                    name="periodStart"
+                    onChange={(event) => {
+                      updateSelectedDraft('periodStart', event.currentTarget.value);
+                    }}
+                    type="date"
+                    value={selectedDraft.periodStart}
+                  />
+                </label>
+                <label>
+                  Период работ: по
+                  <input
+                    name="periodEnd"
+                    onChange={(event) => {
+                      updateSelectedDraft('periodEnd', event.currentTarget.value);
+                    }}
+                    type="date"
+                    value={selectedDraft.periodEnd}
+                  />
+                </label>
+              </div>
+            </section>
+
+            <section className="form-section" aria-labelledby="work-place-data-title">
+              <h3 id="work-place-data-title">Данные объекта и места работ</h3>
+              <div className="act-form-grid">
+                <label className="act-form-grid__wide">
+                  Объект / участок
+                  <input
+                    name="objectName"
+                    onChange={(event) => {
+                      updateSelectedDraft('objectName', event.currentTarget.value);
+                    }}
+                    value={selectedDraft.objectName}
+                  />
+                </label>
+                <label>
+                  Оси
+                  <input
+                    name="axes"
+                    onChange={(event) => {
+                      updateSelectedDraft('axes', event.currentTarget.value);
+                    }}
+                    value={selectedDraft.axes}
+                  />
+                </label>
+                <label>
+                  Отметка или диапазон отметок
+                  <input
+                    name="elevationRange"
+                    onChange={(event) => {
+                      updateSelectedDraft('elevationRange', event.currentTarget.value);
+                    }}
+                    value={selectedDraft.elevationRange}
+                  />
+                </label>
+              </div>
+            </section>
+
+            <section className="form-section" aria-labelledby="hidden-works-data-title">
+              <h3 id="hidden-works-data-title">Выполненные скрытые работы</h3>
+              <label className="act-form-grid__wide">
+                Описание скрытых работ
+                <textarea
+                  name="workDescription"
+                  onChange={(event) => {
+                    updateSelectedDraft('workDescription', event.currentTarget.value);
+                  }}
+                  rows={5}
+                  value={selectedDraft.workDescription}
+                />
+              </label>
+            </section>
+
+            <section className="form-section" aria-labelledby="project-docs-data-title">
+              <h3 id="project-docs-data-title">Проектная документация</h3>
+              <label className="act-form-grid__wide">
+                Рабочие чертежи / листы
+                <textarea
+                  name="documentReferences"
+                  onChange={(event) => {
+                    updateSelectedDraft('documentReferences', event.currentTarget.value);
+                  }}
+                  rows={3}
+                  value={selectedDraft.documentReferences}
+                />
+              </label>
+            </section>
+
+            <section className="form-section" aria-labelledby="materials-data-title">
+              <h3 id="materials-data-title">Материалы и сертификаты</h3>
+              <label className="act-form-grid__wide">
+                Материалы / сертификаты простым текстом
+                <textarea
+                  name="materialsCertificates"
+                  onChange={(event) => {
+                    updateSelectedDraft('materialsCertificates', event.currentTarget.value);
+                  }}
+                  rows={4}
+                  value={selectedDraft.materialsCertificates}
+                />
+              </label>
+            </section>
+
+            <section className="form-section" aria-labelledby="signatories-data-title">
+              <h3 id="signatories-data-title">Представители / подписанты</h3>
+              <div className="act-form-grid">
+                <label>
+                  Представитель подрядчика
+                  <input
+                    name="contractorRepresentative"
+                    onChange={(event) => {
+                      updateSelectedDraft('contractorRepresentative', event.currentTarget.value);
+                    }}
+                    value={selectedDraft.contractorRepresentative}
+                  />
+                </label>
+                <label>
+                  Представитель заказчика / стройконтроля
+                  <input
+                    name="customerRepresentative"
+                    onChange={(event) => {
+                      updateSelectedDraft('customerRepresentative', event.currentTarget.value);
+                    }}
+                    value={selectedDraft.customerRepresentative}
+                  />
+                </label>
+              </div>
+            </section>
           </div>
         </section>
 
         <section className="preview-panel" aria-labelledby="preview-title">
           <div className="panel-heading">
-            <p className="section-kicker">Концептуальный предпросмотр</p>
-            <h2 id="preview-title">Как будет выглядеть АОСР</h2>
+            <p className="section-kicker">Демо-предпросмотр</p>
+            <h2 id="preview-title">Лист акта</h2>
           </div>
-          <article className="act-preview" aria-label="Концептуальный предпросмотр АОСР">
-            <p className="act-preview__label">{demoAosrWorkspace.demoNotice}</p>
-            <p className="act-preview__muted">
-              Предпросмотр структуры, не официальный печатный шаблон
-            </p>
-            <h3>Акт освидетельствования скрытых работ</h3>
-            <p className="act-preview__headline">
-              {selectedDraft.actNumber} от {selectedDraft.actDate}
-            </p>
-            <dl>
-              {buildDemoAosrPreviewLines(selectedDraft).map((line) => {
-                const [term, value] = splitPreviewLine(line);
+          <article className="act-page" aria-label="Демо-предпросмотр печатной формы АОСР">
+            <div className="act-page__sheet">
+              <p className="act-page__demo-label">{demoAosrWorkspace.demoNotice}</p>
+              <p className="act-page__placeholder">
+                Позже здесь будет реальный PDF/печатная форма акта
+              </p>
 
-                return (
-                  <div key={term}>
-                    <dt>{term}</dt>
-                    <dd>{value}</dd>
+              <header className="act-page__header">
+                <p>Демонстрационная печатная форма</p>
+                <h3>Акт освидетельствования скрытых работ</h3>
+                <p>
+                  {selectedDraft.actNumber} от {selectedDraft.actDate}
+                </p>
+              </header>
+
+              <section className="act-page__section" aria-label="Общие сведения акта">
+                <h4>1. Общие сведения</h4>
+                <dl>
+                  <div>
+                    <dt>Проект</dt>
+                    <dd>{demoAosrWorkspace.projectName}</dd>
                   </div>
-                );
-              })}
-            </dl>
+                  <div>
+                    <dt>Период выполнения работ</dt>
+                    <dd>
+                      с {selectedDraft.periodStart} по {selectedDraft.periodEnd}
+                    </dd>
+                  </div>
+                </dl>
+              </section>
+
+              <section className="act-page__section" aria-label="Место выполнения работ">
+                <h4>2. Место выполнения работ</h4>
+                <dl>
+                  <div>
+                    <dt>Объект / участок</dt>
+                    <dd>{selectedDraft.objectName}</dd>
+                  </div>
+                  <div>
+                    <dt>Оси</dt>
+                    <dd>{selectedDraft.axes}</dd>
+                  </div>
+                  <div>
+                    <dt>Отметка</dt>
+                    <dd>{selectedDraft.elevationRange}</dd>
+                  </div>
+                </dl>
+              </section>
+
+              <section className="act-page__section" aria-label="Выполненные скрытые работы">
+                <h4>3. Выполненные скрытые работы</h4>
+                <p>{selectedDraft.workDescription}</p>
+              </section>
+
+              <section className="act-page__section" aria-label="Проектная документация">
+                <h4>4. Проектная документация</h4>
+                <p>{selectedDraft.documentReferences}</p>
+              </section>
+
+              <section className="act-page__section" aria-label="Материалы и сертификаты">
+                <h4>5. Материалы и сертификаты</h4>
+                <p>{selectedDraft.materialsCertificates}</p>
+              </section>
+
+              <section className="act-page__section" aria-label="Представители и подписанты">
+                <h4>6. Представители / подписанты</h4>
+                <dl>
+                  <div>
+                    <dt>Подрядчик</dt>
+                    <dd>{selectedDraft.contractorRepresentative}</dd>
+                  </div>
+                  <div>
+                    <dt>Заказчик / стройконтроль</dt>
+                    <dd>{selectedDraft.customerRepresentative}</dd>
+                  </div>
+                </dl>
+              </section>
+            </div>
           </article>
         </section>
       </div>
@@ -249,14 +336,4 @@ function getSelectedDraft(
   }
 
   return selectedDraft;
-}
-
-function splitPreviewLine(line: string): readonly [string, string] {
-  const separatorIndex = line.indexOf(':');
-
-  if (separatorIndex === -1) {
-    return [line, ''];
-  }
-
-  return [line.slice(0, separatorIndex), line.slice(separatorIndex + 1).trim()];
 }
