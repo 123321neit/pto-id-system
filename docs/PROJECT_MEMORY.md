@@ -3500,6 +3500,38 @@ share codes from `docs/20`.
 Next step: collect feedback on the demo screen. Phase 4 share codes and
 production domain/API/persistence work remain separate explicit tasks.
 
+### 2026-06-02 — Mock AOSR demo UI refined
+
+- Статус: `Frontend mock AOSR demo UI only`
+- Описание: refined the in-memory AOSR demo screen for feedback while keeping it
+  outside production workflow implementation.
+
+Добавлено/уточнено:
+
+- object-level defaults are visually separated from current-act fields;
+- mock object defaults now include project/object data, default project
+  documentation and a representative library;
+- representatives are added to the current act from the mock object library and
+  current-act signatory order can be changed in the UI;
+- act materials are selected from a small mock certificate/material library
+  instead of a plain free-text materials field;
+- selected certificate documents and structured mock scheme/photo/journal data
+  derive the final applications block;
+- applications render at the final end of the AOSR preview after signatures.
+
+Что не было введено:
+
+- no real certificate library implementation;
+- no uploads or file attachments;
+- no persistence;
+- no backend routes/controllers;
+- no Prisma/schema/migration work;
+- no real PDF/DOCX generation;
+- no AI/OCR;
+- no auth/session/login/register;
+- no share codes/grants;
+- no production AOSR business logic.
+
 ### 2026-06-02 — Frontend-only Vercel demo deployment configured
 
 - Статус: `Frontend demo deployment only`

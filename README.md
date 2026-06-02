@@ -55,11 +55,12 @@ not a system-admin bypass.
 
 The first mock AOSR demo UI slice replaces the root React screen with a
 frontend-only Russian demo workspace for user feedback. It uses in-memory mock
-data, AOSR-like editable fields ordered by act flow, a draft list and a
-document-like demo preview that resembles a printed act page. It is clearly
-labelled `ДЕМО / демонстрационные данные / не для работы в продуктиве` and
-intentionally adds no Prisma schema, migrations, real auth, backend routes,
-persistence, uploads, document generation, AI, share codes or grants.
+data, separated object-level defaults/current-act fields, mock representative
+and certificate-library selections, a draft list and a document-like demo
+preview that resembles a printed act page. It is clearly labelled
+`ДЕМО / демонстрационные данные / не для работы в продуктиве` and intentionally
+adds no Prisma schema, migrations, real auth, backend routes, persistence,
+uploads, document generation, AI, share codes or grants.
 
 Production feature coding remains blocked outside explicitly requested narrow
 demo/technical slices.
@@ -220,10 +221,11 @@ Scaffold включает:
   owner-only access utilities and tests, with no persistence, Prisma model,
   migrations, routes/controllers, frontend UI, sharing, grants or admin bypass.
 - first mock AOSR demo UI slice: frontend-only Russian React screen with
-  in-memory demo workspace/drafts, AOSR-like editable fields ordered by act
-  flow, document-like printed-page preview and Testing Library interaction
-  tests, with no backend routes, persistence, uploads, generation, AI, real
-  auth, share codes or grants.
+  in-memory demo workspace/drafts, object-level defaults, current-act fields,
+  mock representative/certificate-library selections, final derived
+  applications, document-like printed-page preview and Testing Library
+  interaction tests, with no backend routes, persistence, uploads, generation,
+  AI, real auth, share codes or grants.
 
 The backend module skeleton includes module boundaries, README ownership notes,
 placeholder tokens/ports, `apps/api/src/ARCHITECTURE.md`, and ESLint import
@@ -235,10 +237,11 @@ OpenAPI, domain database state, file APIs or real use cases. They exist only to
 validate frontend -> backend connectivity, shared types, env-driven API/storage
 configuration, Prisma client generation and infrastructure health boundaries.
 The AOSR demo screen is separate: it is a frontend-only mock for feedback, not a
-production workflow. Its mock printed-page preview now includes a plain-text
-"Последующие работы разрешены" block, a compact future document-tree affordance,
-ordered mock signatories and an A4-like HTML document preview, without real PDF
-generation, certificate library behavior or signatory database behavior.
+production workflow. Its mock printed-page preview now separates object-level
+defaults from current-act fields, lets the current act reuse mock representatives
+and mock certificate/material records, derives applications at the final end of
+the preview, and remains without real PDF generation, certificate library
+implementation, signatory database behavior, uploads or persistence.
 
 GitHub Actions CI is committed at `.github/workflows/ci.yml`. It runs on
 `push` and `pull_request` with Node 22, Corepack, `pnpm install
