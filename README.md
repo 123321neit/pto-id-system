@@ -5,7 +5,7 @@ Web-система автоматизации исполнительной до�
 Текущий статус:
 
 ```text
-FIRST ALLOWED INFRASTRUCTURE BOOTSTRAP SCAFFOLD ACCEPTED; CANONICAL ADR BASELINE ACCEPTED; BACKEND MODULE ARCHITECTURE SKELETON INTRODUCED; FIRST TECHNICAL FRONTEND-BACKEND STATUS SLICE INTRODUCED; DATABASE FOUNDATION TECHNICAL SLICE INTRODUCED; OBJECT STORAGE FOUNDATION TECHNICAL SLICE INTRODUCED; AUTH SHARING IMPLEMENTATION PLAN ADDED; USER IDENTITY SKELETON INTRODUCED; GLOBAL SYSTEM ADMIN MARKER INTRODUCED; OWNED WORKSPACE BASELINE INTRODUCED; FIRST MOCK AOSR DEMO UI SLICE INTRODUCED
+FIRST ALLOWED INFRASTRUCTURE BOOTSTRAP SCAFFOLD ACCEPTED; CANONICAL ADR BASELINE ACCEPTED; BACKEND MODULE ARCHITECTURE SKELETON INTRODUCED; FIRST TECHNICAL FRONTEND-BACKEND STATUS SLICE INTRODUCED; DATABASE FOUNDATION TECHNICAL SLICE INTRODUCED; OBJECT STORAGE FOUNDATION TECHNICAL SLICE INTRODUCED; AUTH SHARING IMPLEMENTATION PLAN ADDED; USER IDENTITY SKELETON INTRODUCED; GLOBAL SYSTEM ADMIN MARKER INTRODUCED; OWNED WORKSPACE BASELINE INTRODUCED; FIRST MOCK AOSR DEMO UI SLICE INTRODUCED; MOCK AOSR DEMO UX/PREVIEW REFINED
 ```
 
 В репозитории принят первый разрешённый scaffold. Это только infrastructure/bootstrap
@@ -63,6 +63,14 @@ labels are object configuration, not global fixed schema. It is clearly labelled
 `ДЕМО / демонстрационные данные / не для работы в продуктиве` and intentionally
 adds no Prisma schema, migrations, real auth, backend routes, persistence,
 uploads, document generation, AI, share codes or grants.
+
+The refined demo keeps object/common settings and large libraries behind compact
+buttons, models global organization/representative libraries versus object-level
+editable bindings only as in-memory mock UI, and keeps certificate materials
+library-linked instead of free text. The AOSR Word example is used only as a
+visual/layout reference for the HTML preview; no DOCX import, parsing or real
+DOCX/PDF generation is implemented. Derived applications render before the
+final signature blocks.
 
 Production feature coding remains blocked outside explicitly requested narrow
 demo/technical slices.
@@ -242,7 +250,7 @@ The AOSR demo screen is separate: it is a frontend-only mock for feedback, not a
 production workflow. Its mock printed-page preview now separates object-level
 defaults from current-act fields, lets the current act reuse mock representatives
 and mock certificate/material records, derives applications at the final end of
-the preview, and remains without real PDF generation, certificate library
+the preview before final signature blocks, and remains without real PDF generation, certificate library
 implementation, signatory database behavior, uploads or persistence.
 
 GitHub Actions CI is committed at `.github/workflows/ci.yml`. It runs on

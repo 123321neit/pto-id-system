@@ -4,10 +4,19 @@ export interface DemoAosrWorkspace {
   readonly projectCode: string;
   readonly ownerName: string;
   readonly demoNotice: string;
+  readonly globalOrganizationLibrary: readonly DemoGlobalOrganization[];
+  readonly globalRepresentativeLibrary: readonly DemoAosrRepresentative[];
   readonly objectDefaults: DemoAosrObjectDefaults;
   readonly certificateLibrary: readonly DemoMaterialCertificate[];
   readonly derivedAttachmentLibrary: readonly DemoDerivedAttachment[];
   readonly drafts: readonly DemoAosrDraft[];
+}
+
+export interface DemoGlobalOrganization {
+  readonly id: string;
+  readonly organizationName: string;
+  readonly details: string;
+  readonly caption: string;
 }
 
 export interface DemoAosrObjectDefaults {
@@ -20,6 +29,7 @@ export interface DemoAosrObjectDefaults {
 
 export interface DemoAosrHeaderOrganization {
   readonly id: string;
+  readonly globalOrganizationId?: string;
   readonly label: string;
   readonly organizationName: string;
   readonly details: string;
@@ -28,6 +38,7 @@ export interface DemoAosrHeaderOrganization {
 
 export interface DemoAosrRepresentative {
   readonly id: string;
+  readonly globalRepresentativeId?: string;
   readonly roleLabel: string;
   readonly fullName: string;
   readonly position: string;
@@ -135,6 +146,64 @@ const customerRepresentative: DemoAosrRepresentative = {
   roleLabel: 'Представитель заказчика',
 };
 
+const globalOrganizationLibrary: readonly DemoGlobalOrganization[] = [
+  {
+    caption: 'Наименование, ОГРН, ИНН, место нахождения, телефон/факс и иные реквизиты участника.',
+    details:
+      'ОГРН 1026600000000; ИНН 6670000000; 620000, г. Екатеринбург, ул. Демонстрационная, 10.',
+    id: 'global-organization-customer',
+    organizationName: 'ГАУЗ СО "Демо-заказчик"',
+  },
+  {
+    caption: 'Реквизиты лица, осуществляющего строительство, включая СРО при наличии.',
+    details: 'ОГРН 1206600007877; ИНН 6670490954; АСРО "Гильдия строителей демо-объекта".',
+    id: 'global-organization-contractor',
+    organizationName: 'ООО "ПТО Монтаж"',
+  },
+  {
+    caption: 'Наименование, ОГРН, ИНН, адрес и сведения о договоре строительного контроля.',
+    details: 'Договор строительного контроля N СК-7; 620100, г. Екатеринбург, ул. Контрольная, 4.',
+    id: 'global-organization-control',
+    organizationName: 'ООО "СтройКонтроль"',
+  },
+  {
+    caption: 'Реквизиты лица, осуществляющего подготовку проектной документации, и сведения о СРО.',
+    details: 'ОГРН 1146678008509; ИНН 6678044711; СРО проектировщиков N П-140-27022010.',
+    id: 'global-organization-designer',
+    organizationName: 'АО "Проектный институт"',
+  },
+  {
+    caption: 'Объектовый блок можно подписать любым пользовательским названием.',
+    details: 'ОГРН 1096600000001; ИНН 6671000001; 620075, г. Екатеринбург, ул. Генподрядная, 8.',
+    id: 'global-organization-general-contractor',
+    organizationName: 'ООО "Демо-генподряд"',
+  },
+];
+
+const globalRepresentativeLibrary: readonly DemoAosrRepresentative[] = [
+  contractorRepresentative,
+  buildingControlRepresentative,
+  authorSupervisionRepresentative,
+  customerRepresentative,
+  {
+    authorityBasis: 'Приказ N ЛК-9 от 12.05.2026',
+    details: 'Для объекта полномочия и НРС можно отредактировать перед добавлением.',
+    fullName: 'Лебедев Л.Л.',
+    id: 'representative-laboratory-001',
+    organization: 'ООО "Лаборатория контроля"',
+    position: 'Инженер лаборатории',
+    roleLabel: 'Стройконтроль лаборатории',
+  },
+  {
+    authorityBasis: 'Доверенность N ГП-18 от 15.05.2026',
+    fullName: 'Николаев Н.Н.',
+    id: 'representative-general-contractor-001',
+    organization: 'ООО "Демо-генподряд"',
+    position: 'Главный инженер проекта',
+    roleLabel: 'Представитель генподрядчика',
+  },
+];
+
 const initialRepresentativeLibrary: readonly DemoAosrRepresentative[] = [
   contractorRepresentative,
   buildingControlRepresentative,
@@ -190,6 +259,8 @@ export const demoAosrWorkspace: DemoAosrWorkspace = {
       type: 'journal',
     },
   ],
+  globalOrganizationLibrary,
+  globalRepresentativeLibrary,
   drafts: [
     {
       actDate: '2026-06-01',
@@ -260,6 +331,7 @@ export const demoAosrWorkspace: DemoAosrWorkspace = {
           'Наименование, ОГРН, ИНН, место нахождения, телефон/факс и иные объектовые реквизиты.',
         details:
           'ОГРН 1026600000000; ИНН 6670000000; 620000, г. Екатеринбург, ул. Демонстрационная, 10.',
+        globalOrganizationId: 'global-organization-customer',
         id: 'header-organization-customer',
         label: 'Заказчик',
         organizationName: 'ГАУЗ СО "Демо-заказчик"',
@@ -267,6 +339,7 @@ export const demoAosrWorkspace: DemoAosrWorkspace = {
       {
         caption: 'Реквизиты лица, осуществляющего строительство, включая СРО при наличии.',
         details: 'ОГРН 1206600007877; ИНН 6670490954; АСРО "Гильдия строителей демо-объекта".',
+        globalOrganizationId: 'global-organization-contractor',
         id: 'header-organization-contractor',
         label: 'Подрядчик',
         organizationName: 'ООО "ПТО Монтаж"',
@@ -275,6 +348,7 @@ export const demoAosrWorkspace: DemoAosrWorkspace = {
         caption: 'Блок можно переименовать или заменить под конкретный объект.',
         details:
           'Договор строительного контроля N СК-7; 620100, г. Екатеринбург, ул. Контрольная, 4.',
+        globalOrganizationId: 'global-organization-control',
         id: 'header-organization-control',
         label: 'Технический заказчик',
         organizationName: 'ООО "СтройКонтроль"',

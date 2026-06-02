@@ -6,9 +6,9 @@
 
 # MASTER CONTEXT / SOURCE OF TRUTH
 
-# VERSION: 2026-06-02-MOCK-AOSR-CONFIGURABLE-OBJECT-PARTICIPANTS
+# VERSION: 2026-06-02-MOCK-AOSR-WORD-LIKE-PREVIEW-AND-OBJECT-LIBRARIES
 
-# STATUS: FIRST ALLOWED INFRASTRUCTURE BOOTSTRAP SCAFFOLD; CANONICAL ADR BASELINE ACCEPTED; BACKEND MODULE ARCHITECTURE SKELETON INTRODUCED; FIRST TECHNICAL FRONTEND-BACKEND STATUS SLICE INTRODUCED; DATABASE FOUNDATION TECHNICAL SLICE INTRODUCED; OBJECT STORAGE FOUNDATION TECHNICAL SLICE INTRODUCED; AUTH SHARING IMPLEMENTATION PLAN ADDED; USER IDENTITY SKELETON INTRODUCED; GLOBAL SYSTEM ADMIN MARKER INTRODUCED; OWNED WORKSPACE BASELINE INTRODUCED; FIRST MOCK AOSR DEMO UI SLICE INTRODUCED; MOCK AOSR CONFIGURABLE OBJECT HEADER ORGANIZATIONS AND REPRESENTATIVE LIBRARY INTRODUCED
+# STATUS: FIRST ALLOWED INFRASTRUCTURE BOOTSTRAP SCAFFOLD; CANONICAL ADR BASELINE ACCEPTED; BACKEND MODULE ARCHITECTURE SKELETON INTRODUCED; FIRST TECHNICAL FRONTEND-BACKEND STATUS SLICE INTRODUCED; DATABASE FOUNDATION TECHNICAL SLICE INTRODUCED; OBJECT STORAGE FOUNDATION TECHNICAL SLICE INTRODUCED; AUTH SHARING IMPLEMENTATION PLAN ADDED; USER IDENTITY SKELETON INTRODUCED; GLOBAL SYSTEM ADMIN MARKER INTRODUCED; OWNED WORKSPACE BASELINE INTRODUCED; FIRST MOCK AOSR DEMO UI SLICE INTRODUCED; MOCK AOSR CONFIGURABLE OBJECT HEADER ORGANIZATIONS AND REPRESENTATIVE LIBRARY INTRODUCED; MOCK AOSR DEMO UX/PREVIEW REFINED
 
 # LANGUAGE: RU
 
@@ -31,7 +31,7 @@
 Текущая стадия проекта:
 
 ```text
-FIRST ALLOWED INFRASTRUCTURE BOOTSTRAP SCAFFOLD; CANONICAL ADR BASELINE ACCEPTED; BACKEND MODULE ARCHITECTURE SKELETON INTRODUCED; FIRST TECHNICAL FRONTEND-BACKEND STATUS SLICE INTRODUCED; DATABASE FOUNDATION TECHNICAL SLICE INTRODUCED; OBJECT STORAGE FOUNDATION TECHNICAL SLICE INTRODUCED; AUTH SHARING IMPLEMENTATION PLAN ADDED; USER IDENTITY SKELETON INTRODUCED; GLOBAL SYSTEM ADMIN MARKER INTRODUCED; OWNED WORKSPACE BASELINE INTRODUCED; FIRST MOCK AOSR DEMO UI SLICE INTRODUCED; MOCK AOSR CONFIGURABLE OBJECT HEADER ORGANIZATIONS AND REPRESENTATIVE LIBRARY INTRODUCED
+FIRST ALLOWED INFRASTRUCTURE BOOTSTRAP SCAFFOLD; CANONICAL ADR BASELINE ACCEPTED; BACKEND MODULE ARCHITECTURE SKELETON INTRODUCED; FIRST TECHNICAL FRONTEND-BACKEND STATUS SLICE INTRODUCED; DATABASE FOUNDATION TECHNICAL SLICE INTRODUCED; OBJECT STORAGE FOUNDATION TECHNICAL SLICE INTRODUCED; AUTH SHARING IMPLEMENTATION PLAN ADDED; USER IDENTITY SKELETON INTRODUCED; GLOBAL SYSTEM ADMIN MARKER INTRODUCED; OWNED WORKSPACE BASELINE INTRODUCED; FIRST MOCK AOSR DEMO UI SLICE INTRODUCED; MOCK AOSR CONFIGURABLE OBJECT HEADER ORGANIZATIONS AND REPRESENTATIVE LIBRARY INTRODUCED; MOCK AOSR DEMO UX/PREVIEW REFINED
 ```
 
 Проект принял первый явно разрешённый infrastructure/bootstrap scaffold,
@@ -105,8 +105,12 @@ configurable object-level header organization blocks from the configurable
 object representative/signatory library. Header organization labels and
 representative role labels are not fixed globally and must remain configurable
 per object; sample AOSR wording is a visual/structural reference only. It is
-labelled `ДЕМО / демонстрационные данные / не для работы в продуктиве`. This is
-not production AOSR implementation, not Phase 4 share codes, not persistence,
+labelled `ДЕМО / демонстрационные данные / не для работы в продуктиве`. The
+refined mock keeps object/common settings and large libraries behind buttons,
+models global libraries versus object-level editable bindings only in memory,
+keeps certificate materials library-linked rather than free text, and uses the
+AOSR Word example only as a visual/layout reference for the HTML preview. This
+is not production AOSR implementation, not Phase 4 share codes, not persistence,
 not upload/generation/AI, not real auth and not a backend API.
 
 ---
@@ -3521,7 +3525,8 @@ production domain/API/persistence work remain separate explicit tasks.
   instead of a plain free-text materials field;
 - selected certificate documents and structured mock scheme/photo/journal data
   derive the final applications block;
-- applications render at the final end of the AOSR preview after signatures.
+- applications render at the final end of the AOSR preview before final
+  signature blocks.
 
 Что не было введено:
 
@@ -3531,6 +3536,48 @@ production domain/API/persistence work remain separate explicit tasks.
 - no backend routes/controllers;
 - no Prisma/schema/migration work;
 - no real PDF/DOCX generation;
+- no AI/OCR;
+- no auth/session/login/register;
+- no share codes/grants;
+- no production AOSR business logic.
+
+### 2026-06-02 — Mock AOSR demo UX and preview refined
+
+- Статус: `Frontend mock AOSR demo UX/preview only`
+- Описание: refined the AOSR demo editor and HTML preview for user feedback while
+  keeping all data in-memory and frontend-only.
+
+Добавлено/уточнено:
+
+- `DemoAosrWorkspacePage.tsx` split into smaller frontend-only components for
+  document tree, object settings, header organizations, object representatives,
+  current act editor, signatories, materials, derived applications and preview;
+- object/common settings are compact/collapsible and opened by buttons;
+- mock global organization and representative libraries are represented only as
+  reusable in-memory sources, while object-level header blocks and
+  representatives remain editable object-specific bindings/snapshots;
+- header organization labels and representative role labels remain configurable
+  per object and are not a fixed universal AOSR participant schema;
+- current-act representatives are searched from object-level representatives,
+  with temporary one-act representatives still supported;
+- certificate materials are searched/selected from the mock certificate library
+  and never entered as plain free text in the act;
+- derived applications include selected certificate materials and selected mock
+  executive schemes/photos/journal entries, rendering before final signatures;
+- HTML preview was tightened toward the AOSR Word example with A4-like margins,
+  Times New Roman-like body typography, compact line-height, field lines,
+  helper captions, title/number/date rhythm and final signature rows;
+- the AOSR Word example is visual/layout reference only: it is not imported,
+  parsed at runtime or used for DOCX/PDF generation.
+
+Что не было введено:
+
+- no backend routes/controllers;
+- no Prisma/schema/migrations;
+- no persistence;
+- no uploads or file attachment implementation;
+- no real certificate library implementation;
+- no real DOCX/PDF generation;
 - no AI/OCR;
 - no auth/session/login/register;
 - no share codes/grants;

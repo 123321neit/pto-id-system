@@ -16,7 +16,17 @@ afterEach(() => {
 });
 
 describe('DemoAosrWorkspacePage', () => {
-  it('renders configurable header organization blocks in preview order', () => {
+  it('keeps object settings and libraries compact until opened', () => {
+    render(<DemoAosrWorkspacePage />);
+
+    expect(screen.getByRole('button', { name: 'Открыть объектовые настройки' })).toBeTruthy();
+    expect(screen.queryByRole('region', { name: 'База представителей объекта' })).toBeNull();
+    expect(screen.queryByLabelText('Найти организацию в глобальной библиотеке')).toBeNull();
+    expect(screen.queryByLabelText('Найти материал в библиотеке сертификатов')).toBeNull();
+    expect(screen.getByText('Материал добавляется из библиотеки сертификатов')).toBeTruthy();
+  });
+
+  it('renders configurable object-level header organization blocks in preview order', () => {
     render(<DemoAosrWorkspacePage />);
 
     const previewText = getPreviewText();
@@ -31,66 +41,96 @@ describe('DemoAosrWorkspacePage', () => {
     );
   });
 
-  it('adds a header organization block and updates the preview', async () => {
+  it('adds a header organization from the mock global organization library search', async () => {
     const user = userEvent.setup();
 
     render(<DemoAosrWorkspacePage />);
 
     await openObjectSettings(user);
-    await user.click(screen.getByRole('button', { name: 'Добавить организацию в шапке' }));
-    await user.type(screen.getByLabelText('Название блока'), 'Генподрядчик');
-    await user.type(screen.getByLabelText('Организация / наименование'), 'ООО "Демо-генподряд"');
+    await user.click(screen.getByRole('button', { name: 'Добавить блок шапки' }));
     await user.type(
-      screen.getByLabelText('Реквизиты / детали'),
-      'ОГРН 1111111111111; ИНН 2222222222; адрес: г. Екатеринбург.',
+      screen.getByLabelText('Найти организацию в глобальной библиотеке'),
+      'генподряд',
     );
-    await user.type(screen.getByLabelText('Подпись-подсказка'), 'Объектовый блок шапки');
+
+    const globalLibrary = screen.getByRole('list', { name: 'Глобальная библиотека организаций' });
+    const organizationRow = within(globalLibrary)
+      .getByText('ООО "Демо-генподряд"')
+      .closest('.library-row');
+
+    if (organizationRow === null) {
+      throw new Error('В тесте ожидается строка глобальной организации.');
+    }
+
+    await user.click(
+      within(organizationRow as HTMLElement).getByRole('button', { name: 'Выбрать' }),
+    );
+    await user.type(screen.getByLabelText('Название блока'), 'Генподрядчик');
+    await user.clear(screen.getByLabelText('Реквизиты / детали для этого объекта'));
+    await user.type(
+      screen.getByLabelText('Реквизиты / детали для этого объекта'),
+      'ОГРН 1096600000001; ИНН 6671000001; объектовый договор N ГП-1.',
+    );
     await user.click(screen.getByRole('button', { name: 'Сохранить организацию в шапке' }));
 
     const previewText = getPreviewText();
     expect(previewText).toContain('Генподрядчик:');
     expect(previewText).toContain('ООО "Демо-генподряд"');
-    expect(previewText.indexOf('Технический заказчик:')).toBeLessThan(
-      previewText.indexOf('Генподрядчик:'),
-    );
+    expect(previewText).toContain('объектовый договор N ГП-1');
   });
 
-  it('accepts representative role labels outside the example role set', async () => {
+  it('adds a representative to the object base from the mock global representative library search', async () => {
     const user = userEvent.setup();
 
     render(<DemoAosrWorkspacePage />);
 
-    await addManualRepresentative(user, {
-      authorityBasis: 'Протокол допуска N Л-5',
-      fullName: 'Лебедев Л.Л.',
-      organization: 'Лаборатория контроля',
-      position: 'Инженер лаборатории',
-      roleLabel: 'Стройконтроль лаборатории',
-    });
+    await openObjectSettings(user);
+    await user.click(screen.getByRole('button', { name: 'Добавить представителя' }));
+    await user.type(
+      screen.getByLabelText('Найти представителя в глобальной библиотеке'),
+      'генподряд',
+    );
 
-    const previewText = getPreviewText();
-    expect(previewText).toContain('Стройконтроль лаборатории:');
-    expect(previewText).toContain('Лебедев Л.Л.');
-    expect(screen.queryByLabelText('Фиксированная роль представителя')).toBeNull();
+    const globalLibrary = screen.getByRole('list', {
+      name: 'Глобальная библиотека представителей',
+    });
+    const representativeRow = within(globalLibrary)
+      .getByText('Николаев Н.Н.')
+      .closest('.library-row');
+
+    if (representativeRow === null) {
+      throw new Error('В тесте ожидается строка глобального представителя.');
+    }
+
+    await user.click(
+      within(representativeRow as HTMLElement).getByRole('button', { name: 'Выбрать' }),
+    );
+    await user.clear(screen.getByLabelText('Роль на этом объекте'));
+    await user.type(screen.getByLabelText('Роль на этом объекте'), 'Представитель генподрядчика');
+    await user.click(
+      screen.getByRole('button', { name: 'Сохранить представителя в базу объекта' }),
+    );
+
+    const objectLibrary = screen.getByRole('list', { name: 'База представителей объекта' });
+    expect(within(objectLibrary).getByText('Николаев Н.Н.')).toBeTruthy();
   });
 
-  it('adds a representative from the object library to the current act and preview', async () => {
+  it('searches object-level representatives and adds one to the current act', async () => {
     const user = userEvent.setup();
 
     render(<DemoAosrWorkspacePage />);
 
     expect(getPreviewText()).not.toContain('Кузнецова А.А.');
 
-    await user.click(screen.getByRole('button', { name: 'Добавить из базы подписантов объекта' }));
-    const representativeLibrary = screen.getByRole('list', {
-      name: 'База подписантов объекта для текущего акта',
+    await user.type(screen.getByLabelText('Добавить подписанта в акт'), 'заказчика');
+
+    const objectPicker = screen.getByRole('list', {
+      name: 'База представителей объекта для текущего акта',
     });
-    const customerRow = within(representativeLibrary)
-      .getByText('Кузнецова А.А.')
-      .closest('.library-row');
+    const customerRow = within(objectPicker).getByText('Кузнецова А.А.').closest('.library-row');
 
     if (customerRow === null) {
-      throw new Error('Expected representative library row.');
+      throw new Error('В тесте ожидается строка представителя объекта.');
     }
 
     await user.click(
@@ -102,7 +142,7 @@ describe('DemoAosrWorkspacePage', () => {
     expect(previewText).toContain('Представитель заказчика:');
   });
 
-  it('adds a manual temporary representative only to the current act when the checkbox is clear', async () => {
+  it('adds a temporary representative only to the current act when the checkbox is clear', async () => {
     const user = userEvent.setup();
 
     render(<DemoAosrWorkspacePage />);
@@ -118,13 +158,13 @@ describe('DemoAosrWorkspacePage', () => {
     expect(getPreviewText()).toContain('Сидоров С.С.');
 
     await openObjectSettings(user);
-    await user.click(screen.getByRole('button', { name: 'Открыть базу' }));
+    await user.click(screen.getByRole('button', { name: 'База представителей объекта' }));
 
-    const objectLibrary = screen.getByRole('list', { name: 'База подписантов объекта' });
+    const objectLibrary = screen.getByRole('list', { name: 'База представителей объекта' });
     expect(within(objectLibrary).queryByText('Сидоров С.С.')).toBeNull();
   });
 
-  it('adds a manual representative to the object library and current act when selected', async () => {
+  it('adds a temporary representative to the object base too when selected', async () => {
     const user = userEvent.setup();
 
     render(<DemoAosrWorkspacePage />);
@@ -144,13 +184,13 @@ describe('DemoAosrWorkspacePage', () => {
     expect(getPreviewText()).toContain('Орлова О.О.');
 
     await openObjectSettings(user);
-    await user.click(screen.getByRole('button', { name: 'Открыть базу' }));
+    await user.click(screen.getByRole('button', { name: 'База представителей объекта' }));
 
-    const objectLibrary = screen.getByRole('list', { name: 'База подписантов объекта' });
+    const objectLibrary = screen.getByRole('list', { name: 'База представителей объекта' });
     expect(within(objectLibrary).getByText('Орлова О.О.')).toBeTruthy();
   });
 
-  it('updates the document signatory order when a signatory is reordered', async () => {
+  it('updates the document signatory order in the preview', async () => {
     const user = userEvent.setup();
 
     render(<DemoAosrWorkspacePage />);
@@ -161,29 +201,23 @@ describe('DemoAosrWorkspacePage', () => {
     expect(previewText.indexOf('Петров П.П.')).toBeLessThan(previewText.indexOf('Иванов И.И.'));
   });
 
-  it('keeps materials selected from the certificate library without a free-text materials field', async () => {
+  it('adds a material through certificate library search and derives applications', async () => {
     const user = userEvent.setup();
 
     render(<DemoAosrWorkspacePage />);
 
-    expect(screen.queryByLabelText('Материалы / сертификаты простым текстом')).toBeNull();
-    expect(screen.queryByLabelText('Приложения / исполнительные схемы простым текстом')).toBeNull();
-    expect(
-      screen.getByText('В реальной системе материал добавляется из библиотеки сертификатов'),
-    ).toBeTruthy();
-
     expect(getPreviewText()).not.toContain('ДС-ИЗ-2026-04');
 
-    await user.click(screen.getByRole('button', { name: 'Открыть сертификаты' }));
-    const certificateLibrary = screen.getByRole('list', {
-      name: 'Мок-библиотека сертификатов и материалов',
-    });
+    await user.click(screen.getByRole('button', { name: 'Библиотека сертификатов' }));
+    await user.type(screen.getByLabelText('Найти материал в библиотеке сертификатов'), 'изоляц');
+
+    const certificateLibrary = screen.getByRole('list', { name: 'Библиотека сертификатов' });
     const insulationRow = within(certificateLibrary)
       .getByText('Теплоизоляционные маты ИЗ-50')
       .closest('.library-row');
 
     if (insulationRow === null) {
-      throw new Error('Expected certificate library row.');
+      throw new Error('В тесте ожидается строка материала.');
     }
 
     await user.click(
@@ -193,9 +227,19 @@ describe('DemoAosrWorkspacePage', () => {
     const previewText = getPreviewText();
     expect(previewText).toContain('Теплоизоляционные маты ИЗ-50');
     expect(previewText).toContain('ДС-ИЗ-2026-04');
+    expect(previewText).toContain('Декларация о соответствии N ДС-ИЗ-2026-04 от 20.05.2026');
   });
 
-  it('derives applications and renders them before final signature blocks', () => {
+  it('does not expose free-text material, certificate or final applications fields', () => {
+    render(<DemoAosrWorkspacePage />);
+
+    expect(screen.queryByLabelText('Материалы / сертификаты простым текстом')).toBeNull();
+    expect(screen.queryByLabelText('Приложения / исполнительные схемы простым текстом')).toBeNull();
+    expect(screen.queryByLabelText('Итоговые приложения простым текстом')).toBeNull();
+    expect(screen.getByText(/Свободного поля “приложения” в демо нет/u)).toBeTruthy();
+  });
+
+  it('renders derived applications before final signature blocks', () => {
     render(<DemoAosrWorkspacePage />);
 
     const previewText = getPreviewText();
@@ -211,7 +255,7 @@ describe('DemoAosrWorkspacePage', () => {
     );
   });
 
-  it('follows the AOSR preview section order while using configurable arrays', () => {
+  it('keeps the AOSR preview section order close to the Word form', () => {
     render(<DemoAosrWorkspacePage />);
 
     const previewText = getPreviewText();
@@ -241,6 +285,30 @@ describe('DemoAosrWorkspacePage', () => {
 
       expect(previewText.indexOf(currentFragment)).toBeLessThan(previewText.indexOf(nextFragment));
     }
+  });
+
+  it('renders key Word-like preview structure classes', () => {
+    render(<DemoAosrWorkspacePage />);
+
+    const preview = screen.getByLabelText('Демо-предпросмотр печатной формы АОСР');
+    expect(preview.querySelector('.act-page__sheet')).toBeTruthy();
+    expect(preview.querySelector('.act-page__top-blocks')).toBeTruthy();
+    expect(preview.querySelector('.act-page__field-line')).toBeTruthy();
+    expect(preview.querySelector('.act-page__caption')).toBeTruthy();
+    expect(preview.querySelector('.act-page__number-date-row')).toBeTruthy();
+    expect(preview.querySelector('.act-page__signature-row')).toBeTruthy();
+  });
+
+  it('keeps current editing behavior after the component split', async () => {
+    const user = userEvent.setup();
+
+    render(<DemoAosrWorkspacePage />);
+
+    await user.clear(screen.getByDisplayValue('АОСР-001'));
+    await user.type(screen.getByLabelText('Номер акта'), 'АОСР-010');
+
+    expect(getPreviewText()).toContain('№ АОСР-010');
+    expect(screen.getByText('АОСР-002')).toBeTruthy();
   });
 
   it('updates editable act data without mutating the source mock draft', () => {
@@ -328,7 +396,7 @@ async function addManualRepresentative(
   if (shouldAddToObjectLibrary) {
     await user.click(
       screen.getByRole('checkbox', {
-        name: 'Добавить этого представителя в базу подписантов объекта',
+        name: 'Добавить этого представителя в базу представителей объекта',
       }),
     );
   }
