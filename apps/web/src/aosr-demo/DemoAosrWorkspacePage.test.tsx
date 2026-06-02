@@ -4,11 +4,7 @@ import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import { DemoAosrWorkspacePage } from './DemoAosrWorkspacePage.js';
-import {
-  buildDemoAosrPreviewLines,
-  demoAosrWorkspace,
-  updateDemoAosrDraftField,
-} from './demo-aosr-workspace.js';
+import { demoAosrWorkspace, updateDemoAosrDraftField } from './demo-aosr-workspace.js';
 
 afterEach(() => {
   cleanup();
@@ -33,6 +29,8 @@ describe('DemoAosrWorkspacePage', () => {
     expect(screen.getByRole('heading', { name: 'Материалы и сертификаты' })).toBeTruthy();
     expect(screen.getByRole('heading', { name: '4. Проектная документация' })).toBeTruthy();
     expect(screen.getByRole('heading', { name: '5. Материалы и сертификаты' })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: 'Последующие работы' })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: '6. Последующие работы разрешены' })).toBeTruthy();
     expect(screen.getByRole('heading', { name: 'Представители / подписанты' })).toBeTruthy();
     expect(
       screen.getByRole('heading', { name: 'Акт освидетельствования скрытых работ' }),
@@ -55,6 +53,9 @@ describe('DemoAosrWorkspacePage', () => {
     const materialsInput = screen.getByRole('textbox', {
       name: 'Материалы / сертификаты простым текстом',
     });
+    const subsequentWorksInput = screen.getByRole('textbox', {
+      name: 'Последующие работы разрешены',
+    });
 
     await user.clear(actNumberInput);
     await user.type(actNumberInput, 'АОСР-777');
@@ -64,11 +65,19 @@ describe('DemoAosrWorkspacePage', () => {
     await user.type(workDescriptionInput, 'Проверены скрытые крепления воздуховодов.');
     await user.clear(materialsInput);
     await user.type(materialsInput, 'Крепеж КМ-14, сертификат С-777.');
+    await user.clear(subsequentWorksInput);
+    await user.type(
+      subsequentWorksInput,
+      'Разрешается монтаж защитных коробов после приемки скрытых работ.',
+    );
 
     expect(within(preview).getByText('АОСР-777 от 2026-06-01')).toBeTruthy();
     expect(preview.textContent).toContain('Техподполье, участок ИТП');
     expect(preview.textContent).toContain('Проверены скрытые крепления воздуховодов.');
     expect(preview.textContent).toContain('Крепеж КМ-14, сертификат С-777.');
+    expect(preview.textContent).toContain(
+      'Разрешается монтаж защитных коробов после приемки скрытых работ.',
+    );
   });
 
   it('updates editable act data without mutating the source mock draft', () => {
@@ -88,8 +97,6 @@ describe('DemoAosrWorkspacePage', () => {
     expect(sourceDraft.workDescription).toBe(
       'Монтаж скрытых участков воздуховодов до закрытия теплоизоляцией и облицовкой.',
     );
-    expect(buildDemoAosrPreviewLines(editedDraft)).toContain(
-      'Описание скрытых работ: Проверены скрытые крепления воздуховодов.',
-    );
+    expect(editedDraft).not.toBe(sourceDraft);
   });
 });

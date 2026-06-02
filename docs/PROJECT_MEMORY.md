@@ -3473,8 +3473,8 @@ share codes from `docs/20`.
 - mock AOSR draft queue;
 - editable AOSR-like fields for act number, act date, work period, object/area,
   axes, elevation range, hidden works description, design documentation,
-  contractor representative, customer/construction-control representative and
-  materials/certificates plain text;
+  materials/certificates plain text, subsequent works permitted, contractor
+  representative and customer/construction-control representative;
 - document-like AOSR preview area resembling a printed act/PDF page, with a
   placeholder that a real PDF/printed form will come later;
 - clear `ДЕМО / демонстрационные данные / не для работы в продуктиве` label;

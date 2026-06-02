@@ -207,6 +207,21 @@ export function DemoAosrWorkspacePage(): React.JSX.Element {
               </label>
             </section>
 
+            <section className="form-section" aria-labelledby="subsequent-works-data-title">
+              <h3 id="subsequent-works-data-title">Последующие работы</h3>
+              <label className="act-form-grid__wide">
+                Последующие работы разрешены
+                <textarea
+                  name="subsequentWorksPermitted"
+                  onChange={(event) => {
+                    updateSelectedDraft('subsequentWorksPermitted', event.currentTarget.value);
+                  }}
+                  rows={3}
+                  value={selectedDraft.subsequentWorksPermitted}
+                />
+              </label>
+            </section>
+
             <section className="form-section" aria-labelledby="signatories-data-title">
               <h3 id="signatories-data-title">Представители / подписанты</h3>
               <div className="act-form-grid">
@@ -304,8 +319,13 @@ export function DemoAosrWorkspacePage(): React.JSX.Element {
                 <p>{selectedDraft.materialsCertificates}</p>
               </section>
 
+              <section className="act-page__section" aria-label="Последующие работы разрешены">
+                <h4>6. Последующие работы разрешены</h4>
+                <p>{selectedDraft.subsequentWorksPermitted}</p>
+              </section>
+
               <section className="act-page__section" aria-label="Представители и подписанты">
-                <h4>6. Представители / подписанты</h4>
+                <h4>7. Представители / подписанты</h4>
                 <dl>
                   <div>
                     <dt>Подрядчик</dt>

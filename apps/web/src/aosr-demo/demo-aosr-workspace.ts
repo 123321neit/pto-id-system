@@ -22,6 +22,7 @@ export interface DemoAosrDraft {
   readonly periodEnd: string;
   readonly periodStart: string;
   readonly status: 'draft' | 'needs-review';
+  readonly subsequentWorksPermitted: string;
   readonly workDescription: string;
 }
 
@@ -37,6 +38,7 @@ export type DemoAosrDraftField =
   | 'objectName'
   | 'periodEnd'
   | 'periodStart'
+  | 'subsequentWorksPermitted'
   | 'workDescription';
 
 export const demoAosrWorkspace: DemoAosrWorkspace = {
@@ -57,6 +59,8 @@ export const demoAosrWorkspace: DemoAosrWorkspace = {
       periodEnd: '2026-05-31',
       periodStart: '2026-05-28',
       status: 'draft',
+      subsequentWorksPermitted:
+        'Разрешается производство последующих работ по устройству теплоизоляции и облицовки.',
       workDescription:
         'Монтаж скрытых участков воздуховодов до закрытия теплоизоляцией и облицовкой.',
     },
@@ -75,6 +79,8 @@ export const demoAosrWorkspace: DemoAosrWorkspace = {
       periodEnd: '2026-06-02',
       periodStart: '2026-06-01',
       status: 'needs-review',
+      subsequentWorksPermitted:
+        'Разрешается производство последующих работ по заделке отверстий в перекрытии.',
       workDescription: 'Установка гильз трубопроводов перед заделкой отверстий в перекрытии.',
     },
   ],
@@ -94,20 +100,4 @@ export function updateDemoAosrDraftField(
     ...draft,
     [field]: value,
   };
-}
-
-export function buildDemoAosrPreviewLines(draft: DemoAosrDraft): readonly string[] {
-  return [
-    `Номер акта: ${draft.actNumber}`,
-    `Дата акта: ${draft.actDate}`,
-    `Период работ: с ${draft.periodStart} по ${draft.periodEnd}`,
-    `Объект / участок: ${draft.objectName}`,
-    `Оси: ${draft.axes}`,
-    `Отметка или диапазон отметок: ${draft.elevationRange}`,
-    `Описание скрытых работ: ${draft.workDescription}`,
-    `Проектная документация: ${draft.documentReferences}`,
-    `Представитель подрядчика: ${draft.contractorRepresentative}`,
-    `Представитель заказчика / стройконтроля: ${draft.customerRepresentative}`,
-    `Материалы / сертификаты: ${draft.materialsCertificates}`,
-  ];
 }
