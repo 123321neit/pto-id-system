@@ -3497,3 +3497,16 @@ share codes from `docs/20`.
 
 Next step: collect feedback on the demo screen. Phase 4 share codes and
 production domain/API/persistence work remain separate explicit tasks.
+
+### 2026-06-02 — Frontend-only Vercel demo deployment configured
+
+- Статус: `Frontend demo deployment only`
+- Добавлен root `vercel.json` для Vercel deployment of the AOSR demo UI.
+- Vercel project must keep Root Directory as repository root (`.`), then use
+  `corepack pnpm --filter @pto/web... install --frozen-lockfile`,
+  `corepack pnpm --filter @pto/web... build` and `apps/web/dist`.
+- The `@pto/web...` pnpm filter includes only `@pto/web`,
+  `@pto/shared-config` and `@pto/shared-types`; it does not include `@pto/api`.
+- No backend deployment, Prisma, database, auth/session, uploads, AI/OCR, PDF
+  generation, certificate library, signatory database or share codes/grants were
+  introduced.

@@ -250,6 +250,32 @@ Local quality command:
 corepack pnpm ci:check
 ```
 
+## How to deploy on Vercel
+
+This repository deploys only the frontend AOSR demo to Vercel. The deployment is
+configured by root `vercel.json` and intentionally does not deploy the backend,
+Prisma, databases, uploads, AI/OCR, PDF generation, share codes or grants.
+
+In Vercel:
+
+1. Import Git repository `123321neit/pto-id-system`.
+2. Create one Vercel project for the frontend demo only.
+3. Keep Root Directory as the repository root (`.`), so pnpm workspace
+   dependencies can be resolved from the root lockfile.
+4. Use these build settings:
+   - Framework Preset: `Vite`
+   - Install Command:
+     `corepack pnpm --filter @pto/web... install --frozen-lockfile`
+   - Build Command: `corepack pnpm --filter @pto/web... build`
+   - Output Directory: `apps/web/dist`
+5. Set the Production Branch to `main`.
+6. Do not create a backend Vercel project and do not add environment variables
+   for this demo deployment.
+
+After GitHub is connected, Vercel creates a production deployment after pushes
+to `main` and preview deployments for pull requests according to the project Git
+settings.
+
 The scaffold intentionally does not include:
 
 - production AOSR implementation;
