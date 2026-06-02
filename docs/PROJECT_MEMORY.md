@@ -3470,12 +3470,14 @@ share codes from `docs/20`.
 Добавлено:
 
 - root React/Vite screen showing a Russian demo project/workspace header;
-- mock AOSR draft queue;
+- compact mock document tree for AOSR drafts, including UI-only act ordering
+  affordance;
 - editable AOSR-like fields for act number, act date, work period, object/area,
   axes, elevation range, hidden works description, design documentation,
-  materials/certificates plain text, subsequent works permitted, contractor
-  representative and customer/construction-control representative;
-- document-like AOSR preview area resembling a printed act/PDF page, with a
+  materials/certificates plain text, mock attachments/applications and
+  subsequent works permitted;
+- ordered frontend-only mock signatories reflected in the preview;
+- A4-like HTML AOSR preview area resembling an official printed act page, with a
   placeholder that a real PDF/printed form will come later;
 - clear `ДЕМО / демонстрационные данные / не для работы в продуктиве` label;
 - focused frontend tests for rendering and Testing Library/user-event field

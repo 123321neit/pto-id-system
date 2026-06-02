@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { cleanup, render, screen, within } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it } from 'vitest';
 
@@ -11,73 +11,104 @@ afterEach(() => {
 });
 
 describe('DemoAosrWorkspacePage', () => {
-  it('renders the Russian mock workspace header, draft list, editable form and preview', () => {
+  it('renders a compact document tree, act-form flow and A4-like mock document', () => {
     render(<DemoAosrWorkspacePage />);
 
     expect(
       screen.getAllByText('ДЕМО / демонстрационные данные / не для работы в продуктиве'),
     ).toHaveLength(2);
-    expect(screen.getAllByText('Реконструкция поликлиники, демонстрационный проект')).toHaveLength(
-      2,
-    );
-    expect(screen.getByRole('heading', { name: 'Черновики актов' })).toBeTruthy();
-    expect(screen.getByRole('heading', { name: 'Данные акта освидетельствования' })).toBeTruthy();
-    expect(screen.getByRole('heading', { name: 'Общие данные акта' })).toBeTruthy();
-    expect(screen.getByRole('heading', { name: 'Данные объекта и места работ' })).toBeTruthy();
-    expect(screen.getByRole('heading', { name: 'Выполненные скрытые работы' })).toBeTruthy();
-    expect(screen.getByRole('heading', { name: 'Проектная документация' })).toBeTruthy();
-    expect(screen.getByRole('heading', { name: 'Материалы и сертификаты' })).toBeTruthy();
-    expect(screen.getByRole('heading', { name: '4. Проектная документация' })).toBeTruthy();
-    expect(screen.getByRole('heading', { name: '5. Материалы и сертификаты' })).toBeTruthy();
-    expect(screen.getByRole('heading', { name: 'Последующие работы' })).toBeTruthy();
-    expect(screen.getByRole('heading', { name: '6. Последующие работы разрешены' })).toBeTruthy();
-    expect(screen.getByRole('heading', { name: 'Представители / подписанты' })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: 'Дерево проекта' })).toBeTruthy();
+    expect(screen.getByRole('list', { name: 'Порядок актов АОСР' })).toBeTruthy();
     expect(
-      screen.getByRole('heading', { name: 'Акт освидетельствования скрытых работ' }),
+      screen.getByRole('heading', {
+        name: 'Поля акта в порядке печатной формы',
+      }),
+    ).toBeTruthy();
+    expect(screen.getByRole('heading', { name: 'Шапка акта' })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: 'Объект / проект' })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: 'Комиссия / подписанты' })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: 'Предъявленные скрытые работы' })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: 'Приложения' })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: 'Период выполнения работ' })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: 'Решение комиссии' })).toBeTruthy();
+
+    const actOrder = screen.getByRole('list', { name: 'Порядок актов АОСР' });
+    expect(within(actOrder).getAllByRole('button')).toHaveLength(2);
+
+    const form = screen.getByRole('region', {
+      name: 'Поля акта в порядке печатной формы',
+    });
+    const formText = form.textContent;
+    expect(formText.indexOf('Комиссия / подписанты')).toBeLessThan(
+      formText.indexOf('Предъявленные скрытые работы'),
+    );
+    expect(formText.indexOf('Приложения')).toBeLessThan(
+      formText.indexOf('Период выполнения работ'),
+    );
+
+    const preview = screen.getByLabelText('Демо-предпросмотр печатной формы АОСР');
+    expect(
+      within(preview).getByRole('heading', {
+        name: 'Акт освидетельствования скрытых работ',
+      }),
+    ).toBeTruthy();
+    expect(
+      within(preview).getByRole('heading', {
+        name: '9. Подписи представителей',
+      }),
     ).toBeTruthy();
     expect(screen.getByText('Позже здесь будет реальный PDF/печатная форма акта')).toBeTruthy();
-    expect(screen.getByDisplayValue('АОСР-001')).toBeTruthy();
   });
 
-  it('updates the document-like preview when a user edits fields', async () => {
+  it('updates the A4-like document when a user edits a large field', async () => {
     const user = userEvent.setup();
 
     render(<DemoAosrWorkspacePage />);
 
     const preview = screen.getByLabelText('Демо-предпросмотр печатной формы АОСР');
-    const actNumberInput = screen.getByRole('textbox', { name: 'Номер акта' });
-    const objectInput = screen.getByRole('textbox', { name: 'Объект / участок' });
     const workDescriptionInput = screen.getByRole('textbox', {
       name: 'Описание скрытых работ',
     });
-    const materialsInput = screen.getByRole('textbox', {
-      name: 'Материалы / сертификаты простым текстом',
-    });
-    const subsequentWorksInput = screen.getByRole('textbox', {
-      name: 'Последующие работы разрешены',
-    });
 
-    await user.clear(actNumberInput);
-    await user.type(actNumberInput, 'АОСР-777');
-    await user.clear(objectInput);
-    await user.type(objectInput, 'Техподполье, участок ИТП');
     await user.clear(workDescriptionInput);
-    await user.type(workDescriptionInput, 'Проверены скрытые крепления воздуховодов.');
-    await user.clear(materialsInput);
-    await user.type(materialsInput, 'Крепеж КМ-14, сертификат С-777.');
-    await user.clear(subsequentWorksInput);
     await user.type(
-      subsequentWorksInput,
-      'Разрешается монтаж защитных коробов после приемки скрытых работ.',
+      workDescriptionInput,
+      'Предъявлены скрытые сварные соединения воздуховодов до закрытия огнезащитной обшивкой.',
     );
 
-    expect(within(preview).getByText('АОСР-777 от 2026-06-01')).toBeTruthy();
-    expect(preview.textContent).toContain('Техподполье, участок ИТП');
-    expect(preview.textContent).toContain('Проверены скрытые крепления воздуховодов.');
-    expect(preview.textContent).toContain('Крепеж КМ-14, сертификат С-777.');
     expect(preview.textContent).toContain(
-      'Разрешается монтаж защитных коробов после приемки скрытых работ.',
+      'Предъявлены скрытые сварные соединения воздуховодов до закрытия огнезащитной обшивкой.',
     );
+  });
+
+  it('updates the document signatory order when a signatory is moved', async () => {
+    const user = userEvent.setup();
+
+    render(<DemoAosrWorkspacePage />);
+
+    const preview = screen.getByLabelText('Демо-предпросмотр печатной формы АОСР');
+
+    await user.click(screen.getByRole('button', { name: 'Опустить Иванов И.И.' }));
+
+    const previewText = preview.textContent;
+    expect(previewText.indexOf('Петров П.П.')).toBeLessThan(previewText.indexOf('Иванов И.И.'));
+  });
+
+  it('updates act order in the compact tree through mock drag and drop', () => {
+    render(<DemoAosrWorkspacePage />);
+
+    const actOrder = screen.getByRole('list', { name: 'Порядок актов АОСР' });
+    const actButtons = within(actOrder).getAllByRole('button');
+    const firstActButton = getRequiredElement(actButtons, 0);
+    const secondActButton = getRequiredElement(actButtons, 1);
+
+    fireEvent.dragStart(secondActButton);
+    fireEvent.dragOver(firstActButton);
+    fireEvent.drop(firstActButton);
+
+    const reorderedButtons = within(actOrder).getAllByRole('button');
+    expect(getRequiredElement(reorderedButtons, 0).textContent).toContain('АОСР-002');
+    expect(getRequiredElement(reorderedButtons, 1).textContent).toContain('АОСР-001');
   });
 
   it('updates editable act data without mutating the source mock draft', () => {
@@ -100,3 +131,13 @@ describe('DemoAosrWorkspacePage', () => {
     expect(editedDraft).not.toBe(sourceDraft);
   });
 });
+
+function getRequiredElement<TElement>(elements: readonly TElement[], index: number): TElement {
+  const element = elements[index];
+
+  if (element === undefined) {
+    throw new Error(`Expected element at index ${String(index)}.`);
+  }
+
+  return element;
+}

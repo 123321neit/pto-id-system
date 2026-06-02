@@ -236,8 +236,9 @@ validate frontend -> backend connectivity, shared types, env-driven API/storage
 configuration, Prisma client generation and infrastructure health boundaries.
 The AOSR demo screen is separate: it is a frontend-only mock for feedback, not a
 production workflow. Its mock printed-page preview now includes a plain-text
-"Последующие работы разрешены" block, without real PDF generation or certificate
-library behavior.
+"Последующие работы разрешены" block, a compact future document-tree affordance,
+ordered mock signatories and an A4-like HTML document preview, without real PDF
+generation, certificate library behavior or signatory database behavior.
 
 GitHub Actions CI is committed at `.github/workflows/ci.yml`. It runs on
 `push` and `pull_request` with Node 22, Corepack, `pnpm install
