@@ -55,9 +55,11 @@ not a system-admin bypass.
 
 The first mock AOSR demo UI slice replaces the root React screen with a
 frontend-only Russian demo workspace for user feedback. It uses in-memory mock
-data, separated object-level defaults/current-act fields, mock representative
-and certificate-library selections, a draft list and a document-like demo
-preview that resembles a printed act page. It is clearly labelled
+data, separated object-level defaults/current-act fields, configurable
+object-level header organization blocks, a configurable object representative
+library, mock certificate-library selections, a draft list and a document-like
+demo preview that resembles a printed act page. Header and representative
+labels are object configuration, not global fixed schema. It is clearly labelled
 `ДЕМО / демонстрационные данные / не для работы в продуктиве` and intentionally
 adds no Prisma schema, migrations, real auth, backend routes, persistence,
 uploads, document generation, AI, share codes or grants.

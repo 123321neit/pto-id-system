@@ -1,10 +1,11 @@
 // @vitest-environment jsdom
-import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
+import { cleanup, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import { DemoAosrWorkspacePage } from './DemoAosrWorkspacePage.js';
 import {
+  addHeaderOrganizationBlock,
   addMaterialCertificateToDraft,
   demoAosrWorkspace,
   updateDemoAosrDraftField,
@@ -15,56 +16,62 @@ afterEach(() => {
 });
 
 describe('DemoAosrWorkspacePage', () => {
-  it('renders object-level data, act-level data and an A4-like mock document', () => {
+  it('renders configurable header organization blocks in preview order', () => {
     render(<DemoAosrWorkspacePage />);
 
-    expect(
-      screen.getAllByText('ДЕМО / демонстрационные данные / не для работы в продуктиве'),
-    ).toHaveLength(2);
-    expect(screen.getByRole('heading', { name: 'Дерево проекта' })).toBeTruthy();
-    expect(screen.getByRole('list', { name: 'Порядок актов АОСР' })).toBeTruthy();
-    expect(screen.getByRole('heading', { name: 'Данные объекта и текущего акта' })).toBeTruthy();
-    const scopeSwitchText = screen.getByLabelText('Разделение уровней данных').textContent;
-    expect(scopeSwitchText).toContain('Данные объекта');
-    expect(scopeSwitchText).toContain('Текущий акт');
+    const previewText = getPreviewText();
 
-    const objectArea = screen.getByRole('region', {
-      name: 'Объектовые значения по умолчанию',
+    expect(previewText).toContain('Объект капитального строительства:');
+    expect(previewText.indexOf('Заказчик:')).toBeLessThan(previewText.indexOf('Подрядчик:'));
+    expect(previewText.indexOf('Подрядчик:')).toBeLessThan(
+      previewText.indexOf('Технический заказчик:'),
+    );
+    expect(previewText.indexOf('Технический заказчик:')).toBeLessThan(
+      previewText.indexOf('ОСВИДЕТЕЛЬСТВОВАНИЯ СКРЫТЫХ РАБОТ'),
+    );
+  });
+
+  it('adds a header organization block and updates the preview', async () => {
+    const user = userEvent.setup();
+
+    render(<DemoAosrWorkspacePage />);
+
+    await openObjectSettings(user);
+    await user.click(screen.getByRole('button', { name: 'Добавить организацию в шапке' }));
+    await user.type(screen.getByLabelText('Название блока'), 'Генподрядчик');
+    await user.type(screen.getByLabelText('Организация / наименование'), 'ООО "Демо-генподряд"');
+    await user.type(
+      screen.getByLabelText('Реквизиты / детали'),
+      'ОГРН 1111111111111; ИНН 2222222222; адрес: г. Екатеринбург.',
+    );
+    await user.type(screen.getByLabelText('Подпись-подсказка'), 'Объектовый блок шапки');
+    await user.click(screen.getByRole('button', { name: 'Сохранить организацию в шапке' }));
+
+    const previewText = getPreviewText();
+    expect(previewText).toContain('Генподрядчик:');
+    expect(previewText).toContain('ООО "Демо-генподряд"');
+    expect(previewText.indexOf('Технический заказчик:')).toBeLessThan(
+      previewText.indexOf('Генподрядчик:'),
+    );
+  });
+
+  it('accepts representative role labels outside the example role set', async () => {
+    const user = userEvent.setup();
+
+    render(<DemoAosrWorkspacePage />);
+
+    await addManualRepresentative(user, {
+      authorityBasis: 'Протокол допуска N Л-5',
+      fullName: 'Лебедев Л.Л.',
+      organization: 'Лаборатория контроля',
+      position: 'Инженер лаборатории',
+      roleLabel: 'Стройконтроль лаборатории',
     });
-    expect(within(objectArea).getByLabelText('Название проекта / объекта')).toBeTruthy();
-    expect(within(objectArea).getByLabelText('Проектная документация по умолчанию')).toBeTruthy();
-    expect(
-      within(objectArea).getByRole('list', {
-        name: 'Библиотека представителей объекта',
-      }),
-    ).toBeTruthy();
 
-    const actArea = screen.getByRole('region', { name: 'Поля АОСР' });
-    expect(within(actArea).getByRole('heading', { name: 'Шапка акта' })).toBeTruthy();
-    expect(within(actArea).getByRole('heading', { name: 'Место и границы работ' })).toBeTruthy();
-    expect(
-      within(actArea).getByRole('heading', {
-        name: 'Комиссия / подписанты текущего акта',
-      }),
-    ).toBeTruthy();
-    expect(
-      within(actArea).getByRole('heading', { name: 'Материалы из библиотеки сертификатов' }),
-    ).toBeTruthy();
-    expect(within(actArea).getByRole('heading', { name: 'Производные приложения' })).toBeTruthy();
-
-    const preview = screen.getByLabelText('Демо-предпросмотр печатной формы АОСР');
-    expect(
-      within(preview).getByRole('heading', {
-        name: 'Акт освидетельствования скрытых работ',
-      }),
-    ).toBeTruthy();
-    expect(
-      within(preview).getByRole('heading', {
-        name: '8. Подписи представителей',
-      }),
-    ).toBeTruthy();
-    expect(screen.getByText('Позже здесь будет реальный PDF/печатная форма акта')).toBeTruthy();
-    expect(preview.textContent).not.toContain('Унифицированная демонстрационная HTML-форма');
+    const previewText = getPreviewText();
+    expect(previewText).toContain('Стройконтроль лаборатории:');
+    expect(previewText).toContain('Лебедев Л.Л.');
+    expect(screen.queryByLabelText('Фиксированная роль представителя')).toBeNull();
   });
 
   it('adds a representative from the object library to the current act and preview', async () => {
@@ -72,12 +79,11 @@ describe('DemoAosrWorkspacePage', () => {
 
     render(<DemoAosrWorkspacePage />);
 
-    const preview = screen.getByLabelText('Демо-предпросмотр печатной формы АОСР');
+    expect(getPreviewText()).not.toContain('Кузнецова А.А.');
 
-    expect(preview.textContent).not.toContain('Кузнецова А.А.');
-
+    await user.click(screen.getByRole('button', { name: 'Добавить из базы подписантов объекта' }));
     const representativeLibrary = screen.getByRole('list', {
-      name: 'Библиотека представителей объекта',
+      name: 'База подписантов объекта для текущего акта',
     });
     const customerRow = within(representativeLibrary)
       .getByText('Кузнецова А.А.')
@@ -87,38 +93,88 @@ describe('DemoAosrWorkspacePage', () => {
       throw new Error('Expected representative library row.');
     }
 
-    await user.click(within(customerRow as HTMLElement).getByRole('button', { name: 'Добавить' }));
+    await user.click(
+      within(customerRow as HTMLElement).getByRole('button', { name: 'Добавить в акт' }),
+    );
 
-    expect(preview.textContent).toContain('Кузнецова А.А.');
-    expect(preview.textContent).toContain('Представитель заказчика');
+    const previewText = getPreviewText();
+    expect(previewText).toContain('Кузнецова А.А.');
+    expect(previewText).toContain('Представитель заказчика:');
   });
 
-  it('updates the document signatory order when a signatory is dragged', () => {
-    render(<DemoAosrWorkspacePage />);
-
-    const preview = screen.getByLabelText('Демо-предпросмотр печатной формы АОСР');
-    const signatoryOrder = screen.getByRole('list', { name: 'Порядок подписантов' });
-    const signatoryItems = within(signatoryOrder).getAllByRole('listitem');
-    const firstSignatory = getRequiredElement(signatoryItems, 0);
-    const secondSignatory = getRequiredElement(signatoryItems, 1);
-
-    fireEvent.dragStart(secondSignatory);
-    fireEvent.dragOver(firstSignatory);
-    fireEvent.drop(firstSignatory);
-
-    const previewText = preview.textContent;
-    expect(previewText.indexOf('Петров П.П.')).toBeLessThan(previewText.indexOf('Иванов И.И.'));
-  });
-
-  it('adds a material from the mock certificate library to the act and preview', async () => {
+  it('adds a manual temporary representative only to the current act when the checkbox is clear', async () => {
     const user = userEvent.setup();
 
     render(<DemoAosrWorkspacePage />);
 
-    const preview = screen.getByLabelText('Демо-предпросмотр печатной формы АОСР');
+    await addManualRepresentative(user, {
+      authorityBasis: 'Доверенность N Т-1',
+      fullName: 'Сидоров С.С.',
+      organization: 'ООО "Разовая проверка"',
+      position: 'Инженер ПТО',
+      roleLabel: 'Представитель разового осмотра',
+    });
 
-    expect(preview.textContent).not.toContain('ДС-ИЗ-2026-04');
+    expect(getPreviewText()).toContain('Сидоров С.С.');
 
+    await openObjectSettings(user);
+    await user.click(screen.getByRole('button', { name: 'Открыть базу' }));
+
+    const objectLibrary = screen.getByRole('list', { name: 'База подписантов объекта' });
+    expect(within(objectLibrary).queryByText('Сидоров С.С.')).toBeNull();
+  });
+
+  it('adds a manual representative to the object library and current act when selected', async () => {
+    const user = userEvent.setup();
+
+    render(<DemoAosrWorkspacePage />);
+
+    await addManualRepresentative(
+      user,
+      {
+        authorityBasis: 'Приказ N Б-77',
+        fullName: 'Орлова О.О.',
+        organization: 'ООО "Новый участник"',
+        position: 'Руководитель проекта',
+        roleLabel: 'Представитель нового участника',
+      },
+      true,
+    );
+
+    expect(getPreviewText()).toContain('Орлова О.О.');
+
+    await openObjectSettings(user);
+    await user.click(screen.getByRole('button', { name: 'Открыть базу' }));
+
+    const objectLibrary = screen.getByRole('list', { name: 'База подписантов объекта' });
+    expect(within(objectLibrary).getByText('Орлова О.О.')).toBeTruthy();
+  });
+
+  it('updates the document signatory order when a signatory is reordered', async () => {
+    const user = userEvent.setup();
+
+    render(<DemoAosrWorkspacePage />);
+
+    await user.click(screen.getByRole('button', { name: 'Переместить Петров П.П. вверх' }));
+
+    const previewText = getPreviewText();
+    expect(previewText.indexOf('Петров П.П.')).toBeLessThan(previewText.indexOf('Иванов И.И.'));
+  });
+
+  it('keeps materials selected from the certificate library without a free-text materials field', async () => {
+    const user = userEvent.setup();
+
+    render(<DemoAosrWorkspacePage />);
+
+    expect(screen.queryByLabelText('Материалы / сертификаты простым текстом')).toBeNull();
+    expect(screen.queryByLabelText('Приложения / исполнительные схемы простым текстом')).toBeNull();
+    expect(
+      screen.getByText('В реальной системе материал добавляется из библиотеки сертификатов'),
+    ).toBeTruthy();
+
+    expect(getPreviewText()).not.toContain('ДС-ИЗ-2026-04');
+
+    await user.click(screen.getByRole('button', { name: 'Открыть сертификаты' }));
     const certificateLibrary = screen.getByRole('list', {
       name: 'Мок-библиотека сертификатов и материалов',
     });
@@ -134,73 +190,57 @@ describe('DemoAosrWorkspacePage', () => {
       within(insulationRow as HTMLElement).getByRole('button', { name: 'Добавить' }),
     );
 
-    expect(preview.textContent).toContain('Теплоизоляционные маты ИЗ-50');
-    expect(preview.textContent).toContain('ДС-ИЗ-2026-04');
-    expect(preview.textContent).toContain(
-      'Декларация о соответствии N ДС-ИЗ-2026-04 от 20.05.2026',
+    const previewText = getPreviewText();
+    expect(previewText).toContain('Теплоизоляционные маты ИЗ-50');
+    expect(previewText).toContain('ДС-ИЗ-2026-04');
+  });
+
+  it('derives applications and renders them before final signature blocks', () => {
+    render(<DemoAosrWorkspacePage />);
+
+    const previewText = getPreviewText();
+
+    expect(previewText).toContain('Приложения:');
+    expect(previewText).toContain('Сертификат соответствия N СТ-ОВ-2026-017 от 12.05.2026');
+    expect(previewText).toContain('Исполнительная схема скрытых участков вентиляции');
+    expect(previewText.indexOf('Акт составлен в 4 экземплярах.')).toBeLessThan(
+      previewText.indexOf('Приложения:'),
+    );
+    expect(previewText.indexOf('Приложения:')).toBeLessThan(
+      previewText.indexOf('Подписи представителей'),
     );
   });
 
-  it('does not expose materials or applications as plain free-text fields', () => {
+  it('follows the AOSR preview section order while using configurable arrays', () => {
     render(<DemoAosrWorkspacePage />);
 
-    expect(screen.queryByLabelText('Материалы / сертификаты простым текстом')).toBeNull();
-    expect(screen.queryByLabelText('Приложения / исполнительные схемы простым текстом')).toBeNull();
-    expect(
-      screen.getByText('В реальной системе материал добавляется из библиотеки сертификатов'),
-    ).toBeTruthy();
-  });
+    const previewText = getPreviewText();
+    const orderedFragments = [
+      'Объект капитального строительства:',
+      'Заказчик:',
+      'ОСВИДЕТЕЛЬСТВОВАНИЯ СКРЫТЫХ РАБОТ',
+      'Представитель подрядчика:',
+      'произвели осмотр работ',
+      'и составили настоящий акт о нижеследующем:',
+      '1. К освидетельствованию предъявлены следующие работы:',
+      '2. Работы выполнены по проектной документации:',
+      '3. При выполнении работ применены:',
+      '4. Предъявлены документы, подтверждающие соответствие работ предъявляемым к ним требованиям:',
+      '5. Даты:',
+      '6. Работы выполнены в соответствии с:',
+      '7. Разрешается производство последующих работ по:',
+      'Дополнительные сведения:',
+      'Акт составлен в 4 экземплярах.',
+      'Приложения:',
+      'Подписи представителей',
+    ];
 
-  it('renders applications as the final document section after signatures', () => {
-    render(<DemoAosrWorkspacePage />);
+    for (let index = 0; index < orderedFragments.length - 1; index += 1) {
+      const currentFragment = getRequiredElement(orderedFragments, index);
+      const nextFragment = getRequiredElement(orderedFragments, index + 1);
 
-    const preview = screen.getByLabelText('Демо-предпросмотр печатной формы АОСР');
-    const previewText = preview.textContent;
-
-    expect(previewText).toContain('8. Подписи представителей');
-    expect(previewText).toContain('9. Приложения к акту');
-    expect(previewText.indexOf('8. Подписи представителей')).toBeLessThan(
-      previewText.indexOf('9. Приложения к акту'),
-    );
-    expect(previewText.trim().endsWith('ЖВК-2026-05')).toBe(true);
-  });
-
-  it('updates the A4-like document when a user edits a large field', async () => {
-    const user = userEvent.setup();
-
-    render(<DemoAosrWorkspacePage />);
-
-    const preview = screen.getByLabelText('Демо-предпросмотр печатной формы АОСР');
-    const workDescriptionInput = screen.getByRole('textbox', {
-      name: 'Описание скрытых работ',
-    });
-
-    await user.clear(workDescriptionInput);
-    await user.type(
-      workDescriptionInput,
-      'Предъявлены скрытые сварные соединения воздуховодов до закрытия огнезащитной обшивкой.',
-    );
-
-    expect(preview.textContent).toContain(
-      'Предъявлены скрытые сварные соединения воздуховодов до закрытия огнезащитной обшивкой.',
-    );
-  });
-
-  it('updates act order in the compact tree through mock drag and drop', () => {
-    render(<DemoAosrWorkspacePage />);
-
-    const actOrder = screen.getByRole('list', { name: 'Порядок актов АОСР' });
-    const actButtons = within(actOrder).getAllByRole('button');
-    const firstActButton = getRequiredElement(actButtons, 0);
-    const secondActButton = getRequiredElement(actButtons, 1);
-
-    fireEvent.dragStart(secondActButton);
-    fireEvent.dragOver(firstActButton);
-    fireEvent.drop(firstActButton);
-
-    const reorderedButtons = within(actOrder).getAllByRole('button');
-    expect(getRequiredElement(reorderedButtons, 0).textContent).toContain('АОСР-002');
-    expect(getRequiredElement(reorderedButtons, 1).textContent).toContain('АОСР-001');
+      expect(previewText.indexOf(currentFragment)).toBeLessThan(previewText.indexOf(nextFragment));
+    }
   });
 
   it('updates editable act data without mutating the source mock draft', () => {
@@ -236,7 +276,69 @@ describe('DemoAosrWorkspacePage', () => {
     expect(sourceDraft.materialCertificateIds).not.toContain('certificate-insulation-001');
     expect(editedDraft).not.toBe(sourceDraft);
   });
+
+  it('adds configurable header blocks without mutating object defaults', () => {
+    const editedDefaults = addHeaderOrganizationBlock(demoAosrWorkspace.objectDefaults, {
+      details: 'ОГРН 3333333333333; ИНН 4444444444.',
+      id: 'header-organization-test',
+      label: 'Инвестор',
+      organizationName: 'ООО "Демо-инвестор"',
+    });
+
+    expect(editedDefaults.headerOrganizations).toHaveLength(
+      demoAosrWorkspace.objectDefaults.headerOrganizations.length + 1,
+    );
+    expect(demoAosrWorkspace.objectDefaults.headerOrganizations).not.toContainEqual(
+      expect.objectContaining({ label: 'Инвестор' }),
+    );
+  });
 });
+
+interface ManualRepresentativeInput {
+  readonly authorityBasis: string;
+  readonly fullName: string;
+  readonly organization: string;
+  readonly position: string;
+  readonly roleLabel: string;
+}
+
+async function openObjectSettings(user: ReturnType<typeof userEvent.setup>): Promise<void> {
+  const openButton = screen.queryByRole('button', { name: 'Открыть объектовые настройки' });
+
+  if (openButton !== null) {
+    await user.click(openButton);
+  }
+}
+
+async function addManualRepresentative(
+  user: ReturnType<typeof userEvent.setup>,
+  representative: ManualRepresentativeInput,
+  shouldAddToObjectLibrary = false,
+): Promise<void> {
+  await user.click(screen.getByRole('button', { name: 'Добавить вручную для этого акта' }));
+  await user.type(screen.getByLabelText('Роль для акта'), representative.roleLabel);
+  await user.type(screen.getByLabelText('ФИО для акта'), representative.fullName);
+  await user.type(screen.getByLabelText('Должность для акта'), representative.position);
+  await user.type(screen.getByLabelText('Организация для акта'), representative.organization);
+  await user.type(
+    screen.getByLabelText('Основание полномочий для акта'),
+    representative.authorityBasis,
+  );
+
+  if (shouldAddToObjectLibrary) {
+    await user.click(
+      screen.getByRole('checkbox', {
+        name: 'Добавить этого представителя в базу подписантов объекта',
+      }),
+    );
+  }
+
+  await user.click(screen.getByRole('button', { name: 'Добавить подписанта в акт' }));
+}
+
+function getPreviewText(): string {
+  return screen.getByLabelText('Демо-предпросмотр печатной формы АОСР').textContent;
+}
 
 function getRequiredElement<TElement>(elements: readonly TElement[], index: number): TElement {
   const element = elements[index];

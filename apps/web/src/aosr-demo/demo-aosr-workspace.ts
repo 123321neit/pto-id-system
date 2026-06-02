@@ -13,17 +13,28 @@ export interface DemoAosrWorkspace {
 export interface DemoAosrObjectDefaults {
   readonly projectName: string;
   readonly objectName: string;
-  readonly companySummary: string;
   readonly defaultProjectDocumentation: string;
+  readonly headerOrganizations: readonly DemoAosrHeaderOrganization[];
   readonly representativeLibrary: readonly DemoAosrRepresentative[];
+}
+
+export interface DemoAosrHeaderOrganization {
+  readonly id: string;
+  readonly label: string;
+  readonly organizationName: string;
+  readonly details: string;
+  readonly caption?: string;
 }
 
 export interface DemoAosrRepresentative {
   readonly id: string;
-  readonly name: string;
-  readonly role: string;
-  readonly company: string;
-  readonly basis: string;
+  readonly roleLabel: string;
+  readonly fullName: string;
+  readonly position: string;
+  readonly organization: string;
+  readonly authorityBasis: string;
+  readonly nrsId?: string;
+  readonly details?: string;
 }
 
 export interface DemoMaterialCertificate {
@@ -45,14 +56,17 @@ export interface DemoAosrDraft {
   readonly actDate: string;
   readonly actNumber: string;
   readonly actPlace: string;
+  readonly additionalInfo: string;
   readonly axes: string;
+  readonly complianceStatement: string;
+  readonly copiesCount: string;
   readonly derivedAttachmentIds: readonly string[];
   readonly elevationRange: string;
   readonly location: string;
   readonly materialCertificateIds: readonly string[];
   readonly periodEnd: string;
   readonly periodStart: string;
-  readonly representativeIds: readonly string[];
+  readonly representatives: readonly DemoAosrRepresentative[];
   readonly status: 'draft' | 'needs-review';
   readonly subsequentWorksPermitted: string;
   readonly workDescription: string;
@@ -68,7 +82,10 @@ export type DemoAosrDraftField =
   | 'actDate'
   | 'actNumber'
   | 'actPlace'
+  | 'additionalInfo'
   | 'axes'
+  | 'complianceStatement'
+  | 'copiesCount'
   | 'elevationRange'
   | 'location'
   | 'periodEnd'
@@ -77,10 +94,53 @@ export type DemoAosrDraftField =
   | 'workDescription';
 
 export type DemoAosrObjectDefaultsField =
-  | 'companySummary'
   | 'defaultProjectDocumentation'
   | 'objectName'
   | 'projectName';
+
+const contractorRepresentative: DemoAosrRepresentative = {
+  authorityBasis: 'Приказ N 12-П от 10.05.2026',
+  fullName: 'Иванов И.И.',
+  id: 'representative-contractor-001',
+  organization: 'ООО "ПТО Монтаж"',
+  position: 'Производитель работ',
+  roleLabel: 'Представитель подрядчика',
+};
+
+const buildingControlRepresentative: DemoAosrRepresentative = {
+  authorityBasis: 'Договор строительного контроля N СК-7',
+  fullName: 'Петров П.П.',
+  id: 'representative-builder-control-001',
+  nrsId: 'С-66-212868',
+  organization: 'ООО "СтройКонтроль"',
+  position: 'Ведущий инженер строительного контроля',
+  roleLabel: 'Стройконтроль',
+};
+
+const authorSupervisionRepresentative: DemoAosrRepresentative = {
+  authorityBasis: 'Приказ N АН-3 от 15.05.2026',
+  fullName: 'Смирнова С.С.',
+  id: 'representative-author-001',
+  organization: 'АО "Проектный институт"',
+  position: 'Главный специалист авторского надзора',
+  roleLabel: 'Авторский надзор',
+};
+
+const customerRepresentative: DemoAosrRepresentative = {
+  authorityBasis: 'Доверенность N З-44 от 01.05.2026',
+  fullName: 'Кузнецова А.А.',
+  id: 'representative-customer-001',
+  organization: 'ГАУЗ СО "Демо-заказчик"',
+  position: 'Руководитель проекта',
+  roleLabel: 'Представитель заказчика',
+};
+
+const initialRepresentativeLibrary: readonly DemoAosrRepresentative[] = [
+  contractorRepresentative,
+  buildingControlRepresentative,
+  authorSupervisionRepresentative,
+  customerRepresentative,
+];
 
 export const demoAosrWorkspace: DemoAosrWorkspace = {
   certificateLibrary: [
@@ -135,7 +195,11 @@ export const demoAosrWorkspace: DemoAosrWorkspace = {
       actDate: '2026-06-01',
       actNumber: 'АОСР-001',
       actPlace: 'г. Екатеринбург',
+      additionalInfo: 'Дополнительные сведения для демо-акта не требуются.',
       axes: 'оси 1-4 / А-В',
+      complianceStatement:
+        'Работы выполнены в соответствии с рабочей документацией и требованиями СП 73.13330.2016.',
+      copiesCount: '4',
       derivedAttachmentIds: [
         'attachment-scheme-ov-04',
         'attachment-photo-vk-1',
@@ -147,10 +211,10 @@ export const demoAosrWorkspace: DemoAosrWorkspace = {
       materialCertificateIds: ['certificate-ducts-001', 'certificate-fasteners-001'],
       periodEnd: '2026-05-31',
       periodStart: '2026-05-28',
-      representativeIds: [
-        'representative-contractor-001',
-        'representative-builder-control-001',
-        'representative-author-001',
+      representatives: [
+        contractorRepresentative,
+        buildingControlRepresentative,
+        authorSupervisionRepresentative,
       ],
       status: 'draft',
       subsequentWorksPermitted:
@@ -162,7 +226,11 @@ export const demoAosrWorkspace: DemoAosrWorkspace = {
       actDate: '2026-06-03',
       actNumber: 'АОСР-002',
       actPlace: 'г. Екатеринбург',
+      additionalInfo: 'Дополнительные сведения отсутствуют.',
       axes: 'оси 5-7 / Г-Д',
+      complianceStatement:
+        'Работы выполнены согласно рабочей документации и журналу входного контроля материалов.',
+      copiesCount: '3',
       derivedAttachmentIds: ['attachment-photo-vk-1'],
       elevationRange: 'отм. 0.000 - +0.600',
       id: 'aosr-draft-002',
@@ -170,10 +238,10 @@ export const demoAosrWorkspace: DemoAosrWorkspace = {
       materialCertificateIds: ['certificate-firestop-001'],
       periodEnd: '2026-06-02',
       periodStart: '2026-06-01',
-      representativeIds: [
-        'representative-contractor-001',
-        'representative-customer-001',
-        'representative-builder-control-001',
+      representatives: [
+        contractorRepresentative,
+        customerRepresentative,
+        buildingControlRepresentative,
       ],
       status: 'needs-review',
       subsequentWorksPermitted:
@@ -184,42 +252,37 @@ export const demoAosrWorkspace: DemoAosrWorkspace = {
   id: 'workspace-demo-aosr',
   name: 'Демо-рабочая область АОСР',
   objectDefaults: {
-    companySummary:
-      'Заказчик: ГАУЗ СО "Демо-заказчик"; генподрядчик: ООО "Демо-строй"; подрядчик: ООО "ПТО Монтаж".',
     defaultProjectDocumentation:
       'Рабочая документация РД-ОВ-12 лист 4; РД-ОВ-14 лист 2; спецификация оборудования и материалов СП-ОВ-02.',
-    objectName: 'Реконструкция поликлиники, корпус Б',
-    projectName: 'Реконструкция поликлиники, демонстрационный проект',
-    representativeLibrary: [
+    headerOrganizations: [
       {
-        basis: 'Приказ N 12-П от 10.05.2026',
-        company: 'ООО "ПТО Монтаж"',
-        id: 'representative-contractor-001',
-        name: 'Иванов И.И.',
-        role: 'Представитель лица, осуществляющего строительство',
+        caption:
+          'Наименование, ОГРН, ИНН, место нахождения, телефон/факс и иные объектовые реквизиты.',
+        details:
+          'ОГРН 1026600000000; ИНН 6670000000; 620000, г. Екатеринбург, ул. Демонстрационная, 10.',
+        id: 'header-organization-customer',
+        label: 'Заказчик',
+        organizationName: 'ГАУЗ СО "Демо-заказчик"',
       },
       {
-        basis: 'Договор строительного контроля N СК-7',
-        company: 'ООО "СтройКонтроль"',
-        id: 'representative-builder-control-001',
-        name: 'Петров П.П.',
-        role: 'Представитель строительного контроля',
+        caption: 'Реквизиты лица, осуществляющего строительство, включая СРО при наличии.',
+        details: 'ОГРН 1206600007877; ИНН 6670490954; АСРО "Гильдия строителей демо-объекта".',
+        id: 'header-organization-contractor',
+        label: 'Подрядчик',
+        organizationName: 'ООО "ПТО Монтаж"',
       },
       {
-        basis: 'Приказ N АН-3 от 15.05.2026',
-        company: 'АО "Проектный институт"',
-        id: 'representative-author-001',
-        name: 'Смирнова С.С.',
-        role: 'Представитель авторского надзора',
-      },
-      {
-        basis: 'Доверенность N З-44 от 01.05.2026',
-        company: 'ГАУЗ СО "Демо-заказчик"',
-        id: 'representative-customer-001',
-        name: 'Кузнецова А.А.',
-        role: 'Представитель заказчика',
+        caption: 'Блок можно переименовать или заменить под конкретный объект.',
+        details:
+          'Договор строительного контроля N СК-7; 620100, г. Екатеринбург, ул. Контрольная, 4.',
+        id: 'header-organization-control',
+        label: 'Технический заказчик',
+        organizationName: 'ООО "СтройКонтроль"',
       },
     ],
+    objectName: 'Реконструкция поликлиники, корпус Б',
+    projectName: 'Реконструкция поликлиники, демонстрационный проект',
+    representativeLibrary: initialRepresentativeLibrary,
   },
   ownerName: 'Демо-владелец',
   projectCode: 'PTO-DEMO-2026',
@@ -247,17 +310,56 @@ export function updateDemoObjectDefaultsField(
   };
 }
 
+export function addHeaderOrganizationBlock(
+  objectDefaults: DemoAosrObjectDefaults,
+  headerOrganization: DemoAosrHeaderOrganization,
+): DemoAosrObjectDefaults {
+  return {
+    ...objectDefaults,
+    headerOrganizations: [...objectDefaults.headerOrganizations, headerOrganization],
+  };
+}
+
+export function moveHeaderOrganizationBlock(
+  objectDefaults: DemoAosrObjectDefaults,
+  headerOrganizationId: string,
+  direction: 'up' | 'down',
+): DemoAosrObjectDefaults {
+  return {
+    ...objectDefaults,
+    headerOrganizations: moveItemById(
+      objectDefaults.headerOrganizations,
+      headerOrganizationId,
+      direction,
+    ),
+  };
+}
+
+export function addRepresentativeToLibrary(
+  objectDefaults: DemoAosrObjectDefaults,
+  representative: DemoAosrRepresentative,
+): DemoAosrObjectDefaults {
+  if (objectDefaults.representativeLibrary.some(({ id }) => id === representative.id)) {
+    return objectDefaults;
+  }
+
+  return {
+    ...objectDefaults,
+    representativeLibrary: [...objectDefaults.representativeLibrary, representative],
+  };
+}
+
 export function addRepresentativeToDraft(
   draft: DemoAosrDraft,
-  representativeId: string,
+  representative: DemoAosrRepresentative,
 ): DemoAosrDraft {
-  if (draft.representativeIds.includes(representativeId)) {
+  if (draft.representatives.some(({ id }) => id === representative.id)) {
     return draft;
   }
 
   return {
     ...draft,
-    representativeIds: [...draft.representativeIds, representativeId],
+    representatives: [...draft.representatives, representative],
   };
 }
 
@@ -267,7 +369,7 @@ export function removeRepresentativeFromDraft(
 ): DemoAosrDraft {
   return {
     ...draft,
-    representativeIds: draft.representativeIds.filter((id) => id !== representativeId),
+    representatives: draft.representatives.filter(({ id }) => id !== representativeId),
   };
 }
 
@@ -278,7 +380,7 @@ export function moveRepresentativeInDraft(
 ): DemoAosrDraft {
   return {
     ...draft,
-    representativeIds: moveId(draft.representativeIds, representativeId, direction),
+    representatives: moveItemById(draft.representatives, representativeId, direction),
   };
 }
 
@@ -289,8 +391,8 @@ export function reorderDraftRepresentatives(
 ): DemoAosrDraft {
   return {
     ...draft,
-    representativeIds: moveIdBefore(
-      draft.representativeIds,
+    representatives: moveItemBefore(
+      draft.representatives,
       representativeId,
       targetRepresentativeId,
     ),
@@ -338,15 +440,8 @@ export function toggleDerivedAttachmentInDraft(
   };
 }
 
-export function getDraftRepresentatives(
-  draft: DemoAosrDraft,
-  representativeLibrary: readonly DemoAosrRepresentative[],
-): readonly DemoAosrRepresentative[] {
-  return draft.representativeIds.flatMap((representativeId) => {
-    const representative = representativeLibrary.find(({ id }) => id === representativeId);
-
-    return representative === undefined ? [] : [representative];
-  });
+export function getDraftRepresentatives(draft: DemoAosrDraft): readonly DemoAosrRepresentative[] {
+  return draft.representatives;
 }
 
 export function getDraftMaterialCertificates(
@@ -357,6 +452,17 @@ export function getDraftMaterialCertificates(
     const certificate = certificateLibrary.find(({ id }) => id === certificateId);
 
     return certificate === undefined ? [] : [certificate];
+  });
+}
+
+export function getDraftDerivedAttachments(
+  draft: DemoAosrDraft,
+  attachmentLibrary: readonly DemoDerivedAttachment[],
+): readonly DemoDerivedAttachment[] {
+  return draft.derivedAttachmentIds.flatMap((attachmentId) => {
+    const attachment = attachmentLibrary.find(({ id }) => id === attachmentId);
+
+    return attachment === undefined ? [] : [attachment];
   });
 }
 
@@ -373,69 +479,69 @@ export function getDraftApplications(
     }),
   );
 
-  const derivedApplications = draft.derivedAttachmentIds.flatMap((attachmentId) => {
-    const attachment = attachmentLibrary.find(({ id }) => id === attachmentId);
-
-    if (attachment === undefined) {
-      return [];
-    }
-
-    return [
-      {
-        id: `application-${attachment.id}`,
-        source: attachment.reference,
-        title: attachment.title,
-      },
-    ];
-  });
+  const derivedApplications = getDraftDerivedAttachments(draft, attachmentLibrary).map(
+    (attachment) => ({
+      id: `application-${attachment.id}`,
+      source: attachment.reference,
+      title: attachment.title,
+    }),
+  );
 
   return [...certificateApplications, ...derivedApplications];
 }
 
-function moveId(ids: readonly string[], id: string, direction: 'up' | 'down'): readonly string[] {
-  const currentIndex = ids.indexOf(id);
+function moveItemById<TItem extends { readonly id: string }>(
+  items: readonly TItem[],
+  id: string,
+  direction: 'up' | 'down',
+): readonly TItem[] {
+  const currentIndex = items.findIndex((item) => item.id === id);
 
   if (currentIndex < 0) {
-    return ids;
+    return items;
   }
 
   const targetIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1;
 
-  if (targetIndex < 0 || targetIndex >= ids.length) {
-    return ids;
+  if (targetIndex < 0 || targetIndex >= items.length) {
+    return items;
   }
 
-  const nextIds = [...ids];
-  const currentId = nextIds[currentIndex];
-  const targetId = nextIds[targetIndex];
+  const nextItems = [...items];
+  const currentItem = nextItems[currentIndex];
+  const targetItem = nextItems[targetIndex];
 
-  if (currentId === undefined || targetId === undefined) {
-    return ids;
+  if (currentItem === undefined || targetItem === undefined) {
+    return items;
   }
 
-  nextIds[currentIndex] = targetId;
-  nextIds[targetIndex] = currentId;
+  nextItems[currentIndex] = targetItem;
+  nextItems[targetIndex] = currentItem;
 
-  return nextIds;
+  return nextItems;
 }
 
-function moveIdBefore(ids: readonly string[], id: string, targetId: string): readonly string[] {
-  const itemIndex = ids.indexOf(id);
-  const targetIndex = ids.indexOf(targetId);
+function moveItemBefore<TItem extends { readonly id: string }>(
+  items: readonly TItem[],
+  itemId: string,
+  targetItemId: string,
+): readonly TItem[] {
+  const itemIndex = items.findIndex((item) => item.id === itemId);
+  const targetIndex = items.findIndex((item) => item.id === targetItemId);
 
   if (itemIndex < 0 || targetIndex < 0 || itemIndex === targetIndex) {
-    return ids;
+    return items;
   }
 
-  const nextIds = [...ids];
-  const [item] = nextIds.splice(itemIndex, 1);
+  const nextItems = [...items];
+  const [item] = nextItems.splice(itemIndex, 1);
 
   if (item === undefined) {
-    return ids;
+    return items;
   }
 
   const adjustedTargetIndex = itemIndex < targetIndex ? targetIndex - 1 : targetIndex;
-  nextIds.splice(adjustedTargetIndex, 0, item);
+  nextItems.splice(adjustedTargetIndex, 0, item);
 
-  return nextIds;
+  return nextItems;
 }
