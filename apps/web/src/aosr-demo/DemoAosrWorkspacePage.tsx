@@ -39,7 +39,13 @@ import { DemoCurrentActEditor } from './DemoCurrentActEditor.js';
 import { DemoDocumentTree } from './DemoDocumentTree.js';
 import { DemoObjectSettingsPanel } from './DemoObjectSettingsPanel.js';
 
-export function DemoAosrWorkspacePage(): React.JSX.Element {
+interface DemoAosrWorkspacePageProps {
+  readonly onBackToObjects?: () => void;
+}
+
+export function DemoAosrWorkspacePage({
+  onBackToObjects,
+}: DemoAosrWorkspacePageProps = {}): React.JSX.Element {
   const [objectDefaults, setObjectDefaults] = useState<DemoAosrObjectDefaults>(
     demoAosrWorkspace.objectDefaults,
   );
@@ -246,24 +252,31 @@ export function DemoAosrWorkspacePage(): React.JSX.Element {
             {demoAosrWorkspace.ownerName}
           </p>
         </div>
-        <dl className="workspace-summary" aria-label="Сводка рабочей области">
-          <div>
-            <dt>Черновики</dt>
-            <dd>{drafts.length}</dd>
-          </div>
-          <div>
-            <dt>Выбран акт</dt>
-            <dd>{selectedDraft.actNumber}</dd>
-          </div>
-          <div>
-            <dt>Шапка</dt>
-            <dd>{objectDefaults.headerOrganizations.length}</dd>
-          </div>
-          <div>
-            <dt>Подписанты</dt>
-            <dd>{selectedSignatories.length}</dd>
-          </div>
-        </dl>
+        <div className="workspace-header__aside">
+          {onBackToObjects === undefined ? null : (
+            <button className="secondary-action" onClick={onBackToObjects} type="button">
+              Назад к объектам
+            </button>
+          )}
+          <dl className="workspace-summary" aria-label="Сводка рабочей области">
+            <div>
+              <dt>Черновики</dt>
+              <dd>{drafts.length}</dd>
+            </div>
+            <div>
+              <dt>Выбран акт</dt>
+              <dd>{selectedDraft.actNumber}</dd>
+            </div>
+            <div>
+              <dt>Шапка</dt>
+              <dd>{objectDefaults.headerOrganizations.length}</dd>
+            </div>
+            <div>
+              <dt>Подписанты</dt>
+              <dd>{selectedSignatories.length}</dd>
+            </div>
+          </dl>
+        </div>
       </section>
 
       <div className="workspace-grid">

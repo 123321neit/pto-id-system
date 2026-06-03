@@ -5,7 +5,7 @@ Web-система автоматизации исполнительной до�
 Текущий статус:
 
 ```text
-FIRST ALLOWED INFRASTRUCTURE BOOTSTRAP SCAFFOLD ACCEPTED; CANONICAL ADR BASELINE ACCEPTED; BACKEND MODULE ARCHITECTURE SKELETON INTRODUCED; FIRST TECHNICAL FRONTEND-BACKEND STATUS SLICE INTRODUCED; DATABASE FOUNDATION TECHNICAL SLICE INTRODUCED; OBJECT STORAGE FOUNDATION TECHNICAL SLICE INTRODUCED; AUTH SHARING IMPLEMENTATION PLAN ADDED; USER IDENTITY SKELETON INTRODUCED; GLOBAL SYSTEM ADMIN MARKER INTRODUCED; OWNED WORKSPACE BASELINE INTRODUCED; FIRST MOCK AOSR DEMO UI SLICE INTRODUCED; MOCK AOSR DEMO UX/PREVIEW REFINED
+FIRST ALLOWED INFRASTRUCTURE BOOTSTRAP SCAFFOLD ACCEPTED; CANONICAL ADR BASELINE ACCEPTED; BACKEND MODULE ARCHITECTURE SKELETON INTRODUCED; FIRST TECHNICAL FRONTEND-BACKEND STATUS SLICE INTRODUCED; DATABASE FOUNDATION TECHNICAL SLICE INTRODUCED; OBJECT STORAGE FOUNDATION TECHNICAL SLICE INTRODUCED; AUTH SHARING IMPLEMENTATION PLAN ADDED; USER IDENTITY SKELETON INTRODUCED; GLOBAL SYSTEM ADMIN MARKER INTRODUCED; OWNED WORKSPACE BASELINE INTRODUCED; FIRST MOCK AOSR DEMO UI SLICE INTRODUCED; MOCK AOSR DEMO UX/PREVIEW REFINED; MOCK APP SHELL AND OBJECT DASHBOARD INTRODUCED
 ```
 
 В репозитории принят первый разрешённый scaffold. Это только infrastructure/bootstrap
@@ -71,6 +71,16 @@ library-linked instead of free text. The AOSR Word example is used only as a
 visual/layout reference for the HTML preview; no DOCX import, parsing or real
 DOCX/PDF generation is implemented. Derived applications render before the
 final signature blocks.
+
+The mock app shell now starts on a frontend-only object dashboard with a left
+navigation rail, mock object cards, quick-access cards and recent documents.
+Opening any mock object switches in memory to the existing AOSR workspace, and
+the workspace has a `Назад к объектам` action. The dashboard cards and quick
+access sections are demo data only; certificate library and
+representative/organization global pages are placeholders with no backend,
+persistence, uploads, real generation, auth, share codes or production business
+logic. Existing certificate and signatory behavior inside the AOSR act remains
+the main functional demo.
 
 Production feature coding remains blocked outside explicitly requested narrow
 demo/technical slices.
@@ -236,6 +246,10 @@ Scaffold включает:
   applications, document-like printed-page preview and Testing Library
   interaction tests, with no backend routes, persistence, uploads, generation,
   AI, real auth, share codes or grants.
+- mock app shell and object dashboard: frontend-only left navigation, mock
+  object cards, quick access placeholders, recent documents and in-memory
+  dashboard -> object workspace navigation, with no backend, persistence, auth,
+  uploads, generation, share codes/grants or business logic.
 
 The backend module skeleton includes module boundaries, README ownership notes,
 placeholder tokens/ports, `apps/api/src/ARCHITECTURE.md`, and ESLint import
@@ -246,11 +260,12 @@ intentionally do not add domain readiness, business commands, CRUD APIs,
 OpenAPI, domain database state, file APIs or real use cases. They exist only to
 validate frontend -> backend connectivity, shared types, env-driven API/storage
 configuration, Prisma client generation and infrastructure health boundaries.
-The AOSR demo screen is separate: it is a frontend-only mock for feedback, not a
-production workflow. Its mock printed-page preview now separates object-level
-defaults from current-act fields, lets the current act reuse mock representatives
-and mock certificate/material records, derives applications at the final end of
-the preview before final signature blocks, and remains without real PDF generation, certificate library
+The AOSR demo screen is now opened from the mock object dashboard. It remains a
+frontend-only mock for feedback, not a production workflow. Its mock
+printed-page preview separates object-level defaults from current-act fields,
+lets the current act reuse mock representatives and mock certificate/material
+records, derives applications at the final end of the preview before final
+signature blocks, and remains without real PDF generation, certificate library
 implementation, signatory database behavior, uploads or persistence.
 
 GitHub Actions CI is committed at `.github/workflows/ci.yml`. It runs on
@@ -313,8 +328,9 @@ with canonical ADR 0001-0005 in `docs/adr/`.
 
 Feature coding remains blocked until a separate explicit feature/database/API
 task is requested and checked against the ADR baseline, `docs/19` access model
-`docs/20` phased plan, and project memory. The current AOSR screen is mock UI
-only and must not be treated as domain implementation.
+`docs/20` phased plan, and project memory. The current dashboard/object cards
+and AOSR screen are mock UI only and must not be treated as domain
+implementation.
 
 Recommended next step: collect user feedback on the mock AOSR demo screen.
 Phase 4 workspace share codes, domain schema, migrations, production AOSR,

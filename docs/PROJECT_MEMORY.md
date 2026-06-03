@@ -6,9 +6,9 @@
 
 # MASTER CONTEXT / SOURCE OF TRUTH
 
-# VERSION: 2026-06-02-MOCK-AOSR-WORD-LIKE-PREVIEW-AND-OBJECT-LIBRARIES
+# VERSION: 2026-06-03-MOCK-APP-SHELL-AND-OBJECT-DASHBOARD
 
-# STATUS: FIRST ALLOWED INFRASTRUCTURE BOOTSTRAP SCAFFOLD; CANONICAL ADR BASELINE ACCEPTED; BACKEND MODULE ARCHITECTURE SKELETON INTRODUCED; FIRST TECHNICAL FRONTEND-BACKEND STATUS SLICE INTRODUCED; DATABASE FOUNDATION TECHNICAL SLICE INTRODUCED; OBJECT STORAGE FOUNDATION TECHNICAL SLICE INTRODUCED; AUTH SHARING IMPLEMENTATION PLAN ADDED; USER IDENTITY SKELETON INTRODUCED; GLOBAL SYSTEM ADMIN MARKER INTRODUCED; OWNED WORKSPACE BASELINE INTRODUCED; FIRST MOCK AOSR DEMO UI SLICE INTRODUCED; MOCK AOSR CONFIGURABLE OBJECT HEADER ORGANIZATIONS AND REPRESENTATIVE LIBRARY INTRODUCED; MOCK AOSR DEMO UX/PREVIEW REFINED
+# STATUS: FIRST ALLOWED INFRASTRUCTURE BOOTSTRAP SCAFFOLD; CANONICAL ADR BASELINE ACCEPTED; BACKEND MODULE ARCHITECTURE SKELETON INTRODUCED; FIRST TECHNICAL FRONTEND-BACKEND STATUS SLICE INTRODUCED; DATABASE FOUNDATION TECHNICAL SLICE INTRODUCED; OBJECT STORAGE FOUNDATION TECHNICAL SLICE INTRODUCED; AUTH SHARING IMPLEMENTATION PLAN ADDED; USER IDENTITY SKELETON INTRODUCED; GLOBAL SYSTEM ADMIN MARKER INTRODUCED; OWNED WORKSPACE BASELINE INTRODUCED; FIRST MOCK AOSR DEMO UI SLICE INTRODUCED; MOCK AOSR CONFIGURABLE OBJECT HEADER ORGANIZATIONS AND REPRESENTATIVE LIBRARY INTRODUCED; MOCK AOSR DEMO UX/PREVIEW REFINED; MOCK APP SHELL AND OBJECT DASHBOARD INTRODUCED
 
 # LANGUAGE: RU
 
@@ -31,7 +31,7 @@
 Текущая стадия проекта:
 
 ```text
-FIRST ALLOWED INFRASTRUCTURE BOOTSTRAP SCAFFOLD; CANONICAL ADR BASELINE ACCEPTED; BACKEND MODULE ARCHITECTURE SKELETON INTRODUCED; FIRST TECHNICAL FRONTEND-BACKEND STATUS SLICE INTRODUCED; DATABASE FOUNDATION TECHNICAL SLICE INTRODUCED; OBJECT STORAGE FOUNDATION TECHNICAL SLICE INTRODUCED; AUTH SHARING IMPLEMENTATION PLAN ADDED; USER IDENTITY SKELETON INTRODUCED; GLOBAL SYSTEM ADMIN MARKER INTRODUCED; OWNED WORKSPACE BASELINE INTRODUCED; FIRST MOCK AOSR DEMO UI SLICE INTRODUCED; MOCK AOSR CONFIGURABLE OBJECT HEADER ORGANIZATIONS AND REPRESENTATIVE LIBRARY INTRODUCED; MOCK AOSR DEMO UX/PREVIEW REFINED
+FIRST ALLOWED INFRASTRUCTURE BOOTSTRAP SCAFFOLD; CANONICAL ADR BASELINE ACCEPTED; BACKEND MODULE ARCHITECTURE SKELETON INTRODUCED; FIRST TECHNICAL FRONTEND-BACKEND STATUS SLICE INTRODUCED; DATABASE FOUNDATION TECHNICAL SLICE INTRODUCED; OBJECT STORAGE FOUNDATION TECHNICAL SLICE INTRODUCED; AUTH SHARING IMPLEMENTATION PLAN ADDED; USER IDENTITY SKELETON INTRODUCED; GLOBAL SYSTEM ADMIN MARKER INTRODUCED; OWNED WORKSPACE BASELINE INTRODUCED; FIRST MOCK AOSR DEMO UI SLICE INTRODUCED; MOCK AOSR CONFIGURABLE OBJECT HEADER ORGANIZATIONS AND REPRESENTATIVE LIBRARY INTRODUCED; MOCK AOSR DEMO UX/PREVIEW REFINED; MOCK APP SHELL AND OBJECT DASHBOARD INTRODUCED
 ```
 
 Проект принял первый явно разрешённый infrastructure/bootstrap scaffold,
@@ -112,6 +112,19 @@ keeps certificate materials library-linked rather than free text, and uses the
 AOSR Word example only as a visual/layout reference for the HTML preview. This
 is not production AOSR implementation, not Phase 4 share codes, not persistence,
 not upload/generation/AI, not real auth and not a backend API.
+
+Mock app shell and object dashboard introduced. The React/Vite demo now starts
+on a frontend-only Russian object dashboard with a modern left navigation rail,
+`Мои объекты`, search, mock object cards, quick access cards for
+`Библиотека сертификатов` and `Представители и организации`, plus recent
+documents. Opening a mock object switches in memory to the existing AOSR
+workspace/editor, and the workspace exposes `Назад к объектам`. The quick
+access sections are placeholders that say `Раздел будет оформлен отдельным
+шагом`; they do not replace the existing certificate search or signatory
+search/add behavior inside the act. This is mock frontend navigation only:
+dashboard/object cards are mock data, there is no backend, persistence, Prisma
+schema, migrations, API route/controller, auth/session, upload, real DOCX/PDF
+generation, AI/OCR, share code/grant or production business logic.
 
 ---
 
@@ -1553,6 +1566,10 @@ UI не должен быть перегружен, но система долж
   `NOT_FOUND_OR_NOT_AUTHORIZED` denial, child-scope verification before child
   lookup, fail-closed current actor behavior, no admin marker bypass and no
   old RBAC role/capability/membership authorization.
+- mock app shell and object dashboard in the frontend: in-memory dashboard ->
+  existing AOSR workspace navigation, left nav, mock object cards, quick access
+  placeholders and recent documents, with the existing mock AOSR editor kept as
+  the functional demo surface.
 
 Не завершено:
 
@@ -1570,6 +1587,8 @@ UI не должен быть перегружен, но система долж
 - deferred fine-grained RBAC/privacy/commercial lifecycle details and the exact
   future implementation of `docs/20` phases;
 - frontend component architecture.
+- production object dashboard data, backend navigation, persistence and real
+  certificate/representative library pages.
 - remaining `docs/20` phases: workspace share codes and grants, certificate
   library share codes and grants.
 
