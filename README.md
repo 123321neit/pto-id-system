@@ -5,7 +5,7 @@ Web-система автоматизации исполнительной до�
 Текущий статус:
 
 ```text
-FIRST ALLOWED INFRASTRUCTURE BOOTSTRAP SCAFFOLD ACCEPTED; CANONICAL ADR BASELINE ACCEPTED; BACKEND MODULE ARCHITECTURE SKELETON INTRODUCED; FIRST TECHNICAL FRONTEND-BACKEND STATUS SLICE INTRODUCED; DATABASE FOUNDATION TECHNICAL SLICE INTRODUCED; OBJECT STORAGE FOUNDATION TECHNICAL SLICE INTRODUCED; AUTH SHARING IMPLEMENTATION PLAN ADDED; USER IDENTITY SKELETON INTRODUCED; GLOBAL SYSTEM ADMIN MARKER INTRODUCED; OWNED WORKSPACE BASELINE INTRODUCED; FIRST MOCK AOSR DEMO UI SLICE INTRODUCED; MOCK AOSR DEMO UX/PREVIEW REFINED; MOCK APP SHELL AND OBJECT DASHBOARD INTRODUCED
+FIRST ALLOWED INFRASTRUCTURE BOOTSTRAP SCAFFOLD ACCEPTED; CANONICAL ADR BASELINE ACCEPTED; BACKEND MODULE ARCHITECTURE SKELETON INTRODUCED; FIRST TECHNICAL FRONTEND-BACKEND STATUS SLICE INTRODUCED; DATABASE FOUNDATION TECHNICAL SLICE INTRODUCED; OBJECT STORAGE FOUNDATION TECHNICAL SLICE INTRODUCED; AUTH SHARING IMPLEMENTATION PLAN ADDED; USER IDENTITY SKELETON INTRODUCED; GLOBAL SYSTEM ADMIN MARKER INTRODUCED; OWNED WORKSPACE BASELINE INTRODUCED; FIRST MOCK AOSR DEMO UI SLICE INTRODUCED; MOCK AOSR DEMO UX/PREVIEW REFINED; MOCK APP SHELL AND OBJECT DASHBOARD INTRODUCED; FRONTEND-ONLY MOCK REPRESENTATIVES/ORGANIZATIONS MANAGEMENT PAGE INTRODUCED
 ```
 
 В репозитории принят первый разрешённый scaffold. Это только infrastructure/bootstrap
@@ -75,12 +75,14 @@ final signature blocks.
 The mock app shell now starts on a frontend-only object dashboard with a left
 navigation rail, mock object cards, quick-access cards and recent documents.
 Opening any mock object switches in memory to the existing AOSR workspace, and
-the workspace has a `Назад к объектам` action. The dashboard cards and quick
-access sections are demo data only; certificate library and
-representative/organization global pages are placeholders with no backend,
-persistence, uploads, real generation, auth, share codes or production business
-logic. Existing certificate and signatory behavior inside the AOSR act remains
-the main functional demo.
+the workspace has a `Назад к объектам` action. The `Представители и
+организации` dashboard section now opens a frontend-only mock management page
+with in-memory global organization/representative libraries, local mock add
+forms and conceptual object-level binding/snapshot notes. The certificate
+library dashboard section remains a placeholder. These dashboard sections have
+no backend, persistence, uploads, real generation, auth, share codes or
+production business logic. Existing certificate and signatory behavior inside
+the AOSR act remains functional.
 
 Production feature coding remains blocked outside explicitly requested narrow
 demo/technical slices.
@@ -247,7 +249,8 @@ Scaffold включает:
   interaction tests, with no backend routes, persistence, uploads, generation,
   AI, real auth, share codes or grants.
 - mock app shell and object dashboard: frontend-only left navigation, mock
-  object cards, quick access placeholders, recent documents and in-memory
+  object cards, certificate quick access placeholder, mock
+  representative/organization management page, recent documents and in-memory
   dashboard -> object workspace navigation, with no backend, persistence, auth,
   uploads, generation, share codes/grants or business logic.
 
@@ -267,6 +270,10 @@ lets the current act reuse mock representatives and mock certificate/material
 records, derives applications at the final end of the preview before final
 signature blocks, and remains without real PDF generation, certificate library
 implementation, signatory database behavior, uploads or persistence.
+The separate mock representatives/organizations dashboard page is also
+frontend-only and in-memory: global libraries and object-level binding concepts
+are demonstrated without schema, API routes, auth, uploads or production
+business rules.
 
 GitHub Actions CI is committed at `.github/workflows/ci.yml`. It runs on
 `push` and `pull_request` with Node 22, Corepack, `pnpm install

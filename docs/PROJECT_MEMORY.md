@@ -6,9 +6,9 @@
 
 # MASTER CONTEXT / SOURCE OF TRUTH
 
-# VERSION: 2026-06-03-MOCK-APP-SHELL-AND-OBJECT-DASHBOARD
+# VERSION: 2026-06-03-MOCK-REPRESENTATIVES-ORGANIZATIONS-MANAGEMENT
 
-# STATUS: FIRST ALLOWED INFRASTRUCTURE BOOTSTRAP SCAFFOLD; CANONICAL ADR BASELINE ACCEPTED; BACKEND MODULE ARCHITECTURE SKELETON INTRODUCED; FIRST TECHNICAL FRONTEND-BACKEND STATUS SLICE INTRODUCED; DATABASE FOUNDATION TECHNICAL SLICE INTRODUCED; OBJECT STORAGE FOUNDATION TECHNICAL SLICE INTRODUCED; AUTH SHARING IMPLEMENTATION PLAN ADDED; USER IDENTITY SKELETON INTRODUCED; GLOBAL SYSTEM ADMIN MARKER INTRODUCED; OWNED WORKSPACE BASELINE INTRODUCED; FIRST MOCK AOSR DEMO UI SLICE INTRODUCED; MOCK AOSR CONFIGURABLE OBJECT HEADER ORGANIZATIONS AND REPRESENTATIVE LIBRARY INTRODUCED; MOCK AOSR DEMO UX/PREVIEW REFINED; MOCK APP SHELL AND OBJECT DASHBOARD INTRODUCED
+# STATUS: FIRST ALLOWED INFRASTRUCTURE BOOTSTRAP SCAFFOLD; CANONICAL ADR BASELINE ACCEPTED; BACKEND MODULE ARCHITECTURE SKELETON INTRODUCED; FIRST TECHNICAL FRONTEND-BACKEND STATUS SLICE INTRODUCED; DATABASE FOUNDATION TECHNICAL SLICE INTRODUCED; OBJECT STORAGE FOUNDATION TECHNICAL SLICE INTRODUCED; AUTH SHARING IMPLEMENTATION PLAN ADDED; USER IDENTITY SKELETON INTRODUCED; GLOBAL SYSTEM ADMIN MARKER INTRODUCED; OWNED WORKSPACE BASELINE INTRODUCED; FIRST MOCK AOSR DEMO UI SLICE INTRODUCED; MOCK AOSR CONFIGURABLE OBJECT HEADER ORGANIZATIONS AND REPRESENTATIVE LIBRARY INTRODUCED; MOCK AOSR DEMO UX/PREVIEW REFINED; MOCK APP SHELL AND OBJECT DASHBOARD INTRODUCED; FRONTEND-ONLY MOCK REPRESENTATIVES/ORGANIZATIONS MANAGEMENT PAGE INTRODUCED
 
 # LANGUAGE: RU
 
@@ -31,7 +31,7 @@
 Текущая стадия проекта:
 
 ```text
-FIRST ALLOWED INFRASTRUCTURE BOOTSTRAP SCAFFOLD; CANONICAL ADR BASELINE ACCEPTED; BACKEND MODULE ARCHITECTURE SKELETON INTRODUCED; FIRST TECHNICAL FRONTEND-BACKEND STATUS SLICE INTRODUCED; DATABASE FOUNDATION TECHNICAL SLICE INTRODUCED; OBJECT STORAGE FOUNDATION TECHNICAL SLICE INTRODUCED; AUTH SHARING IMPLEMENTATION PLAN ADDED; USER IDENTITY SKELETON INTRODUCED; GLOBAL SYSTEM ADMIN MARKER INTRODUCED; OWNED WORKSPACE BASELINE INTRODUCED; FIRST MOCK AOSR DEMO UI SLICE INTRODUCED; MOCK AOSR CONFIGURABLE OBJECT HEADER ORGANIZATIONS AND REPRESENTATIVE LIBRARY INTRODUCED; MOCK AOSR DEMO UX/PREVIEW REFINED; MOCK APP SHELL AND OBJECT DASHBOARD INTRODUCED
+FIRST ALLOWED INFRASTRUCTURE BOOTSTRAP SCAFFOLD; CANONICAL ADR BASELINE ACCEPTED; BACKEND MODULE ARCHITECTURE SKELETON INTRODUCED; FIRST TECHNICAL FRONTEND-BACKEND STATUS SLICE INTRODUCED; DATABASE FOUNDATION TECHNICAL SLICE INTRODUCED; OBJECT STORAGE FOUNDATION TECHNICAL SLICE INTRODUCED; AUTH SHARING IMPLEMENTATION PLAN ADDED; USER IDENTITY SKELETON INTRODUCED; GLOBAL SYSTEM ADMIN MARKER INTRODUCED; OWNED WORKSPACE BASELINE INTRODUCED; FIRST MOCK AOSR DEMO UI SLICE INTRODUCED; MOCK AOSR CONFIGURABLE OBJECT HEADER ORGANIZATIONS AND REPRESENTATIVE LIBRARY INTRODUCED; MOCK AOSR DEMO UX/PREVIEW REFINED; MOCK APP SHELL AND OBJECT DASHBOARD INTRODUCED; FRONTEND-ONLY MOCK REPRESENTATIVES/ORGANIZATIONS MANAGEMENT PAGE INTRODUCED
 ```
 
 Проект принял первый явно разрешённый infrastructure/bootstrap scaffold,
@@ -118,13 +118,18 @@ on a frontend-only Russian object dashboard with a modern left navigation rail,
 `Мои объекты`, search, mock object cards, quick access cards for
 `Библиотека сертификатов` and `Представители и организации`, plus recent
 documents. Opening a mock object switches in memory to the existing AOSR
-workspace/editor, and the workspace exposes `Назад к объектам`. The quick
-access sections are placeholders that say `Раздел будет оформлен отдельным
-шагом`; they do not replace the existing certificate search or signatory
-search/add behavior inside the act. This is mock frontend navigation only:
-dashboard/object cards are mock data, there is no backend, persistence, Prisma
-schema, migrations, API route/controller, auth/session, upload, real DOCX/PDF
-generation, AI/OCR, share code/grant or production business logic.
+workspace/editor, and the workspace exposes `Назад к объектам`. The
+`Представители и организации` dashboard section now opens a frontend-only mock
+management page with in-memory global organization and representative
+libraries, local mock add forms and conceptual notes about object-level
+bindings/snapshots. Global library entries versus object-level bindings remain
+mock/in-memory only. The certificate quick access section remains a placeholder.
+The dashboard management page does not replace the existing certificate search,
+object settings or signatory search/add behavior inside the AOSR editor. This
+is mock frontend navigation only: dashboard/object cards and management rows are
+mock data, there is no backend, persistence, Prisma schema, migrations, API
+route/controller, auth/session, upload, real DOCX/PDF generation, AI/OCR, share
+code/grant or production business logic.
 
 ---
 
@@ -1568,8 +1573,9 @@ UI не должен быть перегружен, но система долж
   old RBAC role/capability/membership authorization.
 - mock app shell and object dashboard in the frontend: in-memory dashboard ->
   existing AOSR workspace navigation, left nav, mock object cards, quick access
-  placeholders and recent documents, with the existing mock AOSR editor kept as
-  the functional demo surface.
+  certificate placeholder, mock representatives/organizations management page
+  and recent documents, with the existing mock AOSR editor kept as the
+  functional demo surface.
 
 Не завершено:
 
@@ -1588,7 +1594,7 @@ UI не должен быть перегружен, но система долж
   future implementation of `docs/20` phases;
 - frontend component architecture.
 - production object dashboard data, backend navigation, persistence and real
-  certificate/representative library pages.
+  certificate/representative/organization library pages.
 - remaining `docs/20` phases: workspace share codes and grants, certificate
   library share codes and grants.
 
@@ -3614,3 +3620,41 @@ production domain/API/persistence work remain separate explicit tasks.
 - No backend deployment, Prisma, database, auth/session, uploads, AI/OCR, PDF
   generation, certificate library, signatory database or share codes/grants were
   introduced.
+
+### 2026-06-03 — Frontend-only representatives and organizations management page introduced
+
+- Статус: `Frontend mock representatives/organizations management only`
+- Описание: second small UX cleanup step replacing the dashboard placeholder
+  for `Представители и организации` with a frontend-only management mock.
+
+Добавлено/уточнено:
+
+- clicking `Представители и организации` in the left navigation opens a real
+  mock page instead of the placeholder;
+- page explains that users prepare organizations and representatives before
+  adding them to objects and acts through search;
+- mock global organization library shows names, INN/OGRN/details and where
+  each organization is used;
+- mock global representative library shows full name, flexible role label,
+  position, organization, authority basis and optional NRS/details;
+- organization and representative filters work in memory;
+- mock add forms append new organizations and representatives only to local
+  React state;
+- conceptual notes explain that object-level organization/representative
+  bindings/snapshots can differ from global library data;
+- representative role labels and header organization labels remain
+  user-configurable concepts, not a globally fixed AOSR schema;
+- AOSR workspace opening from object cards, object settings and current-act
+  signatory search/add remain functional.
+
+Что не было введено:
+
+- no backend routes/controllers;
+- no Prisma/schema/migrations;
+- no persistence;
+- no uploads;
+- no real DOCX/PDF generation;
+- no AI/OCR;
+- no auth/session/login/register;
+- no share codes/grants;
+- no production representative/organization business logic.

@@ -6,6 +6,8 @@ import {
 } from './mock-dashboard.js';
 import { useState } from 'react';
 
+import { RepresentativesOrganizationsPage } from './RepresentativesOrganizationsPage.js';
+
 interface MockObjectDashboardPageProps {
   readonly activePanel: MockDashboardPanel;
   readonly onOpenObject: (objectId: string) => void;
@@ -179,6 +181,12 @@ export function MockObjectDashboardPage({
             </div>
           </div>
         </section>
+      ) : activePanel === 'representatives' ? (
+        <RepresentativesOrganizationsPage
+          onBackToObjects={() => {
+            onSelectPanel('objects');
+          }}
+        />
       ) : (
         <MockPlaceholderPanel
           panel={activePanel}

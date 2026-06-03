@@ -42,7 +42,7 @@ describe('App shell mock navigation', () => {
     expect(screen.getByText('Реконструкция поликлиники, демонстрационный проект')).toBeTruthy();
   });
 
-  it('shows mock placeholder panels for quick access sections', async () => {
+  it('keeps the certificates quick access section as a mock placeholder', async () => {
     const user = userEvent.setup();
 
     render(<App />);
@@ -53,18 +53,125 @@ describe('App shell mock navigation', () => {
 
     expect(screen.getByRole('heading', { name: 'Библиотека сертификатов' })).toBeTruthy();
     expect(screen.getByText('Раздел будет оформлен отдельным шагом.')).toBeTruthy();
+  });
 
-    await user.click(screen.getByRole('button', { name: 'Вернуться к объектам' }));
-    const updatedQuickAccess = screen.getByRole('region', { name: 'Быстрый доступ' });
+  it('opens the real representatives and organizations mock management page', async () => {
+    const user = userEvent.setup();
 
-    await user.click(
-      within(updatedQuickAccess).getByRole('button', {
-        name: /Представители и организации/u,
-      }),
-    );
+    render(<App />);
+    await openRepresentativesManagementPage(user);
 
     expect(screen.getByRole('heading', { name: 'Представители и организации' })).toBeTruthy();
-    expect(screen.getByText('Раздел будет оформлен отдельным шагом.')).toBeTruthy();
+    expect(
+      screen.getByText(
+        'Сначала сохраните организации и представителей, потом добавляйте их в объект и акты через поиск.',
+      ),
+    ).toBeTruthy();
+    expect(screen.getByRole('region', { name: 'Организации' })).toBeTruthy();
+    expect(screen.getByRole('region', { name: 'Представители' })).toBeTruthy();
+    expect(screen.getByText('Организации в объекте')).toBeTruthy();
+    expect(screen.getByText('Представители в объекте')).toBeTruthy();
+    expect(screen.queryByText('Раздел будет оформлен отдельным шагом.')).toBeNull();
+  });
+
+  it('filters organizations in the management page', async () => {
+    const user = userEvent.setup();
+
+    render(<App />);
+    await openRepresentativesManagementPage(user);
+
+    const organizationLibrary = screen.getByRole('list', {
+      name: 'Глобальная библиотека организаций',
+    });
+
+    expect(within(organizationLibrary).getByText('ГАУЗ СО "Демо-заказчик"')).toBeTruthy();
+
+    await user.type(screen.getByLabelText('Фильтр организаций'), 'генподряд');
+
+    expect(within(organizationLibrary).getByText('ООО "Демо-генподряд"')).toBeTruthy();
+    expect(within(organizationLibrary).queryByText('ГАУЗ СО "Демо-заказчик"')).toBeNull();
+  });
+
+  it('filters representatives in the management page', async () => {
+    const user = userEvent.setup();
+
+    render(<App />);
+    await openRepresentativesManagementPage(user);
+
+    const representativeLibrary = screen.getByRole('list', {
+      name: 'Глобальная библиотека представителей',
+    });
+
+    expect(within(representativeLibrary).getByText('Иванов И.И.')).toBeTruthy();
+
+    await user.type(screen.getByLabelText('Фильтр представителей'), 'лаборатория');
+
+    expect(within(representativeLibrary).getByText('Лебедев Л.Л.')).toBeTruthy();
+    expect(within(representativeLibrary).queryByText('Иванов И.И.')).toBeNull();
+  });
+
+  it('adds a mock organization in memory on the management page', async () => {
+    const user = userEvent.setup();
+
+    render(<App />);
+    await openRepresentativesManagementPage(user);
+
+    await user.click(screen.getByRole('button', { name: 'Добавить организацию' }));
+    await user.type(screen.getByLabelText('Название организации'), 'ООО "Новый участник"');
+    await user.type(
+      screen.getByLabelText('ИНН / ОГРН / реквизиты'),
+      'ИНН 6611000000; ОГРН 1266600000001.',
+    );
+    await user.type(
+      screen.getByLabelText('Где используется'),
+      'Будет выбран как участник объекта для демонстрационного акта.',
+    );
+    await user.click(screen.getByRole('button', { name: 'Сохранить организацию' }));
+
+    const organizationLibrary = screen.getByRole('list', {
+      name: 'Глобальная библиотека организаций',
+    });
+    expect(within(organizationLibrary).getByText('ООО "Новый участник"')).toBeTruthy();
+    expect(
+      within(organizationLibrary).getByText('ИНН 6611000000; ОГРН 1266600000001.'),
+    ).toBeTruthy();
+  });
+
+  it('adds a mock representative in memory on the management page', async () => {
+    const user = userEvent.setup();
+
+    render(<App />);
+    await openRepresentativesManagementPage(user);
+
+    await user.click(screen.getByRole('button', { name: 'Добавить представителя' }));
+    await user.type(screen.getByLabelText('ФИО представителя'), 'Орлова О.О.');
+    await user.type(screen.getByLabelText('Роль / подпись'), 'Представитель монтажного участка');
+    await user.type(screen.getByLabelText('Должность'), 'Инженер ПТО');
+    await user.type(screen.getByLabelText('Организация представителя'), 'ООО "Новый участник"');
+    await user.type(screen.getByLabelText('Основание полномочий'), 'Приказ N О-7 от 03.06.2026');
+    await user.type(screen.getByLabelText('НРС / детали'), 'НРС С-66-000111');
+    await user.click(screen.getByRole('button', { name: 'Сохранить представителя' }));
+
+    const representativeLibrary = screen.getByRole('list', {
+      name: 'Глобальная библиотека представителей',
+    });
+    expect(within(representativeLibrary).getByText('Орлова О.О.')).toBeTruthy();
+    expect(
+      within(representativeLibrary).getByText('Представитель монтажного участка / Инженер ПТО'),
+    ).toBeTruthy();
+    expect(within(representativeLibrary).getByText('НРС С-66-000111')).toBeTruthy();
+  });
+
+  it('returns from the representatives management page to objects', async () => {
+    const user = userEvent.setup();
+
+    render(<App />);
+    await openRepresentativesManagementPage(user);
+
+    await user.click(screen.getByRole('button', { name: 'Вернуться к объектам' }));
+
+    expect(screen.getByRole('heading', { name: 'Мои объекты' })).toBeTruthy();
+    expect(screen.getByText('Реконструкция поликлиники, демонстрационный проект')).toBeTruthy();
   });
 
   it('keeps AOSR key flows available after opening an object from the shell', async () => {
@@ -128,4 +235,14 @@ function getFirstOpenObjectButton(): HTMLElement {
   }
 
   return openButton;
+}
+
+async function openRepresentativesManagementPage(
+  user: ReturnType<typeof userEvent.setup>,
+): Promise<void> {
+  const navigation = screen.getByRole('navigation', { name: 'Основная навигация' });
+
+  await user.click(
+    within(navigation).getByRole('button', { name: /Представители и организации/u }),
+  );
 }
