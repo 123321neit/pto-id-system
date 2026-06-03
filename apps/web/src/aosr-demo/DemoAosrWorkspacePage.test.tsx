@@ -10,6 +10,7 @@ import {
   demoAosrWorkspace,
   updateDemoAosrDraftField,
 } from './demo-aosr-workspace.js';
+import { DemoStoreProvider } from '../demo-store/DemoStoreProvider.js';
 
 afterEach(() => {
   cleanup();
@@ -17,7 +18,7 @@ afterEach(() => {
 
 describe('DemoAosrWorkspacePage', () => {
   it('keeps object settings and libraries compact until opened', () => {
-    render(<DemoAosrWorkspacePage />);
+    renderDemoWorkspace();
 
     expect(screen.getByRole('button', { name: 'Открыть объектовые настройки' })).toBeTruthy();
     expect(screen.queryByRole('region', { name: 'База представителей объекта' })).toBeNull();
@@ -27,7 +28,7 @@ describe('DemoAosrWorkspacePage', () => {
   });
 
   it('renders configurable object-level header organization blocks in preview order', () => {
-    render(<DemoAosrWorkspacePage />);
+    renderDemoWorkspace();
 
     const previewText = getPreviewText();
 
@@ -44,7 +45,7 @@ describe('DemoAosrWorkspacePage', () => {
   it('adds a header organization from the mock global organization library search', async () => {
     const user = userEvent.setup();
 
-    render(<DemoAosrWorkspacePage />);
+    renderDemoWorkspace();
 
     await openObjectSettings(user);
     await user.click(screen.getByRole('button', { name: 'Добавить блок шапки' }));
@@ -82,7 +83,7 @@ describe('DemoAosrWorkspacePage', () => {
   it('adds a representative to the object base from the mock global representative library search', async () => {
     const user = userEvent.setup();
 
-    render(<DemoAosrWorkspacePage />);
+    renderDemoWorkspace();
 
     await openObjectSettings(user);
     await user.click(screen.getByRole('button', { name: 'Добавить представителя' }));
@@ -118,7 +119,7 @@ describe('DemoAosrWorkspacePage', () => {
   it('searches object-level representatives and adds one to the current act', async () => {
     const user = userEvent.setup();
 
-    render(<DemoAosrWorkspacePage />);
+    renderDemoWorkspace();
 
     expect(getPreviewText()).not.toContain('Кузнецова А.А.');
 
@@ -145,7 +146,7 @@ describe('DemoAosrWorkspacePage', () => {
   it('adds a temporary representative only to the current act when the checkbox is clear', async () => {
     const user = userEvent.setup();
 
-    render(<DemoAosrWorkspacePage />);
+    renderDemoWorkspace();
 
     await addManualRepresentative(user, {
       authorityBasis: 'Доверенность N Т-1',
@@ -167,7 +168,7 @@ describe('DemoAosrWorkspacePage', () => {
   it('adds a temporary representative to the object base too when selected', async () => {
     const user = userEvent.setup();
 
-    render(<DemoAosrWorkspacePage />);
+    renderDemoWorkspace();
 
     await addManualRepresentative(
       user,
@@ -193,7 +194,7 @@ describe('DemoAosrWorkspacePage', () => {
   it('updates the document signatory order in the preview', async () => {
     const user = userEvent.setup();
 
-    render(<DemoAosrWorkspacePage />);
+    renderDemoWorkspace();
 
     await user.click(screen.getByRole('button', { name: 'Переместить Петров П.П. вверх' }));
 
@@ -204,7 +205,7 @@ describe('DemoAosrWorkspacePage', () => {
   it('adds a material through certificate library search and derives applications', async () => {
     const user = userEvent.setup();
 
-    render(<DemoAosrWorkspacePage />);
+    renderDemoWorkspace();
 
     expect(getPreviewText()).not.toContain('ДС-ИЗ-2026-04');
 
@@ -231,7 +232,7 @@ describe('DemoAosrWorkspacePage', () => {
   });
 
   it('does not expose free-text material, certificate or final applications fields', () => {
-    render(<DemoAosrWorkspacePage />);
+    renderDemoWorkspace();
 
     expect(screen.queryByLabelText('Материалы / сертификаты простым текстом')).toBeNull();
     expect(screen.queryByLabelText('Приложения / исполнительные схемы простым текстом')).toBeNull();
@@ -240,7 +241,7 @@ describe('DemoAosrWorkspacePage', () => {
   });
 
   it('renders derived applications before final signature blocks', () => {
-    render(<DemoAosrWorkspacePage />);
+    renderDemoWorkspace();
 
     const previewText = getPreviewText();
 
@@ -256,7 +257,7 @@ describe('DemoAosrWorkspacePage', () => {
   });
 
   it('keeps the AOSR preview section order close to the Word form', () => {
-    render(<DemoAosrWorkspacePage />);
+    renderDemoWorkspace();
 
     const previewText = getPreviewText();
     const orderedFragments = [
@@ -288,7 +289,7 @@ describe('DemoAosrWorkspacePage', () => {
   });
 
   it('renders key Word-like preview structure classes', () => {
-    render(<DemoAosrWorkspacePage />);
+    renderDemoWorkspace();
 
     const preview = screen.getByLabelText('Демо-предпросмотр печатной формы АОСР');
     expect(preview.querySelector('.act-page__sheet')).toBeTruthy();
@@ -302,7 +303,7 @@ describe('DemoAosrWorkspacePage', () => {
   it('keeps current editing behavior after the component split', async () => {
     const user = userEvent.setup();
 
-    render(<DemoAosrWorkspacePage />);
+    renderDemoWorkspace();
 
     await user.clear(screen.getByDisplayValue('АОСР-001'));
     await user.type(screen.getByLabelText('Номер акта'), 'АОСР-010');
@@ -361,6 +362,14 @@ describe('DemoAosrWorkspacePage', () => {
     );
   });
 });
+
+function renderDemoWorkspace(): void {
+  render(
+    <DemoStoreProvider>
+      <DemoAosrWorkspacePage />
+    </DemoStoreProvider>,
+  );
+}
 
 interface ManualRepresentativeInput {
   readonly authorityBasis: string;

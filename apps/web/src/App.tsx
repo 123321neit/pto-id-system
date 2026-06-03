@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { DemoAosrWorkspacePage } from './aosr-demo/DemoAosrWorkspacePage.js';
 import { MockObjectDashboardPage } from './app-shell/MockObjectDashboardPage.js';
 import type { MockDashboardPanel } from './app-shell/mock-dashboard.js';
+import { DemoStoreProvider } from './demo-store/DemoStoreProvider.js';
 
 const router = createBrowserRouter([
   {
@@ -13,7 +14,11 @@ const router = createBrowserRouter([
 ]);
 
 export function App(): React.JSX.Element {
-  return <RouterProvider router={router} />;
+  return (
+    <DemoStoreProvider>
+      <RouterProvider router={router} />
+    </DemoStoreProvider>
+  );
 }
 
 function AppContent(): React.JSX.Element {

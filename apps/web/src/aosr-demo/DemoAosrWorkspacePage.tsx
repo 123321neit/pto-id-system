@@ -1,6 +1,13 @@
 import { type SyntheticEvent, useState } from 'react';
 
 import {
+  getCertificateDocumentName,
+  type DemoCertificate,
+  type DemoOrganization,
+  type DemoRepresentative,
+  useDemoStore,
+} from '../demo-store/demo-store.js';
+import {
   addHeaderOrganizationBlock,
   addMaterialCertificateToDraft,
   addRepresentativeToDraft,
@@ -25,6 +32,7 @@ import {
   type DemoAosrObjectDefaultsField,
   type DemoAosrRepresentative,
   type DemoGlobalOrganization,
+  type DemoMaterialCertificate,
 } from './demo-aosr-workspace.js';
 import {
   createRepresentativeFromForm,
@@ -46,9 +54,14 @@ interface DemoAosrWorkspacePageProps {
 export function DemoAosrWorkspacePage({
   onBackToObjects,
 }: DemoAosrWorkspacePageProps = {}): React.JSX.Element {
-  const [objectDefaults, setObjectDefaults] = useState<DemoAosrObjectDefaults>(
-    demoAosrWorkspace.objectDefaults,
-  );
+  const { certificates, organizations, representatives } = useDemoStore();
+  const globalOrganizations = organizations.map(toDemoGlobalOrganization);
+  const globalRepresentatives = representatives.map(toDemoAosrRepresentative);
+  const certificateLibrary = certificates.flatMap(toDemoMaterialCertificates);
+  const [objectDefaults, setObjectDefaults] = useState<DemoAosrObjectDefaults>(() => ({
+    ...demoAosrWorkspace.objectDefaults,
+    representativeLibrary: globalRepresentatives,
+  }));
   const [drafts, setDrafts] = useState<readonly DemoAosrDraft[]>(demoAosrWorkspace.drafts);
   const [selectedDraftId, setSelectedDraftId] = useState(demoAosrWorkspace.drafts[0]?.id ?? '');
   const [draggedDraftId, setDraggedDraftId] = useState<string | null>(null);
@@ -77,17 +90,14 @@ export function DemoAosrWorkspacePage({
 
   const selectedDraft = getSelectedDraft(drafts, selectedDraftId);
   const selectedSignatories = getDraftRepresentatives(selectedDraft);
-  const selectedMaterials = getDraftMaterialCertificates(
-    selectedDraft,
-    demoAosrWorkspace.certificateLibrary,
-  );
+  const selectedMaterials = getDraftMaterialCertificates(selectedDraft, certificateLibrary);
   const selectedDerivedAttachments = getDraftDerivedAttachments(
     selectedDraft,
     demoAosrWorkspace.derivedAttachmentLibrary,
   );
   const finalApplications = getDraftApplications(
     selectedDraft,
-    demoAosrWorkspace.certificateLibrary,
+    certificateLibrary,
     demoAosrWorkspace.derivedAttachmentLibrary,
   );
 
@@ -305,8 +315,8 @@ export function DemoAosrWorkspacePage({
 
           <div className="form-sections">
             <DemoObjectSettingsPanel
-              globalOrganizations={demoAosrWorkspace.globalOrganizationLibrary}
-              globalRepresentatives={demoAosrWorkspace.globalRepresentativeLibrary}
+              globalOrganizations={globalOrganizations}
+              globalRepresentatives={globalRepresentatives}
               headerOrganizationForm={headerOrganizationForm}
               isHeaderOrganizationFormOpen={isHeaderOrganizationFormOpen}
               isObjectSettingsOpen={isObjectSettingsOpen}
@@ -348,7 +358,7 @@ export function DemoAosrWorkspacePage({
             <DemoCurrentActEditor
               actRepresentativeSearch={actRepresentativeSearch}
               attachmentLibrary={demoAosrWorkspace.derivedAttachmentLibrary}
-              certificateLibrary={demoAosrWorkspace.certificateLibrary}
+              certificateLibrary={certificateLibrary}
               draggedRepresentativeId={draggedRepresentativeId}
               finalApplications={finalApplications}
               isCertificateLibraryOpen={isCertificateLibraryOpen}
@@ -458,4 +468,47 @@ function moveItemBefore<TItem extends { readonly id: string }>(
   nextItems.splice(adjustedTargetIndex, 0, item);
 
   return nextItems;
+}
+
+function toDemoGlobalOrganization(organization: DemoOrganization): DemoGlobalOrganization {
+  return {
+    caption: organization.caption,
+    details: organization.details,
+    id: organization.id,
+    organizationName: organization.name,
+  };
+}
+
+function toDemoAosrRepresentative(representative: DemoRepresentative): DemoAosrRepresentative {
+  const nrsId = getAosrNrsId(representative.nrsDetails);
+
+  return {
+    authorityBasis: representative.authorityBasis,
+    fullName: representative.fullName,
+    id: representative.id,
+    organization: representative.organization,
+    position: representative.position,
+    roleLabel: representative.roleLabel,
+    ...(representative.details === undefined ? {} : { details: representative.details }),
+    ...(nrsId === undefined ? {} : { nrsId }),
+  };
+}
+
+function toDemoMaterialCertificates(
+  certificate: DemoCertificate,
+): readonly DemoMaterialCertificate[] {
+  return certificate.materials.map((material) => ({
+    certificateNumber: certificate.documentNumber,
+    documentName: getCertificateDocumentName(certificate),
+    id: material.id,
+    materialName: material.name,
+  }));
+}
+
+function getAosrNrsId(nrsDetails: string | undefined): string | undefined {
+  if (nrsDetails === undefined || nrsDetails.trim() === '') {
+    return undefined;
+  }
+
+  return nrsDetails.trim().replace(/^НРС\s+/u, '');
 }

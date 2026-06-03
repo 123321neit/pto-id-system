@@ -1,21 +1,15 @@
 import { type SyntheticEvent, useState } from 'react';
 
+import {
+  demoCertificateStatuses,
+  getCertificateMaterialNames,
+  type DemoCertificate,
+  type DemoCertificateStatus,
+  useDemoStore,
+} from '../demo-store/demo-store.js';
+
 interface CertificateLibraryPageProps {
   readonly onBackToObjects: () => void;
-}
-
-type CertificateStatus = 'Действует' | 'Истекает' | 'Требует проверки';
-
-interface MockCertificate {
-  readonly id: string;
-  readonly documentNumber: string;
-  readonly documentType: string;
-  readonly issuedAt: string;
-  readonly issuer: string;
-  readonly manufacturer: string;
-  readonly material: string;
-  readonly status: CertificateStatus;
-  readonly validUntil: string;
 }
 
 interface CertificateFormState {
@@ -25,62 +19,9 @@ interface CertificateFormState {
   readonly issuer: string;
   readonly manufacturer: string;
   readonly material: string;
-  readonly status: CertificateStatus;
+  readonly status: DemoCertificateStatus;
   readonly validUntil: string;
 }
-
-const certificateStatuses: readonly CertificateStatus[] = [
-  'Действует',
-  'Истекает',
-  'Требует проверки',
-];
-
-const initialCertificates: readonly MockCertificate[] = [
-  {
-    documentNumber: 'СТ-ОВ-2026-017',
-    documentType: 'Сертификат соответствия',
-    id: 'library-certificate-ducts',
-    issuedAt: '12.05.2026',
-    issuer: 'ООО "Эксперт-С"',
-    manufacturer: 'ООО "ВентПрофиль"',
-    material: 'Воздуховоды оцинкованные 0,7 мм',
-    status: 'Действует',
-    validUntil: '11.05.2029',
-  },
-  {
-    documentNumber: 'ДС-ИЗ-2026-04',
-    documentType: 'Декларация о соответствии',
-    id: 'library-certificate-insulation',
-    issuedAt: '20.05.2026',
-    issuer: 'Реестр деклараций ЕАЭС',
-    manufacturer: 'АО "ТеплоМат"',
-    material: 'Теплоизоляционные маты ИЗ-50',
-    status: 'Действует',
-    validUntil: '19.05.2027',
-  },
-  {
-    documentNumber: 'ПП-ОГН-22',
-    documentType: 'Паспорт партии',
-    id: 'library-certificate-firestop',
-    issuedAt: '21.05.2026',
-    issuer: 'Лаборатория входного контроля',
-    manufacturer: 'ООО "ОгнеСтоп"',
-    material: 'Противопожарный состав для проходок',
-    status: 'Истекает',
-    validUntil: '31.12.2026',
-  },
-  {
-    documentNumber: 'ПС-КМ-48',
-    documentType: 'Паспорт качества',
-    id: 'library-certificate-fasteners',
-    issuedAt: '18.05.2026',
-    issuer: 'Заводская служба качества',
-    manufacturer: 'ООО "Крепеж Комплект"',
-    material: 'Крепежные элементы КМ-12',
-    status: 'Требует проверки',
-    validUntil: 'Проверить по партии',
-  },
-];
 
 const emptyCertificateForm: CertificateFormState = {
   documentNumber: '',
@@ -96,13 +37,12 @@ const emptyCertificateForm: CertificateFormState = {
 export function CertificateLibraryPage({
   onBackToObjects,
 }: CertificateLibraryPageProps): React.JSX.Element {
-  const [certificates, setCertificates] = useState<readonly MockCertificate[]>(initialCertificates);
+  const { addCertificate: addCertificateToStore, certificates } = useDemoStore();
   const [search, setSearch] = useState('');
-  const [statusFilter, setStatusFilter] = useState<'all' | CertificateStatus>('all');
+  const [statusFilter, setStatusFilter] = useState<'all' | DemoCertificateStatus>('all');
   const [isFormOpen, setFormOpen] = useState(false);
   const [certificateForm, setCertificateForm] =
     useState<CertificateFormState>(emptyCertificateForm);
-  const [createdCertificateCount, setCreatedCertificateCount] = useState(1);
 
   const filteredCertificates = certificates.filter((certificate) =>
     matchesCertificate(certificate, search, statusFilter),
@@ -111,20 +51,17 @@ export function CertificateLibraryPage({
   const addCertificate = (event: SyntheticEvent<HTMLFormElement>): void => {
     event.preventDefault();
 
-    const certificate: MockCertificate = {
+    addCertificateToStore({
       documentNumber: certificateForm.documentNumber.trim(),
       documentType: certificateForm.documentType.trim(),
-      id: `library-certificate-created-${String(createdCertificateCount)}`,
       issuedAt: certificateForm.issuedAt.trim(),
       issuer: certificateForm.issuer.trim(),
       manufacturer: certificateForm.manufacturer.trim(),
-      material: certificateForm.material.trim(),
+      materialName: certificateForm.material.trim(),
       status: certificateForm.status,
       validUntil: certificateForm.validUntil.trim(),
-    };
+    });
 
-    setCertificates((currentCertificates) => [certificate, ...currentCertificates]);
-    setCreatedCertificateCount((currentCount) => currentCount + 1);
     setCertificateForm(emptyCertificateForm);
     setFormOpen(false);
   };
@@ -154,8 +91,9 @@ export function CertificateLibraryPage({
         </ol>
 
         <aside className="demo-separation-note" aria-label="Демо-примечание">
-          Сейчас библиотека сертификатов и редактор акта используют отдельные mock-данные. На
-          следующем этапе они будут объединены.
+          Библиотека сертификатов и поиск материалов в АОСР используют один frontend mock-store.
+          Сертификат уже хранит список материалов, чтобы один документ качества мог относиться к
+          нескольким позициям.
         </aside>
 
         <section className="certificate-library-panel" aria-labelledby="certificate-list-title">
@@ -198,7 +136,7 @@ export function CertificateLibraryPage({
                 value={statusFilter}
               >
                 <option value="all">Все статусы</option>
-                {certificateStatuses.map((status) => (
+                {demoCertificateStatuses.map((status) => (
                   <option key={status} value={status}>
                     {status}
                   </option>
@@ -288,7 +226,7 @@ export function CertificateLibraryPage({
                   }}
                   value={certificateForm.status}
                 >
-                  {certificateStatuses.map((status) => (
+                  {demoCertificateStatuses.map((status) => (
                     <option key={status} value={status}>
                       {status}
                     </option>
@@ -307,7 +245,7 @@ export function CertificateLibraryPage({
               filteredCertificates.map((certificate) => (
                 <li className="certificate-list__item" key={certificate.id}>
                   <div className="certificate-list__main">
-                    <strong>{certificate.material}</strong>
+                    <strong>{getCertificateMaterialNames(certificate).join('; ')}</strong>
                     <span>
                       {certificate.documentType} / {certificate.documentNumber}
                     </span>
@@ -380,15 +318,15 @@ function WorkflowStep({ index, title }: WorkflowStepProps): React.JSX.Element {
 }
 
 function matchesCertificate(
-  certificate: MockCertificate,
+  certificate: DemoCertificate,
   search: string,
-  statusFilter: 'all' | CertificateStatus,
+  statusFilter: 'all' | DemoCertificateStatus,
 ): boolean {
   const normalizedSearch = search.trim().toLocaleLowerCase('ru-RU');
   const matchesSearch =
     normalizedSearch === '' ||
     [
-      certificate.material,
+      ...getCertificateMaterialNames(certificate),
       certificate.documentNumber,
       certificate.documentType,
       certificate.manufacturer,
@@ -400,7 +338,7 @@ function matchesCertificate(
   return matchesSearch && matchesStatus;
 }
 
-function toStatusFilter(value: string): 'all' | CertificateStatus {
+function toStatusFilter(value: string): 'all' | DemoCertificateStatus {
   if (value === 'all') {
     return value;
   }
@@ -408,15 +346,15 @@ function toStatusFilter(value: string): 'all' | CertificateStatus {
   return toCertificateStatus(value);
 }
 
-function toCertificateStatus(value: string): CertificateStatus {
-  if (certificateStatuses.includes(value as CertificateStatus)) {
-    return value as CertificateStatus;
+function toCertificateStatus(value: string): DemoCertificateStatus {
+  if (demoCertificateStatuses.includes(value as DemoCertificateStatus)) {
+    return value as DemoCertificateStatus;
   }
 
   return 'Действует';
 }
 
-function getStatusClass(status: CertificateStatus): string {
+function getStatusClass(status: DemoCertificateStatus): string {
   switch (status) {
     case 'Действует':
       return 'certificate-status--valid';

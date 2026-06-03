@@ -4,10 +4,7 @@ export interface DemoAosrWorkspace {
   readonly projectCode: string;
   readonly ownerName: string;
   readonly demoNotice: string;
-  readonly globalOrganizationLibrary: readonly DemoGlobalOrganization[];
-  readonly globalRepresentativeLibrary: readonly DemoAosrRepresentative[];
   readonly objectDefaults: DemoAosrObjectDefaults;
-  readonly certificateLibrary: readonly DemoMaterialCertificate[];
   readonly derivedAttachmentLibrary: readonly DemoDerivedAttachment[];
   readonly drafts: readonly DemoAosrDraft[];
 }
@@ -146,98 +143,7 @@ const customerRepresentative: DemoAosrRepresentative = {
   roleLabel: 'Представитель заказчика',
 };
 
-const globalOrganizationLibrary: readonly DemoGlobalOrganization[] = [
-  {
-    caption: 'Наименование, ОГРН, ИНН, место нахождения, телефон/факс и иные реквизиты участника.',
-    details:
-      'ОГРН 1026600000000; ИНН 6670000000; 620000, г. Екатеринбург, ул. Демонстрационная, 10.',
-    id: 'global-organization-customer',
-    organizationName: 'ГАУЗ СО "Демо-заказчик"',
-  },
-  {
-    caption: 'Реквизиты лица, осуществляющего строительство, включая СРО при наличии.',
-    details: 'ОГРН 1206600007877; ИНН 6670490954; АСРО "Гильдия строителей демо-объекта".',
-    id: 'global-organization-contractor',
-    organizationName: 'ООО "ПТО Монтаж"',
-  },
-  {
-    caption: 'Наименование, ОГРН, ИНН, адрес и сведения о договоре строительного контроля.',
-    details: 'Договор строительного контроля N СК-7; 620100, г. Екатеринбург, ул. Контрольная, 4.',
-    id: 'global-organization-control',
-    organizationName: 'ООО "СтройКонтроль"',
-  },
-  {
-    caption: 'Реквизиты лица, осуществляющего подготовку проектной документации, и сведения о СРО.',
-    details: 'ОГРН 1146678008509; ИНН 6678044711; СРО проектировщиков N П-140-27022010.',
-    id: 'global-organization-designer',
-    organizationName: 'АО "Проектный институт"',
-  },
-  {
-    caption: 'Объектовый блок можно подписать любым пользовательским названием.',
-    details: 'ОГРН 1096600000001; ИНН 6671000001; 620075, г. Екатеринбург, ул. Генподрядная, 8.',
-    id: 'global-organization-general-contractor',
-    organizationName: 'ООО "Демо-генподряд"',
-  },
-];
-
-const globalRepresentativeLibrary: readonly DemoAosrRepresentative[] = [
-  contractorRepresentative,
-  buildingControlRepresentative,
-  authorSupervisionRepresentative,
-  customerRepresentative,
-  {
-    authorityBasis: 'Приказ N ЛК-9 от 12.05.2026',
-    details: 'Для объекта полномочия и НРС можно отредактировать перед добавлением.',
-    fullName: 'Лебедев Л.Л.',
-    id: 'representative-laboratory-001',
-    organization: 'ООО "Лаборатория контроля"',
-    position: 'Инженер лаборатории',
-    roleLabel: 'Стройконтроль лаборатории',
-  },
-  {
-    authorityBasis: 'Доверенность N ГП-18 от 15.05.2026',
-    fullName: 'Николаев Н.Н.',
-    id: 'representative-general-contractor-001',
-    organization: 'ООО "Демо-генподряд"',
-    position: 'Главный инженер проекта',
-    roleLabel: 'Представитель генподрядчика',
-  },
-];
-
-const initialRepresentativeLibrary: readonly DemoAosrRepresentative[] = [
-  contractorRepresentative,
-  buildingControlRepresentative,
-  authorSupervisionRepresentative,
-  customerRepresentative,
-];
-
 export const demoAosrWorkspace: DemoAosrWorkspace = {
-  certificateLibrary: [
-    {
-      certificateNumber: 'СТ-ОВ-2026-017',
-      documentName: 'Сертификат соответствия N СТ-ОВ-2026-017 от 12.05.2026',
-      id: 'certificate-ducts-001',
-      materialName: 'Воздуховоды оцинкованные 0,7 мм',
-    },
-    {
-      certificateNumber: 'ПС-КМ-48',
-      documentName: 'Паспорт качества N ПС-КМ-48 от 18.05.2026',
-      id: 'certificate-fasteners-001',
-      materialName: 'Крепежные элементы КМ-12',
-    },
-    {
-      certificateNumber: 'ДС-ИЗ-2026-04',
-      documentName: 'Декларация о соответствии N ДС-ИЗ-2026-04 от 20.05.2026',
-      id: 'certificate-insulation-001',
-      materialName: 'Теплоизоляционные маты ИЗ-50',
-    },
-    {
-      certificateNumber: 'ПП-ОГН-22',
-      documentName: 'Паспорт партии N ПП-ОГН-22 от 21.05.2026',
-      id: 'certificate-firestop-001',
-      materialName: 'Противопожарный состав для проходок',
-    },
-  ],
   demoNotice: 'ДЕМО / демонстрационные данные / не для работы в продуктиве',
   derivedAttachmentLibrary: [
     {
@@ -259,8 +165,6 @@ export const demoAosrWorkspace: DemoAosrWorkspace = {
       type: 'journal',
     },
   ],
-  globalOrganizationLibrary,
-  globalRepresentativeLibrary,
   drafts: [
     {
       actDate: '2026-06-01',
@@ -356,7 +260,7 @@ export const demoAosrWorkspace: DemoAosrWorkspace = {
     ],
     objectName: 'Реконструкция поликлиники, корпус Б',
     projectName: 'Реконструкция поликлиники, демонстрационный проект',
-    representativeLibrary: initialRepresentativeLibrary,
+    representativeLibrary: [],
   },
   ownerName: 'Демо-владелец',
   projectCode: 'PTO-DEMO-2026',
@@ -413,7 +317,16 @@ export function addRepresentativeToLibrary(
   objectDefaults: DemoAosrObjectDefaults,
   representative: DemoAosrRepresentative,
 ): DemoAosrObjectDefaults {
-  if (objectDefaults.representativeLibrary.some(({ id }) => id === representative.id)) {
+  if (
+    objectDefaults.representativeLibrary.some(
+      (existingRepresentative) =>
+        existingRepresentative.id === representative.id ||
+        (representative.globalRepresentativeId !== undefined &&
+          (existingRepresentative.id === representative.globalRepresentativeId ||
+            existingRepresentative.globalRepresentativeId ===
+              representative.globalRepresentativeId)),
+    )
+  ) {
     return objectDefaults;
   }
 

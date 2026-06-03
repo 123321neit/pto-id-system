@@ -1,24 +1,9 @@
 import { type SyntheticEvent, useState } from 'react';
 
+import { type DemoRepresentative, useDemoStore } from '../demo-store/demo-store.js';
+
 interface RepresentativesOrganizationsPageProps {
   readonly onBackToObjects: () => void;
-}
-
-interface MockManagementOrganization {
-  readonly id: string;
-  readonly name: string;
-  readonly details: string;
-  readonly usageNote: string;
-}
-
-interface MockManagementRepresentative {
-  readonly id: string;
-  readonly authorityBasis: string;
-  readonly fullName: string;
-  readonly nrsDetails?: string;
-  readonly organization: string;
-  readonly position: string;
-  readonly roleLabel: string;
 }
 
 interface OrganizationFormState {
@@ -35,70 +20,6 @@ interface RepresentativeFormState {
   readonly position: string;
   readonly roleLabel: string;
 }
-
-const initialOrganizations: readonly MockManagementOrganization[] = [
-  {
-    details:
-      'ИНН 6670000000; ОГРН 1026600000000; 620000, г. Екатеринбург, ул. Демонстрационная, 10.',
-    id: 'management-organization-customer',
-    name: 'ГАУЗ СО "Демо-заказчик"',
-    usageNote: 'Используется как заказчик в объекте "Реконструкция поликлиники".',
-  },
-  {
-    details: 'ИНН 6670490954; ОГРН 1206600007877; СРО АСРО "Гильдия строителей".',
-    id: 'management-organization-contractor',
-    name: 'ООО "ПТО Монтаж"',
-    usageNote: 'Подрядчик в текущих АОСР и шапке объекта.',
-  },
-  {
-    details: 'ИНН 6678044711; ОГРН 1146678008509; СРО проектировщиков N П-140-27022010.',
-    id: 'management-organization-designer',
-    name: 'АО "Проектный институт"',
-    usageNote: 'Проектная организация и авторский надзор.',
-  },
-  {
-    details: 'ИНН 6671000001; ОГРН 1096600000001; договор генподряда N ГП-1.',
-    id: 'management-organization-general-contractor',
-    name: 'ООО "Демо-генподряд"',
-    usageNote: 'Может быть добавлен в объект отдельным пользовательским блоком.',
-  },
-];
-
-const initialRepresentatives: readonly MockManagementRepresentative[] = [
-  {
-    authorityBasis: 'Приказ N 12-П от 10.05.2026',
-    fullName: 'Иванов И.И.',
-    id: 'management-representative-contractor',
-    organization: 'ООО "ПТО Монтаж"',
-    position: 'Производитель работ',
-    roleLabel: 'Представитель подрядчика',
-  },
-  {
-    authorityBasis: 'Договор строительного контроля N СК-7',
-    fullName: 'Петров П.П.',
-    id: 'management-representative-control',
-    nrsDetails: 'НРС С-66-212868',
-    organization: 'ООО "СтройКонтроль"',
-    position: 'Ведущий инженер строительного контроля',
-    roleLabel: 'Стройконтроль',
-  },
-  {
-    authorityBasis: 'Доверенность N З-44 от 01.05.2026',
-    fullName: 'Кузнецова А.А.',
-    id: 'management-representative-customer',
-    organization: 'ГАУЗ СО "Демо-заказчик"',
-    position: 'Руководитель проекта',
-    roleLabel: 'Представитель заказчика',
-  },
-  {
-    authorityBasis: 'Приказ N ЛК-9 от 12.05.2026',
-    fullName: 'Лебедев Л.Л.',
-    id: 'management-representative-laboratory',
-    organization: 'ООО "Лаборатория контроля"',
-    position: 'Инженер лаборатории',
-    roleLabel: 'Представитель лаборатории',
-  },
-];
 
 const emptyOrganizationForm: OrganizationFormState = {
   details: '',
@@ -118,10 +39,12 @@ const emptyRepresentativeForm: RepresentativeFormState = {
 export function RepresentativesOrganizationsPage({
   onBackToObjects,
 }: RepresentativesOrganizationsPageProps): React.JSX.Element {
-  const [organizations, setOrganizations] =
-    useState<readonly MockManagementOrganization[]>(initialOrganizations);
-  const [representatives, setRepresentatives] =
-    useState<readonly MockManagementRepresentative[]>(initialRepresentatives);
+  const {
+    addOrganization: addOrganizationToStore,
+    addRepresentative: addRepresentativeToStore,
+    organizations,
+    representatives,
+  } = useDemoStore();
   const [librarySearch, setLibrarySearch] = useState('');
   const [organizationSearch, setOrganizationSearch] = useState('');
   const [representativeSearch, setRepresentativeSearch] = useState('');
@@ -131,8 +54,6 @@ export function RepresentativesOrganizationsPage({
     useState<OrganizationFormState>(emptyOrganizationForm);
   const [representativeForm, setRepresentativeForm] =
     useState<RepresentativeFormState>(emptyRepresentativeForm);
-  const [createdOrganizationCount, setCreatedOrganizationCount] = useState(1);
-  const [createdRepresentativeCount, setCreatedRepresentativeCount] = useState(1);
 
   const filteredOrganizations = organizations.filter((organization) =>
     matchesSearch(
@@ -159,15 +80,12 @@ export function RepresentativesOrganizationsPage({
   const addOrganization = (event: SyntheticEvent<HTMLFormElement>): void => {
     event.preventDefault();
 
-    const organization: MockManagementOrganization = {
+    addOrganizationToStore({
       details: organizationForm.details.trim(),
-      id: `management-organization-created-${String(createdOrganizationCount)}`,
       name: organizationForm.name.trim(),
       usageNote: organizationForm.usageNote.trim(),
-    };
+    });
 
-    setOrganizations((currentOrganizations) => [...currentOrganizations, organization]);
-    setCreatedOrganizationCount((currentCount) => currentCount + 1);
     setOrganizationForm(emptyOrganizationForm);
     setOrganizationFormOpen(false);
   };
@@ -175,19 +93,15 @@ export function RepresentativesOrganizationsPage({
   const addRepresentative = (event: SyntheticEvent<HTMLFormElement>): void => {
     event.preventDefault();
 
-    const nrsDetails = representativeForm.nrsDetails.trim();
-    const representative: MockManagementRepresentative = {
+    addRepresentativeToStore({
       authorityBasis: representativeForm.authorityBasis.trim(),
       fullName: representativeForm.fullName.trim(),
-      id: `management-representative-created-${String(createdRepresentativeCount)}`,
+      nrsDetails: representativeForm.nrsDetails.trim(),
       organization: representativeForm.organization.trim(),
       position: representativeForm.position.trim(),
       roleLabel: representativeForm.roleLabel.trim(),
-      ...(nrsDetails === '' ? {} : { nrsDetails }),
-    };
+    });
 
-    setRepresentatives((currentRepresentatives) => [...currentRepresentatives, representative]);
-    setCreatedRepresentativeCount((currentCount) => currentCount + 1);
     setRepresentativeForm(emptyRepresentativeForm);
     setRepresentativeFormOpen(false);
   };
@@ -430,7 +344,7 @@ export function RepresentativesOrganizationsPage({
                     <span>{representative.organization}</span>
                     <small>{representative.authorityBasis}</small>
                     {representative.nrsDetails === undefined ? null : (
-                      <small>{representative.nrsDetails}</small>
+                      <small>{formatNrsDetails(representative)}</small>
                     )}
                   </li>
                 ))
@@ -497,4 +411,10 @@ function matchesSearch(values: readonly string[], ...searches: readonly string[]
 
     return values.some((value) => value.toLocaleLowerCase('ru-RU').includes(normalizedSearch));
   });
+}
+
+function formatNrsDetails(representative: DemoRepresentative): string {
+  const nrsDetails = representative.nrsDetails ?? '';
+
+  return nrsDetails.startsWith('НРС ') ? nrsDetails : `НРС ${nrsDetails}`;
 }

@@ -85,7 +85,7 @@ describe('App shell mock navigation', () => {
     expect(screen.getByText('Приложения формируются автоматически.')).toBeTruthy();
     expect(
       screen.getByText(
-        'Сейчас библиотека сертификатов и редактор акта используют отдельные mock-данные. На следующем этапе они будут объединены.',
+        /Библиотека сертификатов и поиск материалов в АОСР используют один frontend mock-store/u,
       ),
     ).toBeTruthy();
   });
@@ -157,6 +157,44 @@ describe('App shell mock navigation', () => {
     expect(within(certificateList).getByText('Насос циркуляционный N-25')).toBeTruthy();
     expect(within(certificateList).getByText('Паспорт изделия / ПИ-Н25-2026')).toBeTruthy();
     expect(within(certificateList).getByText('ООО "НасосТех"')).toBeTruthy();
+  });
+
+  it('shows a newly added certificate in the AOSR material search without reload', async () => {
+    const user = userEvent.setup();
+
+    render(<App />);
+    await openCertificateLibraryPage(user);
+
+    await user.click(screen.getByRole('button', { name: 'Добавить сертификат' }));
+    await user.type(screen.getByLabelText('Материал'), 'Насос циркуляционный N-25');
+    await user.type(screen.getByLabelText('Тип документа'), 'Паспорт изделия');
+    await user.type(screen.getByLabelText('Номер'), 'ПИ-Н25-2026');
+    await user.type(screen.getByLabelText('Дата выдачи'), '03.06.2026');
+    await user.type(screen.getByLabelText('Действует до'), '03.06.2029');
+    await user.type(screen.getByLabelText('Производитель'), 'ООО "НасосТех"');
+    await user.type(screen.getByLabelText('Орган сертификации'), 'Отдел качества производителя');
+    await user.click(screen.getByRole('button', { name: 'Сохранить сертификат' }));
+
+    await user.click(screen.getByRole('button', { name: 'Вернуться к объектам' }));
+    await user.click(getFirstOpenObjectButton());
+    await user.click(screen.getByRole('button', { name: 'Библиотека сертификатов' }));
+    await user.type(screen.getByLabelText('Найти материал в библиотеке сертификатов'), 'насос');
+
+    const certificateLibrary = screen.getByRole('list', { name: 'Библиотека сертификатов' });
+    const pumpRow = within(certificateLibrary)
+      .getByText('Насос циркуляционный N-25')
+      .closest('.library-row');
+
+    if (pumpRow === null) {
+      throw new Error('В тесте ожидается строка нового сертификата.');
+    }
+
+    await user.click(within(pumpRow as HTMLElement).getByRole('button', { name: 'Добавить' }));
+
+    const previewText = screen.getByLabelText('Демо-предпросмотр печатной формы АОСР').textContent;
+    expect(previewText).toContain('Насос циркуляционный N-25');
+    expect(previewText).toContain('ПИ-Н25-2026');
+    expect(previewText).toContain('Паспорт изделия N ПИ-Н25-2026 от 03.06.2026');
   });
 
   it('returns from the certificate library page to objects', async () => {
@@ -258,6 +296,56 @@ describe('App shell mock navigation', () => {
     ).toBeTruthy();
   });
 
+  it('shows a newly added organization in the object organization picker', async () => {
+    const user = userEvent.setup();
+
+    render(<App />);
+    await openRepresentativesManagementPage(user);
+
+    await user.click(screen.getByRole('button', { name: 'Добавить организацию' }));
+    await user.type(screen.getByLabelText('Название организации'), 'ООО "Авторский контроль"');
+    await user.type(
+      screen.getByLabelText('ИНН / ОГРН / реквизиты'),
+      'ИНН 6600000002; ОГРН 1266600000002.',
+    );
+    await user.type(
+      screen.getByLabelText('Где используется'),
+      'Будет выбран как объектовая организация в демо.',
+    );
+    await user.click(screen.getByRole('button', { name: 'Сохранить организацию' }));
+
+    await user.click(screen.getByRole('button', { name: 'Вернуться к объектам' }));
+    await user.click(getFirstOpenObjectButton());
+    await user.click(screen.getByRole('button', { name: 'Открыть объектовые настройки' }));
+    await user.click(screen.getByRole('button', { name: 'Добавить блок шапки' }));
+    await user.type(
+      screen.getByLabelText('Найти организацию в глобальной библиотеке'),
+      'авторский контроль',
+    );
+
+    const organizationPicker = screen.getByRole('list', {
+      name: 'Глобальная библиотека организаций',
+    });
+    const organizationRow = within(organizationPicker)
+      .getByText('ООО "Авторский контроль"')
+      .closest('.library-row');
+
+    if (organizationRow === null) {
+      throw new Error('В тесте ожидается строка новой организации.');
+    }
+
+    await user.click(
+      within(organizationRow as HTMLElement).getByRole('button', { name: 'Выбрать' }),
+    );
+    await user.type(screen.getByLabelText('Название блока'), 'Авторский контроль');
+    await user.click(screen.getByRole('button', { name: 'Сохранить организацию в шапке' }));
+
+    const previewText = screen.getByLabelText('Демо-предпросмотр печатной формы АОСР').textContent;
+    expect(previewText).toContain('Авторский контроль:');
+    expect(previewText).toContain('ООО "Авторский контроль"');
+    expect(previewText).toContain('ИНН 6600000002; ОГРН 1266600000002.');
+  });
+
   it('adds a mock representative in memory on the management page', async () => {
     const user = userEvent.setup();
 
@@ -281,6 +369,46 @@ describe('App shell mock navigation', () => {
       within(representativeLibrary).getByText('Представитель монтажного участка / Инженер ПТО'),
     ).toBeTruthy();
     expect(within(representativeLibrary).getByText('НРС С-66-000111')).toBeTruthy();
+  });
+
+  it('shows a newly added representative in the act signatory search', async () => {
+    const user = userEvent.setup();
+
+    render(<App />);
+    await openRepresentativesManagementPage(user);
+
+    await user.click(screen.getByRole('button', { name: 'Добавить представителя' }));
+    await user.type(screen.getByLabelText('ФИО представителя'), 'Яковлев Я.Я.');
+    await user.type(screen.getByLabelText('Роль / подпись'), 'Представитель службы качества');
+    await user.type(screen.getByLabelText('Должность'), 'Инженер службы качества');
+    await user.type(screen.getByLabelText('Организация представителя'), 'ООО "Авторский контроль"');
+    await user.type(screen.getByLabelText('Основание полномочий'), 'Приказ N Я-1 от 03.06.2026');
+    await user.click(screen.getByRole('button', { name: 'Сохранить представителя' }));
+
+    await user.click(screen.getByRole('button', { name: 'Вернуться к объектам' }));
+    await user.click(getFirstOpenObjectButton());
+    await user.type(screen.getByLabelText('Добавить подписанта в акт'), 'яковлев');
+
+    const signatoryPicker = screen.getByRole('list', {
+      name: 'База представителей объекта для текущего акта',
+    });
+    const representativeRow = within(signatoryPicker)
+      .getByText('Яковлев Я.Я.')
+      .closest('.library-row');
+
+    if (representativeRow === null) {
+      throw new Error('В тесте ожидается строка нового представителя.');
+    }
+
+    await user.click(
+      within(representativeRow as HTMLElement).getByRole('button', {
+        name: 'Добавить в акт',
+      }),
+    );
+
+    const previewText = screen.getByLabelText('Демо-предпросмотр печатной формы АОСР').textContent;
+    expect(previewText).toContain('Яковлев Я.Я.');
+    expect(previewText).toContain('Представитель службы качества:');
   });
 
   it('returns from the representatives management page to objects', async () => {
