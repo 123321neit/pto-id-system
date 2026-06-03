@@ -82,8 +82,8 @@ export function DemoObjectSettingsPanel({
     <section className="form-section form-section--scope" aria-labelledby="object-settings-title">
       <div className="scope-heading scope-heading--with-action">
         <span>
-          <p className="scope-label">Данные объекта</p>
-          <h3 id="object-settings-title">Общие настройки объекта</h3>
+          <p className="scope-label">Уровень объекта</p>
+          <h3 id="object-settings-title">Настройки объекта</h3>
         </span>
         <button
           aria-controls="object-settings-panel"
@@ -101,6 +101,10 @@ export function DemoObjectSettingsPanel({
         <span>{objectDefaults.representativeLibrary.length} представителей объекта</span>
         <span>проектная документация задана на объекте</span>
       </div>
+      <p className="helper-note">
+        В демо представители объекта предварительно заполнены из общей базы. В реальной системе
+        пользователь будет выбирать их для объекта.
+      </p>
 
       {isObjectSettingsOpen ? (
         <div className="disclosure-panel" id="object-settings-panel">

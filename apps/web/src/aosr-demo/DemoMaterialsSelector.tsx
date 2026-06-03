@@ -30,7 +30,10 @@ export function DemoMaterialsSelector({
       <div className="scope-heading scope-heading--with-action">
         <span>
           <h3 id="materials-data-title">Материалы из библиотеки сертификатов</h3>
-          <p className="placeholder-note">Материал добавляется из библиотеки сертификатов</p>
+          <p className="placeholder-note">
+            Материал нельзя вводить вручную: выберите его из библиотеки, чтобы сертификат попал в
+            акт и приложения.
+          </p>
         </span>
         <button className="compact-toggle" onClick={onToggleCertificateLibrary} type="button">
           {isCertificateLibraryOpen ? 'Скрыть библиотеку' : 'Библиотека сертификатов'}

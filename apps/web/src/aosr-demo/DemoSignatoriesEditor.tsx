@@ -68,7 +68,7 @@ export function DemoSignatoriesEditor({
       </div>
 
       <label className="search-field">
-        Добавить подписанта в акт
+        Добавить подписанта из базы объекта
         <input
           onChange={(event) => {
             onChangeActRepresentativeSearch(event.currentTarget.value);
@@ -77,12 +77,16 @@ export function DemoSignatoriesEditor({
           value={actRepresentativeSearch}
         />
       </label>
+      <p className="helper-note">
+        Если нужного человека нет, добавьте его в разделе ‘Представители и организации’ или внесите
+        вручную только для этого акта.
+      </p>
 
       {actRepresentativeSearch.trim() !== '' ? (
         <div
           className="library-list library-list--compact"
           role="list"
-          aria-label="База представителей объекта для текущего акта"
+          aria-label="Представители объекта для текущего акта"
         >
           {filteredRepresentatives.map((representative) => {
             const isInCurrentAct = selectedSignatories.some(({ id }) => id === representative.id);

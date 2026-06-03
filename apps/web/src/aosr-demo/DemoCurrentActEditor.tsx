@@ -87,8 +87,8 @@ export function DemoCurrentActEditor({
   return (
     <section className="form-section form-section--scope" aria-labelledby="current-act-title">
       <div className="scope-heading">
-        <p className="scope-label">Текущий акт</p>
-        <h3 id="current-act-title">Поля АОСР</h3>
+        <p className="scope-label">Уровень акта</p>
+        <h3 id="current-act-title">Текущий акт</h3>
       </div>
 
       <section className="form-section" aria-labelledby="act-header-data-title">

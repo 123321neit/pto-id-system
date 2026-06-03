@@ -42,15 +42,16 @@ export function DemoObjectRepresentativesPanel({
     <section className="form-section" aria-labelledby="representative-library-title">
       <div className="scope-heading scope-heading--with-action">
         <span>
-          <h3 id="representative-library-title">База представителей объекта</h3>
+          <h3 id="representative-library-title">Представители объекта</h3>
           <p className="helper-note">
-            Глобальная база только подсказывает карточку. Для объекта сохраняется редактируемая
-            копия: роль, организация, полномочия и НРС могут отличаться.
+            Общая база хранит глобальные карточки. В объект выбираются представители объекта:
+            редактируемая привязка/снимок с ролью, организацией, полномочиями и НРС для этого
+            объекта. В акт подписанты добавляются уже из представителей объекта.
           </p>
         </span>
         <span className="inline-actions">
           <button className="compact-toggle" onClick={onToggleLibrary} type="button">
-            {isLibraryOpen ? 'Скрыть базу' : 'База представителей объекта'}
+            {isLibraryOpen ? 'Скрыть представителей объекта' : 'Представители объекта'}
           </button>
           <button className="compact-toggle" onClick={onToggleForm} type="button">
             {isFormOpen ? 'Свернуть добавление' : 'Добавить представителя'}
@@ -68,7 +69,7 @@ export function DemoObjectRepresentativesPanel({
           <div
             className="library-list library-list--compact"
             role="list"
-            aria-label="База представителей объекта"
+            aria-label="Представители объекта"
           >
             {objectRepresentatives.map((representative) => (
               <div className="library-row" key={representative.id} role="listitem">

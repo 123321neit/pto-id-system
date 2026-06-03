@@ -387,10 +387,10 @@ describe('App shell mock navigation', () => {
 
     await user.click(screen.getByRole('button', { name: 'Вернуться к объектам' }));
     await user.click(getFirstOpenObjectButton());
-    await user.type(screen.getByLabelText('Добавить подписанта в акт'), 'яковлев');
+    await user.type(screen.getByLabelText('Добавить подписанта из базы объекта'), 'яковлев');
 
     const signatoryPicker = screen.getByRole('list', {
-      name: 'База представителей объекта для текущего акта',
+      name: 'Представители объекта для текущего акта',
     });
     const representativeRow = within(signatoryPicker)
       .getByText('Яковлев Я.Я.')
@@ -445,10 +445,10 @@ describe('App shell mock navigation', () => {
       within(insulationRow as HTMLElement).getByRole('button', { name: 'Добавить' }),
     );
 
-    await user.type(screen.getByLabelText('Добавить подписанта в акт'), 'заказчика');
+    await user.type(screen.getByLabelText('Добавить подписанта из базы объекта'), 'заказчика');
 
     const objectPicker = screen.getByRole('list', {
-      name: 'База представителей объекта для текущего акта',
+      name: 'Представители объекта для текущего акта',
     });
     const customerRow = within(objectPicker).getByText('Кузнецова А.А.').closest('.library-row');
 

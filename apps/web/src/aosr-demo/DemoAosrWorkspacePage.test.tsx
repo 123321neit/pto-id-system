@@ -17,14 +17,59 @@ afterEach(() => {
 });
 
 describe('DemoAosrWorkspacePage', () => {
+  it('shows object-level and act-level areas as separate scopes', () => {
+    renderDemoWorkspace();
+
+    expect(screen.getByRole('heading', { name: 'Рабочая область акта' })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: 'Настройки объекта' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Открыть объектовые настройки' })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: 'Текущий акт' })).toBeTruthy();
+    expect(screen.getByText('Настройки объекта по кнопке')).toBeTruthy();
+  });
+
   it('keeps object settings and libraries compact until opened', () => {
     renderDemoWorkspace();
 
     expect(screen.getByRole('button', { name: 'Открыть объектовые настройки' })).toBeTruthy();
-    expect(screen.queryByRole('region', { name: 'База представителей объекта' })).toBeNull();
+    expect(screen.queryByRole('region', { name: 'Представители объекта' })).toBeNull();
     expect(screen.queryByLabelText('Найти организацию в глобальной библиотеке')).toBeNull();
     expect(screen.queryByLabelText('Найти материал в библиотеке сертификатов')).toBeNull();
-    expect(screen.getByText('Материал добавляется из библиотеки сертификатов')).toBeTruthy();
+    expect(
+      screen.getByText(
+        'Материал нельзя вводить вручную: выберите его из библиотеки, чтобы сертификат попал в акт и приложения.',
+      ),
+    ).toBeTruthy();
+  });
+
+  it('shows the demo shortcut note for prefilled object representatives', () => {
+    renderDemoWorkspace();
+
+    expect(
+      screen.getByText(
+        'В демо представители объекта предварительно заполнены из общей базы. В реальной системе пользователь будет выбирать их для объекта.',
+      ),
+    ).toBeTruthy();
+  });
+
+  it('explains the act signatory search source and fallback', () => {
+    renderDemoWorkspace();
+
+    expect(screen.getByLabelText('Добавить подписанта из базы объекта')).toBeTruthy();
+    expect(
+      screen.getByText(
+        'Если нужного человека нет, добавьте его в разделе ‘Представители и организации’ или внесите вручную только для этого акта.',
+      ),
+    ).toBeTruthy();
+  });
+
+  it('explains that act materials must be selected from the certificate library', () => {
+    renderDemoWorkspace();
+
+    expect(
+      screen.getByText(
+        'Материал нельзя вводить вручную: выберите его из библиотеки, чтобы сертификат попал в акт и приложения.',
+      ),
+    ).toBeTruthy();
   });
 
   it('renders configurable object-level header organization blocks in preview order', () => {
@@ -112,7 +157,7 @@ describe('DemoAosrWorkspacePage', () => {
       screen.getByRole('button', { name: 'Сохранить представителя в базу объекта' }),
     );
 
-    const objectLibrary = screen.getByRole('list', { name: 'База представителей объекта' });
+    const objectLibrary = screen.getByRole('list', { name: 'Представители объекта' });
     expect(within(objectLibrary).getByText('Николаев Н.Н.')).toBeTruthy();
   });
 
@@ -123,10 +168,10 @@ describe('DemoAosrWorkspacePage', () => {
 
     expect(getPreviewText()).not.toContain('Кузнецова А.А.');
 
-    await user.type(screen.getByLabelText('Добавить подписанта в акт'), 'заказчика');
+    await user.type(screen.getByLabelText('Добавить подписанта из базы объекта'), 'заказчика');
 
     const objectPicker = screen.getByRole('list', {
-      name: 'База представителей объекта для текущего акта',
+      name: 'Представители объекта для текущего акта',
     });
     const customerRow = within(objectPicker).getByText('Кузнецова А.А.').closest('.library-row');
 
@@ -159,9 +204,9 @@ describe('DemoAosrWorkspacePage', () => {
     expect(getPreviewText()).toContain('Сидоров С.С.');
 
     await openObjectSettings(user);
-    await user.click(screen.getByRole('button', { name: 'База представителей объекта' }));
+    await user.click(screen.getByRole('button', { name: 'Представители объекта' }));
 
-    const objectLibrary = screen.getByRole('list', { name: 'База представителей объекта' });
+    const objectLibrary = screen.getByRole('list', { name: 'Представители объекта' });
     expect(within(objectLibrary).queryByText('Сидоров С.С.')).toBeNull();
   });
 
@@ -185,9 +230,9 @@ describe('DemoAosrWorkspacePage', () => {
     expect(getPreviewText()).toContain('Орлова О.О.');
 
     await openObjectSettings(user);
-    await user.click(screen.getByRole('button', { name: 'База представителей объекта' }));
+    await user.click(screen.getByRole('button', { name: 'Представители объекта' }));
 
-    const objectLibrary = screen.getByRole('list', { name: 'База представителей объекта' });
+    const objectLibrary = screen.getByRole('list', { name: 'Представители объекта' });
     expect(within(objectLibrary).getByText('Орлова О.О.')).toBeTruthy();
   });
 
