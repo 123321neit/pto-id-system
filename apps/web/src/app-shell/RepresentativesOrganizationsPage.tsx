@@ -209,6 +209,16 @@ export function RepresentativesOrganizationsPage({
           </button>
         </header>
 
+        <ol
+          className="workflow-flow workflow-flow--secondary"
+          aria-label="Порядок работы с подписантами"
+        >
+          <WorkflowStep index="1" title="Добавьте организацию" />
+          <WorkflowStep index="2" title="Добавьте представителя" />
+          <WorkflowStep index="3" title="Откройте объект" />
+          <WorkflowStep index="4" title="Добавьте подписанта в акт" />
+        </ol>
+
         <label className="dashboard-search management-search">
           Поиск по организациям и представителям
           <input
@@ -460,6 +470,20 @@ function ConceptNote({ children, title }: ConceptNoteProps): React.JSX.Element {
       <h3>{title}</h3>
       <p>{children}</p>
     </aside>
+  );
+}
+
+interface WorkflowStepProps {
+  readonly index: string;
+  readonly title: string;
+}
+
+function WorkflowStep({ index, title }: WorkflowStepProps): React.JSX.Element {
+  return (
+    <li className="workflow-step">
+      <span className="workflow-step__index">{index}</span>
+      <span>{title}</span>
+    </li>
   );
 }
 

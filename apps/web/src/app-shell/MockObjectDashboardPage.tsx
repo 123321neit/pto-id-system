@@ -6,6 +6,7 @@ import {
 } from './mock-dashboard.js';
 import { useState } from 'react';
 
+import { CertificateLibraryPage } from './CertificateLibraryPage.js';
 import { RepresentativesOrganizationsPage } from './RepresentativesOrganizationsPage.js';
 
 interface MockObjectDashboardPageProps {
@@ -181,15 +182,14 @@ export function MockObjectDashboardPage({
             </div>
           </div>
         </section>
-      ) : activePanel === 'representatives' ? (
-        <RepresentativesOrganizationsPage
+      ) : activePanel === 'certificates' ? (
+        <CertificateLibraryPage
           onBackToObjects={() => {
             onSelectPanel('objects');
           }}
         />
       ) : (
-        <MockPlaceholderPanel
-          panel={activePanel}
+        <RepresentativesOrganizationsPage
           onBackToObjects={() => {
             onSelectPanel('objects');
           }}
@@ -244,35 +244,6 @@ function ObjectCard({ object, onOpenObject }: ObjectCardProps): React.JSX.Elemen
         Открыть объект
       </button>
     </article>
-  );
-}
-
-interface MockPlaceholderPanelProps {
-  readonly panel: Exclude<MockDashboardPanel, 'objects'>;
-  readonly onBackToObjects: () => void;
-}
-
-function MockPlaceholderPanel({
-  panel,
-  onBackToObjects,
-}: MockPlaceholderPanelProps): React.JSX.Element {
-  const title =
-    panel === 'certificates' ? 'Библиотека сертификатов' : 'Представители и организации';
-
-  return (
-    <section className="dashboard-page" aria-labelledby="placeholder-panel-title">
-      <div className="dashboard-placeholder">
-        <p className="section-kicker">Макет раздела</p>
-        <h1 id="placeholder-panel-title">{title}</h1>
-        <p>Раздел будет оформлен отдельным шагом.</p>
-        <p>
-          Текущий поиск сертификатов и представителей внутри АОСР остается в рабочем демо-редакторе.
-        </p>
-        <button className="secondary-action" onClick={onBackToObjects} type="button">
-          Вернуться к объектам
-        </button>
-      </div>
-    </section>
   );
 }
 

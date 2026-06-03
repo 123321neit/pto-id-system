@@ -6,9 +6,9 @@
 
 # MASTER CONTEXT / SOURCE OF TRUTH
 
-# VERSION: 2026-06-03-MOCK-REPRESENTATIVES-ORGANIZATIONS-MANAGEMENT
+# VERSION: 2026-06-03-MOCK-CERTIFICATE-LIBRARY-UX
 
-# STATUS: FIRST ALLOWED INFRASTRUCTURE BOOTSTRAP SCAFFOLD; CANONICAL ADR BASELINE ACCEPTED; BACKEND MODULE ARCHITECTURE SKELETON INTRODUCED; FIRST TECHNICAL FRONTEND-BACKEND STATUS SLICE INTRODUCED; DATABASE FOUNDATION TECHNICAL SLICE INTRODUCED; OBJECT STORAGE FOUNDATION TECHNICAL SLICE INTRODUCED; AUTH SHARING IMPLEMENTATION PLAN ADDED; USER IDENTITY SKELETON INTRODUCED; GLOBAL SYSTEM ADMIN MARKER INTRODUCED; OWNED WORKSPACE BASELINE INTRODUCED; FIRST MOCK AOSR DEMO UI SLICE INTRODUCED; MOCK AOSR CONFIGURABLE OBJECT HEADER ORGANIZATIONS AND REPRESENTATIVE LIBRARY INTRODUCED; MOCK AOSR DEMO UX/PREVIEW REFINED; MOCK APP SHELL AND OBJECT DASHBOARD INTRODUCED; FRONTEND-ONLY MOCK REPRESENTATIVES/ORGANIZATIONS MANAGEMENT PAGE INTRODUCED
+# STATUS: FIRST ALLOWED INFRASTRUCTURE BOOTSTRAP SCAFFOLD; CANONICAL ADR BASELINE ACCEPTED; BACKEND MODULE ARCHITECTURE SKELETON INTRODUCED; FIRST TECHNICAL FRONTEND-BACKEND STATUS SLICE INTRODUCED; DATABASE FOUNDATION TECHNICAL SLICE INTRODUCED; OBJECT STORAGE FOUNDATION TECHNICAL SLICE INTRODUCED; AUTH SHARING IMPLEMENTATION PLAN ADDED; USER IDENTITY SKELETON INTRODUCED; GLOBAL SYSTEM ADMIN MARKER INTRODUCED; OWNED WORKSPACE BASELINE INTRODUCED; FIRST MOCK AOSR DEMO UI SLICE INTRODUCED; MOCK AOSR CONFIGURABLE OBJECT HEADER ORGANIZATIONS AND REPRESENTATIVE LIBRARY INTRODUCED; MOCK AOSR DEMO UX/PREVIEW REFINED; MOCK APP SHELL AND OBJECT DASHBOARD INTRODUCED; FRONTEND-ONLY MOCK REPRESENTATIVES/ORGANIZATIONS MANAGEMENT PAGE INTRODUCED; FRONTEND-ONLY MOCK CERTIFICATE LIBRARY PAGE INTRODUCED
 
 # LANGUAGE: RU
 
@@ -31,7 +31,7 @@
 Текущая стадия проекта:
 
 ```text
-FIRST ALLOWED INFRASTRUCTURE BOOTSTRAP SCAFFOLD; CANONICAL ADR BASELINE ACCEPTED; BACKEND MODULE ARCHITECTURE SKELETON INTRODUCED; FIRST TECHNICAL FRONTEND-BACKEND STATUS SLICE INTRODUCED; DATABASE FOUNDATION TECHNICAL SLICE INTRODUCED; OBJECT STORAGE FOUNDATION TECHNICAL SLICE INTRODUCED; AUTH SHARING IMPLEMENTATION PLAN ADDED; USER IDENTITY SKELETON INTRODUCED; GLOBAL SYSTEM ADMIN MARKER INTRODUCED; OWNED WORKSPACE BASELINE INTRODUCED; FIRST MOCK AOSR DEMO UI SLICE INTRODUCED; MOCK AOSR CONFIGURABLE OBJECT HEADER ORGANIZATIONS AND REPRESENTATIVE LIBRARY INTRODUCED; MOCK AOSR DEMO UX/PREVIEW REFINED; MOCK APP SHELL AND OBJECT DASHBOARD INTRODUCED; FRONTEND-ONLY MOCK REPRESENTATIVES/ORGANIZATIONS MANAGEMENT PAGE INTRODUCED
+FIRST ALLOWED INFRASTRUCTURE BOOTSTRAP SCAFFOLD; CANONICAL ADR BASELINE ACCEPTED; BACKEND MODULE ARCHITECTURE SKELETON INTRODUCED; FIRST TECHNICAL FRONTEND-BACKEND STATUS SLICE INTRODUCED; DATABASE FOUNDATION TECHNICAL SLICE INTRODUCED; OBJECT STORAGE FOUNDATION TECHNICAL SLICE INTRODUCED; AUTH SHARING IMPLEMENTATION PLAN ADDED; USER IDENTITY SKELETON INTRODUCED; GLOBAL SYSTEM ADMIN MARKER INTRODUCED; OWNED WORKSPACE BASELINE INTRODUCED; FIRST MOCK AOSR DEMO UI SLICE INTRODUCED; MOCK AOSR CONFIGURABLE OBJECT HEADER ORGANIZATIONS AND REPRESENTATIVE LIBRARY INTRODUCED; MOCK AOSR DEMO UX/PREVIEW REFINED; MOCK APP SHELL AND OBJECT DASHBOARD INTRODUCED; FRONTEND-ONLY MOCK REPRESENTATIVES/ORGANIZATIONS MANAGEMENT PAGE INTRODUCED; FRONTEND-ONLY MOCK CERTIFICATE LIBRARY PAGE INTRODUCED
 ```
 
 Проект принял первый явно разрешённый infrastructure/bootstrap scaffold,
@@ -123,13 +123,20 @@ workspace/editor, and the workspace exposes `Назад к объектам`. Th
 management page with in-memory global organization and representative
 libraries, local mock add forms and conceptual notes about object-level
 bindings/snapshots. Global library entries versus object-level bindings remain
-mock/in-memory only. The certificate quick access section remains a placeholder.
-The dashboard management page does not replace the existing certificate search,
-object settings or signatory search/add behavior inside the AOSR editor. This
-is mock frontend navigation only: dashboard/object cards and management rows are
-mock data, there is no backend, persistence, Prisma schema, migrations, API
-route/controller, auth/session, upload, real DOCX/PDF generation, AI/OCR, share
-code/grant or production business logic.
+mock/in-memory only. The `Библиотека сертификатов` dashboard section now opens a
+frontend-only mock certificate library page with in-memory cards, search, a
+lightweight status filter, a local add form and UX guidance for the future flow
+from library material search to act applications. The certificate page has no
+uploads, no OCR, no backend, no persistence and no real file storage. It is
+intentionally not connected to the AOSR editor yet; this stage keeps a visible
+DEMO note that the certificate library page and AOSR editor use separate
+mock data and that the next step will unify the mock libraries. The dashboard
+management pages do not replace the existing certificate search, object settings
+or signatory search/add behavior inside the AOSR editor. This is mock frontend
+navigation only: dashboard/object cards and management rows are mock data, there
+is no backend, persistence, Prisma schema, migrations, API route/controller,
+auth/session, upload, real DOCX/PDF generation, AI/OCR, share code/grant or
+production business logic.
 
 ---
 
@@ -1573,9 +1580,11 @@ UI не должен быть перегружен, но система долж
   old RBAC role/capability/membership authorization.
 - mock app shell and object dashboard in the frontend: in-memory dashboard ->
   existing AOSR workspace navigation, left nav, mock object cards, quick access
-  certificate placeholder, mock representatives/organizations management page
-  and recent documents, with the existing mock AOSR editor kept as the
-  functional demo surface.
+  mock certificate library page, mock representatives/organizations management
+  page and recent documents, with the existing mock AOSR editor kept as the
+  functional demo surface. The certificate page is frontend-only, in-memory,
+  has no uploads/OCR/backend/persistence and is intentionally not connected to
+  the AOSR editor until the next mock-library unification step.
 
 Не завершено:
 
@@ -1594,7 +1603,9 @@ UI не должен быть перегружен, но система долж
   future implementation of `docs/20` phases;
 - frontend component architecture.
 - production object dashboard data, backend navigation, persistence and real
-  certificate/representative/organization library pages.
+  certificate/representative/organization library pages. The current
+  certificate page is mock-only and uses separate mock data from the AOSR
+  editor.
 - remaining `docs/20` phases: workspace share codes and grants, certificate
   library share codes and grants.
 
@@ -3658,3 +3669,50 @@ production domain/API/persistence work remain separate explicit tasks.
 - no auth/session/login/register;
 - no share codes/grants;
 - no production representative/organization business logic.
+
+### 2026-06-03 — Frontend-only mock certificate library page introduced
+
+- Статус: `Frontend mock certificate library only`
+- Описание: third small UX cleanup step replacing the dashboard placeholder for
+  `Библиотека сертификатов` with a frontend-only in-memory mock page.
+
+Добавлено/уточнено:
+
+- clicking `Библиотека сертификатов` in the dashboard opens a real mock page
+  instead of the placeholder;
+- page title, short onboarding text and visual workflow explain that the user
+  first saves certificates/materials, then opens an object and act, searches for
+  a material and gets the certificate into the act automatically;
+- mock certificate list shows material/equipment, document type, document
+  number, issue date, valid-until value, manufacturer, issuer/source and status;
+- statuses are `Действует`, `Истекает` and `Требует проверки`;
+- search works in memory by material, document number, document type,
+  manufacturer and issuer/source;
+- lightweight status filter works in memory;
+- `Добавить сертификат` opens a local in-memory form for certificate metadata;
+- upload UI is intentionally absent and replaced with the note `Загрузка PDF и
+сканов будет реализована позже.`;
+- compact `Как это будет работать` block explains future library/object/act/
+  applications flow;
+- visible DEMO note states that the certificate library page and AOSR editor use
+  separate mock data and will be unified in the next step;
+- representatives/organizations page now also shows a compact onboarding flow
+  from organization to representative to object to act signatory;
+- existing AOSR object opening, certificate material search/selection, derived
+  applications, signatory search/add, object settings, document tree,
+  drag/drop ordering and preview behavior remain functional.
+
+Что не было введено:
+
+- no backend routes/controllers;
+- no Prisma/schema/migrations;
+- no persistence;
+- no uploads;
+- no file storage;
+- no OCR or AI extraction;
+- no real DOCX/PDF generation;
+- no auth/session/login/register;
+- no share codes/grants;
+- no production certificate business logic;
+- no connection between the certificate library page state and the AOSR editor
+  mock state yet.

@@ -436,6 +436,287 @@ button {
   margin-top: 18px;
 }
 
+.certificate-content {
+  max-width: 1240px;
+}
+
+.certificate-hero {
+  align-items: start;
+}
+
+.workflow-flow {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin: 0 0 18px;
+  padding: 0;
+  list-style: none;
+}
+
+.workflow-step {
+  position: relative;
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr);
+  gap: 9px;
+  align-items: center;
+  min-height: 66px;
+  border: 1px solid #c9d7e2;
+  border-radius: 8px;
+  background: #ffffff;
+  padding: 11px 12px;
+  color: #24333a;
+  font-size: 0.84rem;
+  font-weight: 850;
+  line-height: 1.3;
+  box-shadow: 0 10px 24px rgba(22, 35, 53, 0.05);
+}
+
+.workflow-step:not(:last-child)::after {
+  position: absolute;
+  top: 50%;
+  right: -10px;
+  z-index: 1;
+  width: 18px;
+  height: 18px;
+  border: 1px solid #bfd0dd;
+  border-left: 0;
+  border-bottom: 0;
+  background: #ffffff;
+  content: '';
+  transform: translateY(-50%) rotate(45deg);
+}
+
+.workflow-step__index {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  border-radius: 8px;
+  background: #e0f2fe;
+  color: #075985;
+  font-weight: 900;
+}
+
+.workflow-flow--secondary .workflow-step__index {
+  background: #ecfdf5;
+  color: #047857;
+}
+
+.demo-separation-note {
+  margin-bottom: 18px;
+  border: 1px solid #f1c27b;
+  border-left: 4px solid #c77813;
+  border-radius: 8px;
+  background: #fff9ed;
+  padding: 13px 15px;
+  color: #7a3f04;
+  font-size: 0.88rem;
+  font-weight: 750;
+  line-height: 1.5;
+}
+
+.certificate-library-panel,
+.future-workflow {
+  display: grid;
+  gap: 16px;
+  border: 1px solid #d7e0e8;
+  border-radius: 8px;
+  background: #ffffff;
+  padding: 18px;
+  box-shadow: 0 12px 28px rgba(22, 35, 53, 0.06);
+}
+
+.certificate-library-panel {
+  margin-bottom: 18px;
+}
+
+.certificate-library-panel__header,
+.certificate-toolbar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 16px;
+  align-items: start;
+}
+
+.certificate-library-panel h2,
+.future-workflow h2 {
+  font-size: 1.1rem;
+  line-height: 1.25;
+}
+
+.certificate-search {
+  width: 100%;
+  margin-bottom: 0;
+}
+
+.status-filter {
+  display: grid;
+  gap: 7px;
+  min-width: 210px;
+  color: #48575c;
+  font-size: 0.84rem;
+  font-weight: 750;
+}
+
+.status-filter select,
+.certificate-form select {
+  width: 100%;
+  border: 1px solid #becbd4;
+  border-radius: 6px;
+  background: #ffffff;
+  padding: 10px 11px;
+  color: #172124;
+  line-height: 1.4;
+}
+
+.certificate-form {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  border-left: 3px solid #2563eb;
+  background: #f8fbff;
+  padding: 14px;
+}
+
+.certificate-form label {
+  display: grid;
+  gap: 7px;
+  color: #48575c;
+  font-size: 0.84rem;
+  font-weight: 750;
+}
+
+.certificate-form input {
+  width: 100%;
+  border: 1px solid #becbd4;
+  border-radius: 6px;
+  background: #ffffff;
+  padding: 10px 11px;
+  color: #172124;
+  line-height: 1.4;
+}
+
+.upload-placeholder {
+  grid-column: 1 / -1;
+  margin: 0;
+  border: 1px dashed #c58b48;
+  border-radius: 7px;
+  background: #fffbf5;
+  padding: 10px 11px;
+  color: #7c3f06;
+  font-size: 0.84rem;
+  font-weight: 750;
+  line-height: 1.45;
+}
+
+.certificate-form .primary-action {
+  grid-column: 1 / -1;
+}
+
+.certificate-list {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.certificate-list__item {
+  display: grid;
+  grid-template-columns: minmax(220px, 0.9fr) minmax(0, 1.6fr) auto;
+  gap: 14px;
+  align-items: center;
+  border: 1px solid #d5dde4;
+  border-radius: 8px;
+  background: #ffffff;
+  padding: 13px;
+}
+
+.certificate-list__main {
+  display: grid;
+  gap: 5px;
+}
+
+.certificate-list__main strong {
+  color: #172124;
+  font-size: 0.94rem;
+  line-height: 1.35;
+}
+
+.certificate-list__main span {
+  color: #607078;
+  font-size: 0.8rem;
+  line-height: 1.4;
+}
+
+.certificate-meta {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.certificate-meta div {
+  display: grid;
+  gap: 3px;
+}
+
+.certificate-meta dt {
+  color: #728087;
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.certificate-meta dd {
+  margin: 0;
+  color: #2f3e43;
+  font-size: 0.78rem;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.certificate-status {
+  width: fit-content;
+  border-radius: 999px;
+  padding: 5px 9px;
+  font-size: 0.72rem;
+  font-weight: 850;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.certificate-status--valid {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.certificate-status--expiring {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.certificate-status--review {
+  background: #e0f2fe;
+  color: #075985;
+}
+
+.future-workflow {
+  grid-template-columns: minmax(220px, 0.52fr) minmax(0, 1fr);
+  align-items: start;
+  background: #f8fbff;
+}
+
+.future-workflow ul {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding-left: 20px;
+  color: #425156;
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+
 .management-content {
   max-width: 1220px;
 }
@@ -1244,6 +1525,9 @@ h3 {
 
 .form-section input:focus,
 .form-section textarea:focus,
+.certificate-form input:focus,
+.certificate-form select:focus,
+.status-filter select:focus,
 .act-form-grid input:focus,
 .act-form-grid textarea:focus,
 .act-tree-item:focus-visible,
@@ -1603,6 +1887,24 @@ h3 {
     grid-template-columns: 1fr;
   }
 
+  .workflow-flow {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .workflow-step:not(:last-child)::after {
+    display: none;
+  }
+
+  .certificate-form,
+  .certificate-meta {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .certificate-list__item,
+  .future-workflow {
+    grid-template-columns: 1fr;
+  }
+
   .management-grid {
     grid-template-columns: 1fr;
   }
@@ -1628,9 +1930,21 @@ h3 {
 
   .object-card__title-row,
   .object-card__stats,
+  .certificate-library-panel__header,
+  .certificate-toolbar,
+  .certificate-form,
+  .certificate-meta,
   .management-card__header,
   .management-form--representative {
     grid-template-columns: 1fr;
+  }
+
+  .workflow-flow {
+    grid-template-columns: 1fr;
+  }
+
+  .status-filter {
+    min-width: 0;
   }
 
   .management-card__header {

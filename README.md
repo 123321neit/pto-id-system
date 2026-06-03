@@ -5,7 +5,7 @@ Web-система автоматизации исполнительной до�
 Текущий статус:
 
 ```text
-FIRST ALLOWED INFRASTRUCTURE BOOTSTRAP SCAFFOLD ACCEPTED; CANONICAL ADR BASELINE ACCEPTED; BACKEND MODULE ARCHITECTURE SKELETON INTRODUCED; FIRST TECHNICAL FRONTEND-BACKEND STATUS SLICE INTRODUCED; DATABASE FOUNDATION TECHNICAL SLICE INTRODUCED; OBJECT STORAGE FOUNDATION TECHNICAL SLICE INTRODUCED; AUTH SHARING IMPLEMENTATION PLAN ADDED; USER IDENTITY SKELETON INTRODUCED; GLOBAL SYSTEM ADMIN MARKER INTRODUCED; OWNED WORKSPACE BASELINE INTRODUCED; FIRST MOCK AOSR DEMO UI SLICE INTRODUCED; MOCK AOSR DEMO UX/PREVIEW REFINED; MOCK APP SHELL AND OBJECT DASHBOARD INTRODUCED; FRONTEND-ONLY MOCK REPRESENTATIVES/ORGANIZATIONS MANAGEMENT PAGE INTRODUCED
+FIRST ALLOWED INFRASTRUCTURE BOOTSTRAP SCAFFOLD ACCEPTED; CANONICAL ADR BASELINE ACCEPTED; BACKEND MODULE ARCHITECTURE SKELETON INTRODUCED; FIRST TECHNICAL FRONTEND-BACKEND STATUS SLICE INTRODUCED; DATABASE FOUNDATION TECHNICAL SLICE INTRODUCED; OBJECT STORAGE FOUNDATION TECHNICAL SLICE INTRODUCED; AUTH SHARING IMPLEMENTATION PLAN ADDED; USER IDENTITY SKELETON INTRODUCED; GLOBAL SYSTEM ADMIN MARKER INTRODUCED; OWNED WORKSPACE BASELINE INTRODUCED; FIRST MOCK AOSR DEMO UI SLICE INTRODUCED; MOCK AOSR DEMO UX/PREVIEW REFINED; MOCK APP SHELL AND OBJECT DASHBOARD INTRODUCED; FRONTEND-ONLY MOCK REPRESENTATIVES/ORGANIZATIONS MANAGEMENT PAGE INTRODUCED; FRONTEND-ONLY MOCK CERTIFICATE LIBRARY PAGE INTRODUCED
 ```
 
 В репозитории принят первый разрешённый scaffold. Это только infrastructure/bootstrap
@@ -78,11 +78,15 @@ Opening any mock object switches in memory to the existing AOSR workspace, and
 the workspace has a `Назад к объектам` action. The `Представители и
 организации` dashboard section now opens a frontend-only mock management page
 with in-memory global organization/representative libraries, local mock add
-forms and conceptual object-level binding/snapshot notes. The certificate
-library dashboard section remains a placeholder. These dashboard sections have
-no backend, persistence, uploads, real generation, auth, share codes or
-production business logic. Existing certificate and signatory behavior inside
-the AOSR act remains functional.
+forms and conceptual object-level binding/snapshot notes. The
+`Библиотека сертификатов` dashboard section now opens a frontend-only mock
+library page with in-memory certificate cards, search, status filter, local
+mock add form, no file upload, no OCR and no persistence. It intentionally stays
+separate from the AOSR editor mock data for this stage; the next step will unify
+the mock certificate libraries. These dashboard sections have no backend,
+persistence, uploads, real generation, auth, share codes or production business
+logic. Existing certificate and signatory behavior inside the AOSR act remains
+functional.
 
 Production feature coding remains blocked outside explicitly requested narrow
 demo/technical slices.

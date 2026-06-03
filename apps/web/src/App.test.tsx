@@ -42,7 +42,7 @@ describe('App shell mock navigation', () => {
     expect(screen.getByText('Реконструкция поликлиники, демонстрационный проект')).toBeTruthy();
   });
 
-  it('keeps the certificates quick access section as a mock placeholder', async () => {
+  it('opens the certificate library page from quick access with onboarding visible', async () => {
     const user = userEvent.setup();
 
     render(<App />);
@@ -52,7 +52,123 @@ describe('App shell mock navigation', () => {
     await user.click(within(quickAccess).getByRole('button', { name: /Библиотека сертификатов/u }));
 
     expect(screen.getByRole('heading', { name: 'Библиотека сертификатов' })).toBeTruthy();
-    expect(screen.getByText('Раздел будет оформлен отдельным шагом.')).toBeTruthy();
+    expect(
+      screen.getByText(
+        'Сначала сохраните сертификаты и материалы. Потом добавляйте их в акты через поиск материалов.',
+      ),
+    ).toBeTruthy();
+
+    const workflow = screen.getByRole('list', { name: 'Порядок работы с сертификатами' });
+    expect(within(workflow).getByText('Добавьте сертификат')).toBeTruthy();
+    expect(within(workflow).getByText('Откройте акт')).toBeTruthy();
+    expect(within(workflow).getByText('Найдите материал')).toBeTruthy();
+    expect(within(workflow).getByText('Сертификат попадет в акт автоматически')).toBeTruthy();
+    expect(screen.queryByText('Раздел будет оформлен отдельным шагом.')).toBeNull();
+  });
+
+  it('renders the certificate list and future workflow guidance', async () => {
+    const user = userEvent.setup();
+
+    render(<App />);
+    await openCertificateLibraryPage(user);
+
+    const certificateList = screen.getByRole('list', { name: 'Список сертификатов' });
+    expect(within(certificateList).getByText('Воздуховоды оцинкованные 0,7 мм')).toBeTruthy();
+    expect(within(certificateList).getByText(/СТ-ОВ-2026-017/u)).toBeTruthy();
+    expect(within(certificateList).getByText('ООО "ВентПрофиль"')).toBeTruthy();
+    expect(within(certificateList).getByText('Противопожарный состав для проходок')).toBeTruthy();
+
+    expect(screen.getByRole('region', { name: 'Как это будет работать' })).toBeTruthy();
+    expect(screen.getByText('Сертификаты хранятся в библиотеке.')).toBeTruthy();
+    expect(screen.getByText('Объект использует сертификаты из библиотеки.')).toBeTruthy();
+    expect(screen.getByText('Акт выбирает материалы через поиск.')).toBeTruthy();
+    expect(screen.getByText('Приложения формируются автоматически.')).toBeTruthy();
+    expect(
+      screen.getByText(
+        'Сейчас библиотека сертификатов и редактор акта используют отдельные mock-данные. На следующем этапе они будут объединены.',
+      ),
+    ).toBeTruthy();
+  });
+
+  it('searches certificates by material, number, type, manufacturer and issuer', async () => {
+    const user = userEvent.setup();
+
+    render(<App />);
+    await openCertificateLibraryPage(user);
+
+    const certificateList = screen.getByRole('list', { name: 'Список сертификатов' });
+
+    await user.type(screen.getByLabelText('Поиск по библиотеке сертификатов'), 'тепломат');
+    expect(within(certificateList).getByText('Теплоизоляционные маты ИЗ-50')).toBeTruthy();
+    expect(within(certificateList).queryByText('Воздуховоды оцинкованные 0,7 мм')).toBeNull();
+
+    await user.clear(screen.getByLabelText('Поиск по библиотеке сертификатов'));
+    await user.type(screen.getByLabelText('Поиск по библиотеке сертификатов'), 'ПП-ОГН');
+    expect(within(certificateList).getByText('Противопожарный состав для проходок')).toBeTruthy();
+
+    await user.clear(screen.getByLabelText('Поиск по библиотеке сертификатов'));
+    await user.type(screen.getByLabelText('Поиск по библиотеке сертификатов'), 'паспорт качества');
+    expect(within(certificateList).getByText('Крепежные элементы КМ-12')).toBeTruthy();
+
+    await user.clear(screen.getByLabelText('Поиск по библиотеке сертификатов'));
+    await user.type(screen.getByLabelText('Поиск по библиотеке сертификатов'), 'эксперт');
+    expect(within(certificateList).getByText('Воздуховоды оцинкованные 0,7 мм')).toBeTruthy();
+  });
+
+  it('filters certificates by status', async () => {
+    const user = userEvent.setup();
+
+    render(<App />);
+    await openCertificateLibraryPage(user);
+
+    const certificateList = screen.getByRole('list', { name: 'Список сертификатов' });
+
+    await user.selectOptions(screen.getByLabelText('Фильтр по статусу сертификата'), 'Истекает');
+
+    expect(within(certificateList).getByText('Противопожарный состав для проходок')).toBeTruthy();
+    expect(within(certificateList).getByText('Истекает')).toBeTruthy();
+    expect(within(certificateList).queryByText('Воздуховоды оцинкованные 0,7 мм')).toBeNull();
+  });
+
+  it('adds a mock certificate in memory on the certificate library page', async () => {
+    const user = userEvent.setup();
+
+    render(<App />);
+    await openCertificateLibraryPage(user);
+
+    await user.click(screen.getByRole('button', { name: 'Добавить сертификат' }));
+    await user.type(screen.getByLabelText('Материал'), 'Насос циркуляционный N-25');
+    await user.type(screen.getByLabelText('Тип документа'), 'Паспорт изделия');
+    await user.type(screen.getByLabelText('Номер'), 'ПИ-Н25-2026');
+    await user.type(screen.getByLabelText('Дата выдачи'), '03.06.2026');
+    await user.type(screen.getByLabelText('Действует до'), '03.06.2029');
+    await user.type(screen.getByLabelText('Производитель'), 'ООО "НасосТех"');
+    await user.type(screen.getByLabelText('Орган сертификации'), 'Отдел качества производителя');
+    await user.selectOptions(
+      screen.getByLabelText('Статус нового сертификата'),
+      'Требует проверки',
+    );
+
+    expect(screen.getByText('Загрузка PDF и сканов будет реализована позже.')).toBeTruthy();
+
+    await user.click(screen.getByRole('button', { name: 'Сохранить сертификат' }));
+
+    const certificateList = screen.getByRole('list', { name: 'Список сертификатов' });
+    expect(within(certificateList).getByText('Насос циркуляционный N-25')).toBeTruthy();
+    expect(within(certificateList).getByText('Паспорт изделия / ПИ-Н25-2026')).toBeTruthy();
+    expect(within(certificateList).getByText('ООО "НасосТех"')).toBeTruthy();
+  });
+
+  it('returns from the certificate library page to objects', async () => {
+    const user = userEvent.setup();
+
+    render(<App />);
+    await openCertificateLibraryPage(user);
+
+    await user.click(screen.getByRole('button', { name: 'Вернуться к объектам' }));
+
+    expect(screen.getByRole('heading', { name: 'Мои объекты' })).toBeTruthy();
+    expect(screen.getByText('Реконструкция поликлиники, демонстрационный проект')).toBeTruthy();
   });
 
   it('opens the real representatives and organizations mock management page', async () => {
@@ -67,6 +183,11 @@ describe('App shell mock navigation', () => {
         'Сначала сохраните организации и представителей, потом добавляйте их в объект и акты через поиск.',
       ),
     ).toBeTruthy();
+    const workflow = screen.getByRole('list', { name: 'Порядок работы с подписантами' });
+    expect(within(workflow).getByText('Добавьте организацию')).toBeTruthy();
+    expect(within(workflow).getByText('Добавьте представителя')).toBeTruthy();
+    expect(within(workflow).getByText('Откройте объект')).toBeTruthy();
+    expect(within(workflow).getByText('Добавьте подписанта в акт')).toBeTruthy();
     expect(screen.getByRole('region', { name: 'Организации' })).toBeTruthy();
     expect(screen.getByRole('region', { name: 'Представители' })).toBeTruthy();
     expect(screen.getByText('Организации в объекте')).toBeTruthy();
@@ -245,4 +366,10 @@ async function openRepresentativesManagementPage(
   await user.click(
     within(navigation).getByRole('button', { name: /Представители и организации/u }),
   );
+}
+
+async function openCertificateLibraryPage(user: ReturnType<typeof userEvent.setup>): Promise<void> {
+  const navigation = screen.getByRole('navigation', { name: 'Основная навигация' });
+
+  await user.click(within(navigation).getByRole('button', { name: /Библиотека сертификатов/u }));
 }
