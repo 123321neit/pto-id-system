@@ -156,8 +156,8 @@ export function DemoAosrPreview({
           <section className="act-page__official-section" aria-label="Документы соответствия">
             <p>
               <span className="act-page__item-label">
-                4. Предъявлены исполнительные схемы, чертежи и иные материалы, подтверждающие
-                соответствие работ предъявляемым к ним требованиям:
+                4. Предъявлены документы, подтверждающие соответствие работ предъявляемым к ним
+                требованиям:
               </span>
             </p>
             {selectedDerivedAttachments.length > 0 ? (

@@ -96,6 +96,54 @@ describe('DemoAosrWorkspacePage', () => {
     ).toBeTruthy();
   });
 
+  it('opens the certificate library as a visible drawer instead of an inline list', async () => {
+    const user = userEvent.setup();
+
+    renderDemoWorkspace();
+
+    const materialsSection = screen
+      .getByRole('heading', { name: '3. Материалы' })
+      .closest('.form-section');
+
+    if (materialsSection === null) {
+      throw new Error('В тесте ожидается секция материалов.');
+    }
+
+    expect(
+      screen.queryByRole('dialog', { name: 'Выбор материалов из библиотеки сертификатов' }),
+    ).toBeNull();
+    expect(materialsSection.querySelector('.library-panel')).toBeNull();
+
+    await user.click(screen.getByRole('button', { name: 'Библиотека сертификатов' }));
+
+    const drawer = screen.getByRole('dialog', {
+      name: 'Выбор материалов из библиотеки сертификатов',
+    });
+
+    expect(drawer).toBeTruthy();
+    expect(within(drawer).getByLabelText('Найти материал в библиотеке сертификатов')).toBeTruthy();
+    expect(within(drawer).getByRole('list', { name: 'Библиотека сертификатов' })).toBeTruthy();
+    expect(materialsSection.querySelector('.library-panel')).toBeNull();
+  });
+
+  it('closes the certificate drawer and returns to the act editor', async () => {
+    const user = userEvent.setup();
+
+    renderDemoWorkspace();
+
+    await user.click(screen.getByRole('button', { name: 'Библиотека сертификатов' }));
+    expect(
+      screen.getByRole('dialog', { name: 'Выбор материалов из библиотеки сертификатов' }),
+    ).toBeTruthy();
+
+    await user.click(screen.getByRole('button', { name: 'Закрыть библиотеку' }));
+
+    expect(
+      screen.queryByRole('dialog', { name: 'Выбор материалов из библиотеки сертификатов' }),
+    ).toBeNull();
+    expect(screen.getByRole('heading', { name: '3. Материалы' })).toBeTruthy();
+  });
+
   it('renders act editor sections in the intended AOSR order', () => {
     renderDemoWorkspace();
 
@@ -253,7 +301,7 @@ describe('DemoAosrWorkspacePage', () => {
     }
 
     await user.click(
-      within(customerRow as HTMLElement).getByRole('button', { name: 'Добавить в акт' }),
+      within(customerRow as HTMLElement).getByRole('button', { name: 'Добавить подписанта' }),
     );
 
     const previewText = getPreviewText();
@@ -340,7 +388,7 @@ describe('DemoAosrWorkspacePage', () => {
     }
 
     await user.click(
-      within(insulationRow as HTMLElement).getByRole('button', { name: 'Добавить' }),
+      within(insulationRow as HTMLElement).getByRole('button', { name: 'Добавить материал' }),
     );
 
     const previewText = getPreviewText();
@@ -355,7 +403,7 @@ describe('DemoAosrWorkspacePage', () => {
     expect(screen.queryByLabelText('Материалы / сертификаты простым текстом')).toBeNull();
     expect(screen.queryByLabelText('Приложения / исполнительные схемы простым текстом')).toBeNull();
     expect(screen.queryByLabelText('Итоговые приложения простым текстом')).toBeNull();
-    expect(screen.getByText(/Свободного поля “приложения” в демо нет/u)).toBeTruthy();
+    expect(screen.getByText('Итоговые приложения в акте')).toBeTruthy();
   });
 
   it('renders derived applications before final signature blocks', () => {
@@ -383,6 +431,14 @@ describe('DemoAosrWorkspacePage', () => {
     ).toBe(true);
   });
 
+  it('uses real AOSR wording for point 4 in the preview', () => {
+    renderDemoWorkspace();
+
+    expect(getPreviewText()).toContain(
+      '4. Предъявлены документы, подтверждающие соответствие работ предъявляемым к ним требованиям:',
+    );
+  });
+
   it('keeps the AOSR preview section order close to the Word form', () => {
     renderDemoWorkspace();
 
@@ -397,7 +453,7 @@ describe('DemoAosrWorkspacePage', () => {
       '1. К освидетельствованию предъявлены следующие работы:',
       '2. Работы выполнены по проектной документации:',
       '3. При выполнении работ применены:',
-      '4. Предъявлены исполнительные схемы, чертежи и иные материалы, подтверждающие соответствие работ предъявляемым к ним требованиям:',
+      '4. Предъявлены документы, подтверждающие соответствие работ предъявляемым к ним требованиям:',
       '5. Даты:',
       '6. Работы выполнены в соответствии с:',
       '7. Разрешается производство последующих работ по:',
@@ -518,7 +574,7 @@ async function addManualRepresentative(
   representative: ManualRepresentativeInput,
   shouldAddToObjectLibrary = false,
 ): Promise<void> {
-  await user.click(screen.getByRole('button', { name: 'Добавить вручную для этого акта' }));
+  await user.click(screen.getByRole('button', { name: 'Добавить подписанта' }));
   await user.type(screen.getByLabelText('Роль для акта'), representative.roleLabel);
   await user.type(screen.getByLabelText('ФИО для акта'), representative.fullName);
   await user.type(screen.getByLabelText('Должность для акта'), representative.position);

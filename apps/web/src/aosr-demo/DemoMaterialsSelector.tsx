@@ -26,92 +26,128 @@ export function DemoMaterialsSelector({
   const filteredCertificates = filterCertificates(certificateLibrary, materialSearch);
 
   return (
-    <section className="form-section act-editor-card" aria-labelledby="materials-data-title">
-      <div className="scope-heading scope-heading--with-action">
-        <span>
-          <h3 id="materials-data-title">3. Материалы</h3>
-          <p className="placeholder-note">
-            Выберите материал из библиотеки, чтобы сертификат попал в акт и приложения.
-          </p>
-        </span>
-        <button className="compact-toggle" onClick={onToggleCertificateLibrary} type="button">
-          {isCertificateLibraryOpen ? 'Скрыть библиотеку' : 'Библиотека сертификатов'}
-        </button>
-      </div>
-
-      <div className="selected-list" aria-labelledby="selected-materials-title">
-        <h4 id="selected-materials-title">Материалы в текущем акте</h4>
-        {selectedMaterials.length > 0 ? (
-          <ul aria-label="Выбранные материалы текущего акта">
-            {selectedMaterials.map((certificate) => (
-              <li key={certificate.id}>
-                <span>
-                  <strong>{certificate.materialName}</strong>
-                  <small>
-                    {certificate.certificateNumber} / {certificate.documentName}
-                  </small>
-                </span>
-                <button
-                  aria-label={`Убрать материал ${certificate.materialName}`}
-                  onClick={() => {
-                    onRemoveMaterialFromAct(certificate.id);
-                  }}
-                  type="button"
-                >
-                  Убрать
-                </button>
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p className="empty-state">Материалы для текущего акта пока не выбраны.</p>
-        )}
-      </div>
-
-      {isCertificateLibraryOpen ? (
-        <div className="library-panel">
-          <label className="search-field">
-            Найти материал в библиотеке сертификатов
-            <input
-              onChange={(event) => {
-                onChangeMaterialSearch(event.currentTarget.value);
-              }}
-              placeholder="Материал, номер сертификата или название документа"
-              value={materialSearch}
-            />
-          </label>
-
-          <div
-            className="library-list library-list--compact"
-            role="list"
-            aria-label="Библиотека сертификатов"
+    <>
+      <section
+        className="form-section act-editor-card act-editor-card--featured"
+        aria-labelledby="materials-data-title"
+      >
+        <div className="scope-heading scope-heading--with-action">
+          <span>
+            <h3 id="materials-data-title">3. Материалы</h3>
+            <p className="placeholder-note">
+              Выберите материал из библиотеки, чтобы сертификат попал в акт и приложения.
+            </p>
+          </span>
+          <button
+            aria-expanded={isCertificateLibraryOpen}
+            aria-haspopup="dialog"
+            className="compact-toggle compact-toggle--accent"
+            onClick={onToggleCertificateLibrary}
+            type="button"
           >
-            {filteredCertificates.map((certificate) => {
-              const isSelected = selectedDraft.materialCertificateIds.includes(certificate.id);
+            Библиотека сертификатов
+          </button>
+        </div>
 
-              return (
-                <div className="library-row" key={certificate.id} role="listitem">
+        <div className="selected-list" aria-labelledby="selected-materials-title">
+          <h4 id="selected-materials-title">Материалы в текущем акте</h4>
+          {selectedMaterials.length > 0 ? (
+            <ul aria-label="Выбранные материалы текущего акта">
+              {selectedMaterials.map((certificate) => (
+                <li key={certificate.id}>
                   <span>
                     <strong>{certificate.materialName}</strong>
-                    <small>{certificate.certificateNumber}</small>
-                    <small>{certificate.documentName}</small>
+                    <small>
+                      {certificate.certificateNumber} / {certificate.documentName}
+                    </small>
                   </span>
                   <button
-                    disabled={isSelected}
+                    aria-label={`Убрать материал ${certificate.materialName}`}
                     onClick={() => {
-                      onAddMaterialToAct(certificate.id);
+                      onRemoveMaterialFromAct(certificate.id);
                     }}
                     type="button"
                   >
-                    {isSelected ? 'Выбрано' : 'Добавить'}
+                    Убрать
                   </button>
-                </div>
-              );
-            })}
-          </div>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="empty-state">Материалы для текущего акта пока не выбраны.</p>
+          )}
+        </div>
+      </section>
+
+      {isCertificateLibraryOpen ? (
+        <div className="certificate-picker-overlay">
+          <aside
+            aria-labelledby="certificate-picker-title"
+            aria-modal="true"
+            className="certificate-picker-drawer"
+            role="dialog"
+          >
+            <div className="certificate-picker-drawer__header">
+              <span>
+                <p className="scope-label">Материалы</p>
+                <h2 id="certificate-picker-title">Выбор материалов из библиотеки сертификатов</h2>
+              </span>
+              <button className="compact-toggle" onClick={onToggleCertificateLibrary} type="button">
+                Закрыть библиотеку
+              </button>
+            </div>
+
+            <label className="search-field">
+              Найти материал в библиотеке сертификатов
+              <input
+                autoFocus
+                onChange={(event) => {
+                  onChangeMaterialSearch(event.currentTarget.value);
+                }}
+                placeholder="Материал, номер сертификата или название документа"
+                value={materialSearch}
+              />
+            </label>
+
+            <div
+              className="library-list certificate-picker-drawer__list"
+              role="list"
+              aria-label="Библиотека сертификатов"
+            >
+              {filteredCertificates.map((certificate) => {
+                const isSelected = selectedDraft.materialCertificateIds.includes(certificate.id);
+
+                return (
+                  <div
+                    className="library-row certificate-picker-row"
+                    key={certificate.id}
+                    role="listitem"
+                  >
+                    <span>
+                      <strong>{certificate.materialName}</strong>
+                      <small>{certificate.certificateNumber}</small>
+                      <small>{certificate.documentName}</small>
+                    </span>
+                    <button
+                      className={
+                        isSelected ? 'action-button' : 'action-button action-button--primary'
+                      }
+                      disabled={isSelected}
+                      onClick={() => {
+                        onAddMaterialToAct(certificate.id);
+                      }}
+                      type="button"
+                    >
+                      {isSelected ? 'Материал выбран' : 'Добавить материал'}
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          </aside>
         </div>
       ) : null}
-    </section>
+    </>
   );
 }
 

@@ -189,7 +189,9 @@ describe('App shell mock navigation', () => {
       throw new Error('В тесте ожидается строка нового сертификата.');
     }
 
-    await user.click(within(pumpRow as HTMLElement).getByRole('button', { name: 'Добавить' }));
+    await user.click(
+      within(pumpRow as HTMLElement).getByRole('button', { name: 'Добавить материал' }),
+    );
 
     const previewText = screen.getByLabelText('Демо-предпросмотр печатной формы АОСР').textContent;
     expect(previewText).toContain('Насос циркуляционный N-25');
@@ -402,7 +404,7 @@ describe('App shell mock navigation', () => {
 
     await user.click(
       within(representativeRow as HTMLElement).getByRole('button', {
-        name: 'Добавить в акт',
+        name: 'Добавить подписанта',
       }),
     );
 
@@ -442,7 +444,7 @@ describe('App shell mock navigation', () => {
     }
 
     await user.click(
-      within(insulationRow as HTMLElement).getByRole('button', { name: 'Добавить' }),
+      within(insulationRow as HTMLElement).getByRole('button', { name: 'Добавить материал' }),
     );
 
     await user.type(screen.getByLabelText('Добавить подписанта из базы объекта'), 'заказчика');
@@ -457,7 +459,7 @@ describe('App shell mock navigation', () => {
     }
 
     await user.click(
-      within(customerRow as HTMLElement).getByRole('button', { name: 'Добавить в акт' }),
+      within(customerRow as HTMLElement).getByRole('button', { name: 'Добавить подписанта' }),
     );
 
     const preview = screen.getByLabelText('Демо-предпросмотр печатной формы АОСР');

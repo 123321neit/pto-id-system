@@ -54,13 +54,20 @@ export function DemoSignatoriesEditor({
   );
 
   return (
-    <section className="form-section act-editor-card" aria-labelledby="commission-data-title">
+    <section
+      className="form-section act-editor-card act-editor-card--featured"
+      aria-labelledby="commission-data-title"
+    >
       <div className="scope-heading scope-heading--with-action">
         <span>
           <h3 id="commission-data-title">Подписанты текущего акта</h3>
         </span>
-        <button className="compact-toggle" onClick={onToggleManualRepresentativeForm} type="button">
-          Добавить вручную для этого акта
+        <button
+          className="compact-toggle compact-toggle--accent"
+          onClick={onToggleManualRepresentativeForm}
+          type="button"
+        >
+          Добавить подписанта
         </button>
       </div>
 
@@ -101,7 +108,7 @@ export function DemoSignatoriesEditor({
                   }}
                   type="button"
                 >
-                  {isInCurrentAct ? 'В акте' : 'Добавить в акт'}
+                  {isInCurrentAct ? 'В акте' : 'Добавить подписанта'}
                 </button>
               </div>
             );

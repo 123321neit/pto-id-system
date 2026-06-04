@@ -1,6 +1,6 @@
 :root {
   color: #172124;
-  background: #eef2f6;
+  background: #f3f7fb;
   font-family:
     Inter,
     ui-sans-serif,
@@ -183,6 +183,13 @@ button {
   border: 1px solid #c6d3df;
   background: #ffffff;
   color: #1e3552;
+}
+
+.secondary-action--accent {
+  border-color: #2563eb;
+  background: #eff6ff;
+  color: #1d4ed8;
+  box-shadow: 0 8px 18px rgb(37 99 235 / 10%);
 }
 
 .dashboard-search {
@@ -852,6 +859,7 @@ button {
 
 .demo-shell {
   min-height: 100vh;
+  background: #f3f7fb;
   padding: 24px;
 }
 
@@ -862,8 +870,11 @@ button {
   gap: 24px;
   max-width: 1280px;
   margin: 0 auto 20px;
-  border-bottom: 1px solid #cad3dc;
-  padding: 10px 0 22px;
+  border: 1px solid #d7e2eb;
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: 0 14px 36px rgb(37 48 54 / 7%);
+  padding: 18px;
 }
 
 .demo-pill {
@@ -938,7 +949,7 @@ h3 {
 .workspace-summary div {
   border: 1px solid #cdd7df;
   border-radius: 8px;
-  background: #ffffff;
+  background: #f8fbff;
   padding: 14px;
 }
 
@@ -987,6 +998,18 @@ h3 {
   font-weight: 800;
   letter-spacing: 0;
   text-transform: uppercase;
+}
+
+.section-tag {
+  width: fit-content;
+  border: 1px solid #bfdbfe;
+  border-radius: 999px;
+  background: #eff6ff;
+  padding: 4px 8px;
+  color: #1d4ed8;
+  font-size: 0.72rem;
+  font-weight: 850;
+  line-height: 1.2;
 }
 
 .document-tree {
@@ -1192,6 +1215,12 @@ h3 {
   box-shadow: 0 8px 18px rgb(23 33 36 / 4%);
 }
 
+.act-editor-card--featured {
+  border-color: #bfdbfe;
+  border-left-color: #2563eb;
+  box-shadow: 0 12px 26px rgb(37 99 235 / 7%);
+}
+
 .form-section h3 {
   color: #233034;
   font-size: 0.95rem;
@@ -1222,6 +1251,13 @@ h3 {
 .compact-toggle {
   width: fit-content;
   max-width: 100%;
+}
+
+.compact-toggle--accent {
+  border-color: #2563eb;
+  background: #eff6ff;
+  color: #1d4ed8;
+  box-shadow: 0 8px 16px rgb(37 99 235 / 9%);
 }
 
 .compact-summary-list {
@@ -1501,7 +1537,8 @@ h3 {
 }
 
 .library-row button,
-.selected-list button {
+.selected-list button,
+.action-button {
   border: 1px solid #c3d0d8;
   border-radius: 6px;
   background: #f8fafc;
@@ -1511,9 +1548,63 @@ h3 {
   font-weight: 750;
 }
 
-.library-row button:disabled {
+.action-button--primary {
+  border-color: #2563eb;
+  background: #2563eb;
+  color: #ffffff;
+}
+
+.library-row button:disabled,
+.action-button:disabled {
   cursor: not-allowed;
   opacity: 0.48;
+}
+
+.certificate-picker-overlay {
+  position: fixed;
+  z-index: 24;
+  inset: 0;
+  display: grid;
+  justify-items: end;
+  background: rgb(15 23 42 / 30%);
+  padding: 18px;
+}
+
+.certificate-picker-drawer {
+  display: grid;
+  align-content: start;
+  gap: 16px;
+  width: min(100%, 520px);
+  max-height: calc(100vh - 36px);
+  overflow: auto;
+  border: 1px solid #cbd7df;
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: 0 24px 70px rgb(37 48 54 / 20%);
+  padding: 18px;
+}
+
+.certificate-picker-drawer__header {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 16px;
+  border-bottom: 1px solid #dbe4ea;
+  padding-bottom: 12px;
+}
+
+.certificate-picker-drawer__header span {
+  display: grid;
+  gap: 4px;
+}
+
+.certificate-picker-drawer__list {
+  max-height: min(560px, calc(100vh - 230px));
+  overflow: auto;
+}
+
+.certificate-picker-row {
+  border-left: 3px solid #bfdbfe;
 }
 
 .checkbox-row {
@@ -1602,12 +1693,16 @@ h3 {
 
 .form-section input:focus,
 .form-section textarea:focus,
+.certificate-picker-drawer input:focus,
 .certificate-form input:focus,
 .certificate-form select:focus,
 .status-filter select:focus,
 .act-form-grid input:focus,
 .act-form-grid textarea:focus,
 .act-tree-item:focus-visible,
+.compact-toggle:focus-visible,
+.secondary-action:focus-visible,
+.action-button:focus-visible,
 .signatory-order-item__actions button:focus-visible,
 .library-row button:focus-visible,
 .selected-list button:focus-visible,
@@ -1982,7 +2077,8 @@ h3 {
   .compact-card-list__item,
   .inline-form,
   .inline-form--representative,
-  .object-settings-dialog__header {
+  .object-settings-dialog__header,
+  .certificate-picker-drawer__header {
     grid-template-columns: 1fr;
   }
 
@@ -2018,12 +2114,19 @@ h3 {
     padding: 12px;
   }
 
-  .object-settings-dialog {
+  .certificate-picker-overlay {
+    justify-items: stretch;
+    padding: 12px;
+  }
+
+  .object-settings-dialog,
+  .certificate-picker-drawer {
     max-height: calc(100vh - 24px);
     padding: 14px;
   }
 
-  .object-settings-dialog__header {
+  .object-settings-dialog__header,
+  .certificate-picker-drawer__header {
     display: grid;
   }
 }

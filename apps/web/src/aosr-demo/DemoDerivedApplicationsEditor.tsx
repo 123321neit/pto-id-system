@@ -18,11 +18,18 @@ export function DemoDerivedApplicationsEditor({
   onToggleAttachment,
 }: DemoDerivedApplicationsEditorProps): React.JSX.Element {
   return (
-    <section className="form-section act-editor-card" aria-labelledby="attachments-data-title">
-      <h3 id="attachments-data-title">4. Исполнительные схемы и чертежи</h3>
+    <section
+      className="form-section act-editor-card act-editor-card--featured"
+      aria-labelledby="attachments-data-title"
+    >
+      <div className="scope-heading">
+        <p className="section-tag">Пункт 4 акта</p>
+        <h3 id="attachments-data-title">4. Исполнительные схемы и чертежи</h3>
+      </div>
       <p className="helper-note">
-        Выбранные схемы, чертежи и подтверждающие материалы попадают в пункт 4 акта и в приложения.
-        Свободного поля “приложения” в демо нет.
+        Этот блок управляет пунктом 4 АОСР: выбранные схемы, чертежи и подтверждающие материалы
+        также появятся в приложениях. Ручной ввод и библиотека документов объекта будут отдельным
+        будущим шагом.
       </p>
       <div
         className="attachment-options"

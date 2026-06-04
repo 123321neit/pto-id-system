@@ -270,7 +270,7 @@ export function DemoAosrWorkspacePage({
               </button>
             )}
             <button
-              className="secondary-action"
+              className="secondary-action secondary-action--accent"
               onClick={() => {
                 setObjectSettingsOpen(true);
               }}
