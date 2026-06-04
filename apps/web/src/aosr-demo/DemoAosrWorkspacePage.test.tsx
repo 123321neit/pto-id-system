@@ -21,19 +21,17 @@ describe('DemoAosrWorkspacePage', () => {
     renderDemoWorkspace();
 
     expect(screen.getByRole('heading', { name: 'Рабочая область акта' })).toBeTruthy();
-    expect(screen.getByRole('heading', { name: 'Настройки объекта' })).toBeTruthy();
-    expect(screen.getByRole('button', { name: 'Открыть объектовые настройки' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Настройки объекта' })).toBeTruthy();
     expect(screen.getByRole('heading', { name: 'Текущий акт' })).toBeTruthy();
-    expect(screen.queryByText('Настройки объекта по кнопке')).toBeNull();
-    expect(
-      within(screen.getByLabelText('Разделение уровней данных')).getByText('Настройки объекта'),
-    ).toBeTruthy();
+    expect(screen.queryByRole('dialog', { name: 'Настройки объекта' })).toBeNull();
+    expect(screen.queryByLabelText('Название проекта / объекта')).toBeNull();
   });
 
   it('keeps object settings and libraries compact until opened', () => {
     renderDemoWorkspace();
 
-    expect(screen.getByRole('button', { name: 'Открыть объектовые настройки' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Настройки объекта' })).toBeTruthy();
+    expect(screen.queryByRole('dialog', { name: 'Настройки объекта' })).toBeNull();
     expect(screen.queryByRole('region', { name: 'Представители объекта' })).toBeNull();
     expect(screen.queryByLabelText('Найти организацию в глобальной библиотеке')).toBeNull();
     expect(screen.queryByLabelText('Найти материал в библиотеке сертификатов')).toBeNull();
@@ -44,8 +42,33 @@ describe('DemoAosrWorkspacePage', () => {
     ).toBeTruthy();
   });
 
-  it('shows the demo shortcut note for prefilled object representatives', () => {
+  it('opens object settings from the button and keeps existing settings functional', async () => {
+    const user = userEvent.setup();
+
     renderDemoWorkspace();
+
+    expect(screen.queryByLabelText('Объект капитального строительства')).toBeNull();
+
+    await openObjectSettings(user);
+
+    const dialog = screen.getByRole('dialog', { name: 'Настройки объекта' });
+    const objectNameField = within(dialog).getByLabelText('Объект капитального строительства');
+
+    await user.clear(objectNameField);
+    await user.type(objectNameField, 'Новый демо-объект АОСР');
+
+    expect(getPreviewText()).toContain('Новый демо-объект АОСР');
+
+    await user.click(within(dialog).getByRole('button', { name: 'Закрыть настройки' }));
+
+    expect(screen.queryByRole('dialog', { name: 'Настройки объекта' })).toBeNull();
+  });
+
+  it('shows the demo shortcut note for prefilled object representatives inside settings', async () => {
+    const user = userEvent.setup();
+
+    renderDemoWorkspace();
+    await openObjectSettings(user);
 
     expect(
       screen.getByText(
@@ -70,6 +93,55 @@ describe('DemoAosrWorkspacePage', () => {
       screen.getByText(
         'Выберите материал из библиотеки, чтобы сертификат попал в акт и приложения.',
       ),
+    ).toBeTruthy();
+  });
+
+  it('renders act editor sections in the intended AOSR order', () => {
+    renderDemoWorkspace();
+
+    const editorText = screen.getByRole('region', { name: 'Текущий акт' }).textContent;
+    const orderedFragments = [
+      'Общие данные акта',
+      '1. Скрытые работы',
+      'Описание скрытых работ',
+      'Оси',
+      'Отметки',
+      '2. Проектная документация',
+      '3. Материалы',
+      '4. Исполнительные схемы и чертежи',
+      '5. Даты выполнения работ',
+      '6. Соответствие работ',
+      '7. Последующие работы',
+      'Дополнительные сведения',
+      'Подписанты текущего акта',
+    ];
+
+    for (let index = 0; index < orderedFragments.length - 1; index += 1) {
+      const currentFragment = getRequiredElement(orderedFragments, index);
+      const nextFragment = getRequiredElement(orderedFragments, index + 1);
+
+      expect(editorText.indexOf(currentFragment)).toBeLessThan(editorText.indexOf(nextFragment));
+    }
+  });
+
+  it('does not show a separate AOSR place or location field', () => {
+    renderDemoWorkspace();
+
+    expect(screen.queryByLabelText('Место')).toBeNull();
+    expect(screen.queryByLabelText('Место выполнения работ')).toBeNull();
+    expect(screen.queryByLabelText('Участок / место работ')).toBeNull();
+    expect(screen.queryByLabelText('Объект / участок')).toBeNull();
+  });
+
+  it('shows execution drawings and schemes as a clear point 4 section', () => {
+    renderDemoWorkspace();
+
+    expect(screen.getByRole('heading', { name: '4. Исполнительные схемы и чертежи' })).toBeTruthy();
+    const pointFourGroup = screen.getByLabelText('Исполнительные схемы и чертежи для пункта 4');
+
+    expect(pointFourGroup).toBeTruthy();
+    expect(
+      within(pointFourGroup).getByText('Исполнительная схема скрытых участков вентиляции'),
     ).toBeTruthy();
   });
 
@@ -325,7 +397,7 @@ describe('DemoAosrWorkspacePage', () => {
       '1. К освидетельствованию предъявлены следующие работы:',
       '2. Работы выполнены по проектной документации:',
       '3. При выполнении работ применены:',
-      '4. Предъявлены документы, подтверждающие соответствие работ предъявляемым к ним требованиям:',
+      '4. Предъявлены исполнительные схемы, чертежи и иные материалы, подтверждающие соответствие работ предъявляемым к ним требованиям:',
       '5. Даты:',
       '6. Работы выполнены в соответствии с:',
       '7. Разрешается производство последующих работ по:',
@@ -434,7 +506,7 @@ interface ManualRepresentativeInput {
 }
 
 async function openObjectSettings(user: ReturnType<typeof userEvent.setup>): Promise<void> {
-  const openButton = screen.queryByRole('button', { name: 'Открыть объектовые настройки' });
+  const openButton = screen.queryByRole('button', { name: 'Настройки объекта' });
 
   if (openButton !== null) {
     await user.click(openButton);

@@ -86,16 +86,17 @@ export function DemoCurrentActEditor({
 }: DemoCurrentActEditorProps): React.JSX.Element {
   return (
     <section
-      className="form-section form-section--scope form-section--act-scope"
+      className="current-act-editor"
       aria-labelledby="current-act-title"
+      aria-label="Редактор текущего АОСР"
     >
-      <div className="scope-heading">
+      <div className="scope-heading current-act-editor__heading">
         <p className="scope-label">Уровень акта</p>
         <h3 id="current-act-title">Текущий акт</h3>
       </div>
 
-      <section className="form-section" aria-labelledby="act-header-data-title">
-        <h3 id="act-header-data-title">Шапка акта</h3>
+      <section className="form-section act-editor-card" aria-labelledby="act-header-data-title">
+        <h3 id="act-header-data-title">Общие данные акта</h3>
         <div className="act-form-grid act-form-grid--compact">
           <label>
             Номер акта
@@ -118,30 +119,22 @@ export function DemoCurrentActEditor({
               value={selectedDraft.actDate}
             />
           </label>
-          <label>
-            Место
-            <input
-              name="actPlace"
-              onChange={(event) => {
-                onUpdateSelectedDraft('actPlace', event.currentTarget.value);
-              }}
-              value={selectedDraft.actPlace}
-            />
-          </label>
         </div>
       </section>
 
-      <section className="form-section" aria-labelledby="act-location-data-title">
-        <h3 id="act-location-data-title">Место и границы работ</h3>
+      <section className="form-section act-editor-card" aria-labelledby="hidden-works-data-title">
+        <h3 id="hidden-works-data-title">1. Скрытые работы</h3>
         <div className="act-form-grid">
           <label className="act-form-grid__wide">
-            Участок / место работ
-            <input
-              name="location"
+            Описание скрытых работ
+            <textarea
+              className="large-field"
+              name="workDescription"
               onChange={(event) => {
-                onUpdateSelectedDraft('location', event.currentTarget.value);
+                onUpdateSelectedDraft('workDescription', event.currentTarget.value);
               }}
-              value={selectedDraft.location}
+              rows={7}
+              value={selectedDraft.workDescription}
             />
           </label>
           <label>
@@ -155,7 +148,7 @@ export function DemoCurrentActEditor({
             />
           </label>
           <label>
-            Отметка
+            Отметки
             <input
               name="elevationRange"
               onChange={(event) => {
@@ -167,47 +160,8 @@ export function DemoCurrentActEditor({
         </div>
       </section>
 
-      <DemoSignatoriesEditor
-        actRepresentativeSearch={actRepresentativeSearch}
-        draggedRepresentativeId={draggedRepresentativeId}
-        isManualRepresentativeFormOpen={isManualRepresentativeFormOpen}
-        manualRepresentativeForm={manualRepresentativeForm}
-        objectRepresentatives={objectDefaults.representativeLibrary}
-        selectedSignatories={selectedSignatories}
-        shouldAddManualRepresentativeToLibrary={shouldAddManualRepresentativeToLibrary}
-        onAddManualRepresentative={onAddManualRepresentative}
-        onAddRepresentativeToAct={onAddRepresentativeToAct}
-        onChangeActRepresentativeSearch={onChangeActRepresentativeSearch}
-        onChangeManualRepresentativeForm={onChangeManualRepresentativeForm}
-        onChangeShouldAddManualRepresentativeToLibrary={
-          onChangeShouldAddManualRepresentativeToLibrary
-        }
-        onDragRepresentativeEnd={onDragRepresentativeEnd}
-        onDragRepresentativeStart={onDragRepresentativeStart}
-        onMoveSelectedSignatory={onMoveSelectedSignatory}
-        onRemoveRepresentativeFromAct={onRemoveRepresentativeFromAct}
-        onReorderSelectedSignatory={onReorderSelectedSignatory}
-        onToggleManualRepresentativeForm={onToggleManualRepresentativeForm}
-      />
-
-      <section className="form-section" aria-labelledby="hidden-works-data-title">
-        <h3 id="hidden-works-data-title">Предъявленные скрытые работы</h3>
-        <label className="act-form-grid__wide">
-          Описание скрытых работ
-          <textarea
-            className="large-field"
-            name="workDescription"
-            onChange={(event) => {
-              onUpdateSelectedDraft('workDescription', event.currentTarget.value);
-            }}
-            rows={7}
-            value={selectedDraft.workDescription}
-          />
-        </label>
-      </section>
-
-      <section className="form-section" aria-labelledby="project-docs-data-title">
-        <h3 id="project-docs-data-title">Проектная документация</h3>
+      <section className="form-section act-editor-card" aria-labelledby="project-docs-data-title">
+        <h3 id="project-docs-data-title">2. Проектная документация</h3>
         <p className="readonly-field">{objectDefaults.defaultProjectDocumentation}</p>
         <p className="helper-note">Значение берётся из настроек объекта.</p>
       </section>
@@ -224,11 +178,18 @@ export function DemoCurrentActEditor({
         onToggleCertificateLibrary={onToggleCertificateLibrary}
       />
 
-      <section className="form-section" aria-labelledby="period-data-title">
-        <h3 id="period-data-title">Период выполнения работ</h3>
+      <DemoDerivedApplicationsEditor
+        attachmentLibrary={attachmentLibrary}
+        finalApplications={finalApplications}
+        selectedDraft={selectedDraft}
+        onToggleAttachment={onToggleAttachment}
+      />
+
+      <section className="form-section act-editor-card" aria-labelledby="period-data-title">
+        <h3 id="period-data-title">5. Даты выполнения работ</h3>
         <div className="act-form-grid act-form-grid--compact">
           <label>
-            Работы выполнялись с
+            Начало работ
             <input
               name="periodStart"
               onChange={(event) => {
@@ -239,7 +200,7 @@ export function DemoCurrentActEditor({
             />
           </label>
           <label>
-            Работы выполнялись по
+            Окончание работ
             <input
               name="periodEnd"
               onChange={(event) => {
@@ -252,8 +213,8 @@ export function DemoCurrentActEditor({
         </div>
       </section>
 
-      <section className="form-section" aria-labelledby="decision-data-title">
-        <h3 id="decision-data-title">Решение комиссии и сведения</h3>
+      <section className="form-section act-editor-card" aria-labelledby="compliance-data-title">
+        <h3 id="compliance-data-title">6. Соответствие работ</h3>
         <label className="act-form-grid__wide">
           Работы выполнены в соответствии с
           <textarea
@@ -266,6 +227,10 @@ export function DemoCurrentActEditor({
             value={selectedDraft.complianceStatement}
           />
         </label>
+      </section>
+
+      <section className="form-section act-editor-card" aria-labelledby="subsequent-data-title">
+        <h3 id="subsequent-data-title">7. Последующие работы</h3>
         <label className="act-form-grid__wide">
           Последующие работы разрешены
           <textarea
@@ -278,6 +243,10 @@ export function DemoCurrentActEditor({
             value={selectedDraft.subsequentWorksPermitted}
           />
         </label>
+      </section>
+
+      <section className="form-section act-editor-card" aria-labelledby="additional-data-title">
+        <h3 id="additional-data-title">Дополнительные сведения</h3>
         <div className="act-form-grid">
           <label>
             Дополнительные сведения
@@ -304,11 +273,27 @@ export function DemoCurrentActEditor({
         </div>
       </section>
 
-      <DemoDerivedApplicationsEditor
-        attachmentLibrary={attachmentLibrary}
-        finalApplications={finalApplications}
-        selectedDraft={selectedDraft}
-        onToggleAttachment={onToggleAttachment}
+      <DemoSignatoriesEditor
+        actRepresentativeSearch={actRepresentativeSearch}
+        draggedRepresentativeId={draggedRepresentativeId}
+        isManualRepresentativeFormOpen={isManualRepresentativeFormOpen}
+        manualRepresentativeForm={manualRepresentativeForm}
+        objectRepresentatives={objectDefaults.representativeLibrary}
+        selectedSignatories={selectedSignatories}
+        shouldAddManualRepresentativeToLibrary={shouldAddManualRepresentativeToLibrary}
+        onAddManualRepresentative={onAddManualRepresentative}
+        onAddRepresentativeToAct={onAddRepresentativeToAct}
+        onChangeActRepresentativeSearch={onChangeActRepresentativeSearch}
+        onChangeManualRepresentativeForm={onChangeManualRepresentativeForm}
+        onChangeShouldAddManualRepresentativeToLibrary={
+          onChangeShouldAddManualRepresentativeToLibrary
+        }
+        onDragRepresentativeEnd={onDragRepresentativeEnd}
+        onDragRepresentativeStart={onDragRepresentativeStart}
+        onMoveSelectedSignatory={onMoveSelectedSignatory}
+        onRemoveRepresentativeFromAct={onRemoveRepresentativeFromAct}
+        onReorderSelectedSignatory={onReorderSelectedSignatory}
+        onToggleManualRepresentativeForm={onToggleManualRepresentativeForm}
       />
     </section>
   );

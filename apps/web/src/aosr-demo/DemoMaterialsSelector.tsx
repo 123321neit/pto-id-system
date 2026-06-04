@@ -26,10 +26,10 @@ export function DemoMaterialsSelector({
   const filteredCertificates = filterCertificates(certificateLibrary, materialSearch);
 
   return (
-    <section className="form-section" aria-labelledby="materials-data-title">
+    <section className="form-section act-editor-card" aria-labelledby="materials-data-title">
       <div className="scope-heading scope-heading--with-action">
         <span>
-          <h3 id="materials-data-title">Материалы из библиотеки сертификатов</h3>
+          <h3 id="materials-data-title">3. Материалы</h3>
           <p className="placeholder-note">
             Выберите материал из библиотеки, чтобы сертификат попал в акт и приложения.
           </p>

@@ -263,11 +263,22 @@ export function DemoAosrWorkspacePage({
           </p>
         </div>
         <div className="workspace-header__aside">
-          {onBackToObjects === undefined ? null : (
-            <button className="secondary-action" onClick={onBackToObjects} type="button">
-              Назад к объектам
+          <div className="workspace-actions">
+            {onBackToObjects === undefined ? null : (
+              <button className="secondary-action" onClick={onBackToObjects} type="button">
+                Назад к объектам
+              </button>
+            )}
+            <button
+              className="secondary-action"
+              onClick={() => {
+                setObjectSettingsOpen(true);
+              }}
+              type="button"
+            >
+              Настройки объекта
             </button>
-          )}
+          </div>
           <dl className="workspace-summary" aria-label="Сводка рабочей области">
             <div>
               <dt>Черновики</dt>
@@ -308,53 +319,7 @@ export function DemoAosrWorkspacePage({
             <h2 id="act-form-title">Рабочая область акта</h2>
           </div>
 
-          <div className="scope-switch" aria-label="Разделение уровней данных">
-            <span>Настройки объекта</span>
-            <span>Текущий акт</span>
-          </div>
-
           <div className="form-sections">
-            <DemoObjectSettingsPanel
-              globalOrganizations={globalOrganizations}
-              globalRepresentatives={globalRepresentatives}
-              headerOrganizationForm={headerOrganizationForm}
-              isHeaderOrganizationFormOpen={isHeaderOrganizationFormOpen}
-              isObjectSettingsOpen={isObjectSettingsOpen}
-              isRepresentativeLibraryFormOpen={isRepresentativeLibraryFormOpen}
-              isRepresentativeLibraryOpen={isRepresentativeLibraryOpen}
-              libraryRepresentativeForm={libraryRepresentativeForm}
-              objectDefaults={objectDefaults}
-              organizationSearch={organizationSearch}
-              representativeSearch={representativeSearch}
-              onAddHeaderOrganization={addConfiguredHeaderOrganization}
-              onAddLibraryRepresentative={addLibraryRepresentative}
-              onChangeHeaderOrganizationForm={updateHeaderOrganizationForm}
-              onChangeLibraryRepresentativeForm={updateLibraryRepresentativeForm}
-              onChangeOrganizationSearch={setOrganizationSearch}
-              onChangeRepresentativeSearch={setRepresentativeSearch}
-              onMoveHeaderOrganization={(headerOrganizationId, direction) => {
-                setObjectDefaults((currentDefaults) =>
-                  moveHeaderOrganizationBlock(currentDefaults, headerOrganizationId, direction),
-                );
-              }}
-              onSelectGlobalOrganization={selectGlobalOrganization}
-              onSelectGlobalRepresentative={selectGlobalRepresentative}
-              onToggleHeaderOrganizationForm={() => {
-                setHeaderOrganizationFormOpen((isOpen) => !isOpen);
-              }}
-              onToggleObjectSettings={() => {
-                setObjectSettingsOpen((isOpen) => !isOpen);
-              }}
-              onToggleRepresentativeLibrary={() => {
-                setRepresentativeLibraryOpen((isOpen) => !isOpen);
-              }}
-              onToggleRepresentativeLibraryForm={() => {
-                setRepresentativeLibraryFormOpen((isOpen) => !isOpen);
-                setRepresentativeLibraryOpen(true);
-              }}
-              onUpdateObjectDefaults={updateObjectDefaults}
-            />
-
             <DemoCurrentActEditor
               actRepresentativeSearch={actRepresentativeSearch}
               attachmentLibrary={demoAosrWorkspace.derivedAttachmentLibrary}
@@ -427,6 +392,48 @@ export function DemoAosrWorkspacePage({
           selectedSignatories={selectedSignatories}
         />
       </div>
+
+      {isObjectSettingsOpen ? (
+        <DemoObjectSettingsPanel
+          globalOrganizations={globalOrganizations}
+          globalRepresentatives={globalRepresentatives}
+          headerOrganizationForm={headerOrganizationForm}
+          isHeaderOrganizationFormOpen={isHeaderOrganizationFormOpen}
+          isRepresentativeLibraryFormOpen={isRepresentativeLibraryFormOpen}
+          isRepresentativeLibraryOpen={isRepresentativeLibraryOpen}
+          libraryRepresentativeForm={libraryRepresentativeForm}
+          objectDefaults={objectDefaults}
+          organizationSearch={organizationSearch}
+          representativeSearch={representativeSearch}
+          onAddHeaderOrganization={addConfiguredHeaderOrganization}
+          onAddLibraryRepresentative={addLibraryRepresentative}
+          onChangeHeaderOrganizationForm={updateHeaderOrganizationForm}
+          onChangeLibraryRepresentativeForm={updateLibraryRepresentativeForm}
+          onChangeOrganizationSearch={setOrganizationSearch}
+          onChangeRepresentativeSearch={setRepresentativeSearch}
+          onCloseObjectSettings={() => {
+            setObjectSettingsOpen(false);
+          }}
+          onMoveHeaderOrganization={(headerOrganizationId, direction) => {
+            setObjectDefaults((currentDefaults) =>
+              moveHeaderOrganizationBlock(currentDefaults, headerOrganizationId, direction),
+            );
+          }}
+          onSelectGlobalOrganization={selectGlobalOrganization}
+          onSelectGlobalRepresentative={selectGlobalRepresentative}
+          onToggleHeaderOrganizationForm={() => {
+            setHeaderOrganizationFormOpen((isOpen) => !isOpen);
+          }}
+          onToggleRepresentativeLibrary={() => {
+            setRepresentativeLibraryOpen((isOpen) => !isOpen);
+          }}
+          onToggleRepresentativeLibraryForm={() => {
+            setRepresentativeLibraryFormOpen((isOpen) => !isOpen);
+            setRepresentativeLibraryOpen(true);
+          }}
+          onUpdateObjectDefaults={updateObjectDefaults}
+        />
+      ) : null}
     </main>
   );
 }

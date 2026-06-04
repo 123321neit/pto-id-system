@@ -54,10 +54,10 @@ export function DemoSignatoriesEditor({
   );
 
   return (
-    <section className="form-section" aria-labelledby="commission-data-title">
+    <section className="form-section act-editor-card" aria-labelledby="commission-data-title">
       <div className="scope-heading scope-heading--with-action">
         <span>
-          <h3 id="commission-data-title">Комиссия / подписанты текущего акта</h3>
+          <h3 id="commission-data-title">Подписанты текущего акта</h3>
         </span>
         <button className="compact-toggle" onClick={onToggleManualRepresentativeForm} type="button">
           Добавить вручную для этого акта

@@ -19,7 +19,6 @@ interface DemoObjectSettingsPanelProps {
   readonly globalRepresentatives: readonly DemoAosrRepresentative[];
   readonly headerOrganizationForm: HeaderOrganizationFormState;
   readonly isHeaderOrganizationFormOpen: boolean;
-  readonly isObjectSettingsOpen: boolean;
   readonly isRepresentativeLibraryFormOpen: boolean;
   readonly isRepresentativeLibraryOpen: boolean;
   readonly libraryRepresentativeForm: RepresentativeFormState;
@@ -44,8 +43,8 @@ interface DemoObjectSettingsPanelProps {
   ) => void;
   readonly onSelectGlobalOrganization: (organization: DemoGlobalOrganization) => void;
   readonly onSelectGlobalRepresentative: (representative: DemoAosrRepresentative) => void;
+  readonly onCloseObjectSettings: () => void;
   readonly onToggleHeaderOrganizationForm: () => void;
-  readonly onToggleObjectSettings: () => void;
   readonly onToggleRepresentativeLibrary: () => void;
   readonly onToggleRepresentativeLibraryForm: () => void;
   readonly onUpdateObjectDefaults: (field: DemoAosrObjectDefaultsField, value: string) => void;
@@ -56,7 +55,6 @@ export function DemoObjectSettingsPanel({
   globalRepresentatives,
   headerOrganizationForm,
   isHeaderOrganizationFormOpen,
-  isObjectSettingsOpen,
   isRepresentativeLibraryFormOpen,
   isRepresentativeLibraryOpen,
   libraryRepresentativeForm,
@@ -72,44 +70,40 @@ export function DemoObjectSettingsPanel({
   onMoveHeaderOrganization,
   onSelectGlobalOrganization,
   onSelectGlobalRepresentative,
+  onCloseObjectSettings,
   onToggleHeaderOrganizationForm,
-  onToggleObjectSettings,
   onToggleRepresentativeLibrary,
   onToggleRepresentativeLibraryForm,
   onUpdateObjectDefaults,
 }: DemoObjectSettingsPanelProps): React.JSX.Element {
   return (
-    <section
-      className="form-section form-section--scope form-section--object-scope"
-      aria-labelledby="object-settings-title"
-    >
-      <div className="scope-heading scope-heading--with-action">
-        <span>
-          <p className="scope-label">Уровень объекта</p>
-          <h3 id="object-settings-title">Настройки объекта</h3>
-        </span>
-        <button
-          aria-controls="object-settings-panel"
-          aria-expanded={isObjectSettingsOpen}
-          className="compact-toggle"
-          onClick={onToggleObjectSettings}
-          type="button"
-        >
-          {isObjectSettingsOpen ? 'Свернуть объектовые настройки' : 'Открыть объектовые настройки'}
-        </button>
-      </div>
+    <div className="object-settings-overlay">
+      <section
+        aria-labelledby="object-settings-title"
+        aria-modal="true"
+        className="object-settings-dialog"
+        role="dialog"
+      >
+        <div className="object-settings-dialog__header">
+          <span>
+            <p className="scope-label">Уровень объекта</p>
+            <h2 id="object-settings-title">Настройки объекта</h2>
+          </span>
+          <button className="compact-toggle" onClick={onCloseObjectSettings} type="button">
+            Закрыть настройки
+          </button>
+        </div>
 
-      <div className="compact-summary-list" aria-label="Кратко об объектовых настройках">
-        <span>{objectDefaults.headerOrganizations.length} блока шапки</span>
-        <span>{objectDefaults.representativeLibrary.length} представителей объекта</span>
-        <span>проектная документация задана на объекте</span>
-      </div>
-      <p className="helper-note">
-        Демо-база представителей уже заполнена; на реальном объекте пользователь выбирает их сам.
-      </p>
+        <div className="compact-summary-list" aria-label="Кратко об объектовых настройках">
+          <span>{objectDefaults.headerOrganizations.length} блока шапки</span>
+          <span>{objectDefaults.representativeLibrary.length} представителей объекта</span>
+          <span>проектная документация задана на объекте</span>
+        </div>
+        <p className="helper-note">
+          Демо-база представителей уже заполнена; на реальном объекте пользователь выбирает их сам.
+        </p>
 
-      {isObjectSettingsOpen ? (
-        <div className="disclosure-panel" id="object-settings-panel">
+        <div className="object-settings-dialog__body">
           <section className="form-section" aria-labelledby="object-data-title">
             <h3 id="object-data-title">Объектовые значения по умолчанию</h3>
             <div className="act-form-grid">
@@ -182,7 +176,7 @@ export function DemoObjectSettingsPanel({
             onToggleLibrary={onToggleRepresentativeLibrary}
           />
         </div>
-      ) : null}
-    </section>
+      </section>
+    </div>
   );
 }

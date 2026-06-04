@@ -63,14 +63,12 @@ export interface DemoAosrDraft {
   readonly id: string;
   readonly actDate: string;
   readonly actNumber: string;
-  readonly actPlace: string;
   readonly additionalInfo: string;
   readonly axes: string;
   readonly complianceStatement: string;
   readonly copiesCount: string;
   readonly derivedAttachmentIds: readonly string[];
   readonly elevationRange: string;
-  readonly location: string;
   readonly materialCertificateIds: readonly string[];
   readonly periodEnd: string;
   readonly periodStart: string;
@@ -89,13 +87,11 @@ export interface DemoActApplication {
 export type DemoAosrDraftField =
   | 'actDate'
   | 'actNumber'
-  | 'actPlace'
   | 'additionalInfo'
   | 'axes'
   | 'complianceStatement'
   | 'copiesCount'
   | 'elevationRange'
-  | 'location'
   | 'periodEnd'
   | 'periodStart'
   | 'subsequentWorksPermitted'
@@ -169,7 +165,6 @@ export const demoAosrWorkspace: DemoAosrWorkspace = {
     {
       actDate: '2026-06-01',
       actNumber: 'АОСР-001',
-      actPlace: 'г. Екатеринбург',
       additionalInfo: 'Дополнительные сведения для демо-акта не требуются.',
       axes: 'оси 1-4 / А-В',
       complianceStatement:
@@ -182,7 +177,6 @@ export const demoAosrWorkspace: DemoAosrWorkspace = {
       ],
       elevationRange: 'отм. +3.200 - +3.850',
       id: 'aosr-draft-001',
-      location: 'Венткамера ВК-1, участок приточной вентиляции',
       materialCertificateIds: ['certificate-ducts-001', 'certificate-fasteners-001'],
       periodEnd: '2026-05-31',
       periodStart: '2026-05-28',
@@ -200,7 +194,6 @@ export const demoAosrWorkspace: DemoAosrWorkspace = {
     {
       actDate: '2026-06-03',
       actNumber: 'АОСР-002',
-      actPlace: 'г. Екатеринбург',
       additionalInfo: 'Дополнительные сведения отсутствуют.',
       axes: 'оси 5-7 / Г-Д',
       complianceStatement:
@@ -209,7 +202,6 @@ export const demoAosrWorkspace: DemoAosrWorkspace = {
       derivedAttachmentIds: ['attachment-photo-vk-1'],
       elevationRange: 'отм. 0.000 - +0.600',
       id: 'aosr-draft-002',
-      location: 'Стояк В2, санитарный блок 1 этажа',
       materialCertificateIds: ['certificate-firestop-001'],
       periodEnd: '2026-06-02',
       periodStart: '2026-06-01',

@@ -109,7 +109,9 @@ export function DemoAosrPreview({
               <span className="act-page__item-label">
                 1. К освидетельствованию предъявлены следующие работы:
               </span>{' '}
-              <span className="act-page__print-value">{selectedDraft.workDescription}</span>
+              <span className="act-page__print-value">
+                {getHiddenWorksPreviewLine(selectedDraft)}
+              </span>
             </p>
             <p className="act-page__caption">(наименование скрытых работ)</p>
           </section>
@@ -154,8 +156,8 @@ export function DemoAosrPreview({
           <section className="act-page__official-section" aria-label="Документы соответствия">
             <p>
               <span className="act-page__item-label">
-                4. Предъявлены документы, подтверждающие соответствие работ предъявляемым к ним
-                требованиям:
+                4. Предъявлены исполнительные схемы, чертежи и иные материалы, подтверждающие
+                соответствие работ предъявляемым к ним требованиям:
               </span>
             </p>
             {selectedDerivedAttachments.length > 0 ? (
@@ -169,7 +171,7 @@ export function DemoAosrPreview({
                 ))}
               </div>
             ) : (
-              <p>Исполнительные схемы, фото и журнальные записи пока не выбраны.</p>
+              <p>Исполнительные схемы, чертежи и иные материалы пока не выбраны.</p>
             )}
             <p className="act-page__caption">
               (исполнительные схемы, результаты обследований, журналы и иные материалы)
@@ -276,6 +278,13 @@ export function DemoAosrPreview({
 
 function getApplicationPrintSourceLabel(application: DemoActApplication): string {
   return application.source === 'Сертификат / материал' ? '' : ` ${application.source}`;
+}
+
+function getHiddenWorksPreviewLine(selectedDraft: DemoAosrDraft): string {
+  return [selectedDraft.workDescription, selectedDraft.axes, selectedDraft.elevationRange]
+    .map((value) => value.trim())
+    .filter(Boolean)
+    .join('; ');
 }
 
 function getExecutingOrganization(

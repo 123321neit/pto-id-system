@@ -18,16 +18,16 @@ export function DemoDerivedApplicationsEditor({
   onToggleAttachment,
 }: DemoDerivedApplicationsEditorProps): React.JSX.Element {
   return (
-    <section className="form-section" aria-labelledby="attachments-data-title">
-      <h3 id="attachments-data-title">Производные приложения</h3>
+    <section className="form-section act-editor-card" aria-labelledby="attachments-data-title">
+      <h3 id="attachments-data-title">4. Исполнительные схемы и чертежи</h3>
       <p className="helper-note">
-        Формируется из выбранных сертификатов, схем, фото и журналов. Свободного поля “приложения” в
-        демо нет.
+        Выбранные схемы, чертежи и подтверждающие материалы попадают в пункт 4 акта и в приложения.
+        Свободного поля “приложения” в демо нет.
       </p>
       <div
         className="attachment-options"
         role="group"
-        aria-label="Структурированные демо-приложения"
+        aria-label="Исполнительные схемы и чертежи для пункта 4"
       >
         {attachmentLibrary.map((attachment) => (
           <label className="checkbox-row" key={attachment.id}>

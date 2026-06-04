@@ -316,7 +316,7 @@ describe('App shell mock navigation', () => {
 
     await user.click(screen.getByRole('button', { name: 'Вернуться к объектам' }));
     await user.click(getFirstOpenObjectButton());
-    await user.click(screen.getByRole('button', { name: 'Открыть объектовые настройки' }));
+    await user.click(screen.getByRole('button', { name: 'Настройки объекта' }));
     await user.click(screen.getByRole('button', { name: 'Добавить блок шапки' }));
     await user.type(
       screen.getByLabelText('Найти организацию в глобальной библиотеке'),
