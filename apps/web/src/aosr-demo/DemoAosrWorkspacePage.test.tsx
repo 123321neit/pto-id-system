@@ -7,6 +7,7 @@ import { DemoAosrWorkspacePage } from './DemoAosrWorkspacePage.js';
 import {
   addHeaderOrganizationBlock,
   addMaterialCertificateToDraft,
+  addObjectDocumentToDraft,
   demoAosrWorkspace,
   updateDemoAosrDraftField,
 } from './demo-aosr-workspace.js';
@@ -156,7 +157,7 @@ describe('DemoAosrWorkspacePage', () => {
       'Отметки',
       '2. Проектная документация',
       '3. Материалы',
-      '4. Исполнительные схемы и чертежи',
+      '4. Документы объекта',
       '5. Даты выполнения работ',
       '6. Соответствие работ',
       '7. Последующие работы',
@@ -181,16 +182,93 @@ describe('DemoAosrWorkspacePage', () => {
     expect(screen.queryByLabelText('Объект / участок')).toBeNull();
   });
 
-  it('shows execution drawings and schemes as a clear point 4 section', () => {
+  it('shows selected object documents as a clear point 4 section', () => {
     renderDemoWorkspace();
 
-    expect(screen.getByRole('heading', { name: '4. Исполнительные схемы и чертежи' })).toBeTruthy();
-    const pointFourGroup = screen.getByLabelText('Исполнительные схемы и чертежи для пункта 4');
+    expect(screen.getByRole('heading', { name: '4. Документы объекта' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Добавить документ' })).toBeTruthy();
 
-    expect(pointFourGroup).toBeTruthy();
+    const pointFourList = screen.getByRole('list', {
+      name: 'Документы пункта 4 текущего акта',
+    });
     expect(
-      within(pointFourGroup).getByText('Исполнительная схема скрытых участков вентиляции'),
+      within(pointFourList).getByText('Исполнительная схема скрытых участков вентиляции'),
     ).toBeTruthy();
+  });
+
+  it('opens the object document drawer and searches object documents', async () => {
+    const user = userEvent.setup();
+
+    renderDemoWorkspace();
+
+    expect(screen.queryByRole('dialog', { name: 'Документы объекта' })).toBeNull();
+
+    await user.click(screen.getByRole('button', { name: 'Добавить документ' }));
+
+    const drawer = screen.getByRole('dialog', { name: 'Документы объекта' });
+    expect(within(drawer).getByLabelText('Найти документ объекта')).toBeTruthy();
+    expect(within(drawer).getByLabelText('Фильтр по типу документа объекта')).toBeTruthy();
+
+    await user.type(within(drawer).getByLabelText('Найти документ объекта'), 'чертеж');
+
+    const documentLibrary = within(drawer).getByRole('list', {
+      name: 'Библиотека документов объекта',
+    });
+    expect(
+      within(documentLibrary).getByText(
+        'Исполнительный чертеж. Узел прохода воздуховодов через перекрытие',
+      ),
+    ).toBeTruthy();
+    expect(
+      within(documentLibrary).queryByText('ППР на монтаж систем вентиляции и кондиционирования'),
+    ).toBeNull();
+  });
+
+  it('adds an object document to the current act, point 4 and applications', async () => {
+    const user = userEvent.setup();
+
+    renderDemoWorkspace();
+
+    expect(getPreviewText()).not.toContain(
+      'Исполнительный чертеж. Узел прохода воздуховодов через перекрытие',
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Добавить документ' }));
+    await user.type(screen.getByLabelText('Найти документ объекта'), 'чертеж');
+
+    const documentLibrary = screen.getByRole('list', { name: 'Библиотека документов объекта' });
+    const drawingRow = within(documentLibrary)
+      .getByText('Исполнительный чертеж. Узел прохода воздуховодов через перекрытие')
+      .closest('.library-row');
+
+    if (drawingRow === null) {
+      throw new Error('В тесте ожидается строка документа объекта.');
+    }
+
+    await user.click(
+      within(drawingRow as HTMLElement).getByRole('button', { name: 'Добавить документ' }),
+    );
+
+    const pointFourList = screen.getByRole('list', {
+      name: 'Документы пункта 4 текущего акта',
+    });
+    expect(
+      within(pointFourList).getByText(
+        'Исполнительный чертеж. Узел прохода воздуховодов через перекрытие',
+      ),
+    ).toBeTruthy();
+
+    const finalApplications = screen.getByRole('list', {
+      name: 'Итоговые приложения текущего акта',
+    });
+    expect(
+      within(finalApplications).getByText(
+        'Исполнительный чертеж. Узел прохода воздуховодов через перекрытие',
+      ),
+    ).toBeTruthy();
+    expect(getPreviewText()).toContain(
+      'Исполнительный чертеж. Узел прохода воздуховодов через перекрытие',
+    );
   });
 
   it('renders configurable object-level header organization blocks in preview order', () => {
@@ -395,6 +473,55 @@ describe('DemoAosrWorkspacePage', () => {
     expect(previewText).toContain('Теплоизоляционные маты ИЗ-50');
     expect(previewText).toContain('ДС-ИЗ-2026-04');
     expect(previewText).toContain('Декларация о соответствии N ДС-ИЗ-2026-04 от 20.05.2026');
+    expect(
+      screen.getByRole('checkbox', {
+        name: /Декларация о соответствии N ДС-ИЗ-2026-04 от 20.05.2026/u,
+      }),
+    ).toBeTruthy();
+  });
+
+  it('unchecking an application removes it from final applications and preview only', async () => {
+    const user = userEvent.setup();
+
+    renderDemoWorkspace();
+
+    const applicationCheckbox = screen.getByRole('checkbox', {
+      name: /Запись журнала входного контроля материалов/u,
+    });
+
+    expect((applicationCheckbox as HTMLInputElement).checked).toBe(true);
+    expect(getPreviewText()).toContain('Запись журнала входного контроля материалов');
+
+    await user.click(applicationCheckbox);
+
+    expect((applicationCheckbox as HTMLInputElement).checked).toBe(false);
+
+    const pointFourList = screen.getByRole('list', {
+      name: 'Документы пункта 4 текущего акта',
+    });
+    expect(
+      within(pointFourList).getByText('Запись журнала входного контроля материалов'),
+    ).toBeTruthy();
+
+    const finalApplications = screen.getByRole('list', {
+      name: 'Итоговые приложения текущего акта',
+    });
+    expect(
+      within(finalApplications).queryByText('Запись журнала входного контроля материалов'),
+    ).toBeNull();
+
+    const preview = screen.getByLabelText('Демо-предпросмотр печатной формы АОСР');
+    const pointFourPreview = within(preview).getByLabelText('Документы соответствия');
+    const previewApplications = preview.querySelector('.act-page__applications');
+
+    if (previewApplications === null) {
+      throw new Error('В preview ожидается блок приложений.');
+    }
+
+    expect(pointFourPreview.textContent).toContain('Запись журнала входного контроля материалов');
+    expect(previewApplications.textContent).not.toContain(
+      'Запись журнала входного контроля материалов',
+    );
   });
 
   it('does not expose free-text material, certificate or final applications fields', () => {
@@ -406,7 +533,7 @@ describe('DemoAosrWorkspacePage', () => {
     expect(screen.getByText('Итоговые приложения в акте')).toBeTruthy();
   });
 
-  it('renders derived applications before final signature blocks', () => {
+  it('renders checked applications before final signature blocks', () => {
     renderDemoWorkspace();
 
     const previewText = getPreviewText();
@@ -525,6 +652,20 @@ describe('DemoAosrWorkspacePage', () => {
 
     expect(editedDraft.materialCertificateIds).toContain('certificate-insulation-001');
     expect(sourceDraft.materialCertificateIds).not.toContain('certificate-insulation-001');
+    expect(editedDraft).not.toBe(sourceDraft);
+  });
+
+  it('adds object document selections without mutating the source mock draft', () => {
+    const sourceDraft = demoAosrWorkspace.drafts[1];
+
+    if (!sourceDraft) {
+      throw new Error('В демо-рабочей области должен быть второй черновик.');
+    }
+
+    const editedDraft = addObjectDocumentToDraft(sourceDraft, 'object-document-drawing-node-02');
+
+    expect(editedDraft.objectDocumentIds).toContain('object-document-drawing-node-02');
+    expect(sourceDraft.objectDocumentIds).not.toContain('object-document-drawing-node-02');
     expect(editedDraft).not.toBe(sourceDraft);
   });
 

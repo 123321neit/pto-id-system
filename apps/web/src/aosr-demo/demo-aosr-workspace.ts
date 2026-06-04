@@ -5,7 +5,7 @@ export interface DemoAosrWorkspace {
   readonly ownerName: string;
   readonly demoNotice: string;
   readonly objectDefaults: DemoAosrObjectDefaults;
-  readonly derivedAttachmentLibrary: readonly DemoDerivedAttachment[];
+  readonly objectDocumentLibrary: readonly DemoObjectDocument[];
   readonly drafts: readonly DemoAosrDraft[];
 }
 
@@ -52,11 +52,20 @@ export interface DemoMaterialCertificate {
   readonly documentName: string;
 }
 
-export interface DemoDerivedAttachment {
+export type DemoObjectDocumentType =
+  | 'Исполнительная схема'
+  | 'Исполнительный чертеж'
+  | 'ППР'
+  | 'Проектная документация'
+  | 'Журнал'
+  | 'Иной документ';
+
+export interface DemoObjectDocument {
   readonly id: string;
-  readonly title: string;
+  readonly documentDate: string;
   readonly reference: string;
-  readonly type: 'executive-scheme' | 'photo' | 'journal';
+  readonly title: string;
+  readonly type: DemoObjectDocumentType;
 }
 
 export interface DemoAosrDraft {
@@ -67,9 +76,10 @@ export interface DemoAosrDraft {
   readonly axes: string;
   readonly complianceStatement: string;
   readonly copiesCount: string;
-  readonly derivedAttachmentIds: readonly string[];
   readonly elevationRange: string;
+  readonly excludedApplicationIds: readonly string[];
   readonly materialCertificateIds: readonly string[];
+  readonly objectDocumentIds: readonly string[];
   readonly periodEnd: string;
   readonly periodStart: string;
   readonly representatives: readonly DemoAosrRepresentative[];
@@ -83,6 +93,15 @@ export interface DemoActApplication {
   readonly title: string;
   readonly source: string;
 }
+
+export const demoObjectDocumentTypes: readonly DemoObjectDocumentType[] = [
+  'Исполнительная схема',
+  'Исполнительный чертеж',
+  'ППР',
+  'Проектная документация',
+  'Журнал',
+  'Иной документ',
+];
 
 export type DemoAosrDraftField =
   | 'actDate'
@@ -141,24 +160,48 @@ const customerRepresentative: DemoAosrRepresentative = {
 
 export const demoAosrWorkspace: DemoAosrWorkspace = {
   demoNotice: 'ДЕМО / демонстрационные данные / не для работы в продуктиве',
-  derivedAttachmentLibrary: [
+  objectDocumentLibrary: [
     {
-      id: 'attachment-scheme-ov-04',
+      documentDate: '2026-06-01',
+      id: 'object-document-scheme-ov-04',
       reference: 'ИС-ОВ-04',
       title: 'Исполнительная схема скрытых участков вентиляции',
-      type: 'executive-scheme',
+      type: 'Исполнительная схема',
     },
     {
-      id: 'attachment-photo-vk-1',
-      reference: 'ФФ-ОВ-11',
-      title: 'Фотофиксация скрытых участков ВК-1 до закрытия',
-      type: 'photo',
+      documentDate: '2026-06-01',
+      id: 'object-document-drawing-node-02',
+      reference: 'ИЧ-ОВ-02',
+      title: 'Исполнительный чертеж. Узел прохода воздуховодов через перекрытие',
+      type: 'Исполнительный чертеж',
     },
     {
-      id: 'attachment-journal-input-control',
+      documentDate: '2026-05-28',
+      id: 'object-document-ppr-ventilation',
+      reference: 'ППР-ОВ-2026',
+      title: 'ППР на монтаж систем вентиляции и кондиционирования',
+      type: 'ППР',
+    },
+    {
+      documentDate: '2026-05-20',
+      id: 'object-document-project-ov-set',
+      reference: 'РД-ОВ-12',
+      title: 'Рабочая документация раздела ОВ, листы 4 и 14',
+      type: 'Проектная документация',
+    },
+    {
+      documentDate: '2026-05-31',
+      id: 'object-document-journal-input-control',
       reference: 'ЖВК-2026-05',
       title: 'Запись журнала входного контроля материалов',
-      type: 'journal',
+      type: 'Журнал',
+    },
+    {
+      documentDate: '2026-05-30',
+      id: 'object-document-photo-vk-1',
+      reference: 'ФФ-ОВ-11',
+      title: 'Фотофиксация скрытых участков до закрытия',
+      type: 'Иной документ',
     },
   ],
   drafts: [
@@ -170,14 +213,11 @@ export const demoAosrWorkspace: DemoAosrWorkspace = {
       complianceStatement:
         'Работы выполнены в соответствии с рабочей документацией и требованиями СП 73.13330.2016.',
       copiesCount: '4',
-      derivedAttachmentIds: [
-        'attachment-scheme-ov-04',
-        'attachment-photo-vk-1',
-        'attachment-journal-input-control',
-      ],
       elevationRange: 'отм. +3.200 - +3.850',
+      excludedApplicationIds: [],
       id: 'aosr-draft-001',
       materialCertificateIds: ['certificate-ducts-001', 'certificate-fasteners-001'],
+      objectDocumentIds: ['object-document-scheme-ov-04', 'object-document-journal-input-control'],
       periodEnd: '2026-05-31',
       periodStart: '2026-05-28',
       representatives: [
@@ -199,10 +239,11 @@ export const demoAosrWorkspace: DemoAosrWorkspace = {
       complianceStatement:
         'Работы выполнены согласно рабочей документации и журналу входного контроля материалов.',
       copiesCount: '3',
-      derivedAttachmentIds: ['attachment-photo-vk-1'],
       elevationRange: 'отм. 0.000 - +0.600',
+      excludedApplicationIds: [],
       id: 'aosr-draft-002',
       materialCertificateIds: ['certificate-firestop-001'],
+      objectDocumentIds: ['object-document-project-ov-set'],
       periodEnd: '2026-06-02',
       periodStart: '2026-06-01',
       representatives: [
@@ -396,26 +437,53 @@ export function removeMaterialCertificateFromDraft(
   draft: DemoAosrDraft,
   certificateId: string,
 ): DemoAosrDraft {
+  const applicationId = getCertificateApplicationId(certificateId);
+
   return {
     ...draft,
+    excludedApplicationIds: draft.excludedApplicationIds.filter((id) => id !== applicationId),
     materialCertificateIds: draft.materialCertificateIds.filter((id) => id !== certificateId),
   };
 }
 
-export function toggleDerivedAttachmentInDraft(
+export function addObjectDocumentToDraft(draft: DemoAosrDraft, documentId: string): DemoAosrDraft {
+  if (draft.objectDocumentIds.includes(documentId)) {
+    return draft;
+  }
+
+  return {
+    ...draft,
+    objectDocumentIds: [...draft.objectDocumentIds, documentId],
+  };
+}
+
+export function removeObjectDocumentFromDraft(
   draft: DemoAosrDraft,
-  attachmentId: string,
+  documentId: string,
 ): DemoAosrDraft {
-  if (draft.derivedAttachmentIds.includes(attachmentId)) {
+  const applicationId = getObjectDocumentApplicationId(documentId);
+
+  return {
+    ...draft,
+    excludedApplicationIds: draft.excludedApplicationIds.filter((id) => id !== applicationId),
+    objectDocumentIds: draft.objectDocumentIds.filter((id) => id !== documentId),
+  };
+}
+
+export function toggleApplicationInclusionInDraft(
+  draft: DemoAosrDraft,
+  applicationId: string,
+): DemoAosrDraft {
+  if (draft.excludedApplicationIds.includes(applicationId)) {
     return {
       ...draft,
-      derivedAttachmentIds: draft.derivedAttachmentIds.filter((id) => id !== attachmentId),
+      excludedApplicationIds: draft.excludedApplicationIds.filter((id) => id !== applicationId),
     };
   }
 
   return {
     ...draft,
-    derivedAttachmentIds: [...draft.derivedAttachmentIds, attachmentId],
+    excludedApplicationIds: [...draft.excludedApplicationIds, applicationId],
   };
 }
 
@@ -434,39 +502,57 @@ export function getDraftMaterialCertificates(
   });
 }
 
-export function getDraftDerivedAttachments(
+export function getDraftObjectDocuments(
   draft: DemoAosrDraft,
-  attachmentLibrary: readonly DemoDerivedAttachment[],
-): readonly DemoDerivedAttachment[] {
-  return draft.derivedAttachmentIds.flatMap((attachmentId) => {
-    const attachment = attachmentLibrary.find(({ id }) => id === attachmentId);
+  objectDocumentLibrary: readonly DemoObjectDocument[],
+): readonly DemoObjectDocument[] {
+  return draft.objectDocumentIds.flatMap((documentId) => {
+    const document = objectDocumentLibrary.find(({ id }) => id === documentId);
 
-    return attachment === undefined ? [] : [attachment];
+    return document === undefined ? [] : [document];
   });
 }
 
 export function getDraftApplications(
   draft: DemoAosrDraft,
   certificateLibrary: readonly DemoMaterialCertificate[],
-  attachmentLibrary: readonly DemoDerivedAttachment[],
+  objectDocumentLibrary: readonly DemoObjectDocument[],
 ): readonly DemoActApplication[] {
   const certificateApplications = getDraftMaterialCertificates(draft, certificateLibrary).map(
     (certificate) => ({
-      id: `application-${certificate.id}`,
+      id: getCertificateApplicationId(certificate.id),
       source: 'Сертификат / материал',
       title: `${certificate.documentName} (${certificate.materialName})`,
     }),
   );
 
-  const derivedApplications = getDraftDerivedAttachments(draft, attachmentLibrary).map(
-    (attachment) => ({
-      id: `application-${attachment.id}`,
-      source: attachment.reference,
-      title: attachment.title,
+  const documentApplications = getDraftObjectDocuments(draft, objectDocumentLibrary).map(
+    (document) => ({
+      id: getObjectDocumentApplicationId(document.id),
+      source: `${document.type} / ${document.reference}`,
+      title: document.title,
     }),
   );
 
-  return [...certificateApplications, ...derivedApplications];
+  return [...certificateApplications, ...documentApplications];
+}
+
+export function getIncludedDraftApplications(
+  draft: DemoAosrDraft,
+  certificateLibrary: readonly DemoMaterialCertificate[],
+  objectDocumentLibrary: readonly DemoObjectDocument[],
+): readonly DemoActApplication[] {
+  return getDraftApplications(draft, certificateLibrary, objectDocumentLibrary).filter(
+    (application) => !draft.excludedApplicationIds.includes(application.id),
+  );
+}
+
+function getCertificateApplicationId(certificateId: string): string {
+  return `application-certificate-${certificateId}`;
+}
+
+function getObjectDocumentApplicationId(documentId: string): string {
+  return `application-object-document-${documentId}`;
 }
 
 function moveItemById<TItem extends { readonly id: string }>(

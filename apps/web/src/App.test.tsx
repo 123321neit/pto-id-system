@@ -62,7 +62,7 @@ describe('App shell mock navigation', () => {
     expect(within(workflow).getByText('Добавьте сертификат')).toBeTruthy();
     expect(within(workflow).getByText('Откройте акт')).toBeTruthy();
     expect(within(workflow).getByText('Найдите материал')).toBeTruthy();
-    expect(within(workflow).getByText('Сертификат попадет в акт автоматически')).toBeTruthy();
+    expect(within(workflow).getByText('Сертификат появится в приложениях')).toBeTruthy();
     expect(screen.queryByText('Раздел будет оформлен отдельным шагом.')).toBeNull();
   });
 
@@ -82,7 +82,7 @@ describe('App shell mock navigation', () => {
     expect(screen.getByText('Сертификаты хранятся в библиотеке.')).toBeTruthy();
     expect(screen.getByText('Объект использует сертификаты из библиотеки.')).toBeTruthy();
     expect(screen.getByText('Акт выбирает материалы через поиск.')).toBeTruthy();
-    expect(screen.getByText('Приложения формируются автоматически.')).toBeTruthy();
+    expect(screen.getByText('Инженер включает приложения чекбоксами.')).toBeTruthy();
     expect(
       screen.getByText(
         /Библиотека сертификатов и поиск материалов в АОСР используют один frontend mock-store/u,
@@ -470,6 +470,11 @@ describe('App shell mock navigation', () => {
     expect(previewText).toContain('Кузнецова А.А.');
     expect(previewText).toContain('Приложения:');
     expect(previewText).toContain('Декларация о соответствии N ДС-ИЗ-2026-04 от 20.05.2026');
+    expect(
+      screen.getByRole('checkbox', {
+        name: /Декларация о соответствии N ДС-ИЗ-2026-04 от 20.05.2026/u,
+      }),
+    ).toBeTruthy();
     expect(preview.querySelector('.act-page__sheet')).toBeTruthy();
     expect(preview.querySelector('.act-page__number-date-row')).toBeTruthy();
 

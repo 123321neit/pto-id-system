@@ -8,21 +8,24 @@ import {
   useDemoStore,
 } from '../demo-store/demo-store.js';
 import {
+  addObjectDocumentToDraft,
   addHeaderOrganizationBlock,
   addMaterialCertificateToDraft,
   addRepresentativeToDraft,
   addRepresentativeToLibrary,
   demoAosrWorkspace,
   getDraftApplications,
-  getDraftDerivedAttachments,
+  getDraftObjectDocuments,
+  getIncludedDraftApplications,
   getDraftMaterialCertificates,
   getDraftRepresentatives,
   moveHeaderOrganizationBlock,
   moveRepresentativeInDraft,
   removeMaterialCertificateFromDraft,
+  removeObjectDocumentFromDraft,
   removeRepresentativeFromDraft,
   reorderDraftRepresentatives,
-  toggleDerivedAttachmentInDraft,
+  toggleApplicationInclusionInDraft,
   updateDemoAosrDraftField,
   updateDemoObjectDefaultsField,
   type DemoAosrDraft,
@@ -33,6 +36,7 @@ import {
   type DemoAosrRepresentative,
   type DemoGlobalOrganization,
   type DemoMaterialCertificate,
+  type DemoObjectDocumentType,
 } from './demo-aosr-workspace.js';
 import {
   createRepresentativeFromForm,
@@ -72,6 +76,7 @@ export function DemoAosrWorkspacePage({
   const [isRepresentativeLibraryFormOpen, setRepresentativeLibraryFormOpen] = useState(false);
   const [isManualRepresentativeFormOpen, setManualRepresentativeFormOpen] = useState(false);
   const [isCertificateLibraryOpen, setCertificateLibraryOpen] = useState(false);
+  const [isObjectDocumentLibraryOpen, setObjectDocumentLibraryOpen] = useState(false);
   const [headerOrganizationForm, setHeaderOrganizationForm] = useState<HeaderOrganizationFormState>(
     emptyHeaderOrganizationForm,
   );
@@ -83,6 +88,10 @@ export function DemoAosrWorkspacePage({
   const [representativeSearch, setRepresentativeSearch] = useState('');
   const [actRepresentativeSearch, setActRepresentativeSearch] = useState('');
   const [materialSearch, setMaterialSearch] = useState('');
+  const [objectDocumentSearch, setObjectDocumentSearch] = useState('');
+  const [objectDocumentTypeFilter, setObjectDocumentTypeFilter] = useState<
+    'all' | DemoObjectDocumentType
+  >('all');
   const [shouldAddManualRepresentativeToLibrary, setShouldAddManualRepresentativeToLibrary] =
     useState(false);
   const [createdHeaderOrganizationCount, setCreatedHeaderOrganizationCount] = useState(1);
@@ -91,14 +100,19 @@ export function DemoAosrWorkspacePage({
   const selectedDraft = getSelectedDraft(drafts, selectedDraftId);
   const selectedSignatories = getDraftRepresentatives(selectedDraft);
   const selectedMaterials = getDraftMaterialCertificates(selectedDraft, certificateLibrary);
-  const selectedDerivedAttachments = getDraftDerivedAttachments(
+  const selectedObjectDocuments = getDraftObjectDocuments(
     selectedDraft,
-    demoAosrWorkspace.derivedAttachmentLibrary,
+    demoAosrWorkspace.objectDocumentLibrary,
   );
-  const finalApplications = getDraftApplications(
+  const allApplications = getDraftApplications(
     selectedDraft,
     certificateLibrary,
-    demoAosrWorkspace.derivedAttachmentLibrary,
+    demoAosrWorkspace.objectDocumentLibrary,
+  );
+  const finalApplications = getIncludedDraftApplications(
+    selectedDraft,
+    certificateLibrary,
+    demoAosrWorkspace.objectDocumentLibrary,
   );
 
   const updateObjectDefaults = (field: DemoAosrObjectDefaultsField, value: string): void => {
@@ -322,17 +336,22 @@ export function DemoAosrWorkspacePage({
           <div className="form-sections">
             <DemoCurrentActEditor
               actRepresentativeSearch={actRepresentativeSearch}
-              attachmentLibrary={demoAosrWorkspace.derivedAttachmentLibrary}
+              allApplications={allApplications}
               certificateLibrary={certificateLibrary}
+              documentSearch={objectDocumentSearch}
+              documentTypeFilter={objectDocumentTypeFilter}
               draggedRepresentativeId={draggedRepresentativeId}
               finalApplications={finalApplications}
               isCertificateLibraryOpen={isCertificateLibraryOpen}
               isManualRepresentativeFormOpen={isManualRepresentativeFormOpen}
+              isObjectDocumentLibraryOpen={isObjectDocumentLibraryOpen}
               manualRepresentativeForm={manualRepresentativeForm}
               materialSearch={materialSearch}
               objectDefaults={objectDefaults}
+              objectDocumentLibrary={demoAosrWorkspace.objectDocumentLibrary}
               selectedDraft={selectedDraft}
               selectedMaterials={selectedMaterials}
+              selectedObjectDocuments={selectedObjectDocuments}
               selectedSignatories={selectedSignatories}
               shouldAddManualRepresentativeToLibrary={shouldAddManualRepresentativeToLibrary}
               onAddManualRepresentative={addManualRepresentative}
@@ -341,11 +360,16 @@ export function DemoAosrWorkspacePage({
                   addMaterialCertificateToDraft(draft, certificateId),
                 );
               }}
+              onAddObjectDocumentToAct={(documentId) => {
+                updateSelectedDraftWith((draft) => addObjectDocumentToDraft(draft, documentId));
+              }}
               onAddRepresentativeToAct={(representative) => {
                 updateSelectedDraftWith((draft) => addRepresentativeToDraft(draft, representative));
                 setActRepresentativeSearch('');
               }}
               onChangeActRepresentativeSearch={setActRepresentativeSearch}
+              onChangeDocumentSearch={setObjectDocumentSearch}
+              onChangeDocumentTypeFilter={setObjectDocumentTypeFilter}
               onChangeManualRepresentativeForm={updateManualRepresentativeForm}
               onChangeMaterialSearch={setMaterialSearch}
               onChangeShouldAddManualRepresentativeToLibrary={
@@ -361,15 +385,20 @@ export function DemoAosrWorkspacePage({
                   removeMaterialCertificateFromDraft(draft, certificateId),
                 );
               }}
+              onRemoveObjectDocumentFromAct={(documentId) => {
+                updateSelectedDraftWith((draft) =>
+                  removeObjectDocumentFromDraft(draft, documentId),
+                );
+              }}
               onRemoveRepresentativeFromAct={(representativeId) => {
                 updateSelectedDraftWith((draft) =>
                   removeRepresentativeFromDraft(draft, representativeId),
                 );
               }}
               onReorderSelectedSignatory={reorderSelectedSignatory}
-              onToggleAttachment={(attachmentId) => {
+              onToggleApplication={(applicationId) => {
                 updateSelectedDraftWith((draft) =>
-                  toggleDerivedAttachmentInDraft(draft, attachmentId),
+                  toggleApplicationInclusionInDraft(draft, applicationId),
                 );
               }}
               onToggleCertificateLibrary={() => {
@@ -377,6 +406,9 @@ export function DemoAosrWorkspacePage({
               }}
               onToggleManualRepresentativeForm={() => {
                 setManualRepresentativeFormOpen((isOpen) => !isOpen);
+              }}
+              onToggleObjectDocumentLibrary={() => {
+                setObjectDocumentLibraryOpen((isOpen) => !isOpen);
               }}
               onUpdateSelectedDraft={updateSelectedDraft}
             />
@@ -386,9 +418,9 @@ export function DemoAosrWorkspacePage({
         <DemoAosrPreview
           finalApplications={finalApplications}
           objectDefaults={objectDefaults}
-          selectedDerivedAttachments={selectedDerivedAttachments}
           selectedDraft={selectedDraft}
           selectedMaterials={selectedMaterials}
+          selectedObjectDocuments={selectedObjectDocuments}
           selectedSignatories={selectedSignatories}
         />
       </div>

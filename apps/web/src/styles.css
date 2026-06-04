@@ -1450,6 +1450,16 @@ h3 {
   font-weight: 750;
 }
 
+.search-field select {
+  width: 100%;
+  border: 1px solid #becbd4;
+  border-radius: 6px;
+  background: #ffffff;
+  padding: 9px 10px;
+  color: #172124;
+  line-height: 1.4;
+}
+
 .helper-note,
 .placeholder-note,
 .empty-state {
@@ -1480,7 +1490,8 @@ h3 {
 
 .library-panel,
 .selected-list,
-.attachment-options {
+.application-control,
+.application-checklist {
   display: grid;
   gap: 10px;
 }
@@ -1488,7 +1499,7 @@ h3 {
 .library-list,
 .selected-list ul,
 .selected-list ol,
-.attachment-options {
+.application-checklist {
   display: grid;
   gap: 8px;
   margin: 0;
@@ -1607,9 +1618,17 @@ h3 {
   border-left: 3px solid #bfdbfe;
 }
 
+.object-document-row {
+  border-left: 3px solid #0f766e;
+}
+
 .checkbox-row {
   grid-template-columns: 18px minmax(0, 1fr);
   color: inherit;
+}
+
+.checkbox-row--application {
+  border-left: 3px solid #2563eb;
 }
 
 .checkbox-row--inline {
@@ -1694,6 +1713,7 @@ h3 {
 .form-section input:focus,
 .form-section textarea:focus,
 .certificate-picker-drawer input:focus,
+.certificate-picker-drawer select:focus,
 .certificate-form input:focus,
 .certificate-form select:focus,
 .status-filter select:focus,

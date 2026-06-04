@@ -3,8 +3,8 @@ import type {
   DemoAosrDraft,
   DemoAosrObjectDefaults,
   DemoAosrRepresentative,
-  DemoDerivedAttachment,
   DemoMaterialCertificate,
+  DemoObjectDocument,
 } from './demo-aosr-workspace.js';
 import {
   formatDocumentDate,
@@ -15,18 +15,18 @@ import {
 interface DemoAosrPreviewProps {
   readonly finalApplications: readonly DemoActApplication[];
   readonly objectDefaults: DemoAosrObjectDefaults;
-  readonly selectedDerivedAttachments: readonly DemoDerivedAttachment[];
   readonly selectedDraft: DemoAosrDraft;
   readonly selectedMaterials: readonly DemoMaterialCertificate[];
+  readonly selectedObjectDocuments: readonly DemoObjectDocument[];
   readonly selectedSignatories: readonly DemoAosrRepresentative[];
 }
 
 export function DemoAosrPreview({
   finalApplications,
   objectDefaults,
-  selectedDerivedAttachments,
   selectedDraft,
   selectedMaterials,
+  selectedObjectDocuments,
   selectedSignatories,
 }: DemoAosrPreviewProps): React.JSX.Element {
   const executingOrganization = getExecutingOrganization(selectedSignatories, objectDefaults);
@@ -160,18 +160,18 @@ export function DemoAosrPreview({
                 требованиям:
               </span>
             </p>
-            {selectedDerivedAttachments.length > 0 ? (
+            {selectedObjectDocuments.length > 0 ? (
               <div className="act-page__inline-list">
-                {selectedDerivedAttachments.map((attachment) => (
-                  <p key={attachment.id}>
+                {selectedObjectDocuments.map((document) => (
+                  <p key={document.id}>
                     <span className="act-page__print-value">
-                      {attachment.title} {attachment.reference}
+                      {document.title} {document.reference}
                     </span>
                   </p>
                 ))}
               </div>
             ) : (
-              <p>Исполнительные схемы, чертежи и иные материалы пока не выбраны.</p>
+              <p>Документы объекта для пункта 4 пока не выбраны.</p>
             )}
             <p className="act-page__caption">
               (исполнительные схемы, результаты обследований, журналы и иные материалы)
@@ -231,18 +231,24 @@ export function DemoAosrPreview({
             <div className="act-page__applications">
               <h4>Приложения:</h4>
               <div className="act-page__application-lines">
-                {finalApplications.map((application) => {
-                  const sourceLabel = getApplicationPrintSourceLabel(application);
+                {finalApplications.length > 0 ? (
+                  finalApplications.map((application) => {
+                    const sourceLabel = getApplicationPrintSourceLabel(application);
 
-                  return (
-                    <p key={application.id}>
-                      <span className="act-page__print-value">
-                        {application.title}
-                        {sourceLabel}
-                      </span>
-                    </p>
-                  );
-                })}
+                    return (
+                      <p key={application.id}>
+                        <span className="act-page__print-value">
+                          {application.title}
+                          {sourceLabel}
+                        </span>
+                      </p>
+                    );
+                  })
+                ) : (
+                  <p>
+                    <span className="act-page__print-value">Приложения не включены.</span>
+                  </p>
+                )}
               </div>
             </div>
           </section>

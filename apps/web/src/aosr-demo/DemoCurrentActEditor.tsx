@@ -6,33 +6,42 @@ import type {
   DemoAosrDraftField,
   DemoAosrObjectDefaults,
   DemoAosrRepresentative,
-  DemoDerivedAttachment,
   DemoMaterialCertificate,
+  DemoObjectDocument,
+  DemoObjectDocumentType,
 } from './demo-aosr-workspace.js';
 import type { MoveDirection, RepresentativeFormState } from './demo-aosr-ui.js';
-import { DemoDerivedApplicationsEditor } from './DemoDerivedApplicationsEditor.js';
 import { DemoMaterialsSelector } from './DemoMaterialsSelector.js';
+import { DemoObjectDocumentsEditor } from './DemoObjectDocumentsEditor.js';
 import { DemoSignatoriesEditor } from './DemoSignatoriesEditor.js';
 
 interface DemoCurrentActEditorProps {
   readonly actRepresentativeSearch: string;
-  readonly attachmentLibrary: readonly DemoDerivedAttachment[];
+  readonly allApplications: readonly DemoActApplication[];
   readonly certificateLibrary: readonly DemoMaterialCertificate[];
+  readonly documentSearch: string;
+  readonly documentTypeFilter: 'all' | DemoObjectDocumentType;
   readonly draggedRepresentativeId: string | null;
   readonly finalApplications: readonly DemoActApplication[];
   readonly isCertificateLibraryOpen: boolean;
   readonly isManualRepresentativeFormOpen: boolean;
+  readonly isObjectDocumentLibraryOpen: boolean;
   readonly manualRepresentativeForm: RepresentativeFormState;
   readonly materialSearch: string;
   readonly objectDefaults: DemoAosrObjectDefaults;
+  readonly objectDocumentLibrary: readonly DemoObjectDocument[];
   readonly selectedDraft: DemoAosrDraft;
   readonly selectedMaterials: readonly DemoMaterialCertificate[];
+  readonly selectedObjectDocuments: readonly DemoObjectDocument[];
   readonly selectedSignatories: readonly DemoAosrRepresentative[];
   readonly shouldAddManualRepresentativeToLibrary: boolean;
   readonly onAddManualRepresentative: (event: SyntheticEvent<HTMLFormElement>) => void;
   readonly onAddMaterialToAct: (certificateId: string) => void;
+  readonly onAddObjectDocumentToAct: (documentId: string) => void;
   readonly onAddRepresentativeToAct: (representative: DemoAosrRepresentative) => void;
   readonly onChangeActRepresentativeSearch: (value: string) => void;
+  readonly onChangeDocumentSearch: (value: string) => void;
+  readonly onChangeDocumentTypeFilter: (value: 'all' | DemoObjectDocumentType) => void;
   readonly onChangeManualRepresentativeForm: (
     field: keyof RepresentativeFormState,
     value: string,
@@ -43,33 +52,43 @@ interface DemoCurrentActEditorProps {
   readonly onDragRepresentativeStart: (representativeId: string) => void;
   readonly onMoveSelectedSignatory: (representativeId: string, direction: MoveDirection) => void;
   readonly onRemoveMaterialFromAct: (certificateId: string) => void;
+  readonly onRemoveObjectDocumentFromAct: (documentId: string) => void;
   readonly onRemoveRepresentativeFromAct: (representativeId: string) => void;
   readonly onReorderSelectedSignatory: (targetRepresentativeId: string) => void;
-  readonly onToggleAttachment: (attachmentId: string) => void;
+  readonly onToggleApplication: (applicationId: string) => void;
   readonly onToggleCertificateLibrary: () => void;
   readonly onToggleManualRepresentativeForm: () => void;
+  readonly onToggleObjectDocumentLibrary: () => void;
   readonly onUpdateSelectedDraft: (field: DemoAosrDraftField, value: string) => void;
 }
 
 export function DemoCurrentActEditor({
   actRepresentativeSearch,
-  attachmentLibrary,
+  allApplications,
   certificateLibrary,
+  documentSearch,
+  documentTypeFilter,
   draggedRepresentativeId,
   finalApplications,
   isCertificateLibraryOpen,
   isManualRepresentativeFormOpen,
+  isObjectDocumentLibraryOpen,
   manualRepresentativeForm,
   materialSearch,
   objectDefaults,
+  objectDocumentLibrary,
   selectedDraft,
   selectedMaterials,
+  selectedObjectDocuments,
   selectedSignatories,
   shouldAddManualRepresentativeToLibrary,
   onAddManualRepresentative,
   onAddMaterialToAct,
+  onAddObjectDocumentToAct,
   onAddRepresentativeToAct,
   onChangeActRepresentativeSearch,
+  onChangeDocumentSearch,
+  onChangeDocumentTypeFilter,
   onChangeManualRepresentativeForm,
   onChangeMaterialSearch,
   onChangeShouldAddManualRepresentativeToLibrary,
@@ -77,11 +96,13 @@ export function DemoCurrentActEditor({
   onDragRepresentativeStart,
   onMoveSelectedSignatory,
   onRemoveMaterialFromAct,
+  onRemoveObjectDocumentFromAct,
   onRemoveRepresentativeFromAct,
   onReorderSelectedSignatory,
-  onToggleAttachment,
+  onToggleApplication,
   onToggleCertificateLibrary,
   onToggleManualRepresentativeForm,
+  onToggleObjectDocumentLibrary,
   onUpdateSelectedDraft,
 }: DemoCurrentActEditorProps): React.JSX.Element {
   return (
@@ -178,11 +199,21 @@ export function DemoCurrentActEditor({
         onToggleCertificateLibrary={onToggleCertificateLibrary}
       />
 
-      <DemoDerivedApplicationsEditor
-        attachmentLibrary={attachmentLibrary}
+      <DemoObjectDocumentsEditor
+        allApplications={allApplications}
+        documentSearch={documentSearch}
+        documentTypeFilter={documentTypeFilter}
         finalApplications={finalApplications}
+        isObjectDocumentLibraryOpen={isObjectDocumentLibraryOpen}
+        objectDocumentLibrary={objectDocumentLibrary}
         selectedDraft={selectedDraft}
-        onToggleAttachment={onToggleAttachment}
+        selectedObjectDocuments={selectedObjectDocuments}
+        onAddObjectDocumentToAct={onAddObjectDocumentToAct}
+        onChangeDocumentSearch={onChangeDocumentSearch}
+        onChangeDocumentTypeFilter={onChangeDocumentTypeFilter}
+        onRemoveObjectDocumentFromAct={onRemoveObjectDocumentFromAct}
+        onToggleApplication={onToggleApplication}
+        onToggleObjectDocumentLibrary={onToggleObjectDocumentLibrary}
       />
 
       <section className="form-section act-editor-card" aria-labelledby="period-data-title">

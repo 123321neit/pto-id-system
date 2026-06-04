@@ -87,7 +87,7 @@ export function CertificateLibraryPage({
           <WorkflowStep index="1" title="Добавьте сертификат" />
           <WorkflowStep index="2" title="Откройте акт" />
           <WorkflowStep index="3" title="Найдите материал" />
-          <WorkflowStep index="4" title="Сертификат попадет в акт автоматически" />
+          <WorkflowStep index="4" title="Сертификат появится в приложениях" />
         </ol>
 
         <aside className="demo-separation-note" aria-label="Демо-примечание">
@@ -288,7 +288,7 @@ export function CertificateLibraryPage({
             <li>Сертификаты хранятся в библиотеке.</li>
             <li>Объект использует сертификаты из библиотеки.</li>
             <li>Акт выбирает материалы через поиск.</li>
-            <li>Приложения формируются автоматически.</li>
+            <li>Инженер включает приложения чекбоксами.</li>
           </ul>
         </section>
       </div>
