@@ -24,7 +24,10 @@ describe('DemoAosrWorkspacePage', () => {
     expect(screen.getByRole('heading', { name: 'Настройки объекта' })).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Открыть объектовые настройки' })).toBeTruthy();
     expect(screen.getByRole('heading', { name: 'Текущий акт' })).toBeTruthy();
-    expect(screen.getByText('Настройки объекта по кнопке')).toBeTruthy();
+    expect(screen.queryByText('Настройки объекта по кнопке')).toBeNull();
+    expect(
+      within(screen.getByLabelText('Разделение уровней данных')).getByText('Настройки объекта'),
+    ).toBeTruthy();
   });
 
   it('keeps object settings and libraries compact until opened', () => {
@@ -36,7 +39,7 @@ describe('DemoAosrWorkspacePage', () => {
     expect(screen.queryByLabelText('Найти материал в библиотеке сертификатов')).toBeNull();
     expect(
       screen.getByText(
-        'Материал нельзя вводить вручную: выберите его из библиотеки, чтобы сертификат попал в акт и приложения.',
+        'Выберите материал из библиотеки, чтобы сертификат попал в акт и приложения.',
       ),
     ).toBeTruthy();
   });
@@ -46,7 +49,7 @@ describe('DemoAosrWorkspacePage', () => {
 
     expect(
       screen.getByText(
-        'В демо представители объекта предварительно заполнены из общей базы. В реальной системе пользователь будет выбирать их для объекта.',
+        'Демо-база представителей уже заполнена; на реальном объекте пользователь выбирает их сам.',
       ),
     ).toBeTruthy();
   });
@@ -56,9 +59,7 @@ describe('DemoAosrWorkspacePage', () => {
 
     expect(screen.getByLabelText('Добавить подписанта из базы объекта')).toBeTruthy();
     expect(
-      screen.getByText(
-        'Если нужного человека нет, добавьте его в разделе ‘Представители и организации’ или внесите вручную только для этого акта.',
-      ),
+      screen.getByText('Если нужного человека нет, добавьте временного подписанта.'),
     ).toBeTruthy();
   });
 
@@ -67,7 +68,7 @@ describe('DemoAosrWorkspacePage', () => {
 
     expect(
       screen.getByText(
-        'Материал нельзя вводить вручную: выберите его из библиотеки, чтобы сертификат попал в акт и приложения.',
+        'Выберите материал из библиотеки, чтобы сертификат попал в акт и приложения.',
       ),
     ).toBeTruthy();
   });
@@ -296,9 +297,18 @@ describe('DemoAosrWorkspacePage', () => {
     expect(previewText.indexOf('Акт составлен в 4 экземплярах.')).toBeLessThan(
       previewText.indexOf('Приложения:'),
     );
-    expect(previewText.indexOf('Приложения:')).toBeLessThan(
-      previewText.indexOf('Подписи представителей'),
-    );
+
+    const preview = screen.getByLabelText('Демо-предпросмотр печатной формы АОСР');
+    const applications = preview.querySelector('.act-page__applications');
+    const signatures = preview.querySelector('.act-page__signature-section');
+
+    if (applications === null || signatures === null) {
+      throw new Error('В preview ожидаются приложения и блок подписей.');
+    }
+
+    expect(
+      Boolean(applications.compareDocumentPosition(signatures) & Node.DOCUMENT_POSITION_FOLLOWING),
+    ).toBe(true);
   });
 
   it('keeps the AOSR preview section order close to the Word form', () => {
@@ -322,7 +332,6 @@ describe('DemoAosrWorkspacePage', () => {
       'Дополнительные сведения:',
       'Акт составлен в 4 экземплярах.',
       'Приложения:',
-      'Подписи представителей',
     ];
 
     for (let index = 0; index < orderedFragments.length - 1; index += 1) {
@@ -342,7 +351,7 @@ describe('DemoAosrWorkspacePage', () => {
     expect(preview.querySelector('.act-page__field-line')).toBeTruthy();
     expect(preview.querySelector('.act-page__caption')).toBeTruthy();
     expect(preview.querySelector('.act-page__number-date-row')).toBeTruthy();
-    expect(preview.querySelector('.act-page__signature-row')).toBeTruthy();
+    expect(preview.querySelector('.act-page__signature-person-row')).toBeTruthy();
   });
 
   it('keeps current editing behavior after the component split', async () => {

@@ -44,9 +44,7 @@ export function DemoObjectRepresentativesPanel({
         <span>
           <h3 id="representative-library-title">Представители объекта</h3>
           <p className="helper-note">
-            Общая база хранит глобальные карточки. В объект выбираются представители объекта:
-            редактируемая привязка/снимок с ролью, организацией, полномочиями и НРС для этого
-            объекта. В акт подписанты добавляются уже из представителей объекта.
+            Выбранные для объекта представители затем используются как подписанты актов.
           </p>
         </span>
         <span className="inline-actions">
@@ -61,7 +59,7 @@ export function DemoObjectRepresentativesPanel({
 
       <div className="compact-summary-list" aria-label="Кратко о базе представителей объекта">
         <span>{objectRepresentatives.length} представителей в объектовой базе</span>
-        <span>в акт добавляются отдельным поиском</span>
+        <span>доступны для текущих актов</span>
       </div>
 
       {isLibraryOpen ? (

@@ -58,9 +58,6 @@ export function DemoSignatoriesEditor({
       <div className="scope-heading scope-heading--with-action">
         <span>
           <h3 id="commission-data-title">Комиссия / подписанты текущего акта</h3>
-          <p className="helper-note">
-            Порядок подписантов в списке сразу отражается в печатном preview.
-          </p>
         </span>
         <button className="compact-toggle" onClick={onToggleManualRepresentativeForm} type="button">
           Добавить вручную для этого акта
@@ -77,10 +74,7 @@ export function DemoSignatoriesEditor({
           value={actRepresentativeSearch}
         />
       </label>
-      <p className="helper-note">
-        Если нужного человека нет, добавьте его в разделе ‘Представители и организации’ или внесите
-        вручную только для этого акта.
-      </p>
+      <p className="helper-note">Если нужного человека нет, добавьте временного подписанта.</p>
 
       {actRepresentativeSearch.trim() !== '' ? (
         <div

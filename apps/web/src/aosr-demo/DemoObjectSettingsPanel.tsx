@@ -79,7 +79,10 @@ export function DemoObjectSettingsPanel({
   onUpdateObjectDefaults,
 }: DemoObjectSettingsPanelProps): React.JSX.Element {
   return (
-    <section className="form-section form-section--scope" aria-labelledby="object-settings-title">
+    <section
+      className="form-section form-section--scope form-section--object-scope"
+      aria-labelledby="object-settings-title"
+    >
       <div className="scope-heading scope-heading--with-action">
         <span>
           <p className="scope-label">Уровень объекта</p>
@@ -102,8 +105,7 @@ export function DemoObjectSettingsPanel({
         <span>проектная документация задана на объекте</span>
       </div>
       <p className="helper-note">
-        В демо представители объекта предварительно заполнены из общей базы. В реальной системе
-        пользователь будет выбирать их для объекта.
+        Демо-база представителей уже заполнена; на реальном объекте пользователь выбирает их сам.
       </p>
 
       {isObjectSettingsOpen ? (

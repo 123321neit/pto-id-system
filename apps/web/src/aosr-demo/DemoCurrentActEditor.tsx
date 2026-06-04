@@ -85,7 +85,10 @@ export function DemoCurrentActEditor({
   onUpdateSelectedDraft,
 }: DemoCurrentActEditorProps): React.JSX.Element {
   return (
-    <section className="form-section form-section--scope" aria-labelledby="current-act-title">
+    <section
+      className="form-section form-section--scope form-section--act-scope"
+      aria-labelledby="current-act-title"
+    >
       <div className="scope-heading">
         <p className="scope-label">Уровень акта</p>
         <h3 id="current-act-title">Текущий акт</h3>
@@ -206,9 +209,7 @@ export function DemoCurrentActEditor({
       <section className="form-section" aria-labelledby="project-docs-data-title">
         <h3 id="project-docs-data-title">Проектная документация</h3>
         <p className="readonly-field">{objectDefaults.defaultProjectDocumentation}</p>
-        <p className="helper-note">
-          Для демо этот блок берётся из объектовых значений по умолчанию.
-        </p>
+        <p className="helper-note">Значение берётся из настроек объекта.</p>
       </section>
 
       <DemoMaterialsSelector

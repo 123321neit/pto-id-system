@@ -41,8 +41,7 @@ export function DemoHeaderOrganizationsPanel({
         <span>
           <h3 id="header-organizations-title">Организации объекта / шапка акта</h3>
           <p className="helper-note">
-            Метки блоков задаются на объекте: заказчик, подрядчик, техзаказчик, генподрядчик или
-            любой другой вариант.
+            Метки блоков задаются на объекте и попадают в шапку preview.
           </p>
         </span>
         <button className="compact-toggle" onClick={onToggleForm} type="button">

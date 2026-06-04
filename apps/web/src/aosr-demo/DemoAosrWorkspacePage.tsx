@@ -309,7 +309,7 @@ export function DemoAosrWorkspacePage({
           </div>
 
           <div className="scope-switch" aria-label="Разделение уровней данных">
-            <span>Настройки объекта по кнопке</span>
+            <span>Настройки объекта</span>
             <span>Текущий акт</span>
           </div>
 
@@ -419,7 +419,6 @@ export function DemoAosrWorkspacePage({
         </section>
 
         <DemoAosrPreview
-          demoNotice={demoAosrWorkspace.demoNotice}
           finalApplications={finalApplications}
           objectDefaults={objectDefaults}
           selectedDerivedAttachments={selectedDerivedAttachments}

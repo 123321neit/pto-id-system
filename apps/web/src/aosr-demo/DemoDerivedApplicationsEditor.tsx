@@ -21,8 +21,8 @@ export function DemoDerivedApplicationsEditor({
     <section className="form-section" aria-labelledby="attachments-data-title">
       <h3 id="attachments-data-title">Производные приложения</h3>
       <p className="helper-note">
-        Итоговый блок приложений формируется из выбранных сертификатов, исполнительных схем,
-        фотофиксации и записей журналов. Свободного поля “приложения” в демо нет.
+        Формируется из выбранных сертификатов, схем, фото и журналов. Свободного поля “приложения” в
+        демо нет.
       </p>
       <div
         className="attachment-options"

@@ -31,8 +31,7 @@ export function DemoMaterialsSelector({
         <span>
           <h3 id="materials-data-title">Материалы из библиотеки сертификатов</h3>
           <p className="placeholder-note">
-            Материал нельзя вводить вручную: выберите его из библиотеки, чтобы сертификат попал в
-            акт и приложения.
+            Выберите материал из библиотеки, чтобы сертификат попал в акт и приложения.
           </p>
         </span>
         <button className="compact-toggle" onClick={onToggleCertificateLibrary} type="button">

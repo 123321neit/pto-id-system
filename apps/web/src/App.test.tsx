@@ -468,11 +468,19 @@ describe('App shell mock navigation', () => {
     expect(previewText).toContain('Кузнецова А.А.');
     expect(previewText).toContain('Приложения:');
     expect(previewText).toContain('Декларация о соответствии N ДС-ИЗ-2026-04 от 20.05.2026');
-    expect(previewText.indexOf('Приложения:')).toBeLessThan(
-      previewText.indexOf('Подписи представителей'),
-    );
     expect(preview.querySelector('.act-page__sheet')).toBeTruthy();
     expect(preview.querySelector('.act-page__number-date-row')).toBeTruthy();
+
+    const applications = preview.querySelector('.act-page__applications');
+    const signatures = preview.querySelector('.act-page__signature-section');
+
+    if (applications === null || signatures === null) {
+      throw new Error('В preview ожидаются приложения и блок подписей.');
+    }
+
+    expect(
+      Boolean(applications.compareDocumentPosition(signatures) & Node.DOCUMENT_POSITION_FOLLOWING),
+    ).toBe(true);
   });
 });
 
