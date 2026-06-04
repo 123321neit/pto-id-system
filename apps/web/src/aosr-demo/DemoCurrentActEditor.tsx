@@ -11,6 +11,7 @@ import type {
   DemoObjectDocumentType,
 } from './demo-aosr-workspace.js';
 import type { MoveDirection, RepresentativeFormState } from './demo-aosr-ui.js';
+import { DemoActApplicationsSection } from './DemoActApplicationsSection.js';
 import { DemoMaterialsSelector } from './DemoMaterialsSelector.js';
 import { DemoObjectDocumentsEditor } from './DemoObjectDocumentsEditor.js';
 import { DemoSignatoriesEditor } from './DemoSignatoriesEditor.js';
@@ -116,6 +117,29 @@ export function DemoCurrentActEditor({
         <h3 id="current-act-title">Текущий акт</h3>
       </div>
 
+      <dl className="act-summary-strip" aria-label="Сводка текущего акта">
+        <div aria-label={`Материалы: ${String(selectedMaterials.length)}`}>
+          <dt>Материалы</dt>
+          <dd>{selectedMaterials.length}</dd>
+        </div>
+        <div aria-label={`Документы: ${String(selectedObjectDocuments.length)}`}>
+          <dt>Документы</dt>
+          <dd>{selectedObjectDocuments.length}</dd>
+        </div>
+        <div aria-label={`Приложения: ${String(finalApplications.length)}`}>
+          <dt>Приложения</dt>
+          <dd>{finalApplications.length}</dd>
+        </div>
+        <div aria-label={`Подписанты: ${String(selectedSignatories.length)}`}>
+          <dt>Подписанты</dt>
+          <dd>{selectedSignatories.length}</dd>
+        </div>
+        <div aria-label={`Статус: ${getDraftStatusLabel(selectedDraft.status)}`}>
+          <dt>Статус</dt>
+          <dd>{getDraftStatusLabel(selectedDraft.status)}</dd>
+        </div>
+      </dl>
+
       <section className="form-section act-editor-card" aria-labelledby="act-header-data-title">
         <h3 id="act-header-data-title">Общие данные акта</h3>
         <div className="act-form-grid act-form-grid--compact">
@@ -200,10 +224,8 @@ export function DemoCurrentActEditor({
       />
 
       <DemoObjectDocumentsEditor
-        allApplications={allApplications}
         documentSearch={documentSearch}
         documentTypeFilter={documentTypeFilter}
-        finalApplications={finalApplications}
         isObjectDocumentLibraryOpen={isObjectDocumentLibraryOpen}
         objectDocumentLibrary={objectDocumentLibrary}
         selectedDraft={selectedDraft}
@@ -212,7 +234,6 @@ export function DemoCurrentActEditor({
         onChangeDocumentSearch={onChangeDocumentSearch}
         onChangeDocumentTypeFilter={onChangeDocumentTypeFilter}
         onRemoveObjectDocumentFromAct={onRemoveObjectDocumentFromAct}
-        onToggleApplication={onToggleApplication}
         onToggleObjectDocumentLibrary={onToggleObjectDocumentLibrary}
       />
 
@@ -304,6 +325,12 @@ export function DemoCurrentActEditor({
         </div>
       </section>
 
+      <DemoActApplicationsSection
+        allApplications={allApplications}
+        selectedDraft={selectedDraft}
+        onToggleApplication={onToggleApplication}
+      />
+
       <DemoSignatoriesEditor
         actRepresentativeSearch={actRepresentativeSearch}
         draggedRepresentativeId={draggedRepresentativeId}
@@ -328,4 +355,8 @@ export function DemoCurrentActEditor({
       />
     </section>
   );
+}
+
+function getDraftStatusLabel(status: DemoAosrDraft['status']): string {
+  return status === 'draft' ? 'Черновик' : 'На проверку';
 }

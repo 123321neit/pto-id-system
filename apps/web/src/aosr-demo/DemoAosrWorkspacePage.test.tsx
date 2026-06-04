@@ -28,6 +28,18 @@ describe('DemoAosrWorkspacePage', () => {
     expect(screen.queryByLabelText('Название проекта / объекта')).toBeNull();
   });
 
+  it('shows a compact summary strip with current act counts and status', () => {
+    renderDemoWorkspace();
+
+    const summary = screen.getByLabelText('Сводка текущего акта');
+
+    expect(within(summary).getByLabelText('Материалы: 2')).toBeTruthy();
+    expect(within(summary).getByLabelText('Документы: 2')).toBeTruthy();
+    expect(within(summary).getByLabelText('Приложения: 4')).toBeTruthy();
+    expect(within(summary).getByLabelText('Подписанты: 3')).toBeTruthy();
+    expect(within(summary).getByLabelText('Статус: Черновик')).toBeTruthy();
+  });
+
   it('keeps object settings and libraries compact until opened', () => {
     renderDemoWorkspace();
 
@@ -157,11 +169,12 @@ describe('DemoAosrWorkspacePage', () => {
       'Отметки',
       '2. Проектная документация',
       '3. Материалы',
-      '4. Документы объекта',
+      '4. Документы, подтверждающие соответствие',
       '5. Даты выполнения работ',
       '6. Соответствие работ',
       '7. Последующие работы',
       'Дополнительные сведения',
+      'Приложения к акту',
       'Подписанты текущего акта',
     ];
 
@@ -185,7 +198,9 @@ describe('DemoAosrWorkspacePage', () => {
   it('shows selected object documents as a clear point 4 section', () => {
     renderDemoWorkspace();
 
-    expect(screen.getByRole('heading', { name: '4. Документы объекта' })).toBeTruthy();
+    expect(
+      screen.getByRole('heading', { name: '4. Документы, подтверждающие соответствие' }),
+    ).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Добавить документ' })).toBeTruthy();
 
     const pointFourList = screen.getByRole('list', {
@@ -194,6 +209,21 @@ describe('DemoAosrWorkspacePage', () => {
     expect(
       within(pointFourList).getByText('Исполнительная схема скрытых участков вентиляции'),
     ).toBeTruthy();
+  });
+
+  it('keeps applications in a separate section after additional info and before signatories', () => {
+    renderDemoWorkspace();
+
+    const editorText = screen.getByRole('region', { name: 'Текущий акт' }).textContent;
+
+    expect(editorText.indexOf('Дополнительные сведения')).toBeLessThan(
+      editorText.indexOf('Приложения к акту'),
+    );
+    expect(editorText.indexOf('Приложения к акту')).toBeLessThan(
+      editorText.indexOf('Подписанты текущего акта'),
+    );
+    expect(screen.queryByText('Итоговые приложения в акте')).toBeNull();
+    expect(screen.queryByRole('list', { name: 'Итоговые приложения текущего акта' })).toBeNull();
   });
 
   it('opens the object document drawer and searches object documents', async () => {
@@ -258,11 +288,9 @@ describe('DemoAosrWorkspacePage', () => {
       ),
     ).toBeTruthy();
 
-    const finalApplications = screen.getByRole('list', {
-      name: 'Итоговые приложения текущего акта',
-    });
+    const applications = screen.getByRole('group', { name: 'Приложения текущего акта' });
     expect(
-      within(finalApplications).getByText(
+      within(applications).getByText(
         'Исполнительный чертеж. Узел прохода воздуховодов через перекрытие',
       ),
     ).toBeTruthy();
@@ -496,6 +524,8 @@ describe('DemoAosrWorkspacePage', () => {
 
     expect((applicationCheckbox as HTMLInputElement).checked).toBe(false);
 
+    expect(screen.getByLabelText('Приложения: 3')).toBeTruthy();
+
     const pointFourList = screen.getByRole('list', {
       name: 'Документы пункта 4 текущего акта',
     });
@@ -503,12 +533,10 @@ describe('DemoAosrWorkspacePage', () => {
       within(pointFourList).getByText('Запись журнала входного контроля материалов'),
     ).toBeTruthy();
 
-    const finalApplications = screen.getByRole('list', {
-      name: 'Итоговые приложения текущего акта',
-    });
+    const applications = screen.getByRole('group', { name: 'Приложения текущего акта' });
     expect(
-      within(finalApplications).queryByText('Запись журнала входного контроля материалов'),
-    ).toBeNull();
+      within(applications).getByText('Запись журнала входного контроля материалов'),
+    ).toBeTruthy();
 
     const preview = screen.getByLabelText('Демо-предпросмотр печатной формы АОСР');
     const pointFourPreview = within(preview).getByLabelText('Документы соответствия');
@@ -530,7 +558,8 @@ describe('DemoAosrWorkspacePage', () => {
     expect(screen.queryByLabelText('Материалы / сертификаты простым текстом')).toBeNull();
     expect(screen.queryByLabelText('Приложения / исполнительные схемы простым текстом')).toBeNull();
     expect(screen.queryByLabelText('Итоговые приложения простым текстом')).toBeNull();
-    expect(screen.getByText('Итоговые приложения в акте')).toBeTruthy();
+    expect(screen.getByRole('heading', { name: 'Приложения к акту' })).toBeTruthy();
+    expect(screen.queryByText('Итоговые приложения в акте')).toBeNull();
   });
 
   it('renders checked applications before final signature blocks', () => {
