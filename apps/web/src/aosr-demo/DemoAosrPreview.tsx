@@ -6,6 +6,7 @@ import type {
   DemoMaterialCertificate,
   DemoObjectDocument,
 } from './demo-aosr-workspace.js';
+import { getDraftComplianceStatement } from './demo-aosr-workspace.js';
 import {
   formatDocumentDate,
   getRepresentativeAuthorityLine,
@@ -30,6 +31,7 @@ export function DemoAosrPreview({
   selectedSignatories,
 }: DemoAosrPreviewProps): React.JSX.Element {
   const executingOrganization = getExecutingOrganization(selectedSignatories, objectDefaults);
+  const complianceStatement = getDraftComplianceStatement(selectedDraft, objectDefaults);
 
   return (
     <section className="preview-panel" aria-labelledby="preview-title">
@@ -199,7 +201,7 @@ export function DemoAosrPreview({
           <section className="act-page__official-section" aria-label="Соответствие работ">
             <p>
               <span className="act-page__item-label">6. Работы выполнены в соответствии с:</span>{' '}
-              <span className="act-page__print-value">{selectedDraft.complianceStatement}</span>
+              <span className="act-page__print-value">{complianceStatement}</span>
             </p>
             <p className="act-page__caption">
               (наименования технических регламентов, норм и разделов проектной документации)

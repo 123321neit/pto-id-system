@@ -17,6 +17,7 @@ export interface DemoGlobalOrganization {
 }
 
 export interface DemoAosrObjectDefaults {
+  readonly defaultComplianceStatement: string;
   readonly projectName: string;
   readonly objectName: string;
   readonly defaultProjectDocumentation: string;
@@ -74,7 +75,7 @@ export interface DemoAosrDraft {
   readonly actNumber: string;
   readonly additionalInfo: string;
   readonly axes: string;
-  readonly complianceStatement: string;
+  readonly complianceStatementOverride?: string;
   readonly copiesCount: string;
   readonly elevationRange: string;
   readonly excludedApplicationIds: readonly string[];
@@ -108,7 +109,6 @@ export type DemoAosrDraftField =
   | 'actNumber'
   | 'additionalInfo'
   | 'axes'
-  | 'complianceStatement'
   | 'copiesCount'
   | 'elevationRange'
   | 'periodEnd'
@@ -117,6 +117,7 @@ export type DemoAosrDraftField =
   | 'workDescription';
 
 export type DemoAosrObjectDefaultsField =
+  | 'defaultComplianceStatement'
   | 'defaultProjectDocumentation'
   | 'objectName'
   | 'projectName';
@@ -210,8 +211,6 @@ export const demoAosrWorkspace: DemoAosrWorkspace = {
       actNumber: 'АОСР-001',
       additionalInfo: 'Дополнительные сведения для демо-акта не требуются.',
       axes: 'оси 1-4 / А-В',
-      complianceStatement:
-        'Работы выполнены в соответствии с рабочей документацией и требованиями СП 73.13330.2016.',
       copiesCount: '4',
       elevationRange: 'отм. +3.200 - +3.850',
       excludedApplicationIds: [],
@@ -236,8 +235,6 @@ export const demoAosrWorkspace: DemoAosrWorkspace = {
       actNumber: 'АОСР-002',
       additionalInfo: 'Дополнительные сведения отсутствуют.',
       axes: 'оси 5-7 / Г-Д',
-      complianceStatement:
-        'Работы выполнены согласно рабочей документации и журналу входного контроля материалов.',
       copiesCount: '3',
       elevationRange: 'отм. 0.000 - +0.600',
       excludedApplicationIds: [],
@@ -260,6 +257,8 @@ export const demoAosrWorkspace: DemoAosrWorkspace = {
   id: 'workspace-demo-aosr',
   name: 'Демо-рабочая область АОСР',
   objectDefaults: {
+    defaultComplianceStatement:
+      'Проектной документацией шифр РД-ОВ-12, рабочей документацией РД-ОВ-14, ППР-ОВ-2026, СП 60.13330.2020, СП 73.13330.2016, ГОСТ 34059-2017 и ТУ производителей применённых материалов.',
     defaultProjectDocumentation:
       'Рабочая документация РД-ОВ-12 лист 4; РД-ОВ-14 лист 2; спецификация оборудования и материалов СП-ОВ-02.',
     headerOrganizations: [
@@ -308,6 +307,48 @@ export function updateDemoAosrDraftField(
     ...draft,
     [field]: value,
   };
+}
+
+export function getDraftComplianceStatement(
+  draft: DemoAosrDraft,
+  objectDefaults: DemoAosrObjectDefaults,
+): string {
+  return draft.complianceStatementOverride ?? objectDefaults.defaultComplianceStatement;
+}
+
+export function hasDraftComplianceOverride(draft: DemoAosrDraft): boolean {
+  return draft.complianceStatementOverride !== undefined;
+}
+
+export function startDraftComplianceOverride(
+  draft: DemoAosrDraft,
+  objectDefaults: DemoAosrObjectDefaults,
+): DemoAosrDraft {
+  if (hasDraftComplianceOverride(draft)) {
+    return draft;
+  }
+
+  return {
+    ...draft,
+    complianceStatementOverride: objectDefaults.defaultComplianceStatement,
+  };
+}
+
+export function updateDraftComplianceOverride(draft: DemoAosrDraft, value: string): DemoAosrDraft {
+  return {
+    ...draft,
+    complianceStatementOverride: value,
+  };
+}
+
+export function resetDraftComplianceToObjectDefault(draft: DemoAosrDraft): DemoAosrDraft {
+  const { complianceStatementOverride, ...draftWithoutOverride } = draft;
+
+  if (complianceStatementOverride === undefined) {
+    return draft;
+  }
+
+  return draftWithoutOverride;
 }
 
 export function updateDemoObjectDefaultsField(

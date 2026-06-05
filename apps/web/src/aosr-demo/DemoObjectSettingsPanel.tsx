@@ -98,6 +98,7 @@ export function DemoObjectSettingsPanel({
           <span>{objectDefaults.headerOrganizations.length} блока шапки</span>
           <span>{objectDefaults.representativeLibrary.length} представителей объекта</span>
           <span>проектная документация задана на объекте</span>
+          <span>нормативная база задана на объекте</span>
         </div>
         <p className="helper-note">
           Демо-база представителей уже заполнена; на реальном объекте пользователь выбирает их сам.
@@ -145,6 +146,26 @@ export function DemoObjectSettingsPanel({
                 />
               </label>
             </div>
+          </section>
+
+          <section className="form-section" aria-labelledby="object-compliance-title">
+            <h3 id="object-compliance-title">Нормативная и проектная база объекта</h3>
+            <p className="helper-note">
+              Этот текст автоматически используется в пункте 6 текущего акта, пока для акта не
+              задано отдельное исключение.
+            </p>
+            <label className="act-form-grid__wide">
+              Текст для пункта 6. Соответствие работ предъявляемым требованиям
+              <textarea
+                className="large-field"
+                name="defaultComplianceStatement"
+                onChange={(event) => {
+                  onUpdateObjectDefaults('defaultComplianceStatement', event.currentTarget.value);
+                }}
+                rows={6}
+                value={objectDefaults.defaultComplianceStatement}
+              />
+            </label>
           </section>
 
           <DemoHeaderOrganizationsPanel

@@ -10,6 +10,7 @@ import type {
   DemoObjectDocument,
   DemoObjectDocumentType,
 } from './demo-aosr-workspace.js';
+import { getDraftComplianceStatement, hasDraftComplianceOverride } from './demo-aosr-workspace.js';
 import type { MoveDirection, RepresentativeFormState } from './demo-aosr-ui.js';
 import { DemoActApplicationsSection } from './DemoActApplicationsSection.js';
 import { DemoMaterialsSelector } from './DemoMaterialsSelector.js';
@@ -56,10 +57,13 @@ interface DemoCurrentActEditorProps {
   readonly onRemoveObjectDocumentFromAct: (documentId: string) => void;
   readonly onRemoveRepresentativeFromAct: (representativeId: string) => void;
   readonly onReorderSelectedSignatory: (targetRepresentativeId: string) => void;
+  readonly onResetDraftComplianceToObjectDefault: () => void;
+  readonly onStartDraftComplianceOverride: () => void;
   readonly onToggleApplication: (applicationId: string) => void;
   readonly onToggleCertificateLibrary: () => void;
   readonly onToggleManualRepresentativeForm: () => void;
   readonly onToggleObjectDocumentLibrary: () => void;
+  readonly onUpdateDraftComplianceOverride: (value: string) => void;
   readonly onUpdateSelectedDraft: (field: DemoAosrDraftField, value: string) => void;
 }
 
@@ -100,12 +104,18 @@ export function DemoCurrentActEditor({
   onRemoveObjectDocumentFromAct,
   onRemoveRepresentativeFromAct,
   onReorderSelectedSignatory,
+  onResetDraftComplianceToObjectDefault,
+  onStartDraftComplianceOverride,
   onToggleApplication,
   onToggleCertificateLibrary,
   onToggleManualRepresentativeForm,
   onToggleObjectDocumentLibrary,
+  onUpdateDraftComplianceOverride,
   onUpdateSelectedDraft,
 }: DemoCurrentActEditorProps): React.JSX.Element {
+  const complianceStatement = getDraftComplianceStatement(selectedDraft, objectDefaults);
+  const isComplianceOverridden = hasDraftComplianceOverride(selectedDraft);
+
   return (
     <section
       className="current-act-editor"
@@ -141,7 +151,7 @@ export function DemoCurrentActEditor({
       </dl>
 
       <section className="form-section act-editor-card" aria-labelledby="act-header-data-title">
-        <h3 id="act-header-data-title">Общие данные акта</h3>
+        <h3 id="act-header-data-title">Общие данные</h3>
         <div className="act-form-grid act-form-grid--compact">
           <label>
             Номер акта
@@ -266,19 +276,57 @@ export function DemoCurrentActEditor({
       </section>
 
       <section className="form-section act-editor-card" aria-labelledby="compliance-data-title">
-        <h3 id="compliance-data-title">6. Соответствие работ</h3>
-        <label className="act-form-grid__wide">
-          Работы выполнены в соответствии с
-          <textarea
-            className="large-field"
-            name="complianceStatement"
-            onChange={(event) => {
-              onUpdateSelectedDraft('complianceStatement', event.currentTarget.value);
-            }}
-            rows={5}
-            value={selectedDraft.complianceStatement}
-          />
-        </label>
+        <div className="scope-heading scope-heading--with-action">
+          <span>
+            <h3 id="compliance-data-title">6. Соответствие работ</h3>
+            <span className="source-chip">
+              {isComplianceOverridden
+                ? 'Изменено только для этого акта'
+                : 'Используется значение объекта'}
+            </span>
+          </span>
+          {isComplianceOverridden ? (
+            <button
+              className="compact-toggle"
+              onClick={onResetDraftComplianceToObjectDefault}
+              type="button"
+            >
+              Вернуться к значению объекта
+            </button>
+          ) : (
+            <button
+              className="compact-toggle compact-toggle--accent"
+              onClick={onStartDraftComplianceOverride}
+              type="button"
+            >
+              Изменить только для этого акта
+            </button>
+          )}
+        </div>
+
+        {isComplianceOverridden ? (
+          <label className="act-form-grid__wide">
+            Значение только для этого акта
+            <textarea
+              className="large-field"
+              name="complianceStatementOverride"
+              onChange={(event) => {
+                onUpdateDraftComplianceOverride(event.currentTarget.value);
+              }}
+              rows={5}
+              value={selectedDraft.complianceStatementOverride ?? ''}
+            />
+          </label>
+        ) : (
+          <>
+            <p className="readonly-field" aria-label="Соответствие работ из настроек объекта">
+              {complianceStatement}
+            </p>
+            <p className="helper-note">
+              Базовый текст задаётся в настройках объекта и используется актом автоматически.
+            </p>
+          </>
+        )}
       </section>
 
       <section className="form-section act-editor-card" aria-labelledby="subsequent-data-title">

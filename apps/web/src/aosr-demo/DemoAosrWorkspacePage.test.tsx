@@ -9,7 +9,11 @@ import {
   addMaterialCertificateToDraft,
   addObjectDocumentToDraft,
   demoAosrWorkspace,
+  getDraftComplianceStatement,
+  resetDraftComplianceToObjectDefault,
+  startDraftComplianceOverride,
   updateDemoAosrDraftField,
+  updateDraftComplianceOverride,
 } from './demo-aosr-workspace.js';
 import { DemoStoreProvider } from '../demo-store/DemoStoreProvider.js';
 
@@ -75,6 +79,114 @@ describe('DemoAosrWorkspacePage', () => {
     await user.click(within(dialog).getByRole('button', { name: 'Закрыть настройки' }));
 
     expect(screen.queryByRole('dialog', { name: 'Настройки объекта' })).toBeNull();
+  });
+
+  it('shows object-level compliance settings in a dedicated section', async () => {
+    const user = userEvent.setup();
+
+    renderDemoWorkspace();
+    await openObjectSettings(user);
+
+    const dialog = screen.getByRole('dialog', { name: 'Настройки объекта' });
+
+    expect(
+      within(dialog).getByRole('heading', {
+        name: 'Нормативная и проектная база объекта',
+      }),
+    ).toBeTruthy();
+    expect(
+      getTextAreaValue(
+        within(dialog).getByLabelText(
+          'Текст для пункта 6. Соответствие работ предъявляемым требованиям',
+        ),
+      ),
+    ).toBe(demoAosrWorkspace.objectDefaults.defaultComplianceStatement);
+    expect(within(dialog).getByText(/пункте 6 текущего акта/u)).toBeTruthy();
+  });
+
+  it('uses object compliance value by default in the act and preview', () => {
+    renderDemoWorkspace();
+
+    const complianceSection = getSectionByHeading('6. Соответствие работ');
+
+    expect(within(complianceSection).getByText('Используется значение объекта')).toBeTruthy();
+    expect(
+      within(complianceSection).getByLabelText('Соответствие работ из настроек объекта')
+        .textContent,
+    ).toContain(demoAosrWorkspace.objectDefaults.defaultComplianceStatement);
+    expect(screen.queryByLabelText('Значение только для этого акта')).toBeNull();
+    expect(getPreviewText()).toContain(demoAosrWorkspace.objectDefaults.defaultComplianceStatement);
+  });
+
+  it('allows a per-act compliance override and uses it in preview', async () => {
+    const user = userEvent.setup();
+    const overrideText =
+      'Индивидуально для акта: работы выполнены по уточнённому листу РД-ОВ-14 и ТУ-ОВ-5.';
+
+    renderDemoWorkspace();
+
+    await user.click(screen.getByRole('button', { name: 'Изменить только для этого акта' }));
+
+    expect(screen.getByText('Изменено только для этого акта')).toBeTruthy();
+
+    const overrideField = screen.getByLabelText('Значение только для этого акта');
+    expect(getTextAreaValue(overrideField)).toBe(
+      demoAosrWorkspace.objectDefaults.defaultComplianceStatement,
+    );
+
+    await user.clear(overrideField);
+    await user.type(overrideField, overrideText);
+
+    expect(getPreviewText()).toContain(overrideText);
+    expect(getPreviewText()).not.toContain(
+      demoAosrWorkspace.objectDefaults.defaultComplianceStatement,
+    );
+  });
+
+  it('reverts a compliance override back to the object value', async () => {
+    const user = userEvent.setup();
+
+    renderDemoWorkspace();
+
+    await user.click(screen.getByRole('button', { name: 'Изменить только для этого акта' }));
+    await user.clear(screen.getByLabelText('Значение только для этого акта'));
+    await user.type(
+      screen.getByLabelText('Значение только для этого акта'),
+      'Индивидуальное исключение для проверки возврата.',
+    );
+
+    expect(getPreviewText()).toContain('Индивидуальное исключение для проверки возврата.');
+
+    await user.click(screen.getByRole('button', { name: 'Вернуться к значению объекта' }));
+
+    expect(screen.getByText('Используется значение объекта')).toBeTruthy();
+    expect(screen.queryByLabelText('Значение только для этого акта')).toBeNull();
+    expect(getPreviewText()).toContain(demoAosrWorkspace.objectDefaults.defaultComplianceStatement);
+    expect(getPreviewText()).not.toContain('Индивидуальное исключение для проверки возврата.');
+  });
+
+  it('keeps object compliance settings unchanged after an act override', async () => {
+    const user = userEvent.setup();
+
+    renderDemoWorkspace();
+
+    await user.click(screen.getByRole('button', { name: 'Изменить только для этого акта' }));
+    await user.clear(screen.getByLabelText('Значение только для этого акта'));
+    await user.type(
+      screen.getByLabelText('Значение только для этого акта'),
+      'Только этот акт использует отдельную нормативную ссылку.',
+    );
+
+    await openObjectSettings(user);
+
+    const dialog = screen.getByRole('dialog', { name: 'Настройки объекта' });
+    expect(
+      getTextAreaValue(
+        within(dialog).getByLabelText(
+          'Текст для пункта 6. Соответствие работ предъявляемым требованиям',
+        ),
+      ),
+    ).toBe(demoAosrWorkspace.objectDefaults.defaultComplianceStatement);
   });
 
   it('shows the demo shortcut note for prefilled object representatives inside settings', async () => {
@@ -162,14 +274,14 @@ describe('DemoAosrWorkspacePage', () => {
 
     const editorText = screen.getByRole('region', { name: 'Текущий акт' }).textContent;
     const orderedFragments = [
-      'Общие данные акта',
+      'Общие данные',
       '1. Скрытые работы',
       'Описание скрытых работ',
       'Оси',
       'Отметки',
       '2. Проектная документация',
       '3. Материалы',
-      '4. Документы, подтверждающие соответствие',
+      '4. Документы объекта',
       '5. Даты выполнения работ',
       '6. Соответствие работ',
       '7. Последующие работы',
@@ -198,9 +310,7 @@ describe('DemoAosrWorkspacePage', () => {
   it('shows selected object documents as a clear point 4 section', () => {
     renderDemoWorkspace();
 
-    expect(
-      screen.getByRole('heading', { name: '4. Документы, подтверждающие соответствие' }),
-    ).toBeTruthy();
+    expect(screen.getByRole('heading', { name: '4. Документы объекта' })).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Добавить документ' })).toBeTruthy();
 
     const pointFourList = screen.getByRole('list', {
@@ -670,6 +780,37 @@ describe('DemoAosrWorkspacePage', () => {
     expect(editedDraft).not.toBe(sourceDraft);
   });
 
+  it('keeps object compliance defaults unchanged in pure act override helpers', () => {
+    const sourceDraft = demoAosrWorkspace.drafts[0];
+
+    if (!sourceDraft) {
+      throw new Error('В демо-рабочей области должен быть черновик.');
+    }
+
+    const draftWithStartedOverride = startDraftComplianceOverride(
+      sourceDraft,
+      demoAosrWorkspace.objectDefaults,
+    );
+    const editedDraft = updateDraftComplianceOverride(
+      draftWithStartedOverride,
+      'Отдельное значение только для unit-теста.',
+    );
+    const revertedDraft = resetDraftComplianceToObjectDefault(editedDraft);
+
+    expect(getDraftComplianceStatement(sourceDraft, demoAosrWorkspace.objectDefaults)).toBe(
+      demoAosrWorkspace.objectDefaults.defaultComplianceStatement,
+    );
+    expect(getDraftComplianceStatement(editedDraft, demoAosrWorkspace.objectDefaults)).toBe(
+      'Отдельное значение только для unit-теста.',
+    );
+    expect(getDraftComplianceStatement(revertedDraft, demoAosrWorkspace.objectDefaults)).toBe(
+      demoAosrWorkspace.objectDefaults.defaultComplianceStatement,
+    );
+    expect(sourceDraft.complianceStatementOverride).toBeUndefined();
+    expect(demoAosrWorkspace.objectDefaults.defaultComplianceStatement).toContain('ГОСТ');
+    expect(demoAosrWorkspace.objectDefaults.defaultComplianceStatement).toContain('ТУ');
+  });
+
   it('adds material certificate selections without mutating the source mock draft', () => {
     const sourceDraft = demoAosrWorkspace.drafts[1];
 
@@ -767,6 +908,24 @@ async function addManualRepresentative(
 
 function getPreviewText(): string {
   return screen.getByLabelText('Демо-предпросмотр печатной формы АОСР').textContent;
+}
+
+function getTextAreaValue(element: HTMLElement): string {
+  if (!(element instanceof HTMLTextAreaElement)) {
+    throw new Error('В тесте ожидалось текстовое поле.');
+  }
+
+  return element.value;
+}
+
+function getSectionByHeading(heading: string): HTMLElement {
+  const section = screen.getByRole('heading', { name: heading }).closest('.form-section');
+
+  if (section === null) {
+    throw new Error(`В тесте ожидается секция "${heading}".`);
+  }
+
+  return section as HTMLElement;
 }
 
 function getRequiredElement<TElement>(elements: readonly TElement[], index: number): TElement {

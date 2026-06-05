@@ -25,9 +25,12 @@ import {
   removeObjectDocumentFromDraft,
   removeRepresentativeFromDraft,
   reorderDraftRepresentatives,
+  resetDraftComplianceToObjectDefault,
+  startDraftComplianceOverride,
   toggleApplicationInclusionInDraft,
   updateDemoAosrDraftField,
   updateDemoObjectDefaultsField,
+  updateDraftComplianceOverride,
   type DemoAosrDraft,
   type DemoAosrDraftField,
   type DemoAosrHeaderOrganization,
@@ -396,6 +399,14 @@ export function DemoAosrWorkspacePage({
                 );
               }}
               onReorderSelectedSignatory={reorderSelectedSignatory}
+              onResetDraftComplianceToObjectDefault={() => {
+                updateSelectedDraftWith(resetDraftComplianceToObjectDefault);
+              }}
+              onStartDraftComplianceOverride={() => {
+                updateSelectedDraftWith((draft) =>
+                  startDraftComplianceOverride(draft, objectDefaults),
+                );
+              }}
               onToggleApplication={(applicationId) => {
                 updateSelectedDraftWith((draft) =>
                   toggleApplicationInclusionInDraft(draft, applicationId),
@@ -409,6 +420,9 @@ export function DemoAosrWorkspacePage({
               }}
               onToggleObjectDocumentLibrary={() => {
                 setObjectDocumentLibraryOpen((isOpen) => !isOpen);
+              }}
+              onUpdateDraftComplianceOverride={(value) => {
+                updateSelectedDraftWith((draft) => updateDraftComplianceOverride(draft, value));
               }}
               onUpdateSelectedDraft={updateSelectedDraft}
             />

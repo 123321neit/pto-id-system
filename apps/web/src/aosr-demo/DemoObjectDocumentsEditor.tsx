@@ -47,7 +47,7 @@ export function DemoObjectDocumentsEditor({
         <div className="scope-heading scope-heading--with-action">
           <span>
             <p className="section-tag">Пункт 4 акта</p>
-            <h3 id="object-documents-data-title">4. Документы, подтверждающие соответствие</h3>
+            <h3 id="object-documents-data-title">4. Документы объекта</h3>
           </span>
           <button
             aria-expanded={isObjectDocumentLibraryOpen}

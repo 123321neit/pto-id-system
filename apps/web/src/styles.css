@@ -1098,7 +1098,7 @@ h3 {
   color: #7b8a90;
   font-size: 0.78rem;
   font-weight: 900;
-  letter-spacing: -2px;
+  letter-spacing: 0;
 }
 
 .act-tree-item__index {
@@ -1141,7 +1141,7 @@ h3 {
 
 .current-act-editor {
   display: grid;
-  gap: 12px;
+  gap: 10px;
 }
 
 .current-act-editor__heading {
@@ -1270,16 +1270,32 @@ h3 {
 
 .act-editor-card {
   border: 1px solid #d6e0e9;
-  border-left: 3px solid #4f7585;
+  border-left: 4px solid #4f7585;
   background: #ffffff;
-  box-shadow: 0 8px 18px rgb(21 37 56 / 4%);
+  box-shadow: none;
 }
 
 .act-editor-card--featured {
   border-color: #bfd7fb;
   border-left-color: #2563eb;
   background: #fcfdff;
-  box-shadow: 0 12px 28px rgb(37 99 235 / 8%);
+  box-shadow: none;
+}
+
+.current-act-editor > .act-editor-card {
+  border-radius: 0;
+}
+
+.current-act-editor > .act-editor-card:first-of-type {
+  border-radius: 8px 8px 0 0;
+}
+
+.current-act-editor > .act-editor-card:last-of-type {
+  border-radius: 0 0 8px 8px;
+}
+
+.current-act-editor > .act-editor-card + .act-editor-card {
+  margin-top: -1px;
 }
 
 .form-section h3 {
@@ -1319,6 +1335,11 @@ h3 {
   background: #2563eb;
   color: #ffffff;
   box-shadow: 0 8px 16px rgb(37 99 235 / 14%);
+}
+
+.act-editor-card--featured .compact-toggle--accent,
+.workspace-actions .secondary-action--accent {
+  padding: 9px 11px;
 }
 
 .compact-summary-list {
@@ -1529,6 +1550,19 @@ h3 {
   line-height: 1.45;
 }
 
+.source-chip {
+  display: inline-flex;
+  width: fit-content;
+  border: 1px solid #a7d8cf;
+  border-radius: 999px;
+  background: #ecfdf8;
+  padding: 4px 8px;
+  color: #0f6b62;
+  font-size: 0.72rem;
+  font-weight: 850;
+  line-height: 1.2;
+}
+
 .placeholder-note {
   border: 1px solid #bfd7fb;
   border-radius: 7px;
@@ -1734,7 +1768,7 @@ h3 {
   cursor: grab;
   font-size: 0.78rem;
   font-weight: 900;
-  letter-spacing: -2px;
+  letter-spacing: 0;
 }
 
 .signatory-order-item__position {
