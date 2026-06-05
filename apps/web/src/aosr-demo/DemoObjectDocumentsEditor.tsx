@@ -157,7 +157,9 @@ export function DemoObjectDocumentsEditor({
 
                 return (
                   <div
-                    className="library-row object-document-row"
+                    className={`library-row object-document-row${
+                      isSelected ? ' library-row--selected' : ''
+                    }`}
                     key={document.id}
                     role="listitem"
                   >

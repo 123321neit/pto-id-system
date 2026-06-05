@@ -44,6 +44,18 @@ describe('DemoAosrWorkspacePage', () => {
     expect(within(summary).getByLabelText('Статус: Черновик')).toBeTruthy();
   });
 
+  it('shows polished object workspace status cards in the header', () => {
+    renderDemoWorkspace();
+
+    const workspaceSummary = screen.getByLabelText('Сводка рабочей области');
+
+    expect(screen.getByLabelText('Выбранный акт в шапке: АОСР-001')).toBeTruthy();
+    expect(within(workspaceSummary).getByLabelText('Черновики: 2')).toBeTruthy();
+    expect(within(workspaceSummary).getByLabelText('Текущий акт: АОСР-001')).toBeTruthy();
+    expect(within(workspaceSummary).getByLabelText('Организации объекта: 3')).toBeTruthy();
+    expect(within(workspaceSummary).getByLabelText('Подписанты: 3')).toBeTruthy();
+  });
+
   it('keeps object settings and libraries compact until opened', () => {
     renderDemoWorkspace();
 

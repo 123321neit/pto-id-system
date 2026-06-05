@@ -39,6 +39,13 @@ export function DemoAosrPreview({
         <p className="section-kicker">HTML-макет печатной формы</p>
         <h2 id="preview-title">Предпросмотр АОСР</h2>
       </div>
+      <div className="preview-panel__context" aria-label="Контекст предпросмотра">
+        <span>
+          Акт <strong>{selectedDraft.actNumber}</strong>
+        </span>
+        <span>{formatDocumentDate(selectedDraft.actDate)}</span>
+        <span>{finalApplications.length} приложений</span>
+      </div>
       <article className="act-page" aria-label="Демо-предпросмотр печатной формы АОСР">
         <div className="act-page__sheet">
           <header className="act-page__top-blocks">

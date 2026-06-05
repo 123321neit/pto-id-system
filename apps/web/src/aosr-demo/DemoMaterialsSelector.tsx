@@ -119,7 +119,9 @@ export function DemoMaterialsSelector({
 
                 return (
                   <div
-                    className="library-row certificate-picker-row"
+                    className={`library-row certificate-picker-row${
+                      isSelected ? ' library-row--selected' : ''
+                    }`}
                     key={certificate.id}
                     role="listitem"
                   >

@@ -130,23 +130,42 @@ export function DemoCurrentActEditor({
       <dl className="act-summary-strip" aria-label="Сводка текущего акта">
         <div aria-label={`Материалы: ${String(selectedMaterials.length)}`}>
           <dt>Материалы</dt>
-          <dd>{selectedMaterials.length}</dd>
+          <dd>
+            <strong>{selectedMaterials.length}</strong>
+            <span>из сертификатов</span>
+          </dd>
         </div>
         <div aria-label={`Документы: ${String(selectedObjectDocuments.length)}`}>
           <dt>Документы</dt>
-          <dd>{selectedObjectDocuments.length}</dd>
+          <dd>
+            <strong>{selectedObjectDocuments.length}</strong>
+            <span>пункт 4</span>
+          </dd>
         </div>
         <div aria-label={`Приложения: ${String(finalApplications.length)}`}>
           <dt>Приложения</dt>
-          <dd>{finalApplications.length}</dd>
+          <dd>
+            <strong>{finalApplications.length}</strong>
+            <span>в печать</span>
+          </dd>
         </div>
         <div aria-label={`Подписанты: ${String(selectedSignatories.length)}`}>
           <dt>Подписанты</dt>
-          <dd>{selectedSignatories.length}</dd>
+          <dd>
+            <strong>{selectedSignatories.length}</strong>
+            <span>по порядку</span>
+          </dd>
         </div>
         <div aria-label={`Статус: ${getDraftStatusLabel(selectedDraft.status)}`}>
           <dt>Статус</dt>
-          <dd>{getDraftStatusLabel(selectedDraft.status)}</dd>
+          <dd>
+            <strong
+              className={`act-summary-strip__status act-summary-strip__status--${selectedDraft.status}`}
+            >
+              {getDraftStatusLabel(selectedDraft.status)}
+            </strong>
+            <span>текущий</span>
+          </dd>
         </div>
       </dl>
 

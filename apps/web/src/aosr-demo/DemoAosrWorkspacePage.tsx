@@ -271,12 +271,20 @@ export function DemoAosrWorkspacePage({
   return (
     <main className="demo-shell">
       <section className="workspace-header" aria-labelledby="workspace-title">
-        <div>
+        <div className="workspace-header__main">
           <p className="demo-pill">{demoAosrWorkspace.demoNotice}</p>
           <h1 id="workspace-title">{objectDefaults.projectName}</h1>
           <p className="workspace-header__meta">
-            {demoAosrWorkspace.name} / {demoAosrWorkspace.projectCode} /{' '}
-            {demoAosrWorkspace.ownerName}
+            <span>{demoAosrWorkspace.name}</span>
+            <span>{demoAosrWorkspace.projectCode}</span>
+            <span>{demoAosrWorkspace.ownerName}</span>
+          </p>
+          <p
+            className="workspace-header__current-act"
+            aria-label={`Выбранный акт в шапке: ${selectedDraft.actNumber}`}
+          >
+            Текущий акт: <strong>{selectedDraft.actNumber}</strong> /{' '}
+            {selectedDraft.status === 'draft' ? 'черновик' : 'на проверку'}
           </p>
         </div>
         <div className="workspace-header__aside">
@@ -297,21 +305,35 @@ export function DemoAosrWorkspacePage({
             </button>
           </div>
           <dl className="workspace-summary" aria-label="Сводка рабочей области">
-            <div>
+            <div aria-label={`Черновики: ${String(drafts.length)}`}>
               <dt>Черновики</dt>
-              <dd>{drafts.length}</dd>
+              <dd>
+                <strong>{drafts.length}</strong>
+                <span>акта в объекте</span>
+              </dd>
             </div>
-            <div>
-              <dt>Выбран акт</dt>
-              <dd>{selectedDraft.actNumber}</dd>
+            <div aria-label={`Текущий акт: ${selectedDraft.actNumber}`}>
+              <dt>Текущий акт</dt>
+              <dd>
+                <strong>{selectedDraft.actNumber}</strong>
+                <span>{selectedDraft.actDate}</span>
+              </dd>
             </div>
-            <div>
-              <dt>Шапка</dt>
-              <dd>{objectDefaults.headerOrganizations.length}</dd>
+            <div
+              aria-label={`Организации объекта: ${String(objectDefaults.headerOrganizations.length)}`}
+            >
+              <dt>Организации</dt>
+              <dd>
+                <strong>{objectDefaults.headerOrganizations.length}</strong>
+                <span>в шапке</span>
+              </dd>
             </div>
-            <div>
+            <div aria-label={`Подписанты: ${String(selectedSignatories.length)}`}>
               <dt>Подписанты</dt>
-              <dd>{selectedSignatories.length}</dd>
+              <dd>
+                <strong>{selectedSignatories.length}</strong>
+                <span>в акте</span>
+              </dd>
             </div>
           </dl>
         </div>
