@@ -1,4 +1,4 @@
-import { type SyntheticEvent, useState } from 'react';
+import { type SyntheticEvent, useEffect, useState } from 'react';
 
 import {
   getCertificateDocumentName,
@@ -55,11 +55,17 @@ import { DemoDocumentTree } from './DemoDocumentTree.js';
 import { DemoObjectSettingsPanel } from './DemoObjectSettingsPanel.js';
 
 interface DemoAosrWorkspacePageProps {
+  readonly isEmbeddedInObjectWorkspace?: boolean;
   readonly onBackToObjects?: () => void;
+  readonly onObjectSettingsClosed?: () => void;
+  readonly settingsOpenRequest?: number;
 }
 
 export function DemoAosrWorkspacePage({
+  isEmbeddedInObjectWorkspace = false,
   onBackToObjects,
+  onObjectSettingsClosed,
+  settingsOpenRequest,
 }: DemoAosrWorkspacePageProps = {}): React.JSX.Element {
   const { certificates, organizations, representatives } = useDemoStore();
   const globalOrganizations = organizations.map(toDemoGlobalOrganization);
@@ -99,6 +105,12 @@ export function DemoAosrWorkspacePage({
     useState(false);
   const [createdHeaderOrganizationCount, setCreatedHeaderOrganizationCount] = useState(1);
   const [createdRepresentativeCount, setCreatedRepresentativeCount] = useState(1);
+
+  useEffect(() => {
+    if (settingsOpenRequest !== undefined && settingsOpenRequest > 0) {
+      setObjectSettingsOpen(true);
+    }
+  }, [settingsOpenRequest]);
 
   const selectedDraft = getSelectedDraft(drafts, selectedDraftId);
   const selectedSignatories = getDraftRepresentatives(selectedDraft);
@@ -268,12 +280,22 @@ export function DemoAosrWorkspacePage({
     setDraggedDraftId(null);
   };
 
+  const closeObjectSettings = (): void => {
+    setObjectSettingsOpen(false);
+    onObjectSettingsClosed?.();
+  };
+
   return (
-    <main className="demo-shell">
+    <section
+      aria-label="Рабочая область АОСР"
+      className={`demo-shell${isEmbeddedInObjectWorkspace ? ' demo-shell--embedded' : ''}`}
+    >
       <section className="workspace-header" aria-labelledby="workspace-title">
         <div className="workspace-header__main">
           <p className="demo-pill">{demoAosrWorkspace.demoNotice}</p>
-          <h1 id="workspace-title">{objectDefaults.projectName}</h1>
+          <h1 id="workspace-title">
+            {isEmbeddedInObjectWorkspace ? 'АОСР' : objectDefaults.projectName}
+          </h1>
           <p className="workspace-header__meta">
             <span>{demoAosrWorkspace.name}</span>
             <span>{demoAosrWorkspace.projectCode}</span>
@@ -479,9 +501,7 @@ export function DemoAosrWorkspacePage({
           onChangeLibraryRepresentativeForm={updateLibraryRepresentativeForm}
           onChangeOrganizationSearch={setOrganizationSearch}
           onChangeRepresentativeSearch={setRepresentativeSearch}
-          onCloseObjectSettings={() => {
-            setObjectSettingsOpen(false);
-          }}
+          onCloseObjectSettings={closeObjectSettings}
           onMoveHeaderOrganization={(headerOrganizationId, direction) => {
             setObjectDefaults((currentDefaults) =>
               moveHeaderOrganizationBlock(currentDefaults, headerOrganizationId, direction),
@@ -502,7 +522,7 @@ export function DemoAosrWorkspacePage({
           onUpdateObjectDefaults={updateObjectDefaults}
         />
       ) : null}
-    </main>
+    </section>
   );
 }
 

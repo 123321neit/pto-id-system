@@ -6,6 +6,9 @@ export interface MockObjectCard {
   readonly statusLabel: string;
   readonly documentsCount: number;
   readonly aosrCount: number;
+  readonly certificateCount: number;
+  readonly objectDocumentCount: number;
+  readonly representativeCount: number;
   readonly updatedAtLabel: string;
   readonly summary: string;
 }
@@ -23,8 +26,11 @@ export const mockObjectCards: readonly MockObjectCard[] = [
   {
     address: 'г. Екатеринбург, ул. Демонстрационная, 10',
     aosrCount: 12,
+    certificateCount: 48,
     documentsCount: 24,
     id: 'object-polyclinic-demo',
+    objectDocumentCount: 17,
+    representativeCount: 6,
     status: 'active',
     statusLabel: 'В работе',
     summary: 'Демо-объект для проверки АОСР, сертификатов и подписантов.',
@@ -34,8 +40,11 @@ export const mockObjectCards: readonly MockObjectCard[] = [
   {
     address: 'г. Екатеринбург, ул. Северная, 18',
     aosrCount: 8,
+    certificateCount: 34,
     documentsCount: 18,
     id: 'object-northern-demo',
+    objectDocumentCount: 14,
+    representativeCount: 5,
     status: 'active',
     statusLabel: 'В работе',
     summary: 'Жилой комплекс с несколькими очередями исполнительной документации.',
@@ -45,8 +54,11 @@ export const mockObjectCards: readonly MockObjectCard[] = [
   {
     address: 'г. Екатеринбург, пр. Горизонт, 4',
     aosrCount: 15,
+    certificateCount: 61,
     documentsCount: 31,
     id: 'object-horizon-demo',
+    objectDocumentCount: 22,
+    representativeCount: 8,
     status: 'paused',
     statusLabel: 'На паузе',
     summary: 'Торговый центр: подготовка актов и приложений по инженерным системам.',

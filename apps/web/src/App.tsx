@@ -1,9 +1,13 @@
 import { RouterProvider, createBrowserRouter } from 'react-router-dom';
 import { useState } from 'react';
 
-import { DemoAosrWorkspacePage } from './aosr-demo/DemoAosrWorkspacePage.js';
 import { MockObjectDashboardPage } from './app-shell/MockObjectDashboardPage.js';
-import type { MockDashboardPanel } from './app-shell/mock-dashboard.js';
+import { ObjectWorkspacePage } from './app-shell/ObjectWorkspacePage.js';
+import {
+  mockObjectCards,
+  type MockDashboardPanel,
+  type MockObjectCard,
+} from './app-shell/mock-dashboard.js';
 import { DemoStoreProvider } from './demo-store/DemoStoreProvider.js';
 
 const router = createBrowserRouter([
@@ -24,10 +28,13 @@ export function App(): React.JSX.Element {
 function AppContent(): React.JSX.Element {
   const [view, setView] = useState<'dashboard' | 'workspace'>('dashboard');
   const [activeDashboardPanel, setActiveDashboardPanel] = useState<MockDashboardPanel>('objects');
+  const [selectedObjectId, setSelectedObjectId] = useState<string>(mockObjectCards[0]?.id ?? '');
+  const selectedObject = getSelectedObject(selectedObjectId);
 
   if (view === 'workspace') {
     return (
-      <DemoAosrWorkspacePage
+      <ObjectWorkspacePage
+        object={selectedObject}
         onBackToObjects={() => {
           setActiveDashboardPanel('objects');
           setView('dashboard');
@@ -39,10 +46,26 @@ function AppContent(): React.JSX.Element {
   return (
     <MockObjectDashboardPage
       activePanel={activeDashboardPanel}
-      onOpenObject={() => {
+      onOpenObject={(objectId) => {
+        setSelectedObjectId(objectId);
         setView('workspace');
       }}
       onSelectPanel={setActiveDashboardPanel}
     />
   );
+}
+
+function getSelectedObject(objectId: string): MockObjectCard {
+  const selectedObject = mockObjectCards.find((object) => object.id === objectId);
+  const fallbackObject = mockObjectCards[0];
+
+  if (selectedObject !== undefined) {
+    return selectedObject;
+  }
+
+  if (fallbackObject === undefined) {
+    throw new Error('Для демо нужен хотя бы один объект.');
+  }
+
+  return fallbackObject;
 }

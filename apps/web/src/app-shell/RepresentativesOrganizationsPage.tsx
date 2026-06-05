@@ -3,6 +3,7 @@ import { type SyntheticEvent, useState } from 'react';
 import { type DemoRepresentative, useDemoStore } from '../demo-store/demo-store.js';
 
 interface RepresentativesOrganizationsPageProps {
+  readonly backLabel?: string;
   readonly onBackToObjects: () => void;
 }
 
@@ -37,6 +38,7 @@ const emptyRepresentativeForm: RepresentativeFormState = {
 };
 
 export function RepresentativesOrganizationsPage({
+  backLabel = 'Вернуться к объектам',
   onBackToObjects,
 }: RepresentativesOrganizationsPageProps): React.JSX.Element {
   const {
@@ -119,7 +121,7 @@ export function RepresentativesOrganizationsPage({
             </p>
           </div>
           <button className="secondary-action" onClick={onBackToObjects} type="button">
-            Вернуться к объектам
+            {backLabel}
           </button>
         </header>
 

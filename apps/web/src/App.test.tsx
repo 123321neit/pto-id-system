@@ -32,6 +32,8 @@ describe('App shell mock navigation', () => {
 
     await user.click(getFirstOpenObjectButton());
 
+    expect(screen.getByRole('navigation', { name: 'Разделы объекта' })).toBeTruthy();
+    expect(screen.getByText(/Акты \/ АОСР/u)).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Назад к объектам' })).toBeTruthy();
     expect(screen.getByRole('heading', { name: 'Дерево проекта' })).toBeTruthy();
     expect(screen.getByLabelText('Демо-предпросмотр печатной формы АОСР')).toBeTruthy();
@@ -40,6 +42,129 @@ describe('App shell mock navigation', () => {
 
     expect(screen.getByRole('heading', { name: 'Мои объекты' })).toBeTruthy();
     expect(screen.getByText('Реконструкция поликлиники, демонстрационный проект')).toBeTruthy();
+  });
+
+  it('renders object workspace navigation with object status and quick metrics', async () => {
+    const user = userEvent.setup();
+
+    render(<App />);
+
+    await user.click(getFirstOpenObjectButton());
+
+    const objectNavigation = screen.getByRole('navigation', { name: 'Разделы объекта' });
+    expect(within(objectNavigation).getByRole('button', { name: 'Акты' })).toBeTruthy();
+    expect(within(objectNavigation).getByRole('button', { name: 'АОСР' })).toBeTruthy();
+    expect(
+      within(objectNavigation).getByRole('button', { name: 'Открыть сертификаты объекта' }),
+    ).toBeTruthy();
+    expect(
+      within(objectNavigation).getByRole('button', { name: 'Открыть документы объекта' }),
+    ).toBeTruthy();
+    expect(within(objectNavigation).getByRole('button', { name: 'Представители' })).toBeTruthy();
+    expect(
+      within(objectNavigation).getByRole('button', { name: 'Открыть реестр ИД' }),
+    ).toBeTruthy();
+    expect(
+      within(objectNavigation).getByRole('button', { name: 'Открыть настройки объекта' }),
+    ).toBeTruthy();
+
+    expect(
+      screen.getByRole('heading', {
+        name: 'Реконструкция поликлиники, демонстрационный проект',
+      }),
+    ).toBeTruthy();
+    expect(screen.getAllByText('В работе').length).toBeGreaterThan(0);
+
+    const metrics = screen.getByLabelText('Показатели открытого объекта');
+    expect(within(metrics).getByLabelText('АОСР: 12')).toBeTruthy();
+    expect(within(metrics).getByLabelText('Сертификаты: 48')).toBeTruthy();
+    expect(within(metrics).getByLabelText('Документы: 17')).toBeTruthy();
+    expect(within(metrics).getByLabelText('Представители: 6')).toBeTruthy();
+  });
+
+  it('switches object workspace placeholder sections', async () => {
+    const user = userEvent.setup();
+
+    render(<App />);
+    await user.click(getFirstOpenObjectButton());
+
+    const objectNavigation = screen.getByRole('navigation', { name: 'Разделы объекта' });
+
+    await user.click(
+      within(objectNavigation).getByRole('button', { name: 'Открыть сертификаты объекта' }),
+    );
+    expect(screen.getByRole('heading', { name: 'Сертификаты' })).toBeTruthy();
+    expect(screen.getByText('Раздел находится в разработке')).toBeTruthy();
+    expect(screen.getByText('Связь сертификатов с материалами и актами')).toBeTruthy();
+
+    await user.click(
+      within(objectNavigation).getByRole('button', { name: 'Открыть документы объекта' }),
+    );
+    expect(screen.getByRole('heading', { name: 'Документы объекта' })).toBeTruthy();
+    expect(screen.getByText('Библиотека объектовых документов по типам')).toBeTruthy();
+
+    await user.click(within(objectNavigation).getByRole('button', { name: 'Открыть реестр ИД' }));
+    expect(screen.getByRole('heading', { name: 'Реестр ИД' })).toBeTruthy();
+    expect(screen.getByText('Автоматическая сборка строк из данных объекта')).toBeTruthy();
+  });
+
+  it('returns from placeholder sections to AOSR inside acts', async () => {
+    const user = userEvent.setup();
+
+    render(<App />);
+    await user.click(getFirstOpenObjectButton());
+
+    const objectNavigation = screen.getByRole('navigation', { name: 'Разделы объекта' });
+
+    await user.click(within(objectNavigation).getByRole('button', { name: 'Открыть реестр ИД' }));
+    expect(screen.getByRole('heading', { name: 'Реестр ИД' })).toBeTruthy();
+
+    await user.click(within(objectNavigation).getByRole('button', { name: 'АОСР' }));
+
+    expect(screen.getByRole('heading', { name: 'Дерево проекта' })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: 'Рабочая область акта' })).toBeTruthy();
+    expect(screen.getByLabelText('Демо-предпросмотр печатной формы АОСР')).toBeTruthy();
+  });
+
+  it('opens representatives from object workspace navigation using the existing page', async () => {
+    const user = userEvent.setup();
+
+    render(<App />);
+    await user.click(getFirstOpenObjectButton());
+
+    const objectNavigation = screen.getByRole('navigation', { name: 'Разделы объекта' });
+    await user.click(within(objectNavigation).getByRole('button', { name: 'Представители' }));
+
+    expect(screen.getByRole('heading', { name: 'Представители и организации' })).toBeTruthy();
+    expect(screen.getByRole('region', { name: 'Организации' })).toBeTruthy();
+    expect(screen.getByRole('region', { name: 'Представители' })).toBeTruthy();
+
+    await user.click(screen.getByRole('button', { name: 'Вернуться к АОСР' }));
+
+    expect(screen.getByRole('heading', { name: 'Рабочая область акта' })).toBeTruthy();
+  });
+
+  it('opens current object settings from object workspace navigation', async () => {
+    const user = userEvent.setup();
+
+    render(<App />);
+    await user.click(getFirstOpenObjectButton());
+
+    const objectNavigation = screen.getByRole('navigation', { name: 'Разделы объекта' });
+    await user.click(
+      within(objectNavigation).getByRole('button', { name: 'Открыть настройки объекта' }),
+    );
+
+    const dialog = screen.getByRole('dialog', { name: 'Настройки объекта' });
+    expect(within(dialog).getByLabelText('Объект капитального строительства')).toBeTruthy();
+    expect(
+      within(dialog).getByRole('heading', { name: 'Нормативная и проектная база объекта' }),
+    ).toBeTruthy();
+
+    await user.click(within(dialog).getByRole('button', { name: 'Закрыть настройки' }));
+
+    expect(screen.queryByRole('dialog', { name: 'Настройки объекта' })).toBeNull();
+    expect(screen.getByRole('heading', { name: 'Рабочая область акта' })).toBeTruthy();
   });
 
   it('opens the certificate library page from quick access with onboarding visible', async () => {
