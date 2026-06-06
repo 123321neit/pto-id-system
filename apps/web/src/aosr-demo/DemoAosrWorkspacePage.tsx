@@ -46,6 +46,7 @@ import {
   createRepresentativeFromForm,
   emptyHeaderOrganizationForm,
   emptyRepresentativeForm,
+  formatDocumentDate,
   type HeaderOrganizationFormState,
   type MoveDirection,
   type RepresentativeFormState,
@@ -489,6 +490,16 @@ export function DemoAosrWorkspacePage({
       </div>
 
       <DocumentPreviewDrawer
+        context={
+          <>
+            <span>
+              Акт <strong>{selectedDraft.actNumber}</strong>
+            </span>
+            <span>{formatDocumentDate(selectedDraft.actDate)}</span>
+            <span>{finalApplications.length} приложений</span>
+          </>
+        }
+        contextLabel="Контекст предпросмотра документа"
         eyebrow="HTML-макет печатной формы"
         isOpen={isDocumentPreviewOpen}
         onClose={() => {

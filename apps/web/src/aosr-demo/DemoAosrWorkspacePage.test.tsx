@@ -75,8 +75,15 @@ describe('DemoAosrWorkspacePage', () => {
 
     const drawer = screen.getByRole('dialog', { name: 'Предпросмотр документа' });
     const preview = within(drawer).getByLabelText('Демо-предпросмотр печатной формы АОСР');
+    const drawerContext = within(drawer).getByLabelText('Контекст предпросмотра документа');
 
+    expect(drawerContext.textContent).toContain('Акт АОСР-001');
+    expect(drawerContext.textContent).toContain('"01" июня 2026 г.');
+    expect(drawerContext.textContent).toContain('4 приложений');
+    expect(within(preview).getByText('Страница 1')).toBeTruthy();
+    expect(within(preview).getByText('Страница 2')).toBeTruthy();
     expect(preview.textContent).toContain('ОСВИДЕТЕЛЬСТВОВАНИЯ СКРЫТЫХ РАБОТ');
+    expect(preview.querySelectorAll('.act-page__page-frame')).toHaveLength(2);
     expect(preview.querySelectorAll('.act-page__sheet')).toHaveLength(2);
 
     await user.click(

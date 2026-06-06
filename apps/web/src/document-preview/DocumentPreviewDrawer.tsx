@@ -2,6 +2,8 @@ import type { ReactNode } from 'react';
 
 interface DocumentPreviewDrawerProps {
   readonly children: ReactNode;
+  readonly context?: ReactNode;
+  readonly contextLabel?: string;
   readonly eyebrow?: string;
   readonly isOpen: boolean;
   readonly onClose: () => void;
@@ -10,6 +12,8 @@ interface DocumentPreviewDrawerProps {
 
 export function DocumentPreviewDrawer({
   children,
+  context,
+  contextLabel,
   eyebrow,
   isOpen,
   onClose,
@@ -31,6 +35,11 @@ export function DocumentPreviewDrawer({
           <div>
             {eyebrow === undefined ? null : <p className="section-kicker">{eyebrow}</p>}
             <h2 id="document-preview-drawer-title">{title}</h2>
+            {context === undefined ? null : (
+              <div className="document-preview-drawer__context" aria-label={contextLabel}>
+                {context}
+              </div>
+            )}
           </div>
           <button
             className="secondary-action"
