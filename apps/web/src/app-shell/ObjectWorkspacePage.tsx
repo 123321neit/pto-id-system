@@ -1,6 +1,8 @@
 import { useState } from 'react';
 
 import { DemoAosrWorkspacePage } from '../aosr-demo/DemoAosrWorkspacePage.js';
+import { demoAosrWorkspace } from '../aosr-demo/demo-aosr-workspace.js';
+import { useDemoStore } from '../demo-store/demo-store.js';
 import { RepresentativesOrganizationsPage } from './RepresentativesOrganizationsPage.js';
 import type { MockObjectCard } from './mock-dashboard.js';
 
@@ -23,13 +25,27 @@ interface ObjectWorkspacePlaceholderProps {
   readonly title: string;
 }
 
+interface ObjectWorkspaceMetrics {
+  readonly aosrCount: number;
+  readonly certificateCount: number;
+  readonly objectDocumentCount: number;
+  readonly representativeCount: number;
+}
+
 export function ObjectWorkspacePage({
   object,
   onBackToObjects,
 }: ObjectWorkspacePageProps): React.JSX.Element {
+  const { certificates, representatives } = useDemoStore();
   const [activeSection, setActiveSection] = useState<ObjectWorkspaceSection>('aosr');
   const [settingsOpenRequest, setSettingsOpenRequest] = useState(0);
   const isAosrVisible = activeSection === 'aosr' || activeSection === 'settings';
+  const metrics: ObjectWorkspaceMetrics = {
+    aosrCount: demoAosrWorkspace.drafts.length,
+    certificateCount: certificates.length,
+    objectDocumentCount: demoAosrWorkspace.objectDocumentLibrary.length,
+    representativeCount: representatives.length,
+  };
 
   const openAosr = (): void => {
     setActiveSection('aosr');
@@ -132,7 +148,7 @@ export function ObjectWorkspacePage({
       </aside>
 
       <section className="object-workspace-main" aria-labelledby="object-workspace-title">
-        <ObjectWorkspaceHeader object={object} activeSection={activeSection} />
+        <ObjectWorkspaceHeader object={object} activeSection={activeSection} metrics={metrics} />
 
         <div hidden={!isAosrVisible}>
           <DemoAosrWorkspacePage
@@ -147,7 +163,7 @@ export function ObjectWorkspacePage({
         {activeSection === 'certificates' ? (
           <ObjectWorkspacePlaceholder
             title="Сертификаты"
-            description="Раздел находится в разработке. Здесь будет объектовый слой сертификатов: выбор документов качества из библиотеки, проверка комплектности для актов и подготовка приложений к ИД."
+            description="Библиотека сертификатов и паспортов качества объекта"
             items={[
               'Связь сертификатов с материалами и актами',
               'Контроль сроков и статуса документов качества',
@@ -159,7 +175,7 @@ export function ObjectWorkspacePage({
         {activeSection === 'documents' ? (
           <ObjectWorkspacePlaceholder
             title="Документы объекта"
-            description="Раздел находится в разработке. Здесь будут исполнительные схемы, рабочая документация, журналы, ППР и другие объектовые документы, которые затем используются в актах и реестре."
+            description="Исполнительные схемы, журналы, результаты испытаний и другие документы"
             items={[
               'Библиотека объектовых документов по типам',
               'Привязка документов к актам без файлового менеджера',
@@ -171,6 +187,7 @@ export function ObjectWorkspacePage({
         {activeSection === 'representatives' ? (
           <RepresentativesOrganizationsPage
             backLabel="Вернуться к АОСР"
+            description="Организации, представители и основания полномочий для объекта и актов"
             onBackToObjects={openAosr}
           />
         ) : null}
@@ -178,7 +195,7 @@ export function ObjectWorkspacePage({
         {activeSection === 'registry' ? (
           <ObjectWorkspacePlaceholder
             title="Реестр ИД"
-            description="Раздел находится в разработке. Реестр будет производной проекцией по объекту: акты, сертификаты, исполнительные схемы и настройки отображения без ручного редактирования source-полей."
+            description="Сводный перечень исполнительной документации объекта"
             items={[
               'Автоматическая сборка строк из данных объекта',
               'Будущие presentation overrides без подмены источника',
@@ -193,11 +210,13 @@ export function ObjectWorkspacePage({
 
 interface ObjectWorkspaceHeaderProps {
   readonly activeSection: ObjectWorkspaceSection;
+  readonly metrics: ObjectWorkspaceMetrics;
   readonly object: MockObjectCard;
 }
 
 function ObjectWorkspaceHeader({
   activeSection,
+  metrics,
   object,
 }: ObjectWorkspaceHeaderProps): React.JSX.Element {
   return (
@@ -214,10 +233,10 @@ function ObjectWorkspaceHeader({
       </div>
 
       <dl className="object-workspace-metrics" aria-label="Показатели открытого объекта">
-        <MetricItem label="АОСР" value={object.aosrCount} />
-        <MetricItem label="Сертификаты" value={object.certificateCount} />
-        <MetricItem label="Документы" value={object.objectDocumentCount} />
-        <MetricItem label="Представители" value={object.representativeCount} />
+        <MetricItem label="АОСР" value={metrics.aosrCount} />
+        <MetricItem label="Сертификаты" value={metrics.certificateCount} />
+        <MetricItem label="Документы" value={metrics.objectDocumentCount} />
+        <MetricItem label="Представители" value={metrics.representativeCount} />
       </dl>
     </header>
   );

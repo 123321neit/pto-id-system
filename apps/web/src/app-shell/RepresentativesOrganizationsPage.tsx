@@ -4,6 +4,7 @@ import { type DemoRepresentative, useDemoStore } from '../demo-store/demo-store.
 
 interface RepresentativesOrganizationsPageProps {
   readonly backLabel?: string;
+  readonly description?: string;
   readonly onBackToObjects: () => void;
 }
 
@@ -39,6 +40,7 @@ const emptyRepresentativeForm: RepresentativeFormState = {
 
 export function RepresentativesOrganizationsPage({
   backLabel = 'Вернуться к объектам',
+  description = 'Сначала сохраните организации и представителей, потом добавляйте их в объект и акты через поиск.',
   onBackToObjects,
 }: RepresentativesOrganizationsPageProps): React.JSX.Element {
   const {
@@ -115,10 +117,7 @@ export function RepresentativesOrganizationsPage({
           <div>
             <p className="section-kicker">Макет раздела</p>
             <h1 id="management-page-title">Представители и организации</h1>
-            <p>
-              Сначала сохраните организации и представителей, потом добавляйте их в объект и акты
-              через поиск.
-            </p>
+            <p>{description}</p>
           </div>
           <button className="secondary-action" onClick={onBackToObjects} type="button">
             {backLabel}

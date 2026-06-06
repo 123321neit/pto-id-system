@@ -291,23 +291,24 @@ button {
 .object-workspace-metrics {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 8px;
+  gap: 10px;
 }
 
 .object-workspace-metrics div {
   display: grid;
-  gap: 6px;
-  min-height: 82px;
-  border: 1px solid #d9e4ee;
+  align-content: space-between;
+  gap: 10px;
+  min-height: 86px;
+  border: 1px solid #dbe4ec;
   border-radius: 8px;
-  background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
-  padding: 12px;
-  box-shadow: 0 10px 22px rgb(30 58 138 / 5%);
+  background: #ffffff;
+  padding: 14px 14px 12px;
+  box-shadow: 0 12px 26px rgb(15 23 42 / 4%);
 }
 
 .object-workspace-metrics dt {
-  color: #627075;
-  font-size: 0.72rem;
+  color: #687680;
+  font-size: 0.68rem;
   font-weight: 800;
   letter-spacing: 0;
   text-transform: uppercase;
@@ -316,7 +317,7 @@ button {
 .object-workspace-metrics dd {
   margin: 0;
   color: #0f172a;
-  font-size: 1.35rem;
+  font-size: 1.8rem;
   font-weight: 900;
   line-height: 1;
 }

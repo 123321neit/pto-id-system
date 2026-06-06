@@ -80,9 +80,9 @@ describe('App shell mock navigation', () => {
     expect(screen.getAllByText('В работе').length).toBeGreaterThan(0);
 
     const metrics = screen.getByLabelText('Показатели открытого объекта');
-    expect(within(metrics).getByLabelText('АОСР: 12')).toBeTruthy();
-    expect(within(metrics).getByLabelText('Сертификаты: 48')).toBeTruthy();
-    expect(within(metrics).getByLabelText('Документы: 17')).toBeTruthy();
+    expect(within(metrics).getByLabelText('АОСР: 2')).toBeTruthy();
+    expect(within(metrics).getByLabelText('Сертификаты: 4')).toBeTruthy();
+    expect(within(metrics).getByLabelText('Документы: 6')).toBeTruthy();
     expect(within(metrics).getByLabelText('Представители: 6')).toBeTruthy();
   });
 
