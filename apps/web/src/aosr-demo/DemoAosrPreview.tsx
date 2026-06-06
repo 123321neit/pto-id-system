@@ -204,7 +204,9 @@ export function DemoAosrPreview({
               </span>
             </p>
           </section>
+        </div>
 
+        <div className="act-page__sheet">
           <section className="act-page__official-section" aria-label="Соответствие работ">
             <p>
               <span className="act-page__item-label">6. Работы выполнены в соответствии с:</span>{' '}

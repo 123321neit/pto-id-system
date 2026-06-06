@@ -1,5 +1,6 @@
 import { type SyntheticEvent, useEffect, useState } from 'react';
 
+import { DocumentPreviewDrawer } from '../document-preview/DocumentPreviewDrawer.js';
 import {
   getCertificateDocumentName,
   type DemoCertificate,
@@ -55,6 +56,7 @@ import { DemoDocumentTree } from './DemoDocumentTree.js';
 import { DemoObjectSettingsPanel } from './DemoObjectSettingsPanel.js';
 
 interface DemoAosrWorkspacePageProps {
+  readonly initialDocumentPreviewOpen?: boolean;
   readonly isEmbeddedInObjectWorkspace?: boolean;
   readonly onBackToObjects?: () => void;
   readonly onObjectSettingsClosed?: () => void;
@@ -62,6 +64,7 @@ interface DemoAosrWorkspacePageProps {
 }
 
 export function DemoAosrWorkspacePage({
+  initialDocumentPreviewOpen = false,
   isEmbeddedInObjectWorkspace = false,
   onBackToObjects,
   onObjectSettingsClosed,
@@ -86,6 +89,7 @@ export function DemoAosrWorkspacePage({
   const [isManualRepresentativeFormOpen, setManualRepresentativeFormOpen] = useState(false);
   const [isCertificateLibraryOpen, setCertificateLibraryOpen] = useState(false);
   const [isObjectDocumentLibraryOpen, setObjectDocumentLibraryOpen] = useState(false);
+  const [isDocumentPreviewOpen, setDocumentPreviewOpen] = useState(initialDocumentPreviewOpen);
   const [headerOrganizationForm, setHeaderOrganizationForm] = useState<HeaderOrganizationFormState>(
     emptyHeaderOrganizationForm,
   );
@@ -325,6 +329,16 @@ export function DemoAosrWorkspacePage({
             >
               Настройки объекта
             </button>
+            <button
+              aria-expanded={isDocumentPreviewOpen}
+              className="secondary-action secondary-action--accent"
+              onClick={() => {
+                setDocumentPreviewOpen(true);
+              }}
+              type="button"
+            >
+              Предпросмотр документа
+            </button>
           </div>
           <dl className="workspace-summary" aria-label="Сводка рабочей области">
             <div aria-label={`Черновики: ${String(drafts.length)}`}>
@@ -472,7 +486,16 @@ export function DemoAosrWorkspacePage({
             />
           </div>
         </section>
+      </div>
 
+      <DocumentPreviewDrawer
+        eyebrow="HTML-макет печатной формы"
+        isOpen={isDocumentPreviewOpen}
+        onClose={() => {
+          setDocumentPreviewOpen(false);
+        }}
+        title="Предпросмотр документа"
+      >
         <DemoAosrPreview
           finalApplications={finalApplications}
           objectDefaults={objectDefaults}
@@ -481,7 +504,7 @@ export function DemoAosrWorkspacePage({
           selectedObjectDocuments={selectedObjectDocuments}
           selectedSignatories={selectedSignatories}
         />
-      </div>
+      </DocumentPreviewDrawer>
 
       {isObjectSettingsOpen ? (
         <DemoObjectSettingsPanel

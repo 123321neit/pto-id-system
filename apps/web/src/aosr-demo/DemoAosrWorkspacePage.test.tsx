@@ -56,6 +56,37 @@ describe('DemoAosrWorkspacePage', () => {
     expect(within(workspaceSummary).getByLabelText('Подписанты: 3')).toBeTruthy();
   });
 
+  it('keeps the workspace usable without the document preview drawer open', () => {
+    renderDemoWorkspace();
+
+    expect(screen.getByRole('button', { name: 'Предпросмотр документа' })).toBeTruthy();
+    expect(screen.queryByRole('dialog', { name: 'Предпросмотр документа' })).toBeNull();
+    expect(screen.queryByLabelText('Демо-предпросмотр печатной формы АОСР')).toBeNull();
+    expect(screen.getByRole('heading', { name: 'Дерево проекта' })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: 'Рабочая область акта' })).toBeTruthy();
+  });
+
+  it('opens and closes the document preview drawer with existing preview content', async () => {
+    const user = userEvent.setup();
+
+    renderDemoWorkspace();
+
+    await user.click(screen.getByRole('button', { name: 'Предпросмотр документа' }));
+
+    const drawer = screen.getByRole('dialog', { name: 'Предпросмотр документа' });
+    const preview = within(drawer).getByLabelText('Демо-предпросмотр печатной формы АОСР');
+
+    expect(preview.textContent).toContain('ОСВИДЕТЕЛЬСТВОВАНИЯ СКРЫТЫХ РАБОТ');
+    expect(preview.querySelectorAll('.act-page__sheet')).toHaveLength(2);
+
+    await user.click(
+      within(drawer).getByRole('button', { name: 'Закрыть предпросмотр документа' }),
+    );
+
+    expect(screen.queryByRole('dialog', { name: 'Предпросмотр документа' })).toBeNull();
+    expect(screen.getByRole('heading', { name: 'Рабочая область акта' })).toBeTruthy();
+  });
+
   it('keeps object settings and libraries compact until opened', () => {
     renderDemoWorkspace();
 
@@ -74,7 +105,7 @@ describe('DemoAosrWorkspacePage', () => {
   it('opens object settings from the button and keeps existing settings functional', async () => {
     const user = userEvent.setup();
 
-    renderDemoWorkspace();
+    renderDemoWorkspace({ initialDocumentPreviewOpen: true });
 
     expect(screen.queryByLabelText('Объект капитального строительства')).toBeNull();
 
@@ -117,7 +148,7 @@ describe('DemoAosrWorkspacePage', () => {
   });
 
   it('uses object compliance value by default in the act and preview', () => {
-    renderDemoWorkspace();
+    renderDemoWorkspace({ initialDocumentPreviewOpen: true });
 
     const complianceSection = getSectionByHeading('6. Соответствие работ');
 
@@ -135,7 +166,7 @@ describe('DemoAosrWorkspacePage', () => {
     const overrideText =
       'Индивидуально для акта: работы выполнены по уточнённому листу РД-ОВ-14 и ТУ-ОВ-5.';
 
-    renderDemoWorkspace();
+    renderDemoWorkspace({ initialDocumentPreviewOpen: true });
 
     await user.click(screen.getByRole('button', { name: 'Изменить только для этого акта' }));
 
@@ -158,7 +189,7 @@ describe('DemoAosrWorkspacePage', () => {
   it('reverts a compliance override back to the object value', async () => {
     const user = userEvent.setup();
 
-    renderDemoWorkspace();
+    renderDemoWorkspace({ initialDocumentPreviewOpen: true });
 
     await user.click(screen.getByRole('button', { name: 'Изменить только для этого акта' }));
     await user.clear(screen.getByLabelText('Значение только для этого акта'));
@@ -379,7 +410,7 @@ describe('DemoAosrWorkspacePage', () => {
   it('adds an object document to the current act, point 4 and applications', async () => {
     const user = userEvent.setup();
 
-    renderDemoWorkspace();
+    renderDemoWorkspace({ initialDocumentPreviewOpen: true });
 
     expect(getPreviewText()).not.toContain(
       'Исполнительный чертеж. Узел прохода воздуховодов через перекрытие',
@@ -422,7 +453,7 @@ describe('DemoAosrWorkspacePage', () => {
   });
 
   it('renders configurable object-level header organization blocks in preview order', () => {
-    renderDemoWorkspace();
+    renderDemoWorkspace({ initialDocumentPreviewOpen: true });
 
     const previewText = getPreviewText();
 
@@ -439,7 +470,7 @@ describe('DemoAosrWorkspacePage', () => {
   it('adds a header organization from the mock global organization library search', async () => {
     const user = userEvent.setup();
 
-    renderDemoWorkspace();
+    renderDemoWorkspace({ initialDocumentPreviewOpen: true });
 
     await openObjectSettings(user);
     await user.click(screen.getByRole('button', { name: 'Добавить блок шапки' }));
@@ -513,7 +544,7 @@ describe('DemoAosrWorkspacePage', () => {
   it('searches object-level representatives and adds one to the current act', async () => {
     const user = userEvent.setup();
 
-    renderDemoWorkspace();
+    renderDemoWorkspace({ initialDocumentPreviewOpen: true });
 
     expect(getPreviewText()).not.toContain('Кузнецова А.А.');
 
@@ -540,7 +571,7 @@ describe('DemoAosrWorkspacePage', () => {
   it('adds a temporary representative only to the current act when the checkbox is clear', async () => {
     const user = userEvent.setup();
 
-    renderDemoWorkspace();
+    renderDemoWorkspace({ initialDocumentPreviewOpen: true });
 
     await addManualRepresentative(user, {
       authorityBasis: 'Доверенность N Т-1',
@@ -562,7 +593,7 @@ describe('DemoAosrWorkspacePage', () => {
   it('adds a temporary representative to the object base too when selected', async () => {
     const user = userEvent.setup();
 
-    renderDemoWorkspace();
+    renderDemoWorkspace({ initialDocumentPreviewOpen: true });
 
     await addManualRepresentative(
       user,
@@ -588,7 +619,7 @@ describe('DemoAosrWorkspacePage', () => {
   it('updates the document signatory order in the preview', async () => {
     const user = userEvent.setup();
 
-    renderDemoWorkspace();
+    renderDemoWorkspace({ initialDocumentPreviewOpen: true });
 
     await user.click(screen.getByRole('button', { name: 'Переместить Петров П.П. вверх' }));
 
@@ -599,7 +630,7 @@ describe('DemoAosrWorkspacePage', () => {
   it('adds a material through certificate library search and derives applications', async () => {
     const user = userEvent.setup();
 
-    renderDemoWorkspace();
+    renderDemoWorkspace({ initialDocumentPreviewOpen: true });
 
     expect(getPreviewText()).not.toContain('ДС-ИЗ-2026-04');
 
@@ -633,7 +664,7 @@ describe('DemoAosrWorkspacePage', () => {
   it('unchecking an application removes it from final applications and preview only', async () => {
     const user = userEvent.setup();
 
-    renderDemoWorkspace();
+    renderDemoWorkspace({ initialDocumentPreviewOpen: true });
 
     const applicationCheckbox = screen.getByRole('checkbox', {
       name: /Запись журнала входного контроля материалов/u,
@@ -660,7 +691,7 @@ describe('DemoAosrWorkspacePage', () => {
       within(applications).getByText('Запись журнала входного контроля материалов'),
     ).toBeTruthy();
 
-    const preview = screen.getByLabelText('Демо-предпросмотр печатной формы АОСР');
+    const preview = getDocumentPreview();
     const pointFourPreview = within(preview).getByLabelText('Документы соответствия');
     const previewApplications = preview.querySelector('.act-page__applications');
 
@@ -685,7 +716,7 @@ describe('DemoAosrWorkspacePage', () => {
   });
 
   it('renders checked applications before final signature blocks', () => {
-    renderDemoWorkspace();
+    renderDemoWorkspace({ initialDocumentPreviewOpen: true });
 
     const previewText = getPreviewText();
 
@@ -696,7 +727,7 @@ describe('DemoAosrWorkspacePage', () => {
       previewText.indexOf('Приложения:'),
     );
 
-    const preview = screen.getByLabelText('Демо-предпросмотр печатной формы АОСР');
+    const preview = getDocumentPreview();
     const applications = preview.querySelector('.act-page__applications');
     const signatures = preview.querySelector('.act-page__signature-section');
 
@@ -710,7 +741,7 @@ describe('DemoAosrWorkspacePage', () => {
   });
 
   it('uses real AOSR wording for point 4 in the preview', () => {
-    renderDemoWorkspace();
+    renderDemoWorkspace({ initialDocumentPreviewOpen: true });
 
     expect(getPreviewText()).toContain(
       '4. Предъявлены документы, подтверждающие соответствие работ предъявляемым к ним требованиям:',
@@ -718,7 +749,7 @@ describe('DemoAosrWorkspacePage', () => {
   });
 
   it('keeps the AOSR preview section order close to the Word form', () => {
-    renderDemoWorkspace();
+    renderDemoWorkspace({ initialDocumentPreviewOpen: true });
 
     const previewText = getPreviewText();
     const orderedFragments = [
@@ -749,9 +780,9 @@ describe('DemoAosrWorkspacePage', () => {
   });
 
   it('renders key Word-like preview structure classes', () => {
-    renderDemoWorkspace();
+    renderDemoWorkspace({ initialDocumentPreviewOpen: true });
 
-    const preview = screen.getByLabelText('Демо-предпросмотр печатной формы АОСР');
+    const preview = getDocumentPreview();
     expect(preview.querySelector('.act-page__sheet')).toBeTruthy();
     expect(preview.querySelector('.act-page__top-blocks')).toBeTruthy();
     expect(preview.querySelector('.act-page__field-line')).toBeTruthy();
@@ -763,7 +794,7 @@ describe('DemoAosrWorkspacePage', () => {
   it('keeps current editing behavior after the component split', async () => {
     const user = userEvent.setup();
 
-    renderDemoWorkspace();
+    renderDemoWorkspace({ initialDocumentPreviewOpen: true });
 
     await user.clear(screen.getByDisplayValue('АОСР-001'));
     await user.type(screen.getByLabelText('Номер акта'), 'АОСР-010');
@@ -868,10 +899,16 @@ describe('DemoAosrWorkspacePage', () => {
   });
 });
 
-function renderDemoWorkspace(): void {
+interface RenderDemoWorkspaceOptions {
+  readonly initialDocumentPreviewOpen?: boolean;
+}
+
+function renderDemoWorkspace({
+  initialDocumentPreviewOpen = false,
+}: RenderDemoWorkspaceOptions = {}): void {
   render(
     <DemoStoreProvider>
-      <DemoAosrWorkspacePage />
+      <DemoAosrWorkspacePage initialDocumentPreviewOpen={initialDocumentPreviewOpen} />
     </DemoStoreProvider>,
   );
 }
@@ -919,7 +956,13 @@ async function addManualRepresentative(
 }
 
 function getPreviewText(): string {
-  return screen.getByLabelText('Демо-предпросмотр печатной формы АОСР').textContent;
+  return getDocumentPreview().textContent;
+}
+
+function getDocumentPreview(): HTMLElement {
+  const drawer = screen.getByRole('dialog', { name: 'Предпросмотр документа' });
+
+  return within(drawer).getByLabelText('Демо-предпросмотр печатной формы АОСР');
 }
 
 function getTextAreaValue(element: HTMLElement): string {

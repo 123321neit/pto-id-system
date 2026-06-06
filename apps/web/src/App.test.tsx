@@ -36,7 +36,11 @@ describe('App shell mock navigation', () => {
     expect(screen.getByText(/Акты \/ АОСР/u)).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Назад к объектам' })).toBeTruthy();
     expect(screen.getByRole('heading', { name: 'Дерево проекта' })).toBeTruthy();
-    expect(screen.getByLabelText('Демо-предпросмотр печатной формы АОСР')).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Предпросмотр документа' })).toBeTruthy();
+    expect(screen.queryByLabelText('Демо-предпросмотр печатной формы АОСР')).toBeNull();
+
+    await openDocumentPreview(user);
+    expect(getDocumentPreview()).toBeTruthy();
 
     await user.click(screen.getByRole('button', { name: 'Назад к объектам' }));
 
@@ -123,7 +127,7 @@ describe('App shell mock navigation', () => {
 
     expect(screen.getByRole('heading', { name: 'Дерево проекта' })).toBeTruthy();
     expect(screen.getByRole('heading', { name: 'Рабочая область акта' })).toBeTruthy();
-    expect(screen.getByLabelText('Демо-предпросмотр печатной формы АОСР')).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Предпросмотр документа' })).toBeTruthy();
   });
 
   it('opens representatives from object workspace navigation using the existing page', async () => {
@@ -318,7 +322,10 @@ describe('App shell mock navigation', () => {
       within(pumpRow as HTMLElement).getByRole('button', { name: 'Добавить материал' }),
     );
 
-    const previewText = screen.getByLabelText('Демо-предпросмотр печатной формы АОСР').textContent;
+    await user.click(screen.getByRole('button', { name: 'Закрыть библиотеку' }));
+    await openDocumentPreview(user);
+
+    const previewText = getDocumentPreview().textContent;
     expect(previewText).toContain('Насос циркуляционный N-25');
     expect(previewText).toContain('ПИ-Н25-2026');
     expect(previewText).toContain('Паспорт изделия N ПИ-Н25-2026 от 03.06.2026');
@@ -467,7 +474,10 @@ describe('App shell mock navigation', () => {
     await user.type(screen.getByLabelText('Название блока'), 'Авторский контроль');
     await user.click(screen.getByRole('button', { name: 'Сохранить организацию в шапке' }));
 
-    const previewText = screen.getByLabelText('Демо-предпросмотр печатной формы АОСР').textContent;
+    await user.click(screen.getByRole('button', { name: 'Закрыть настройки' }));
+    await openDocumentPreview(user);
+
+    const previewText = getDocumentPreview().textContent;
     expect(previewText).toContain('Авторский контроль:');
     expect(previewText).toContain('ООО "Авторский контроль"');
     expect(previewText).toContain('ИНН 6600000002; ОГРН 1266600000002.');
@@ -533,7 +543,9 @@ describe('App shell mock navigation', () => {
       }),
     );
 
-    const previewText = screen.getByLabelText('Демо-предпросмотр печатной формы АОСР').textContent;
+    await openDocumentPreview(user);
+
+    const previewText = getDocumentPreview().textContent;
     expect(previewText).toContain('Яковлев Я.Я.');
     expect(previewText).toContain('Представитель службы качества:');
   });
@@ -571,6 +583,7 @@ describe('App shell mock navigation', () => {
     await user.click(
       within(insulationRow as HTMLElement).getByRole('button', { name: 'Добавить материал' }),
     );
+    await user.click(screen.getByRole('button', { name: 'Закрыть библиотеку' }));
 
     await user.type(screen.getByLabelText('Добавить подписанта из базы объекта'), 'заказчика');
 
@@ -587,7 +600,9 @@ describe('App shell mock navigation', () => {
       within(customerRow as HTMLElement).getByRole('button', { name: 'Добавить подписанта' }),
     );
 
-    const preview = screen.getByLabelText('Демо-предпросмотр печатной формы АОСР');
+    await openDocumentPreview(user);
+
+    const preview = getDocumentPreview();
     const previewText = preview.textContent;
 
     expect(previewText).toContain('Теплоизоляционные маты ИЗ-50');
@@ -640,4 +655,14 @@ async function openCertificateLibraryPage(user: ReturnType<typeof userEvent.setu
   const navigation = screen.getByRole('navigation', { name: 'Основная навигация' });
 
   await user.click(within(navigation).getByRole('button', { name: /Библиотека сертификатов/u }));
+}
+
+async function openDocumentPreview(user: ReturnType<typeof userEvent.setup>): Promise<void> {
+  await user.click(screen.getByRole('button', { name: 'Предпросмотр документа' }));
+}
+
+function getDocumentPreview(): HTMLElement {
+  const drawer = screen.getByRole('dialog', { name: 'Предпросмотр документа' });
+
+  return within(drawer).getByLabelText('Демо-предпросмотр печатной формы АОСР');
 }
