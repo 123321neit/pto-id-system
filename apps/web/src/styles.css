@@ -550,6 +550,14 @@ button {
   font-weight: 850;
 }
 
+.object-certificates-table td small {
+  display: block;
+  margin-top: 4px;
+  color: #64748b;
+  font-size: 0.76rem;
+  line-height: 1.35;
+}
+
 .object-document-form {
   display: grid;
   grid-template-columns:
@@ -583,6 +591,12 @@ button {
 
 .object-document-form button {
   min-height: 42px;
+}
+
+.object-certificate-form {
+  grid-template-columns:
+    minmax(210px, 1fr) minmax(170px, 0.34fr) minmax(150px, 0.24fr) minmax(170px, 0.32fr)
+    minmax(150px, 0.22fr) auto;
 }
 
 .dashboard-page {

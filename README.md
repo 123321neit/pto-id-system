@@ -5,7 +5,7 @@ Web-система автоматизации исполнительной до�
 Текущий статус:
 
 ```text
-FIRST ALLOWED INFRASTRUCTURE BOOTSTRAP SCAFFOLD ACCEPTED; CANONICAL ADR BASELINE ACCEPTED; BACKEND MODULE ARCHITECTURE SKELETON INTRODUCED; FIRST TECHNICAL FRONTEND-BACKEND STATUS SLICE INTRODUCED; DATABASE FOUNDATION TECHNICAL SLICE INTRODUCED; OBJECT STORAGE FOUNDATION TECHNICAL SLICE INTRODUCED; AUTH SHARING IMPLEMENTATION PLAN ADDED; USER IDENTITY SKELETON INTRODUCED; GLOBAL SYSTEM ADMIN MARKER INTRODUCED; OWNED WORKSPACE BASELINE INTRODUCED; FIRST MOCK AOSR DEMO UI SLICE INTRODUCED; MOCK AOSR DEMO UX/PREVIEW REFINED; MOCK APP SHELL AND OBJECT DASHBOARD INTRODUCED; FRONTEND-ONLY MOCK REPRESENTATIVES/ORGANIZATIONS MANAGEMENT PAGE INTRODUCED; FRONTEND-ONLY MOCK CERTIFICATE LIBRARY PAGE INTRODUCED; STAGE 5 MOCK AOSR WORKSPACE UX STABILIZED; AOSR EDITOR UX CLEANUP INTRODUCED; AOSR WORKSPACE DRAWER UX INTRODUCED; FRONTEND-ONLY MOCK OBJECT DOCUMENT LIBRARY INTRODUCED; AOSR WORKSPACE APPLICATIONS UX CLEANUP INTRODUCED; FRONTEND-ONLY MOCK OBJECT COMPLIANCE DEFAULTS AND ACT OVERRIDES INTRODUCED; FRONTEND-ONLY MOCK OBJECT WORKSPACE VISUAL PASS INTRODUCED; FRONTEND-ONLY MOCK OBJECT WORKSPACE SHELL INTRODUCED; AOSR DOCUMENT PREVIEW DRAWER UX INTRODUCED; AOSR DOCUMENT PREVIEW PAGE VISUALIZATION REFINED; FRONTEND-ONLY OBJECT DOCUMENT WORKSPACE INTRODUCED
+FIRST ALLOWED INFRASTRUCTURE BOOTSTRAP SCAFFOLD ACCEPTED; CANONICAL ADR BASELINE ACCEPTED; BACKEND MODULE ARCHITECTURE SKELETON INTRODUCED; FIRST TECHNICAL FRONTEND-BACKEND STATUS SLICE INTRODUCED; DATABASE FOUNDATION TECHNICAL SLICE INTRODUCED; OBJECT STORAGE FOUNDATION TECHNICAL SLICE INTRODUCED; AUTH SHARING IMPLEMENTATION PLAN ADDED; USER IDENTITY SKELETON INTRODUCED; GLOBAL SYSTEM ADMIN MARKER INTRODUCED; OWNED WORKSPACE BASELINE INTRODUCED; FIRST MOCK AOSR DEMO UI SLICE INTRODUCED; MOCK AOSR DEMO UX/PREVIEW REFINED; MOCK APP SHELL AND OBJECT DASHBOARD INTRODUCED; FRONTEND-ONLY MOCK REPRESENTATIVES/ORGANIZATIONS MANAGEMENT PAGE INTRODUCED; FRONTEND-ONLY MOCK CERTIFICATE LIBRARY PAGE INTRODUCED; STAGE 5 MOCK AOSR WORKSPACE UX STABILIZED; AOSR EDITOR UX CLEANUP INTRODUCED; AOSR WORKSPACE DRAWER UX INTRODUCED; FRONTEND-ONLY MOCK OBJECT DOCUMENT LIBRARY INTRODUCED; AOSR WORKSPACE APPLICATIONS UX CLEANUP INTRODUCED; FRONTEND-ONLY MOCK OBJECT COMPLIANCE DEFAULTS AND ACT OVERRIDES INTRODUCED; FRONTEND-ONLY MOCK OBJECT WORKSPACE VISUAL PASS INTRODUCED; FRONTEND-ONLY MOCK OBJECT WORKSPACE SHELL INTRODUCED; AOSR DOCUMENT PREVIEW DRAWER UX INTRODUCED; AOSR DOCUMENT PREVIEW PAGE VISUALIZATION REFINED; FRONTEND-ONLY OBJECT DOCUMENT WORKSPACE INTRODUCED; FRONTEND-ONLY OBJECT CERTIFICATE WORKSPACE INTRODUCED
 ```
 
 В репозитории принят первый разрешённый scaffold. Это только infrastructure/bootstrap
@@ -180,6 +180,17 @@ other object documentation with simple filters, derived summary counts, mock
 AOSR usage counts and a local add form. The object documents page and the AOSR
 point 4 document drawer now use the same frontend demo store, making this a UX
 foundation for the future ID registry while adding no backend, persistence,
+uploads, file storage, Prisma/schema/migrations, API routes, auth, OCR/AI,
+DOCX/PDF generation or production business logic.
+
+The frontend-only object certificate workspace replaces the object certificates
+placeholder with a real in-memory quality-document registry for the opened
+object. It reads and writes through the existing frontend demo certificate
+store already used by the certificate library and AOSR material drawer. The
+page lists certificates, passports, declarations and other material/equipment
+documents with simple category filters, derived summary counts, mock AOSR usage
+counts and a compact local add form. This creates a frontend-only foundation
+for future ID registry/package flows while adding no backend, persistence,
 uploads, file storage, Prisma/schema/migrations, API routes, auth, OCR/AI,
 DOCX/PDF generation or production business logic.
 
@@ -361,6 +372,11 @@ Scaffold включает:
   with mock filters, summary counts, AOSR usage labels and local in-memory
   creation, sharing the demo object document source with the AOSR point 4 drawer
   and adding no backend, persistence, uploads or production document storage.
+- frontend-only object certificate workspace: object-level quality document
+  registry UI with mock filters, summary counts, AOSR usage labels and local
+  in-memory creation, sharing the existing demo certificate source with the
+  certificate library and AOSR material drawer and adding no backend,
+  persistence, uploads or production certificate storage.
 
 The backend module skeleton includes module boundaries, README ownership notes,
 placeholder tokens/ports, `apps/api/src/ARCHITECTURE.md`, and ESLint import

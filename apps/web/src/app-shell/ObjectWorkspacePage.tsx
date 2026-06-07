@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { DemoAosrWorkspacePage } from '../aosr-demo/DemoAosrWorkspacePage.js';
 import { demoAosrWorkspace } from '../aosr-demo/demo-aosr-workspace.js';
 import { useDemoStore } from '../demo-store/demo-store.js';
+import { ObjectCertificatesPage } from './ObjectCertificatesPage.js';
 import { ObjectDocumentsPage } from './ObjectDocumentsPage.js';
 import { RepresentativesOrganizationsPage } from './RepresentativesOrganizationsPage.js';
 import type { MockObjectCard } from './mock-dashboard.js';
@@ -161,17 +162,7 @@ export function ObjectWorkspacePage({
           />
         </div>
 
-        {activeSection === 'certificates' ? (
-          <ObjectWorkspacePlaceholder
-            title="Сертификаты"
-            description="Библиотека сертификатов и паспортов качества объекта"
-            items={[
-              'Связь сертификатов с материалами и актами',
-              'Контроль сроков и статуса документов качества',
-              'Подготовка будущей выдачи в комплект ИД',
-            ]}
-          />
-        ) : null}
+        {activeSection === 'certificates' ? <ObjectCertificatesPage /> : null}
 
         {activeSection === 'documents' ? <ObjectDocumentsPage /> : null}
 

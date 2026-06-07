@@ -97,9 +97,21 @@ describe('App shell mock navigation', () => {
     await user.click(
       within(objectNavigation).getByRole('button', { name: 'Открыть сертификаты объекта' }),
     );
-    expect(screen.getByRole('heading', { name: 'Сертификаты' })).toBeTruthy();
-    expect(screen.getByText('Раздел находится в разработке')).toBeTruthy();
-    expect(screen.getByText('Связь сертификатов с материалами и актами')).toBeTruthy();
+    expect(screen.getByRole('heading', { name: 'Сертификаты объекта' })).toBeTruthy();
+    expect(
+      screen.getByText(
+        'Сертификаты, паспорта качества, декларации и другие документы на материалы и оборудование объекта.',
+      ),
+    ).toBeTruthy();
+    expect(screen.getByRole('columnheader', { name: 'Материал / оборудование' })).toBeTruthy();
+    expect(screen.getByRole('columnheader', { name: 'Документ' })).toBeTruthy();
+    expect(screen.getByRole('columnheader', { name: 'Номер' })).toBeTruthy();
+    expect(screen.getByRole('columnheader', { name: 'Кем выдан' })).toBeTruthy();
+    expect(screen.getByRole('columnheader', { name: 'Используется в актах' })).toBeTruthy();
+    expect(
+      within(screen.getByRole('table')).getByText('Воздуховоды оцинкованные 0,7 мм'),
+    ).toBeTruthy();
+    expect(within(screen.getByRole('table')).getByText('Используется в 0 актах')).toBeTruthy();
 
     await user.click(
       within(objectNavigation).getByRole('button', { name: 'Открыть документы объекта' }),
@@ -125,6 +137,112 @@ describe('App shell mock navigation', () => {
     await user.click(within(objectNavigation).getByRole('button', { name: 'Открыть реестр ИД' }));
     expect(screen.getByRole('heading', { name: 'Реестр ИД' })).toBeTruthy();
     expect(screen.getByText('Автоматическая сборка строк из данных объекта')).toBeTruthy();
+  });
+
+  it('renders object certificate counts from the shared frontend mock data', async () => {
+    const user = userEvent.setup();
+
+    render(<App />);
+    await openObjectCertificatesPage(user);
+
+    const summary = screen.getByLabelText('Сводка сертификатов объекта');
+    expect(within(summary).getByLabelText('Всего документов качества: 4')).toBeTruthy();
+    expect(within(summary).getByLabelText('Сертификаты: 1')).toBeTruthy();
+    expect(within(summary).getByLabelText('Паспорта: 2')).toBeTruthy();
+    expect(within(summary).getByLabelText('Декларации: 1')).toBeTruthy();
+  });
+
+  it('filters object certificates by document category', async () => {
+    const user = userEvent.setup();
+
+    render(<App />);
+    await openObjectCertificatesPage(user);
+
+    const table = screen.getByRole('table');
+
+    await user.click(screen.getByRole('button', { name: 'Декларации' }));
+    expect(within(table).getByText('Теплоизоляционные маты ИЗ-50')).toBeTruthy();
+    expect(within(table).queryByText('Воздуховоды оцинкованные 0,7 мм')).toBeNull();
+
+    await user.click(screen.getByRole('button', { name: 'Паспорта' }));
+    expect(within(table).getByText('Противопожарный состав для проходок')).toBeTruthy();
+    expect(within(table).getByText('Крепежные элементы КМ-12')).toBeTruthy();
+    expect(within(table).queryByText('Теплоизоляционные маты ИЗ-50')).toBeNull();
+  });
+
+  it('adds a mock object certificate and exposes it to AOSR material search', async () => {
+    const user = userEvent.setup();
+
+    render(<App />);
+    await openObjectCertificatesPage(user);
+
+    await user.type(
+      screen.getByLabelText('Материал / оборудование'),
+      'Клапан противопожарный КП-1',
+    );
+    await user.selectOptions(screen.getByLabelText('Тип документа'), 'Паспорт качества');
+    await user.type(screen.getByLabelText('Номер документа'), 'ПК-КП-2026-01');
+    await user.type(screen.getByLabelText('Кем выдан'), 'Заводская лаборатория контроля');
+    await user.type(screen.getByLabelText('Дата'), '2026-06-07');
+    await user.click(screen.getByRole('button', { name: 'Добавить сертификат / паспорт' }));
+
+    const table = screen.getByRole('table');
+    const certificateRow = within(table).getByText('Клапан противопожарный КП-1').closest('tr');
+
+    if (certificateRow === null) {
+      throw new Error('В тесте ожидается строка нового сертификата объекта.');
+    }
+
+    expect(within(certificateRow as HTMLElement).getByText('ПК-КП-2026-01')).toBeTruthy();
+    expect(within(certificateRow as HTMLElement).getByText('Используется в 0 актах')).toBeTruthy();
+
+    const summary = screen.getByLabelText('Сводка сертификатов объекта');
+    expect(within(summary).getByLabelText('Всего документов качества: 5')).toBeTruthy();
+    expect(within(summary).getByLabelText('Паспорта: 3')).toBeTruthy();
+
+    const objectNavigation = screen.getByRole('navigation', { name: 'Разделы объекта' });
+    await user.click(within(objectNavigation).getByRole('button', { name: 'АОСР' }));
+    await user.click(screen.getByRole('button', { name: 'Библиотека сертификатов' }));
+    await user.type(screen.getByLabelText('Найти материал в библиотеке сертификатов'), 'клапан');
+
+    const certificateLibrary = screen.getByRole('list', { name: 'Библиотека сертификатов' });
+    expect(within(certificateLibrary).getByText('Клапан противопожарный КП-1')).toBeTruthy();
+    expect(
+      within(certificateLibrary).getByText('Паспорт качества N ПК-КП-2026-01 от 2026-06-07'),
+    ).toBeTruthy();
+  });
+
+  it('keeps the dashboard to object certificates to AOSR flow working', async () => {
+    const user = userEvent.setup();
+
+    render(<App />);
+    await openObjectCertificatesPage(user);
+
+    expect(screen.getByRole('heading', { name: 'Сертификаты объекта' })).toBeTruthy();
+
+    const objectNavigation = screen.getByRole('navigation', { name: 'Разделы объекта' });
+    await user.click(within(objectNavigation).getByRole('button', { name: 'АОСР' }));
+    await user.click(screen.getByRole('button', { name: 'Библиотека сертификатов' }));
+    await user.type(screen.getByLabelText('Найти материал в библиотеке сертификатов'), 'изоляц');
+
+    const certificateLibrary = screen.getByRole('list', { name: 'Библиотека сертификатов' });
+    const insulationRow = within(certificateLibrary)
+      .getByText('Теплоизоляционные маты ИЗ-50')
+      .closest('.library-row');
+
+    if (insulationRow === null) {
+      throw new Error('В тесте ожидается строка материала после перехода из сертификатов.');
+    }
+
+    await user.click(
+      within(insulationRow as HTMLElement).getByRole('button', { name: 'Добавить материал' }),
+    );
+    await user.click(screen.getByRole('button', { name: 'Закрыть библиотеку' }));
+    await openDocumentPreview(user);
+
+    const previewText = getDocumentPreview().textContent;
+    expect(previewText).toContain('Теплоизоляционные маты ИЗ-50');
+    expect(previewText).toContain('ДС-ИЗ-2026-04');
   });
 
   it('renders object document counts from the frontend mock data', async () => {
@@ -753,6 +871,16 @@ async function openCertificateLibraryPage(user: ReturnType<typeof userEvent.setu
   const navigation = screen.getByRole('navigation', { name: 'Основная навигация' });
 
   await user.click(within(navigation).getByRole('button', { name: /Библиотека сертификатов/u }));
+}
+
+async function openObjectCertificatesPage(user: ReturnType<typeof userEvent.setup>): Promise<void> {
+  await user.click(getFirstOpenObjectButton());
+
+  const objectNavigation = screen.getByRole('navigation', { name: 'Разделы объекта' });
+
+  await user.click(
+    within(objectNavigation).getByRole('button', { name: 'Открыть сертификаты объекта' }),
+  );
 }
 
 async function openObjectDocumentsPage(user: ReturnType<typeof userEvent.setup>): Promise<void> {
