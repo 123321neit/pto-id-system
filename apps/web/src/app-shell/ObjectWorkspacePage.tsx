@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { DemoAosrWorkspacePage } from '../aosr-demo/DemoAosrWorkspacePage.js';
 import { demoAosrWorkspace } from '../aosr-demo/demo-aosr-workspace.js';
 import { useDemoStore } from '../demo-store/demo-store.js';
+import { ObjectDocumentsPage } from './ObjectDocumentsPage.js';
 import { RepresentativesOrganizationsPage } from './RepresentativesOrganizationsPage.js';
 import type { MockObjectCard } from './mock-dashboard.js';
 
@@ -36,14 +37,14 @@ export function ObjectWorkspacePage({
   object,
   onBackToObjects,
 }: ObjectWorkspacePageProps): React.JSX.Element {
-  const { certificates, representatives } = useDemoStore();
+  const { certificates, objectDocuments, representatives } = useDemoStore();
   const [activeSection, setActiveSection] = useState<ObjectWorkspaceSection>('aosr');
   const [settingsOpenRequest, setSettingsOpenRequest] = useState(0);
   const isAosrVisible = activeSection === 'aosr' || activeSection === 'settings';
   const metrics: ObjectWorkspaceMetrics = {
     aosrCount: demoAosrWorkspace.drafts.length,
     certificateCount: certificates.length,
-    objectDocumentCount: demoAosrWorkspace.objectDocumentLibrary.length,
+    objectDocumentCount: objectDocuments.length,
     representativeCount: representatives.length,
   };
 
@@ -172,17 +173,7 @@ export function ObjectWorkspacePage({
           />
         ) : null}
 
-        {activeSection === 'documents' ? (
-          <ObjectWorkspacePlaceholder
-            title="Документы объекта"
-            description="Исполнительные схемы, журналы, результаты испытаний и другие документы"
-            items={[
-              'Библиотека объектовых документов по типам',
-              'Привязка документов к актам без файлового менеджера',
-              'Подготовка связей для будущей генерации комплектов',
-            ]}
-          />
-        ) : null}
+        {activeSection === 'documents' ? <ObjectDocumentsPage /> : null}
 
         {activeSection === 'representatives' ? (
           <RepresentativesOrganizationsPage

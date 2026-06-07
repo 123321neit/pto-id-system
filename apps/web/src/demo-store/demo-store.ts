@@ -1,5 +1,11 @@
 import { createContext, useContext } from 'react';
 
+import {
+  demoAosrWorkspace,
+  type DemoObjectDocument,
+  type DemoObjectDocumentType,
+} from '../aosr-demo/demo-aosr-workspace.js';
+
 export type DemoCertificateStatus = 'Действует' | 'Истекает' | 'Требует проверки';
 
 export interface DemoCertificateMaterial {
@@ -64,11 +70,20 @@ export interface DemoRepresentativeInput {
   readonly roleLabel: string;
 }
 
+export interface DemoObjectDocumentInput {
+  readonly documentDate: string;
+  readonly reference: string;
+  readonly title: string;
+  readonly type: DemoObjectDocumentType;
+}
+
 export interface DemoStoreValue {
   readonly certificates: readonly DemoCertificate[];
+  readonly objectDocuments: readonly DemoObjectDocument[];
   readonly organizations: readonly DemoOrganization[];
   readonly representatives: readonly DemoRepresentative[];
   readonly addCertificate: (certificate: DemoCertificateInput) => void;
+  readonly addObjectDocument: (document: DemoObjectDocumentInput) => void;
   readonly addOrganization: (organization: DemoOrganizationInput) => void;
   readonly addRepresentative: (representative: DemoRepresentativeInput) => void;
 }
@@ -78,6 +93,9 @@ export const demoCertificateStatuses: readonly DemoCertificateStatus[] = [
   'Истекает',
   'Требует проверки',
 ];
+
+export const initialDemoObjectDocuments: readonly DemoObjectDocument[] =
+  demoAosrWorkspace.objectDocumentLibrary;
 
 export const initialDemoCertificates: readonly DemoCertificate[] = [
   {

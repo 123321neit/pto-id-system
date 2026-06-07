@@ -56,10 +56,10 @@ export interface DemoMaterialCertificate {
 export type DemoObjectDocumentType =
   | 'Исполнительная схема'
   | 'Исполнительный чертеж'
-  | 'ППР'
-  | 'Проектная документация'
+  | 'Протокол'
   | 'Журнал'
-  | 'Иной документ';
+  | 'Испытание'
+  | 'Другое';
 
 export interface DemoObjectDocument {
   readonly id: string;
@@ -98,10 +98,10 @@ export interface DemoActApplication {
 export const demoObjectDocumentTypes: readonly DemoObjectDocumentType[] = [
   'Исполнительная схема',
   'Исполнительный чертеж',
-  'ППР',
-  'Проектная документация',
+  'Протокол',
   'Журнал',
-  'Иной документ',
+  'Испытание',
+  'Другое',
 ];
 
 export type DemoAosrDraftField =
@@ -181,14 +181,14 @@ export const demoAosrWorkspace: DemoAosrWorkspace = {
       id: 'object-document-ppr-ventilation',
       reference: 'ППР-ОВ-2026',
       title: 'ППР на монтаж систем вентиляции и кондиционирования',
-      type: 'ППР',
+      type: 'Другое',
     },
     {
       documentDate: '2026-05-20',
       id: 'object-document-project-ov-set',
       reference: 'РД-ОВ-12',
       title: 'Рабочая документация раздела ОВ, листы 4 и 14',
-      type: 'Проектная документация',
+      type: 'Другое',
     },
     {
       documentDate: '2026-05-31',
@@ -198,11 +198,25 @@ export const demoAosrWorkspace: DemoAosrWorkspace = {
       type: 'Журнал',
     },
     {
+      documentDate: '2026-06-02',
+      id: 'object-document-protocol-duct-tightness',
+      reference: 'ПР-ОВ-07',
+      title: 'Протокол проверки герметичности воздуховодов',
+      type: 'Протокол',
+    },
+    {
+      documentDate: '2026-06-02',
+      id: 'object-document-test-airflow-balancing',
+      reference: 'ИСП-ОВ-03',
+      title: 'Отчет испытаний и регулировки расхода воздуха',
+      type: 'Испытание',
+    },
+    {
       documentDate: '2026-05-30',
       id: 'object-document-photo-vk-1',
       reference: 'ФФ-ОВ-11',
       title: 'Фотофиксация скрытых участков до закрытия',
-      type: 'Иной документ',
+      type: 'Другое',
     },
   ],
   drafts: [

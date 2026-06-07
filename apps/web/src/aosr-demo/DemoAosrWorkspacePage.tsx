@@ -71,7 +71,7 @@ export function DemoAosrWorkspacePage({
   onObjectSettingsClosed,
   settingsOpenRequest,
 }: DemoAosrWorkspacePageProps = {}): React.JSX.Element {
-  const { certificates, organizations, representatives } = useDemoStore();
+  const { certificates, objectDocuments, organizations, representatives } = useDemoStore();
   const globalOrganizations = organizations.map(toDemoGlobalOrganization);
   const globalRepresentatives = representatives.map(toDemoAosrRepresentative);
   const certificateLibrary = certificates.flatMap(toDemoMaterialCertificates);
@@ -120,19 +120,12 @@ export function DemoAosrWorkspacePage({
   const selectedDraft = getSelectedDraft(drafts, selectedDraftId);
   const selectedSignatories = getDraftRepresentatives(selectedDraft);
   const selectedMaterials = getDraftMaterialCertificates(selectedDraft, certificateLibrary);
-  const selectedObjectDocuments = getDraftObjectDocuments(
-    selectedDraft,
-    demoAosrWorkspace.objectDocumentLibrary,
-  );
-  const allApplications = getDraftApplications(
-    selectedDraft,
-    certificateLibrary,
-    demoAosrWorkspace.objectDocumentLibrary,
-  );
+  const selectedObjectDocuments = getDraftObjectDocuments(selectedDraft, objectDocuments);
+  const allApplications = getDraftApplications(selectedDraft, certificateLibrary, objectDocuments);
   const finalApplications = getIncludedDraftApplications(
     selectedDraft,
     certificateLibrary,
-    demoAosrWorkspace.objectDocumentLibrary,
+    objectDocuments,
   );
 
   const updateObjectDefaults = (field: DemoAosrObjectDefaultsField, value: string): void => {
@@ -410,7 +403,7 @@ export function DemoAosrWorkspacePage({
               manualRepresentativeForm={manualRepresentativeForm}
               materialSearch={materialSearch}
               objectDefaults={objectDefaults}
-              objectDocumentLibrary={demoAosrWorkspace.objectDocumentLibrary}
+              objectDocumentLibrary={objectDocuments}
               selectedDraft={selectedDraft}
               selectedMaterials={selectedMaterials}
               selectedObjectDocuments={selectedObjectDocuments}

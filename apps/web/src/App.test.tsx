@@ -82,11 +82,11 @@ describe('App shell mock navigation', () => {
     const metrics = screen.getByLabelText('Показатели открытого объекта');
     expect(within(metrics).getByLabelText('АОСР: 2')).toBeTruthy();
     expect(within(metrics).getByLabelText('Сертификаты: 4')).toBeTruthy();
-    expect(within(metrics).getByLabelText('Документы: 6')).toBeTruthy();
+    expect(within(metrics).getByLabelText('Документы: 8')).toBeTruthy();
     expect(within(metrics).getByLabelText('Представители: 6')).toBeTruthy();
   });
 
-  it('switches object workspace placeholder sections', async () => {
+  it('switches object workspace sections and renders the object documents page', async () => {
     const user = userEvent.setup();
 
     render(<App />);
@@ -105,11 +105,109 @@ describe('App shell mock navigation', () => {
       within(objectNavigation).getByRole('button', { name: 'Открыть документы объекта' }),
     );
     expect(screen.getByRole('heading', { name: 'Документы объекта' })).toBeTruthy();
-    expect(screen.getByText('Библиотека объектовых документов по типам')).toBeTruthy();
+    expect(
+      screen.getByText(
+        'Исполнительные схемы, исполнительные чертежи, протоколы, журналы и другие документы объекта.',
+      ),
+    ).toBeTruthy();
+    expect(screen.getByRole('columnheader', { name: 'Наименование' })).toBeTruthy();
+    expect(screen.getByRole('columnheader', { name: 'Тип документа' })).toBeTruthy();
+    expect(screen.getByRole('columnheader', { name: 'Номер' })).toBeTruthy();
+    expect(screen.getByRole('columnheader', { name: 'Дата' })).toBeTruthy();
+    expect(screen.getByRole('columnheader', { name: 'Используется в актах' })).toBeTruthy();
+    expect(
+      within(screen.getByRole('table')).getByText(
+        'Исполнительная схема скрытых участков вентиляции',
+      ),
+    ).toBeTruthy();
+    expect(screen.getAllByText('Используется в 1 актах').length).toBeGreaterThan(0);
 
     await user.click(within(objectNavigation).getByRole('button', { name: 'Открыть реестр ИД' }));
     expect(screen.getByRole('heading', { name: 'Реестр ИД' })).toBeTruthy();
     expect(screen.getByText('Автоматическая сборка строк из данных объекта')).toBeTruthy();
+  });
+
+  it('renders object document counts from the frontend mock data', async () => {
+    const user = userEvent.setup();
+
+    render(<App />);
+    await openObjectDocumentsPage(user);
+
+    const summary = screen.getByLabelText('Сводка документов объекта');
+    expect(within(summary).getByLabelText('Всего документов: 8')).toBeTruthy();
+    expect(within(summary).getByLabelText('Схемы: 1')).toBeTruthy();
+    expect(within(summary).getByLabelText('Чертежи: 1')).toBeTruthy();
+    expect(within(summary).getByLabelText('Протоколы: 1')).toBeTruthy();
+  });
+
+  it('filters object documents by mock document category', async () => {
+    const user = userEvent.setup();
+
+    render(<App />);
+    await openObjectDocumentsPage(user);
+
+    const table = screen.getByRole('table');
+
+    await user.click(screen.getByRole('button', { name: 'Протоколы' }));
+    expect(within(table).getByText('Протокол проверки герметичности воздуховодов')).toBeTruthy();
+    expect(
+      within(table).queryByText('Исполнительная схема скрытых участков вентиляции'),
+    ).toBeNull();
+
+    await user.click(screen.getByRole('button', { name: 'Журналы' }));
+    expect(within(table).getByText('Запись журнала входного контроля материалов')).toBeTruthy();
+    expect(within(table).queryByText('Протокол проверки герметичности воздуховодов')).toBeNull();
+  });
+
+  it('adds a mock object document in memory on the object documents page', async () => {
+    const user = userEvent.setup();
+
+    render(<App />);
+    await openObjectDocumentsPage(user);
+
+    await user.type(screen.getByLabelText('Наименование'), 'Протокол аэродинамических испытаний');
+    await user.selectOptions(screen.getByLabelText('Тип'), 'Протокол');
+    await user.type(screen.getByLabelText('Номер'), 'ПР-АИ-2026-09');
+    await user.type(screen.getByLabelText('Дата'), '2026-06-05');
+    await user.click(screen.getByRole('button', { name: 'Добавить документ' }));
+
+    const table = screen.getByRole('table');
+    const documentRow = within(table)
+      .getByText('Протокол аэродинамических испытаний')
+      .closest('tr');
+
+    if (documentRow === null) {
+      throw new Error('В тесте ожидается строка нового документа объекта.');
+    }
+
+    expect(within(documentRow as HTMLElement).getByText('ПР-АИ-2026-09')).toBeTruthy();
+    expect(within(documentRow as HTMLElement).getByText('Используется в 0 актах')).toBeTruthy();
+
+    const summary = screen.getByLabelText('Сводка документов объекта');
+    expect(within(summary).getByLabelText('Всего документов: 9')).toBeTruthy();
+    expect(within(summary).getByLabelText('Протоколы: 2')).toBeTruthy();
+  });
+
+  it('shows newly added object documents in the AOSR point 4 drawer', async () => {
+    const user = userEvent.setup();
+
+    render(<App />);
+    await openObjectDocumentsPage(user);
+
+    await user.type(screen.getByLabelText('Наименование'), 'Исполнительная схема ВК-12');
+    await user.selectOptions(screen.getByLabelText('Тип'), 'Исполнительная схема');
+    await user.type(screen.getByLabelText('Номер'), 'ИС-ВК-12');
+    await user.type(screen.getByLabelText('Дата'), '2026-06-06');
+    await user.click(screen.getByRole('button', { name: 'Добавить документ' }));
+
+    const objectNavigation = screen.getByRole('navigation', { name: 'Разделы объекта' });
+    await user.click(within(objectNavigation).getByRole('button', { name: 'АОСР' }));
+    await user.click(screen.getByRole('button', { name: 'Добавить документ' }));
+    await user.type(screen.getByLabelText('Найти документ объекта'), 'ВК-12');
+
+    const documentLibrary = screen.getByRole('list', { name: 'Библиотека документов объекта' });
+    expect(within(documentLibrary).getByText('Исполнительная схема ВК-12')).toBeTruthy();
+    expect(within(documentLibrary).getByText('Исполнительная схема / ИС-ВК-12')).toBeTruthy();
   });
 
   it('returns from placeholder sections to AOSR inside acts', async () => {
@@ -655,6 +753,16 @@ async function openCertificateLibraryPage(user: ReturnType<typeof userEvent.setu
   const navigation = screen.getByRole('navigation', { name: 'Основная навигация' });
 
   await user.click(within(navigation).getByRole('button', { name: /Библиотека сертификатов/u }));
+}
+
+async function openObjectDocumentsPage(user: ReturnType<typeof userEvent.setup>): Promise<void> {
+  await user.click(getFirstOpenObjectButton());
+
+  const objectNavigation = screen.getByRole('navigation', { name: 'Разделы объекта' });
+
+  await user.click(
+    within(objectNavigation).getByRole('button', { name: 'Открыть документы объекта' }),
+  );
 }
 
 async function openDocumentPreview(user: ReturnType<typeof userEvent.setup>): Promise<void> {

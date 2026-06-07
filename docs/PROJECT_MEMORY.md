@@ -6,9 +6,9 @@
 
 # MASTER CONTEXT / SOURCE OF TRUTH
 
-# VERSION: 2026-06-06-AOSR-DOCUMENT-PREVIEW-PAGE-VISUALIZATION
+# VERSION: 2026-06-07-OBJECT-DOCUMENT-WORKSPACE
 
-# STATUS: FIRST ALLOWED INFRASTRUCTURE BOOTSTRAP SCAFFOLD; CANONICAL ADR BASELINE ACCEPTED; BACKEND MODULE ARCHITECTURE SKELETON INTRODUCED; FIRST TECHNICAL FRONTEND-BACKEND STATUS SLICE INTRODUCED; DATABASE FOUNDATION TECHNICAL SLICE INTRODUCED; OBJECT STORAGE FOUNDATION TECHNICAL SLICE INTRODUCED; AUTH SHARING IMPLEMENTATION PLAN ADDED; USER IDENTITY SKELETON INTRODUCED; GLOBAL SYSTEM ADMIN MARKER INTRODUCED; OWNED WORKSPACE BASELINE INTRODUCED; FIRST MOCK AOSR DEMO UI SLICE INTRODUCED; MOCK AOSR CONFIGURABLE OBJECT HEADER ORGANIZATIONS AND REPRESENTATIVE LIBRARY INTRODUCED; MOCK AOSR DEMO UX/PREVIEW REFINED; MOCK APP SHELL AND OBJECT DASHBOARD INTRODUCED; FRONTEND-ONLY MOCK REPRESENTATIVES/ORGANIZATIONS MANAGEMENT PAGE INTRODUCED; FRONTEND-ONLY MOCK CERTIFICATE LIBRARY PAGE INTRODUCED; STAGE 5 MOCK AOSR WORKSPACE UX STABILIZED; AOSR EDITOR UX CLEANUP INTRODUCED; AOSR WORKSPACE DRAWER UX INTRODUCED; FRONTEND-ONLY MOCK OBJECT DOCUMENT LIBRARY INTRODUCED; AOSR WORKSPACE APPLICATIONS UX CLEANUP INTRODUCED; FRONTEND-ONLY MOCK OBJECT COMPLIANCE DEFAULTS AND ACT OVERRIDES INTRODUCED; FRONTEND-ONLY MOCK OBJECT WORKSPACE VISUAL PASS INTRODUCED; FRONTEND-ONLY MOCK OBJECT WORKSPACE SHELL INTRODUCED; AOSR DOCUMENT PREVIEW DRAWER UX INTRODUCED; AOSR DOCUMENT PREVIEW PAGE VISUALIZATION REFINED
+# STATUS: FIRST ALLOWED INFRASTRUCTURE BOOTSTRAP SCAFFOLD; CANONICAL ADR BASELINE ACCEPTED; BACKEND MODULE ARCHITECTURE SKELETON INTRODUCED; FIRST TECHNICAL FRONTEND-BACKEND STATUS SLICE INTRODUCED; DATABASE FOUNDATION TECHNICAL SLICE INTRODUCED; OBJECT STORAGE FOUNDATION TECHNICAL SLICE INTRODUCED; AUTH SHARING IMPLEMENTATION PLAN ADDED; USER IDENTITY SKELETON INTRODUCED; GLOBAL SYSTEM ADMIN MARKER INTRODUCED; OWNED WORKSPACE BASELINE INTRODUCED; FIRST MOCK AOSR DEMO UI SLICE INTRODUCED; MOCK AOSR CONFIGURABLE OBJECT HEADER ORGANIZATIONS AND REPRESENTATIVE LIBRARY INTRODUCED; MOCK AOSR DEMO UX/PREVIEW REFINED; MOCK APP SHELL AND OBJECT DASHBOARD INTRODUCED; FRONTEND-ONLY MOCK REPRESENTATIVES/ORGANIZATIONS MANAGEMENT PAGE INTRODUCED; FRONTEND-ONLY MOCK CERTIFICATE LIBRARY PAGE INTRODUCED; STAGE 5 MOCK AOSR WORKSPACE UX STABILIZED; AOSR EDITOR UX CLEANUP INTRODUCED; AOSR WORKSPACE DRAWER UX INTRODUCED; FRONTEND-ONLY MOCK OBJECT DOCUMENT LIBRARY INTRODUCED; AOSR WORKSPACE APPLICATIONS UX CLEANUP INTRODUCED; FRONTEND-ONLY MOCK OBJECT COMPLIANCE DEFAULTS AND ACT OVERRIDES INTRODUCED; FRONTEND-ONLY MOCK OBJECT WORKSPACE VISUAL PASS INTRODUCED; FRONTEND-ONLY MOCK OBJECT WORKSPACE SHELL INTRODUCED; AOSR DOCUMENT PREVIEW DRAWER UX INTRODUCED; AOSR DOCUMENT PREVIEW PAGE VISUALIZATION REFINED; FRONTEND-ONLY OBJECT DOCUMENT WORKSPACE INTRODUCED
 
 # LANGUAGE: RU
 
@@ -31,7 +31,7 @@
 Текущая стадия проекта:
 
 ```text
-FIRST ALLOWED INFRASTRUCTURE BOOTSTRAP SCAFFOLD; CANONICAL ADR BASELINE ACCEPTED; BACKEND MODULE ARCHITECTURE SKELETON INTRODUCED; FIRST TECHNICAL FRONTEND-BACKEND STATUS SLICE INTRODUCED; DATABASE FOUNDATION TECHNICAL SLICE INTRODUCED; OBJECT STORAGE FOUNDATION TECHNICAL SLICE INTRODUCED; AUTH SHARING IMPLEMENTATION PLAN ADDED; USER IDENTITY SKELETON INTRODUCED; GLOBAL SYSTEM ADMIN MARKER INTRODUCED; OWNED WORKSPACE BASELINE INTRODUCED; FIRST MOCK AOSR DEMO UI SLICE INTRODUCED; MOCK AOSR CONFIGURABLE OBJECT HEADER ORGANIZATIONS AND REPRESENTATIVE LIBRARY INTRODUCED; MOCK AOSR DEMO UX/PREVIEW REFINED; MOCK APP SHELL AND OBJECT DASHBOARD INTRODUCED; FRONTEND-ONLY MOCK REPRESENTATIVES/ORGANIZATIONS MANAGEMENT PAGE INTRODUCED; FRONTEND-ONLY MOCK CERTIFICATE LIBRARY PAGE INTRODUCED; STAGE 5 MOCK AOSR WORKSPACE UX STABILIZED; AOSR EDITOR UX CLEANUP INTRODUCED; AOSR WORKSPACE DRAWER UX INTRODUCED; FRONTEND-ONLY MOCK OBJECT DOCUMENT LIBRARY INTRODUCED; AOSR WORKSPACE APPLICATIONS UX CLEANUP INTRODUCED; FRONTEND-ONLY MOCK OBJECT COMPLIANCE DEFAULTS AND ACT OVERRIDES INTRODUCED; FRONTEND-ONLY MOCK OBJECT WORKSPACE VISUAL PASS INTRODUCED; FRONTEND-ONLY MOCK OBJECT WORKSPACE SHELL INTRODUCED; AOSR DOCUMENT PREVIEW DRAWER UX INTRODUCED; AOSR DOCUMENT PREVIEW PAGE VISUALIZATION REFINED
+FIRST ALLOWED INFRASTRUCTURE BOOTSTRAP SCAFFOLD; CANONICAL ADR BASELINE ACCEPTED; BACKEND MODULE ARCHITECTURE SKELETON INTRODUCED; FIRST TECHNICAL FRONTEND-BACKEND STATUS SLICE INTRODUCED; DATABASE FOUNDATION TECHNICAL SLICE INTRODUCED; OBJECT STORAGE FOUNDATION TECHNICAL SLICE INTRODUCED; AUTH SHARING IMPLEMENTATION PLAN ADDED; USER IDENTITY SKELETON INTRODUCED; GLOBAL SYSTEM ADMIN MARKER INTRODUCED; OWNED WORKSPACE BASELINE INTRODUCED; FIRST MOCK AOSR DEMO UI SLICE INTRODUCED; MOCK AOSR CONFIGURABLE OBJECT HEADER ORGANIZATIONS AND REPRESENTATIVE LIBRARY INTRODUCED; MOCK AOSR DEMO UX/PREVIEW REFINED; MOCK APP SHELL AND OBJECT DASHBOARD INTRODUCED; FRONTEND-ONLY MOCK REPRESENTATIVES/ORGANIZATIONS MANAGEMENT PAGE INTRODUCED; FRONTEND-ONLY MOCK CERTIFICATE LIBRARY PAGE INTRODUCED; STAGE 5 MOCK AOSR WORKSPACE UX STABILIZED; AOSR EDITOR UX CLEANUP INTRODUCED; AOSR WORKSPACE DRAWER UX INTRODUCED; FRONTEND-ONLY MOCK OBJECT DOCUMENT LIBRARY INTRODUCED; AOSR WORKSPACE APPLICATIONS UX CLEANUP INTRODUCED; FRONTEND-ONLY MOCK OBJECT COMPLIANCE DEFAULTS AND ACT OVERRIDES INTRODUCED; FRONTEND-ONLY MOCK OBJECT WORKSPACE VISUAL PASS INTRODUCED; FRONTEND-ONLY MOCK OBJECT WORKSPACE SHELL INTRODUCED; AOSR DOCUMENT PREVIEW DRAWER UX INTRODUCED; AOSR DOCUMENT PREVIEW PAGE VISUALIZATION REFINED; FRONTEND-ONLY OBJECT DOCUMENT WORKSPACE INTRODUCED
 ```
 
 Проект принял первый явно разрешённый infrastructure/bootstrap scaffold,
@@ -171,8 +171,8 @@ to the real AOSR wording:
 Stage: frontend-only mock object document library and user-controlled
 applications. The mock AOSR workspace now has an in-memory object document
 library separate from the certificate library, with categories:
-`Исполнительная схема`, `Исполнительный чертеж`, `ППР`,
-`Проектная документация`, `Журнал` and `Иной документ`. Point 4 now uses
+`Исполнительная схема`, `Исполнительный чертеж`, `Протокол`, `Журнал`,
+`Испытание` and `Другое`. Point 4 now uses
 selected object documents opened through a drawer titled `Документы объекта`
 with search and type filtering. Applications are derived from selected material
 certificates plus selected object documents, and every derived application has a
@@ -257,6 +257,22 @@ light grey preview background. The drawer header now carries compact act
 number, act date and included-applications context while keeping the close
 button visible. This is still mock HTML preview only, not real PDF/DOCX
 generation and not a production pagination engine.
+
+Stage: frontend-only object document workspace. The object workspace
+`Документы объекта` section is no longer a placeholder. It now shows an
+in-memory object document registry with the header `Документы объекта`, the
+description for executive schemes, executive drawings, protocols, journals and
+other object documents, a table with name/type/number/date/AOSR usage columns,
+simple filters `Все`, `Схемы`, `Чертежи`, `Протоколы`, `Журналы`, summary
+counts for total documents, schemes, drawings and protocols, and a local
+`Добавить документ` form for name/type/number/date metadata. AOSR usage labels
+are derived from the current mock AOSR draft selections where available. The
+object documents page and the AOSR point 4 document drawer use the same
+frontend demo store, so newly added object documents can be found from the AOSR
+document selection drawer without reload. This is a UX/domain foundation for the
+future ID registry and package flows only: no backend, persistence, uploads,
+file storage, Prisma/schema/migrations, API routes, auth/session, OCR/AI,
+DOCX/PDF generation or production business logic was introduced.
 
 ---
 
@@ -3873,3 +3889,46 @@ production domain/API/persistence work remain separate explicit tasks.
 - no share codes/grants;
 - no production representative, organization, certificate or AOSR business
   logic.
+
+### 2026-06-07 — Frontend-only object document workspace introduced
+
+- Статус: `Frontend mock object document workspace only`
+- Описание: replaced the object documents placeholder with a real in-memory
+  workspace for object documentation metadata.
+
+Добавлено/уточнено:
+
+- opened object section `Документы объекта` now has a professional mock
+  workspace instead of a placeholder;
+- page header is `Документы объекта` with the description
+  `Исполнительные схемы, исполнительные чертежи, протоколы, журналы и другие документы объекта.`;
+- object documents render as a table with columns `Наименование`,
+  `Тип документа`, `Номер`, `Дата` and `Используется в актах`;
+- document types now cover `Исполнительная схема`, `Исполнительный чертеж`,
+  `Протокол`, `Журнал`, `Испытание` and `Другое`;
+- frontend-only filters `Все`, `Схемы`, `Чертежи`, `Протоколы`, `Журналы`
+  work in memory;
+- summary counts for total documents, schemes, drawings and protocols are
+  derived from the current frontend mock object-document data;
+- local in-memory form `Добавить документ` adds name/type/number/date metadata
+  to the current demo state;
+- `Используется в X актах` labels are derived from current mock AOSR draft
+  document selections where possible;
+- the object documents workspace and the AOSR point 4 document drawer now share
+  the same frontend demo store, so newly added object documents can be selected
+  from AOSR without reload;
+- focused frontend tests cover page rendering, filters, creation, counts and
+  AOSR drawer continuity.
+
+Что не было введено:
+
+- no backend routes/controllers;
+- no Prisma/schema/migrations;
+- no persistence;
+- no uploads;
+- no document storage or file metadata;
+- no OCR or AI extraction;
+- no DOCX/PDF generation;
+- no auth/session/login/register;
+- no share codes/grants;
+- no production object-document, AOSR, registry or package business logic.

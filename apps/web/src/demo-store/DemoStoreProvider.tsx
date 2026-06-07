@@ -3,15 +3,18 @@ import { useState, type ReactNode } from 'react';
 import {
   DemoStoreContext,
   initialDemoCertificates,
+  initialDemoObjectDocuments,
   initialDemoOrganizations,
   initialDemoRepresentatives,
   type DemoCertificate,
   type DemoCertificateInput,
+  type DemoObjectDocumentInput,
   type DemoOrganization,
   type DemoOrganizationInput,
   type DemoRepresentative,
   type DemoRepresentativeInput,
 } from './demo-store.js';
+import type { DemoObjectDocument } from '../aosr-demo/demo-aosr-workspace.js';
 
 interface DemoStoreProviderProps {
   readonly children: ReactNode;
@@ -20,12 +23,16 @@ interface DemoStoreProviderProps {
 export function DemoStoreProvider({ children }: DemoStoreProviderProps): React.JSX.Element {
   const [certificates, setCertificates] =
     useState<readonly DemoCertificate[]>(initialDemoCertificates);
+  const [objectDocuments, setObjectDocuments] = useState<readonly DemoObjectDocument[]>(
+    initialDemoObjectDocuments,
+  );
   const [organizations, setOrganizations] =
     useState<readonly DemoOrganization[]>(initialDemoOrganizations);
   const [representatives, setRepresentatives] = useState<readonly DemoRepresentative[]>(
     initialDemoRepresentatives,
   );
   const [createdCertificateCount, setCreatedCertificateCount] = useState(1);
+  const [createdObjectDocumentCount, setCreatedObjectDocumentCount] = useState(1);
   const [createdOrganizationCount, setCreatedOrganizationCount] = useState(1);
   const [createdRepresentativeCount, setCreatedRepresentativeCount] = useState(1);
 
@@ -50,6 +57,19 @@ export function DemoStoreProvider({ children }: DemoStoreProviderProps): React.J
 
     setCertificates((currentCertificates) => [certificate, ...currentCertificates]);
     setCreatedCertificateCount((currentCount) => currentCount + 1);
+  };
+
+  const addObjectDocument = (input: DemoObjectDocumentInput): void => {
+    const document: DemoObjectDocument = {
+      documentDate: input.documentDate.trim(),
+      id: `object-document-created-${String(createdObjectDocumentCount)}`,
+      reference: input.reference.trim(),
+      title: input.title.trim(),
+      type: input.type,
+    };
+
+    setObjectDocuments((currentDocuments) => [document, ...currentDocuments]);
+    setCreatedObjectDocumentCount((currentCount) => currentCount + 1);
   };
 
   const addOrganization = (input: DemoOrganizationInput): void => {
@@ -85,9 +105,11 @@ export function DemoStoreProvider({ children }: DemoStoreProviderProps): React.J
     <DemoStoreContext.Provider
       value={{
         addCertificate,
+        addObjectDocument,
         addOrganization,
         addRepresentative,
         certificates,
+        objectDocuments,
         organizations,
         representatives,
       }}

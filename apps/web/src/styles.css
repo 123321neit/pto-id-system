@@ -394,6 +394,197 @@ button {
   font-weight: 900;
 }
 
+.object-documents-workspace {
+  display: grid;
+  gap: 16px;
+}
+
+.object-documents-hero,
+.object-documents-panel {
+  border: 1px solid #d8e3ee;
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: 0 18px 46px rgb(21 37 56 / 6%);
+}
+
+.object-documents-hero {
+  padding: 20px;
+}
+
+.object-documents-hero div {
+  display: grid;
+  gap: 8px;
+  max-width: 860px;
+}
+
+.object-documents-hero h2 {
+  font-size: 1.5rem;
+  line-height: 1.2;
+}
+
+.object-documents-hero p:not(.section-kicker) {
+  color: #516064;
+  font-size: 0.94rem;
+  line-height: 1.55;
+}
+
+.object-documents-summary {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.object-documents-summary div {
+  display: grid;
+  gap: 10px;
+  min-height: 96px;
+  border: 1px solid #dbe4ec;
+  border-radius: 8px;
+  background: #ffffff;
+  padding: 14px;
+  box-shadow: 0 12px 26px rgb(15 23 42 / 4%);
+}
+
+.object-documents-summary dt {
+  color: #687680;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.object-documents-summary dd {
+  margin: 0;
+  color: #0f172a;
+  font-size: 1.9rem;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.object-documents-panel {
+  display: grid;
+  gap: 16px;
+  padding: 18px;
+}
+
+.object-documents-panel__header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 16px;
+  align-items: start;
+}
+
+.object-documents-panel__header h3 {
+  color: #172033;
+  font-size: 1.08rem;
+  line-height: 1.25;
+}
+
+.object-documents-filters {
+  display: inline-grid;
+  grid-auto-flow: column;
+  gap: 1px;
+  max-width: 100%;
+  border: 1px solid #cbd7df;
+  border-radius: 8px;
+  background: #cbd7df;
+  overflow: hidden;
+}
+
+.object-documents-filters button {
+  min-width: 86px;
+  border: 0;
+  background: #ffffff;
+  padding: 9px 12px;
+  color: #2c3b40;
+  font-size: 0.78rem;
+  font-weight: 850;
+  line-height: 1.2;
+}
+
+.object-documents-filters button[aria-pressed='true'] {
+  background: #2563eb;
+  color: #ffffff;
+}
+
+.object-documents-table-wrap {
+  min-width: 0;
+  overflow-x: auto;
+  border: 1px solid #dbe4ed;
+  border-radius: 8px;
+}
+
+.object-documents-table {
+  width: 100%;
+  min-width: 820px;
+  border-collapse: collapse;
+  background: #ffffff;
+}
+
+.object-documents-table th,
+.object-documents-table td {
+  border-bottom: 1px solid #e3ebf2;
+  padding: 12px 13px;
+  color: #29373d;
+  font-size: 0.86rem;
+  line-height: 1.42;
+  text-align: left;
+  vertical-align: top;
+}
+
+.object-documents-table th {
+  background: #f6f9fc;
+  color: #607078;
+  font-size: 0.72rem;
+  font-weight: 850;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.object-documents-table tr:last-child td {
+  border-bottom: 0;
+}
+
+.object-documents-table td strong {
+  color: #172124;
+  font-weight: 850;
+}
+
+.object-document-form {
+  display: grid;
+  grid-template-columns:
+    minmax(220px, 1fr) minmax(180px, 0.32fr) minmax(150px, 0.22fr) minmax(150px, 0.2fr)
+    auto;
+  gap: 12px;
+  align-items: end;
+  border-left: 3px solid #2563eb;
+  background: #f8fbff;
+  padding: 14px;
+}
+
+.object-document-form label {
+  display: grid;
+  gap: 7px;
+  color: #48575c;
+  font-size: 0.84rem;
+  font-weight: 750;
+}
+
+.object-document-form input,
+.object-document-form select {
+  width: 100%;
+  border: 1px solid #becbd4;
+  border-radius: 6px;
+  background: #ffffff;
+  padding: 10px 11px;
+  color: #172124;
+  line-height: 1.4;
+}
+
+.object-document-form button {
+  min-height: 42px;
+}
+
 .dashboard-page {
   min-width: 0;
   padding: 32px;
@@ -2310,6 +2501,8 @@ h3 {
 .certificate-picker-drawer select:focus,
 .certificate-form input:focus,
 .certificate-form select:focus,
+.object-document-form input:focus,
+.object-document-form select:focus,
 .status-filter select:focus,
 .act-form-grid input:focus,
 .act-form-grid textarea:focus,
@@ -2317,6 +2510,7 @@ h3 {
 .compact-toggle:focus-visible,
 .secondary-action:focus-visible,
 .action-button:focus-visible,
+.object-documents-filters button:focus-visible,
 .document-preview-drawer button:focus-visible,
 .signatory-order-item__actions button:focus-visible,
 .library-row button:focus-visible,
@@ -2689,6 +2883,14 @@ h3 {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
+  .object-documents-summary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .object-document-form {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .workflow-step:not(:last-child)::after {
     display: none;
   }
@@ -2715,7 +2917,10 @@ h3 {
 
   .object-workspace-nav__sections,
   .object-workspace-metrics,
-  .object-placeholder {
+  .object-placeholder,
+  .object-documents-summary,
+  .object-documents-panel__header,
+  .object-document-form {
     grid-template-columns: 1fr;
   }
 
@@ -2753,6 +2958,15 @@ h3 {
 
   .status-filter {
     min-width: 0;
+  }
+
+  .object-documents-filters {
+    grid-auto-flow: row;
+  }
+
+  .object-documents-filters button {
+    min-width: 0;
+    text-align: left;
   }
 
   .management-card__header {
