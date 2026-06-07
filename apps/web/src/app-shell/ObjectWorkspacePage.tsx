@@ -5,6 +5,7 @@ import { demoAosrWorkspace } from '../aosr-demo/demo-aosr-workspace.js';
 import { useDemoStore } from '../demo-store/demo-store.js';
 import { ObjectCertificatesPage } from './ObjectCertificatesPage.js';
 import { ObjectDocumentsPage } from './ObjectDocumentsPage.js';
+import { ObjectRegistryPage } from './ObjectRegistryPage.js';
 import { RepresentativesOrganizationsPage } from './RepresentativesOrganizationsPage.js';
 import type { MockObjectCard } from './mock-dashboard.js';
 
@@ -19,12 +20,6 @@ type ObjectWorkspaceSection =
 interface ObjectWorkspacePageProps {
   readonly object: MockObjectCard;
   readonly onBackToObjects: () => void;
-}
-
-interface ObjectWorkspacePlaceholderProps {
-  readonly description: string;
-  readonly items: readonly string[];
-  readonly title: string;
 }
 
 interface ObjectWorkspaceMetrics {
@@ -174,17 +169,7 @@ export function ObjectWorkspacePage({
           />
         ) : null}
 
-        {activeSection === 'registry' ? (
-          <ObjectWorkspacePlaceholder
-            title="Реестр ИД"
-            description="Сводный перечень исполнительной документации объекта"
-            items={[
-              'Автоматическая сборка строк из данных объекта',
-              'Будущие presentation overrides без подмены источника',
-              'Основа для выдачи реестра и комплекта ИД',
-            ]}
-          />
-        ) : null}
+        {activeSection === 'registry' ? <ObjectRegistryPage /> : null}
       </section>
     </main>
   );
@@ -235,31 +220,6 @@ function MetricItem({ label, value }: MetricItemProps): React.JSX.Element {
       <dt>{label}</dt>
       <dd>{value}</dd>
     </div>
-  );
-}
-
-function ObjectWorkspacePlaceholder({
-  description,
-  items,
-  title,
-}: ObjectWorkspacePlaceholderProps): React.JSX.Element {
-  return (
-    <section className="object-placeholder" aria-labelledby="object-placeholder-title">
-      <div className="object-placeholder__intro">
-        <p className="section-kicker">Будущий раздел объекта</p>
-        <h2 id="object-placeholder-title">{title}</h2>
-        <strong>Раздел находится в разработке</strong>
-        <p>{description}</p>
-      </div>
-      <ul className="object-placeholder__list" aria-label={`Будущие возможности: ${title}`}>
-        {items.map((item) => (
-          <li key={item}>
-            <span aria-hidden="true">✓</span>
-            <span>{item}</span>
-          </li>
-        ))}
-      </ul>
-    </section>
   );
 }
 

@@ -135,8 +135,96 @@ describe('App shell mock navigation', () => {
     expect(screen.getAllByText('Используется в 1 актах').length).toBeGreaterThan(0);
 
     await user.click(within(objectNavigation).getByRole('button', { name: 'Открыть реестр ИД' }));
-    expect(screen.getByRole('heading', { name: 'Реестр ИД' })).toBeTruthy();
-    expect(screen.getByText('Автоматическая сборка строк из данных объекта')).toBeTruthy();
+    expect(
+      screen.getByRole('heading', { name: 'Реестр исполнительной документации' }),
+    ).toBeTruthy();
+    expect(
+      screen.getByText('Сводный перечень документов исполнительной документации объекта.'),
+    ).toBeTruthy();
+  });
+
+  it('renders the read-only registry page with derived rows and summary counts', async () => {
+    const user = userEvent.setup();
+
+    render(<App />);
+    await openObjectRegistryPage(user);
+
+    expect(
+      screen.getByRole('heading', { name: 'Реестр исполнительной документации' }),
+    ).toBeTruthy();
+    expect(
+      screen.getByText('Сводный перечень документов исполнительной документации объекта.'),
+    ).toBeTruthy();
+
+    const summary = screen.getByLabelText('Сводка реестра ИД');
+    expect(within(summary).getByLabelText('Всего документов: 14')).toBeTruthy();
+    expect(within(summary).getByLabelText('АОСР: 2')).toBeTruthy();
+    expect(within(summary).getByLabelText('Документы объекта: 8')).toBeTruthy();
+    expect(within(summary).getByLabelText('Сертификаты: 4')).toBeTruthy();
+
+    const table = screen.getByRole('table');
+    expect(screen.getByRole('columnheader', { name: 'Раздел' })).toBeTruthy();
+    expect(screen.getByRole('columnheader', { name: 'Наименование' })).toBeTruthy();
+    expect(screen.getByRole('columnheader', { name: 'Номер' })).toBeTruthy();
+    expect(screen.getByRole('columnheader', { name: 'Дата' })).toBeTruthy();
+    expect(screen.getByRole('columnheader', { name: 'Статус' })).toBeTruthy();
+    expect(within(table).getByText('АОСР-001')).toBeTruthy();
+    expect(
+      within(table).getByText(
+        /Акт освидетельствования скрытых работ\. Монтаж скрытых участков воздуховодов/u,
+      ),
+    ).toBeTruthy();
+    expect(
+      within(table).getByText('Исполнительная схема скрытых участков вентиляции'),
+    ).toBeTruthy();
+    expect(
+      within(table).getByText(/Сертификат соответствия\. Воздуховоды оцинкованные 0,7 мм/u),
+    ).toBeTruthy();
+    expect(
+      screen.getByText(/В следующих версиях реестр будет автоматически включать/u),
+    ).toBeTruthy();
+  });
+
+  it('filters registry rows by section', async () => {
+    const user = userEvent.setup();
+
+    render(<App />);
+    await openObjectRegistryPage(user);
+
+    const filters = screen.getByLabelText('Фильтры реестра ИД');
+    const table = screen.getByRole('table');
+
+    await user.click(within(filters).getByRole('button', { name: 'АОСР' }));
+    expect(within(table).getByText('АОСР-001')).toBeTruthy();
+    expect(
+      within(table).queryByText('Исполнительная схема скрытых участков вентиляции'),
+    ).toBeNull();
+    expect(within(table).queryByText(/Воздуховоды оцинкованные/u)).toBeNull();
+
+    await user.click(within(filters).getByRole('button', { name: 'Документы объекта' }));
+    expect(
+      within(table).getByText('Исполнительная схема скрытых участков вентиляции'),
+    ).toBeTruthy();
+    expect(within(table).queryByText('АОСР-001')).toBeNull();
+    expect(within(table).queryByText(/Воздуховоды оцинкованные/u)).toBeNull();
+
+    await user.click(within(filters).getByRole('button', { name: 'Сертификаты' }));
+    expect(
+      within(table).getByText(/Сертификат соответствия\. Воздуховоды оцинкованные 0,7 мм/u),
+    ).toBeTruthy();
+    expect(within(table).queryByText('АОСР-001')).toBeNull();
+    expect(
+      within(table).queryByText('Исполнительная схема скрытых участков вентиляции'),
+    ).toBeNull();
+
+    await user.click(within(filters).getByRole('button', { name: 'Все' }));
+    expect(within(table).getByText('АОСР-001')).toBeTruthy();
+    expect(
+      within(table).getByText('Исполнительная схема скрытых участков вентиляции'),
+    ).toBeTruthy();
+    expect(
+      within(table).getByText(/Сертификат соответствия\. Воздуховоды оцинкованные 0,7 мм/u),
+    ).toBeTruthy();
   });
 
   it('renders object certificate counts from the shared frontend mock data', async () => {
@@ -328,7 +416,7 @@ describe('App shell mock navigation', () => {
     expect(within(documentLibrary).getByText('Исполнительная схема / ИС-ВК-12')).toBeTruthy();
   });
 
-  it('returns from placeholder sections to AOSR inside acts', async () => {
+  it('navigates from AOSR to the registry and back to AOSR inside acts', async () => {
     const user = userEvent.setup();
 
     render(<App />);
@@ -337,7 +425,10 @@ describe('App shell mock navigation', () => {
     const objectNavigation = screen.getByRole('navigation', { name: 'Разделы объекта' });
 
     await user.click(within(objectNavigation).getByRole('button', { name: 'Открыть реестр ИД' }));
-    expect(screen.getByRole('heading', { name: 'Реестр ИД' })).toBeTruthy();
+    expect(
+      screen.getByRole('heading', { name: 'Реестр исполнительной документации' }),
+    ).toBeTruthy();
+    expect(screen.getByRole('table')).toBeTruthy();
 
     await user.click(within(objectNavigation).getByRole('button', { name: 'АОСР' }));
 
@@ -891,6 +982,14 @@ async function openObjectDocumentsPage(user: ReturnType<typeof userEvent.setup>)
   await user.click(
     within(objectNavigation).getByRole('button', { name: 'Открыть документы объекта' }),
   );
+}
+
+async function openObjectRegistryPage(user: ReturnType<typeof userEvent.setup>): Promise<void> {
+  await user.click(getFirstOpenObjectButton());
+
+  const objectNavigation = screen.getByRole('navigation', { name: 'Разделы объекта' });
+
+  await user.click(within(objectNavigation).getByRole('button', { name: 'Открыть реестр ИД' }));
 }
 
 async function openDocumentPreview(user: ReturnType<typeof userEvent.setup>): Promise<void> {

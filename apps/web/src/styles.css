@@ -599,6 +599,18 @@ button {
     minmax(150px, 0.22fr) auto;
 }
 
+.object-registry-note {
+  border: 1px solid #c7d4dc;
+  border-left: 3px solid #0f766e;
+  border-radius: 8px;
+  background: #f0fdfa;
+  padding: 12px 14px;
+  color: #2f5f5a;
+  font-size: 0.84rem;
+  font-weight: 750;
+  line-height: 1.5;
+}
+
 .dashboard-page {
   min-width: 0;
   padding: 32px;
