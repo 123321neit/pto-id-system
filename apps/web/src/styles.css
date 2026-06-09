@@ -611,6 +611,36 @@ button {
   line-height: 1.5;
 }
 
+.final-package-groups {
+  display: grid;
+  gap: 14px;
+}
+
+.final-package-table {
+  min-width: 760px;
+}
+
+.final-package-download {
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  border-left: 3px solid #2563eb;
+  background: #f8fbff;
+}
+
+.final-package-download h3 {
+  color: #172033;
+  font-size: 1.08rem;
+  line-height: 1.25;
+}
+
+.final-package-download p:not(.section-kicker) {
+  max-width: 720px;
+  color: #516064;
+  font-size: 0.88rem;
+  font-weight: 700;
+  line-height: 1.5;
+}
+
 .dashboard-page {
   min-width: 0;
   padding: 32px;
@@ -2946,6 +2976,7 @@ h3 {
   .object-placeholder,
   .object-documents-summary,
   .object-documents-panel__header,
+  .final-package-download,
   .object-document-form {
     grid-template-columns: 1fr;
   }

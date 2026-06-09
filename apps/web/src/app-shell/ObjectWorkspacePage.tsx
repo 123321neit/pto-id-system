@@ -5,6 +5,7 @@ import { demoAosrWorkspace } from '../aosr-demo/demo-aosr-workspace.js';
 import { useDemoStore } from '../demo-store/demo-store.js';
 import { ObjectCertificatesPage } from './ObjectCertificatesPage.js';
 import { ObjectDocumentsPage } from './ObjectDocumentsPage.js';
+import { ObjectFinalPackagePage } from './ObjectFinalPackagePage.js';
 import { ObjectRegistryPage } from './ObjectRegistryPage.js';
 import { RepresentativesOrganizationsPage } from './RepresentativesOrganizationsPage.js';
 import type { MockObjectCard } from './mock-dashboard.js';
@@ -15,6 +16,7 @@ type ObjectWorkspaceSection =
   | 'documents'
   | 'representatives'
   | 'registry'
+  | 'final-package'
   | 'settings';
 
 interface ObjectWorkspacePageProps {
@@ -133,6 +135,17 @@ export function ObjectWorkspacePage({
             Реестр ИД
           </button>
           <button
+            aria-current={activeSection === 'final-package' ? 'page' : undefined}
+            aria-label="Открыть итоговый комплект ИД"
+            onClick={() => {
+              setActiveSection('final-package');
+            }}
+            type="button"
+          >
+            <span aria-hidden="true">▣</span>
+            Итоговый комплект
+          </button>
+          <button
             aria-current={activeSection === 'settings' ? 'page' : undefined}
             aria-label="Открыть настройки объекта"
             onClick={openObjectSettings}
@@ -170,6 +183,8 @@ export function ObjectWorkspacePage({
         ) : null}
 
         {activeSection === 'registry' ? <ObjectRegistryPage /> : null}
+
+        {activeSection === 'final-package' ? <ObjectFinalPackagePage /> : null}
       </section>
     </main>
   );
@@ -236,5 +251,7 @@ function getSectionBreadcrumb(section: ObjectWorkspaceSection): string {
       return 'Представители';
     case 'registry':
       return 'Реестр ИД';
+    case 'final-package':
+      return 'Итоговый комплект';
   }
 }

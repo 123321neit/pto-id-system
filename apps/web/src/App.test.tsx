@@ -4,6 +4,9 @@ import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import { App } from './App.js';
+import { buildFinalPackageModel } from './app-shell/object-final-package-model.js';
+import { demoAosrWorkspace, type DemoAosrDraft } from './aosr-demo/demo-aosr-workspace.js';
+import { initialDemoCertificates, initialDemoObjectDocuments } from './demo-store/demo-store.js';
 
 afterEach(() => {
   cleanup();
@@ -67,6 +70,9 @@ describe('App shell mock navigation', () => {
     expect(within(objectNavigation).getByRole('button', { name: 'Представители' })).toBeTruthy();
     expect(
       within(objectNavigation).getByRole('button', { name: 'Открыть реестр ИД' }),
+    ).toBeTruthy();
+    expect(
+      within(objectNavigation).getByRole('button', { name: 'Открыть итоговый комплект ИД' }),
     ).toBeTruthy();
     expect(
       within(objectNavigation).getByRole('button', { name: 'Открыть настройки объекта' }),
@@ -140,6 +146,14 @@ describe('App shell mock navigation', () => {
     ).toBeTruthy();
     expect(
       screen.getByText('Сводный перечень документов исполнительной документации объекта.'),
+    ).toBeTruthy();
+
+    await user.click(
+      within(objectNavigation).getByRole('button', { name: 'Открыть итоговый комплект ИД' }),
+    );
+    expect(screen.getByRole('heading', { name: 'Итоговый комплект ИД' })).toBeTruthy();
+    expect(
+      screen.getByText('Финальный комплект исполнительной документации по объекту.'),
     ).toBeTruthy();
   });
 
@@ -225,6 +239,119 @@ describe('App shell mock navigation', () => {
     expect(
       within(table).getByText(/Сертификат соответствия\. Воздуховоды оцинкованные 0,7 мм/u),
     ).toBeTruthy();
+  });
+
+  it('opens the final ID package page with derived summary counts and grouped composition', async () => {
+    const user = userEvent.setup();
+
+    render(<App />);
+    await openObjectFinalPackagePage(user);
+
+    const finalPackagePage = screen.getByRole('region', { name: 'Итоговый комплект ИД' });
+
+    expect(
+      within(finalPackagePage).getByRole('heading', { name: 'Итоговый комплект ИД' }),
+    ).toBeTruthy();
+    expect(
+      within(finalPackagePage).getByText(
+        'Финальный комплект исполнительной документации по объекту.',
+      ),
+    ).toBeTruthy();
+
+    const summary = within(finalPackagePage).getByLabelText('Сводка итогового комплекта ИД');
+    expect(within(summary).getByLabelText('Акты: 2')).toBeTruthy();
+    expect(within(summary).getByLabelText('Сертификаты без дублей: 3')).toBeTruthy();
+    expect(within(summary).getByLabelText('Документы / чертежи без дублей: 3')).toBeTruthy();
+    expect(within(summary).getByLabelText('Всего позиций: 9')).toBeTruthy();
+
+    expect(within(finalPackagePage).getByRole('heading', { name: 'Реестр ИД' })).toBeTruthy();
+    expect(within(finalPackagePage).getByRole('heading', { name: 'Акты' })).toBeTruthy();
+    expect(within(finalPackagePage).getByRole('heading', { name: 'Сертификаты' })).toBeTruthy();
+    expect(
+      within(finalPackagePage).getByRole('heading', { name: 'Документы объекта' }),
+    ).toBeTruthy();
+    expect(
+      within(finalPackagePage).getByText('Итоговый реестр исполнительной документации'),
+    ).toBeTruthy();
+    expect(within(finalPackagePage).getByText('АОСР-001')).toBeTruthy();
+    expect(within(finalPackagePage).getByText('СТ-ОВ-2026-017')).toBeTruthy();
+    expect(within(finalPackagePage).getByText('ИС-ОВ-04')).toBeTruthy();
+  });
+
+  it('does not repeat duplicate certificates or object documents in the final package model', () => {
+    const sourceDraft = demoAosrWorkspace.drafts[0];
+
+    if (sourceDraft === undefined) {
+      throw new Error('Для демо нужен исходный АОСР.');
+    }
+
+    const duplicateDrafts: readonly DemoAosrDraft[] = [
+      {
+        ...sourceDraft,
+        id: 'final-package-dedupe-source',
+        materialCertificateIds: ['certificate-ducts-001', 'certificate-fasteners-001'],
+        objectDocumentIds: ['object-document-scheme-ov-04'],
+      },
+      {
+        ...sourceDraft,
+        actNumber: 'АОСР-duplicate',
+        id: 'final-package-dedupe-repeat',
+        materialCertificateIds: ['certificate-ducts-001'],
+        objectDocumentIds: ['object-document-scheme-ov-04'],
+      },
+    ];
+
+    const finalPackage = buildFinalPackageModel(
+      duplicateDrafts,
+      initialDemoObjectDocuments,
+      initialDemoCertificates,
+    );
+    const certificates = finalPackage.groups.find((group) => group.id === 'certificates')?.items;
+    const objectDocuments = finalPackage.groups.find(
+      (group) => group.id === 'object-documents',
+    )?.items;
+
+    expect(finalPackage.summary.acts).toBe(2);
+    expect(finalPackage.summary.certificates).toBe(2);
+    expect(finalPackage.summary.objectDocuments).toBe(1);
+    expect(finalPackage.summary.total).toBe(6);
+    expect(
+      certificates?.filter((item) => item.id === 'final-certificate-global-certificate-ducts-001'),
+    ).toHaveLength(1);
+    expect(
+      objectDocuments?.filter(
+        (item) => item.id === 'final-object-document-object-document-scheme-ov-04',
+      ),
+    ).toHaveLength(1);
+  });
+
+  it('keeps the final ID package download action disabled in demo mode', async () => {
+    const user = userEvent.setup();
+
+    render(<App />);
+    await openObjectFinalPackagePage(user);
+
+    const downloadButton = screen.getByRole('button', { name: 'Скачать итоговую ИД' });
+    expect((downloadButton as HTMLButtonElement).disabled).toBe(true);
+    expect(
+      screen.getByText(
+        'В демо режиме скачивание не выполняется. Позже здесь будет сборка PDF/DOCX/ZIP комплекта.',
+      ),
+    ).toBeTruthy();
+  });
+
+  it('navigates from the final ID package page back to AOSR', async () => {
+    const user = userEvent.setup();
+
+    render(<App />);
+    await openObjectFinalPackagePage(user);
+
+    const objectNavigation = screen.getByRole('navigation', { name: 'Разделы объекта' });
+    await user.click(within(objectNavigation).getByRole('button', { name: 'АОСР' }));
+
+    expect(screen.getByRole('heading', { name: 'Дерево проекта' })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: 'Рабочая область акта' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Предпросмотр документа' })).toBeTruthy();
   });
 
   it('renders object certificate counts from the shared frontend mock data', async () => {
@@ -990,6 +1117,16 @@ async function openObjectRegistryPage(user: ReturnType<typeof userEvent.setup>):
   const objectNavigation = screen.getByRole('navigation', { name: 'Разделы объекта' });
 
   await user.click(within(objectNavigation).getByRole('button', { name: 'Открыть реестр ИД' }));
+}
+
+async function openObjectFinalPackagePage(user: ReturnType<typeof userEvent.setup>): Promise<void> {
+  await user.click(getFirstOpenObjectButton());
+
+  const objectNavigation = screen.getByRole('navigation', { name: 'Разделы объекта' });
+
+  await user.click(
+    within(objectNavigation).getByRole('button', { name: 'Открыть итоговый комплект ИД' }),
+  );
 }
 
 async function openDocumentPreview(user: ReturnType<typeof userEvent.setup>): Promise<void> {
