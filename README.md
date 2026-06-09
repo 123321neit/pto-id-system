@@ -5,7 +5,7 @@ Web-система автоматизации исполнительной до�
 Текущий статус:
 
 ```text
-FIRST ALLOWED INFRASTRUCTURE BOOTSTRAP SCAFFOLD ACCEPTED; CANONICAL ADR BASELINE ACCEPTED; BACKEND MODULE ARCHITECTURE SKELETON INTRODUCED; FIRST TECHNICAL FRONTEND-BACKEND STATUS SLICE INTRODUCED; DATABASE FOUNDATION TECHNICAL SLICE INTRODUCED; OBJECT STORAGE FOUNDATION TECHNICAL SLICE INTRODUCED; AUTH SHARING IMPLEMENTATION PLAN ADDED; USER IDENTITY SKELETON INTRODUCED; GLOBAL SYSTEM ADMIN MARKER INTRODUCED; OWNED WORKSPACE BASELINE INTRODUCED; FIRST MOCK AOSR DEMO UI SLICE INTRODUCED; MOCK AOSR DEMO UX/PREVIEW REFINED; MOCK APP SHELL AND OBJECT DASHBOARD INTRODUCED; FRONTEND-ONLY MOCK REPRESENTATIVES/ORGANIZATIONS MANAGEMENT PAGE INTRODUCED; FRONTEND-ONLY MOCK CERTIFICATE LIBRARY PAGE INTRODUCED; STAGE 5 MOCK AOSR WORKSPACE UX STABILIZED; AOSR EDITOR UX CLEANUP INTRODUCED; AOSR WORKSPACE DRAWER UX INTRODUCED; FRONTEND-ONLY MOCK OBJECT DOCUMENT LIBRARY INTRODUCED; AOSR WORKSPACE APPLICATIONS UX CLEANUP INTRODUCED; FRONTEND-ONLY MOCK OBJECT COMPLIANCE DEFAULTS AND ACT OVERRIDES INTRODUCED; FRONTEND-ONLY MOCK OBJECT WORKSPACE VISUAL PASS INTRODUCED; FRONTEND-ONLY MOCK OBJECT WORKSPACE SHELL INTRODUCED; AOSR DOCUMENT PREVIEW DRAWER UX INTRODUCED; AOSR DOCUMENT PREVIEW PAGE VISUALIZATION REFINED; FRONTEND-ONLY OBJECT DOCUMENT WORKSPACE INTRODUCED; FRONTEND-ONLY OBJECT CERTIFICATE WORKSPACE INTRODUCED; FRONTEND-ONLY ID REGISTRY V1 INTRODUCED; FRONTEND-ONLY FINAL ID PACKAGE MOCK INTRODUCED
+FIRST ALLOWED INFRASTRUCTURE BOOTSTRAP SCAFFOLD ACCEPTED; CANONICAL ADR BASELINE ACCEPTED; BACKEND MODULE ARCHITECTURE SKELETON INTRODUCED; FIRST TECHNICAL FRONTEND-BACKEND STATUS SLICE INTRODUCED; DATABASE FOUNDATION TECHNICAL SLICE INTRODUCED; OBJECT STORAGE FOUNDATION TECHNICAL SLICE INTRODUCED; AUTH SHARING IMPLEMENTATION PLAN ADDED; USER IDENTITY SKELETON INTRODUCED; GLOBAL SYSTEM ADMIN MARKER INTRODUCED; OWNED WORKSPACE BASELINE INTRODUCED; FIRST MOCK AOSR DEMO UI SLICE INTRODUCED; MOCK AOSR DEMO UX/PREVIEW REFINED; MOCK APP SHELL AND OBJECT DASHBOARD INTRODUCED; FRONTEND-ONLY MOCK REPRESENTATIVES/ORGANIZATIONS MANAGEMENT PAGE INTRODUCED; FRONTEND-ONLY MOCK CERTIFICATE LIBRARY PAGE INTRODUCED; STAGE 5 MOCK AOSR WORKSPACE UX STABILIZED; AOSR EDITOR UX CLEANUP INTRODUCED; AOSR WORKSPACE DRAWER UX INTRODUCED; FRONTEND-ONLY MOCK OBJECT DOCUMENT LIBRARY INTRODUCED; AOSR WORKSPACE APPLICATIONS UX CLEANUP INTRODUCED; FRONTEND-ONLY MOCK OBJECT COMPLIANCE DEFAULTS AND ACT OVERRIDES INTRODUCED; FRONTEND-ONLY MOCK OBJECT WORKSPACE VISUAL PASS INTRODUCED; FRONTEND-ONLY MOCK OBJECT WORKSPACE SHELL INTRODUCED; AOSR DOCUMENT PREVIEW DRAWER UX INTRODUCED; AOSR DOCUMENT PREVIEW PAGE VISUALIZATION REFINED; FRONTEND-ONLY OBJECT DOCUMENT WORKSPACE INTRODUCED; FRONTEND-ONLY OBJECT CERTIFICATE WORKSPACE INTRODUCED; FRONTEND-ONLY ID REGISTRY V1 INTRODUCED; FRONTEND-ONLY FINAL ID PACKAGE MOCK INTRODUCED; FRONTEND-ONLY ACT TYPE METADATA PREP INTRODUCED
 ```
 
 В репозитории принят первый разрешённый scaffold. Это только infrastructure/bootstrap
@@ -188,19 +188,26 @@ placeholder with a real in-memory quality-document registry for the opened
 object. It reads and writes through the existing frontend demo certificate
 store already used by the certificate library and AOSR material drawer. The
 page lists certificates, passports, declarations and other material/equipment
-documents with simple category filters, derived summary counts, mock AOSR usage
-counts and a compact local add form. This creates a frontend-only foundation
-for future ID registry/package flows while adding no backend, persistence,
+documents with simple category filters, derived summary counts and a compact
+local add form. Certificates remain global quality-document entities referenced
+by objects and acts; the object certificates page no longer presents them as
+owned by or counted through act usage. Certificate materials render from the
+existing `materials[]` structure, including multi-material certificates. This
+creates a frontend-only foundation for future ID registry/package flows while
+adding no backend, persistence,
 uploads, file storage, Prisma/schema/migrations, API routes, auth, OCR/AI,
 DOCX/PDF generation or production business logic.
 
 Frontend-only ID Registry V1 replaces the `Реестр ИД` placeholder with the
 first real read-only registry page for the opened object. It derives rows and
 summary counts from existing frontend demo entities only: AOSR drafts, object
-documents and the shared global certificate demo store. The registry has simple
-section filters and no manual editing, backend, persistence, uploads, file
-storage, Prisma/schema/migrations, API routes, auth, OCR/AI, DOCX/PDF
-generation or production business logic.
+documents and the shared global certificate demo store. AOSR registry labels
+and section names now come through frontend-only act type metadata, preparing
+the derived registry projection for future act types. The registry has simple
+section filters, a `Сведения` column instead of using document type as status,
+and no manual editing, backend, persistence, uploads, file storage,
+Prisma/schema/migrations, API routes, auth, OCR/AI, DOCX/PDF generation or
+production business logic.
 
 The frontend-only final ID package mock adds the object navigation section
 `Итоговый комплект` and a read-only page `Итоговый комплект ИД`. It records the
@@ -208,9 +215,18 @@ domain distinction between periodic/current ID, usually prepared monthly during
 construction, and final object ID, prepared once at project completion. The mock
 derives final composition from existing demo AOSR drafts, selected
 certificates/materials and selected object documents, deduplicating certificates
-and object documents by id. The download button is disabled in demo mode: no
-real PDF/DOCX/ZIP generation, download API, persistence, backend, uploads,
-OCR/AI, Prisma/schema/migrations or production package logic was added.
+and object documents by id. Act rows derive their visible document title/code
+from the same frontend-only act type metadata used by the registry. The
+download button is disabled in demo mode: no real PDF/DOCX/ZIP generation,
+download API, persistence, backend, uploads, OCR/AI, Prisma/schema/migrations
+or production package logic was added.
+
+The frontend-only act type metadata prep adds a small registered act type model
+for the demo (`id`, `code`, `title`, `registrySectionName`). Only AOSR is
+registered now; no new act forms, editors or previews were added. The object
+workspace document tree, registry and final package now have a narrow extension
+point for future act types without changing backend, Prisma/schema/migrations,
+API, persistence, uploads, OCR/AI, auth or document generation.
 
 Production feature coding remains blocked outside explicitly requested narrow
 demo/technical slices.
@@ -391,14 +407,21 @@ Scaffold включает:
   creation, sharing the demo object document source with the AOSR point 4 drawer
   and adding no backend, persistence, uploads or production document storage.
 - frontend-only object certificate workspace: object-level quality document
-  registry UI with mock filters, summary counts, AOSR usage labels and local
-  in-memory creation, sharing the existing demo certificate source with the
-  certificate library and AOSR material drawer and adding no backend,
-  persistence, uploads or production certificate storage.
+  registry UI with mock filters, summary counts, multi-material certificate
+  rendering from `materials[]` and local in-memory creation, sharing the
+  existing global demo certificate source with the certificate library and AOSR
+  material drawer and adding no backend, persistence, uploads or production
+  certificate storage.
 - frontend-only ID Registry V1: read-only object registry page derived from
   AOSR drafts, object documents and the shared global certificate demo store,
-  with summary counts and section filters, adding no backend, persistence or
-  production registry business logic.
+  with summary counts, section filters and frontend act type metadata for AOSR
+  rows, adding no backend, persistence or production registry business logic.
+- frontend-only final ID package mock: read-only final package composition
+  derived from demo acts, certificates and object documents, with act rows using
+  frontend act type metadata and no download/generation/backend behavior.
+- frontend-only act type metadata prep: one registered AOSR metadata record for
+  future multi-act extensibility in the object workspace, document tree,
+  registry and final package, without adding new act forms or production logic.
 
 The backend module skeleton includes module boundaries, README ownership notes,
 placeholder tokens/ports, `apps/api/src/ARCHITECTURE.md`, and ESLint import

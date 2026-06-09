@@ -109,15 +109,22 @@ describe('App shell mock navigation', () => {
         'Сертификаты, паспорта качества, декларации и другие документы на материалы и оборудование объекта.',
       ),
     ).toBeTruthy();
-    expect(screen.getByRole('columnheader', { name: 'Материал / оборудование' })).toBeTruthy();
-    expect(screen.getByRole('columnheader', { name: 'Документ' })).toBeTruthy();
-    expect(screen.getByRole('columnheader', { name: 'Номер' })).toBeTruthy();
-    expect(screen.getByRole('columnheader', { name: 'Кем выдан' })).toBeTruthy();
-    expect(screen.getByRole('columnheader', { name: 'Используется в актах' })).toBeTruthy();
+    const certificatesTable = screen.getByRole('table');
+    expect(within(certificatesTable).getByRole('columnheader', { name: 'Материалы' })).toBeTruthy();
+    expect(within(certificatesTable).getByRole('columnheader', { name: 'Документ' })).toBeTruthy();
+    expect(within(certificatesTable).getByRole('columnheader', { name: 'Номер' })).toBeTruthy();
+    expect(within(certificatesTable).getByRole('columnheader', { name: 'Кем выдан' })).toBeTruthy();
     expect(
-      within(screen.getByRole('table')).getByText('Воздуховоды оцинкованные 0,7 мм'),
-    ).toBeTruthy();
-    expect(within(screen.getByRole('table')).getByText('Используется в 0 актах')).toBeTruthy();
+      within(certificatesTable).queryByRole('columnheader', { name: 'Используется в актах' }),
+    ).toBeNull();
+
+    const ductMaterials = within(certificatesTable).getByRole('list', {
+      name: 'Материалы сертификата СТ-ОВ-2026-017',
+    });
+    expect(within(ductMaterials).getByText('Воздуховоды оцинкованные 0,7 мм')).toBeTruthy();
+    expect(within(ductMaterials).getByText('Отводы оцинкованные')).toBeTruthy();
+    expect(within(ductMaterials).getByText('Переходы оцинкованные')).toBeTruthy();
+    expect(screen.queryByText(/Используется в \d+ актах/u)).toBeNull();
 
     await user.click(
       within(objectNavigation).getByRole('button', { name: 'Открыть документы объекта' }),
@@ -181,7 +188,8 @@ describe('App shell mock navigation', () => {
     expect(screen.getByRole('columnheader', { name: 'Наименование' })).toBeTruthy();
     expect(screen.getByRole('columnheader', { name: 'Номер' })).toBeTruthy();
     expect(screen.getByRole('columnheader', { name: 'Дата' })).toBeTruthy();
-    expect(screen.getByRole('columnheader', { name: 'Статус' })).toBeTruthy();
+    expect(screen.getByRole('columnheader', { name: 'Сведения' })).toBeTruthy();
+    expect(screen.queryByRole('columnheader', { name: 'Статус' })).toBeNull();
     expect(within(table).getByText('АОСР-001')).toBeTruthy();
     expect(
       within(table).getByText(
@@ -409,7 +417,7 @@ describe('App shell mock navigation', () => {
     }
 
     expect(within(certificateRow as HTMLElement).getByText('ПК-КП-2026-01')).toBeTruthy();
-    expect(within(certificateRow as HTMLElement).getByText('Используется в 0 актах')).toBeTruthy();
+    expect(screen.queryByText(/Используется в \d+ актах/u)).toBeNull();
 
     const summary = screen.getByLabelText('Сводка сертификатов объекта');
     expect(within(summary).getByLabelText('Всего документов качества: 5')).toBeTruthy();

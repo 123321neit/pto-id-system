@@ -1,5 +1,6 @@
 import { type SyntheticEvent, useEffect, useState } from 'react';
 
+import { getDemoActTypeById } from '../act-types/act-types.js';
 import { DocumentPreviewDrawer } from '../document-preview/DocumentPreviewDrawer.js';
 import {
   getCertificateDocumentName,
@@ -55,6 +56,8 @@ import { DemoAosrPreview } from './DemoAosrPreview.js';
 import { DemoCurrentActEditor } from './DemoCurrentActEditor.js';
 import { DemoDocumentTree } from './DemoDocumentTree.js';
 import { DemoObjectSettingsPanel } from './DemoObjectSettingsPanel.js';
+
+const aosrActType = getDemoActTypeById('aosr');
 
 interface DemoAosrWorkspacePageProps {
   readonly initialDocumentPreviewOpen?: boolean;
@@ -371,6 +374,7 @@ export function DemoAosrWorkspacePage({
 
       <div className="workspace-grid">
         <DemoDocumentTree
+          actType={aosrActType}
           draggedDraftId={draggedDraftId}
           drafts={drafts}
           selectedDraftId={selectedDraft.id}

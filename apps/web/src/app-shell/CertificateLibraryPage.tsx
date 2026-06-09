@@ -7,6 +7,7 @@ import {
   type DemoCertificateStatus,
   useDemoStore,
 } from '../demo-store/demo-store.js';
+import { CertificateMaterialsList } from './CertificateMaterialsList.js';
 
 interface CertificateLibraryPageProps {
   readonly onBackToObjects: () => void;
@@ -245,7 +246,7 @@ export function CertificateLibraryPage({
               filteredCertificates.map((certificate) => (
                 <li className="certificate-list__item" key={certificate.id}>
                   <div className="certificate-list__main">
-                    <strong>{getCertificateMaterialNames(certificate).join('; ')}</strong>
+                    <CertificateMaterialsList certificate={certificate} />
                     <span>
                       {certificate.documentType} / {certificate.documentNumber}
                     </span>

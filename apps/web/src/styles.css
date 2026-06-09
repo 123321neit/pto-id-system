@@ -558,6 +558,27 @@ button {
   line-height: 1.35;
 }
 
+.certificate-materials-list {
+  display: grid;
+  gap: 5px;
+}
+
+.certificate-materials-list__label {
+  color: #172124;
+  font-weight: 850;
+}
+
+.certificate-materials-list ul {
+  display: grid;
+  gap: 3px;
+  margin: 0;
+  padding-left: 18px;
+}
+
+.certificate-materials-list li {
+  color: #29373d;
+}
+
 .object-document-form {
   display: grid;
   grid-template-columns:

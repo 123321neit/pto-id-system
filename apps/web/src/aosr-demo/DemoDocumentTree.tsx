@@ -1,6 +1,8 @@
+import type { DemoActTypeMetadata } from '../act-types/act-types.js';
 import type { DemoAosrDraft } from './demo-aosr-workspace.js';
 
 interface DemoDocumentTreeProps {
+  readonly actType: DemoActTypeMetadata;
   readonly drafts: readonly DemoAosrDraft[];
   readonly draggedDraftId: string | null;
   readonly selectedDraftId: string;
@@ -11,6 +13,7 @@ interface DemoDocumentTreeProps {
 }
 
 export function DemoDocumentTree({
+  actType,
   drafts,
   draggedDraftId,
   selectedDraftId,
@@ -32,12 +35,12 @@ export function DemoDocumentTree({
             /
           </span>
           <span>
-            <strong>АОСР</strong>
+            <strong>{actType.code}</strong>
             <small>{drafts.length} черновика</small>
           </span>
         </div>
 
-        <div className="act-tree-list" role="list" aria-label="Порядок актов АОСР">
+        <div className="act-tree-list" role="list" aria-label={`Порядок актов ${actType.code}`}>
           {drafts.map((draft, index) => (
             <button
               aria-pressed={draft.id === selectedDraftId}

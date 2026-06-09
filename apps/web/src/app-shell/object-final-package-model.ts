@@ -1,3 +1,4 @@
+import { getDemoActTypeById } from '../act-types/act-types.js';
 import type { DemoAosrDraft, DemoObjectDocument } from '../aosr-demo/demo-aosr-workspace.js';
 import { getCertificateMaterialNames, type DemoCertificate } from '../demo-store/demo-store.js';
 
@@ -29,6 +30,8 @@ export interface FinalPackageModel {
   readonly summary: FinalPackageSummary;
 }
 
+const aosrActType = getDemoActTypeById('aosr');
+
 export function buildFinalPackageModel(
   drafts: readonly DemoAosrDraft[],
   objectDocuments: readonly DemoObjectDocument[],
@@ -37,9 +40,9 @@ export function buildFinalPackageModel(
   const actItems = drafts.map((draft) => ({
     date: draft.actDate,
     id: `final-act-${draft.id}`,
-    meta: draft.status === 'draft' ? 'Черновик' : 'На проверку',
+    meta: `${aosrActType.code}: ${draft.status === 'draft' ? 'Черновик' : 'На проверку'}`,
     number: draft.actNumber,
-    title: `Акт освидетельствования скрытых работ. ${draft.workDescription}`,
+    title: `${aosrActType.title}. ${draft.workDescription}`,
   }));
   const certificateItems = getUniqueCertificatesUsedInDrafts(drafts, certificates).map(
     (certificate) => ({

@@ -110,6 +110,14 @@ export const initialDemoCertificates: readonly DemoCertificate[] = [
         id: 'certificate-ducts-001',
         name: 'Воздуховоды оцинкованные 0,7 мм',
       },
+      {
+        id: 'certificate-duct-elbows-001',
+        name: 'Отводы оцинкованные',
+      },
+      {
+        id: 'certificate-duct-transitions-001',
+        name: 'Переходы оцинкованные',
+      },
     ],
     status: 'Действует',
     validUntil: '11.05.2029',

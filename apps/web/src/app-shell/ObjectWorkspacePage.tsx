@@ -1,5 +1,6 @@
 import { useState } from 'react';
 
+import { getDemoActTypeById } from '../act-types/act-types.js';
 import { DemoAosrWorkspacePage } from '../aosr-demo/DemoAosrWorkspacePage.js';
 import { demoAosrWorkspace } from '../aosr-demo/demo-aosr-workspace.js';
 import { useDemoStore } from '../demo-store/demo-store.js';
@@ -9,6 +10,8 @@ import { ObjectFinalPackagePage } from './ObjectFinalPackagePage.js';
 import { ObjectRegistryPage } from './ObjectRegistryPage.js';
 import { RepresentativesOrganizationsPage } from './RepresentativesOrganizationsPage.js';
 import type { MockObjectCard } from './mock-dashboard.js';
+
+const aosrActType = getDemoActTypeById('aosr');
 
 type ObjectWorkspaceSection =
   | 'aosr'
@@ -89,7 +92,7 @@ export function ObjectWorkspacePage({
             type="button"
           >
             <span aria-hidden="true">↳</span>
-            АОСР
+            {aosrActType.code}
           </button>
           <button
             aria-current={activeSection === 'certificates' ? 'page' : undefined}
@@ -215,7 +218,7 @@ function ObjectWorkspaceHeader({
       </div>
 
       <dl className="object-workspace-metrics" aria-label="Показатели открытого объекта">
-        <MetricItem label="АОСР" value={metrics.aosrCount} />
+        <MetricItem label={aosrActType.code} value={metrics.aosrCount} />
         <MetricItem label="Сертификаты" value={metrics.certificateCount} />
         <MetricItem label="Документы" value={metrics.objectDocumentCount} />
         <MetricItem label="Представители" value={metrics.representativeCount} />
@@ -242,7 +245,7 @@ function getSectionBreadcrumb(section: ObjectWorkspaceSection): string {
   switch (section) {
     case 'aosr':
     case 'settings':
-      return 'Акты / АОСР';
+      return `Акты / ${aosrActType.code}`;
     case 'certificates':
       return 'Сертификаты';
     case 'documents':

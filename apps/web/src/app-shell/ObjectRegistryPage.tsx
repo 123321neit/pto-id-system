@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 
+import { getDemoActTypeById } from '../act-types/act-types.js';
 import { demoAosrWorkspace, type DemoObjectDocument } from '../aosr-demo/demo-aosr-workspace.js';
 import {
   getCertificateMaterialNames,
@@ -7,13 +8,12 @@ import {
   useDemoStore,
 } from '../demo-store/demo-store.js';
 
-type RegistrySection = 'АОСР' | 'Документы объекта' | 'Сертификаты';
 type RegistryFilter = 'all' | 'aosr' | 'documents' | 'certificates';
 
 interface RegistryFilterOption {
   readonly id: RegistryFilter;
   readonly label: string;
-  readonly section?: RegistrySection;
+  readonly section?: string;
 }
 
 interface RegistryRow {
@@ -21,8 +21,8 @@ interface RegistryRow {
   readonly date: string;
   readonly name: string;
   readonly number: string;
-  readonly section: RegistrySection;
-  readonly status: string;
+  readonly section: string;
+  readonly details: string;
 }
 
 interface RegistrySummary {
@@ -32,9 +32,11 @@ interface RegistrySummary {
   readonly total: number;
 }
 
+const aosrActType = getDemoActTypeById('aosr');
+
 const registryFilters: readonly RegistryFilterOption[] = [
   { id: 'all', label: 'Все' },
-  { id: 'aosr', label: 'АОСР', section: 'АОСР' },
+  { id: 'aosr', label: aosrActType.code, section: aosrActType.registrySectionName },
   { id: 'documents', label: 'Документы объекта', section: 'Документы объекта' },
   { id: 'certificates', label: 'Сертификаты', section: 'Сертификаты' },
 ];
@@ -99,7 +101,7 @@ export function ObjectRegistryPage(): React.JSX.Element {
                 <th scope="col">Наименование</th>
                 <th scope="col">Номер</th>
                 <th scope="col">Дата</th>
-                <th scope="col">Статус</th>
+                <th scope="col">Сведения</th>
               </tr>
             </thead>
             <tbody>
@@ -111,7 +113,7 @@ export function ObjectRegistryPage(): React.JSX.Element {
                   </td>
                   <td>{row.number}</td>
                   <td>{row.date}</td>
-                  <td>{row.status}</td>
+                  <td>{row.details}</td>
                 </tr>
               ))}
             </tbody>
@@ -149,40 +151,40 @@ function buildRegistryRows(
     ...demoAosrWorkspace.drafts.map((draft) => ({
       date: draft.actDate,
       id: `aosr-${draft.id}`,
-      name: `Акт освидетельствования скрытых работ. ${draft.workDescription}`,
+      name: `${aosrActType.title}. ${draft.workDescription}`,
       number: draft.actNumber,
-      section: 'АОСР' as const,
-      status: draft.status === 'draft' ? 'Черновик' : 'На проверку',
+      section: aosrActType.registrySectionName,
+      details: `Состояние акта: ${draft.status === 'draft' ? 'Черновик' : 'На проверку'}`,
     })),
     ...objectDocuments.map((document) => ({
       date: document.documentDate,
       id: `object-document-${document.id}`,
       name: document.title,
       number: document.reference,
-      section: 'Документы объекта' as const,
-      status: document.type,
+      section: 'Документы объекта',
+      details: `Тип документа: ${document.type}`,
     })),
     ...certificates.map((certificate) => ({
       date: certificate.issuedAt,
       id: `certificate-${certificate.id}`,
       name: `${certificate.documentType}. ${getCertificateMaterialNames(certificate).join('; ')}`,
       number: certificate.documentNumber,
-      section: 'Сертификаты' as const,
-      status: certificate.status,
+      section: 'Сертификаты',
+      details: `Состояние документа качества: ${certificate.status}`,
     })),
   ];
 }
 
 function getRegistrySummary(rows: readonly RegistryRow[]): RegistrySummary {
   return {
-    aosr: countRowsBySection(rows, 'АОСР'),
+    aosr: countRowsBySection(rows, aosrActType.registrySectionName),
     certificates: countRowsBySection(rows, 'Сертификаты'),
     documents: countRowsBySection(rows, 'Документы объекта'),
     total: rows.length,
   };
 }
 
-function countRowsBySection(rows: readonly RegistryRow[], section: RegistrySection): number {
+function countRowsBySection(rows: readonly RegistryRow[], section: string): number {
   return rows.filter((row) => row.section === section).length;
 }
 

@@ -1,11 +1,7 @@
-import { useMemo, useState, type SyntheticEvent } from 'react';
+import { useState, type SyntheticEvent } from 'react';
 
-import { demoAosrWorkspace, type DemoAosrDraft } from '../aosr-demo/demo-aosr-workspace.js';
-import {
-  getCertificateMaterialNames,
-  type DemoCertificate,
-  useDemoStore,
-} from '../demo-store/demo-store.js';
+import { type DemoCertificate, useDemoStore } from '../demo-store/demo-store.js';
+import { CertificateMaterialsList } from './CertificateMaterialsList.js';
 
 type ObjectCertificateFilter = 'all' | 'certificates' | 'passports' | 'declarations' | 'other';
 type CertificateDocumentCategory = 'certificate' | 'passport' | 'declaration' | 'other';
@@ -59,10 +55,6 @@ export function ObjectCertificatesPage(): React.JSX.Element {
   const [activeFilter, setActiveFilter] = useState<ObjectCertificateFilter>('all');
   const [certificateForm, setCertificateForm] =
     useState<ObjectCertificateFormState>(emptyCertificateForm);
-  const usageByCertificateId = useMemo(
-    () => getObjectCertificateUsageCounts(certificates, demoAosrWorkspace.drafts),
-    [certificates],
-  );
   const summary = getObjectCertificateSummary(certificates);
   const filteredCertificates = filterObjectCertificates(certificates, activeFilter);
   const isCertificateFormReady =
@@ -145,36 +137,30 @@ export function ObjectCertificatesPage(): React.JSX.Element {
           <table className="object-documents-table object-certificates-table">
             <thead>
               <tr>
-                <th scope="col">Материал / оборудование</th>
+                <th scope="col">Материалы</th>
                 <th scope="col">Документ</th>
                 <th scope="col">Номер</th>
                 <th scope="col">Кем выдан</th>
-                <th scope="col">Используется в актах</th>
               </tr>
             </thead>
             <tbody>
               {filteredCertificates.length > 0 ? (
-                filteredCertificates.map((certificate) => {
-                  const usageCount = usageByCertificateId.get(certificate.id) ?? 0;
-
-                  return (
-                    <tr key={certificate.id}>
-                      <td>
-                        <strong>{getCertificateMaterialNames(certificate).join('; ')}</strong>
-                      </td>
-                      <td>
-                        <strong>{certificate.documentType}</strong>
-                        <small>от {certificate.issuedAt}</small>
-                      </td>
-                      <td>{certificate.documentNumber}</td>
-                      <td>{certificate.issuer}</td>
-                      <td>Используется в {usageCount} актах</td>
-                    </tr>
-                  );
-                })
+                filteredCertificates.map((certificate) => (
+                  <tr key={certificate.id}>
+                    <td>
+                      <CertificateMaterialsList certificate={certificate} />
+                    </td>
+                    <td>
+                      <strong>{certificate.documentType}</strong>
+                      <small>от {certificate.issuedAt}</small>
+                    </td>
+                    <td>{certificate.documentNumber}</td>
+                    <td>{certificate.issuer}</td>
+                  </tr>
+                ))
               ) : (
                 <tr>
-                  <td className="empty-state" colSpan={5}>
+                  <td className="empty-state" colSpan={4}>
                     Документы качества по выбранному фильтру не найдены.
                   </td>
                 </tr>
@@ -326,36 +312,4 @@ function getCertificateDocumentCategory(certificate: DemoCertificate): Certifica
   }
 
   return 'other';
-}
-
-function getObjectCertificateUsageCounts(
-  certificates: readonly DemoCertificate[],
-  drafts: readonly DemoAosrDraft[],
-): ReadonlyMap<string, number> {
-  const certificateIdByMaterialId = new Map<string, string>();
-  const usageByCertificateId = new Map<string, number>();
-
-  for (const certificate of certificates) {
-    for (const material of certificate.materials) {
-      certificateIdByMaterialId.set(material.id, certificate.id);
-    }
-  }
-
-  for (const draft of drafts) {
-    const usedCertificateIds = new Set<string>();
-
-    for (const materialCertificateId of draft.materialCertificateIds) {
-      const certificateId = certificateIdByMaterialId.get(materialCertificateId);
-
-      if (certificateId !== undefined) {
-        usedCertificateIds.add(certificateId);
-      }
-    }
-
-    for (const certificateId of usedCertificateIds) {
-      usageByCertificateId.set(certificateId, (usageByCertificateId.get(certificateId) ?? 0) + 1);
-    }
-  }
-
-  return usageByCertificateId;
 }
