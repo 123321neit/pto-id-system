@@ -4,7 +4,10 @@ import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import { App } from './App.js';
-import { buildFinalPackageModel } from './app-shell/object-final-package-model.js';
+import {
+  buildFinalPackageModel,
+  buildFinalPackageReadiness,
+} from './app-shell/object-final-package-model.js';
 import { demoAosrWorkspace, type DemoAosrDraft } from './aosr-demo/demo-aosr-workspace.js';
 import { initialDemoCertificates, initialDemoObjectDocuments } from './demo-store/demo-store.js';
 
@@ -272,6 +275,12 @@ describe('App shell mock navigation', () => {
     expect(within(summary).getByLabelText('Документы / чертежи без дублей: 3')).toBeTruthy();
     expect(within(summary).getByLabelText('Всего позиций: 9')).toBeTruthy();
 
+    const readinessCard = within(finalPackagePage).getByRole('region', {
+      name: 'Готовность комплекта',
+    });
+    expect(within(readinessCard).getByText('🟢 Готов к выпуску')).toBeTruthy();
+    expect(within(readinessCard).getByText('Пробелов по демо-проверкам нет.')).toBeTruthy();
+
     expect(within(finalPackagePage).getByRole('heading', { name: 'Реестр ИД' })).toBeTruthy();
     expect(within(finalPackagePage).getByRole('heading', { name: 'Акты' })).toBeTruthy();
     expect(within(finalPackagePage).getByRole('heading', { name: 'Сертификаты' })).toBeTruthy();
@@ -331,6 +340,18 @@ describe('App shell mock navigation', () => {
         (item) => item.id === 'final-object-document-object-document-scheme-ov-04',
       ),
     ).toHaveLength(1);
+  });
+
+  it('derives final package readiness warnings from missing demo composition', () => {
+    const readiness = buildFinalPackageReadiness({
+      acts: 0,
+      certificates: 0,
+      objectDocuments: 0,
+    });
+
+    expect(readiness.status).toBe('needs-attention');
+    expect(readiness.statusLabel).toBe('🟡 Требует заполнения');
+    expect(readiness.issues).toEqual(['Нет актов', 'Нет сертификатов', 'Нет документов объекта']);
   });
 
   it('keeps the final ID package download action disabled in demo mode', async () => {

@@ -44,6 +44,58 @@ describe('DemoAosrWorkspacePage', () => {
     expect(within(summary).getByLabelText('Статус: Черновик')).toBeTruthy();
   });
 
+  it('renders readiness panel with a ready act state', () => {
+    renderDemoWorkspace();
+
+    const readinessPanel = screen.getByRole('region', { name: 'Готовность акта' });
+
+    expect(within(readinessPanel).getByRole('heading', { name: 'Готовность акта' })).toBeTruthy();
+    expect(within(readinessPanel).getByText('🟢 Готов к выпуску')).toBeTruthy();
+    expect(within(readinessPanel).getByText('Пробелов по демо-проверкам нет.')).toBeTruthy();
+    expect(within(readinessPanel).queryByText('Требует внимания:')).toBeNull();
+  });
+
+  it('shows readiness warnings when required demo data is missing', async () => {
+    const user = userEvent.setup();
+
+    renderDemoWorkspace();
+
+    await user.click(
+      screen.getByRole('button', {
+        name: 'Убрать материал Воздуховоды оцинкованные 0,7 мм',
+      }),
+    );
+    await user.click(
+      screen.getByRole('button', {
+        name: 'Убрать материал Крепежные элементы КМ-12',
+      }),
+    );
+    await user.click(
+      screen.getByRole('button', {
+        name: 'Убрать документ Исполнительная схема скрытых участков вентиляции',
+      }),
+    );
+    await user.click(
+      screen.getByRole('button', {
+        name: 'Убрать документ Запись журнала входного контроля материалов',
+      }),
+    );
+    await user.click(screen.getByRole('button', { name: 'Убрать Иванов И.И. из акта' }));
+    await user.click(screen.getByRole('button', { name: 'Убрать Петров П.П. из акта' }));
+    await user.click(screen.getByRole('button', { name: 'Убрать Смирнова С.С. из акта' }));
+    await user.click(screen.getByRole('button', { name: 'Изменить только для этого акта' }));
+    await user.clear(screen.getByLabelText('Значение только для этого акта'));
+
+    const readinessPanel = screen.getByRole('region', { name: 'Готовность акта' });
+
+    expect(within(readinessPanel).getByText('🟡 Требует заполнения')).toBeTruthy();
+    expect(within(readinessPanel).getByText('Требует внимания:')).toBeTruthy();
+    expect(within(readinessPanel).getByText('Нет подписантов')).toBeTruthy();
+    expect(within(readinessPanel).getByText('Не выбраны материалы')).toBeTruthy();
+    expect(within(readinessPanel).getByText('Не выбраны документы объекта')).toBeTruthy();
+    expect(within(readinessPanel).getByText('Не заполнена нормативная база')).toBeTruthy();
+  });
+
   it('shows polished object workspace status cards in the header', () => {
     renderDemoWorkspace();
 

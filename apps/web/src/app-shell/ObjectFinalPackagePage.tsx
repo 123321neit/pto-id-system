@@ -34,6 +34,32 @@ export function ObjectFinalPackagePage(): React.JSX.Element {
         <SummaryItem label="Всего позиций" value={finalPackage.summary.total} />
       </dl>
 
+      <section
+        className={`readiness-card readiness-card--${finalPackage.readiness.status}`}
+        aria-labelledby="final-package-readiness-title"
+      >
+        <div className="readiness-card__header">
+          <div>
+            <p className="section-kicker">Диагностика</p>
+            <h3 id="final-package-readiness-title">Готовность комплекта</h3>
+          </div>
+          <strong className="readiness-card__status">{finalPackage.readiness.statusLabel}</strong>
+        </div>
+
+        {finalPackage.readiness.issues.length > 0 ? (
+          <div className="readiness-card__issues">
+            <p>Требует внимания:</p>
+            <ul>
+              {finalPackage.readiness.issues.map((issue) => (
+                <li key={issue}>{issue}</li>
+              ))}
+            </ul>
+          </div>
+        ) : (
+          <p className="readiness-card__empty">Пробелов по демо-проверкам нет.</p>
+        )}
+      </section>
+
       <div className="final-package-groups">
         {finalPackage.groups.map((group) => (
           <FinalPackageGroupSection group={group} key={group.id} />

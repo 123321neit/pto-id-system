@@ -11,6 +11,14 @@ interface FinalPackageSummary {
   readonly total: number;
 }
 
+export type FinalPackageReadinessStatus = 'ready' | 'needs-attention';
+
+export interface FinalPackageReadiness {
+  readonly issues: readonly string[];
+  readonly status: FinalPackageReadinessStatus;
+  readonly statusLabel: string;
+}
+
 interface FinalPackageItem {
   readonly date: string;
   readonly id: string;
@@ -27,6 +35,7 @@ export interface FinalPackageGroup {
 
 export interface FinalPackageModel {
   readonly groups: readonly FinalPackageGroup[];
+  readonly readiness: FinalPackageReadiness;
   readonly summary: FinalPackageSummary;
 }
 
@@ -72,6 +81,14 @@ export function buildFinalPackageModel(
     },
   ];
 
+  const summary: FinalPackageSummary = {
+    acts: actItems.length,
+    certificates: certificateItems.length,
+    objectDocuments: objectDocumentItems.length,
+    total:
+      registryItems.length + actItems.length + certificateItems.length + objectDocumentItems.length,
+  };
+
   return {
     groups: [
       { id: 'registry', items: registryItems, title: 'Реестр ИД' },
@@ -79,16 +96,36 @@ export function buildFinalPackageModel(
       { id: 'certificates', items: certificateItems, title: 'Сертификаты' },
       { id: 'object-documents', items: objectDocumentItems, title: 'Документы объекта' },
     ],
-    summary: {
-      acts: actItems.length,
-      certificates: certificateItems.length,
-      objectDocuments: objectDocumentItems.length,
-      total:
-        registryItems.length +
-        actItems.length +
-        certificateItems.length +
-        objectDocumentItems.length,
-    },
+    readiness: buildFinalPackageReadiness(summary),
+    summary,
+  };
+}
+
+// Frontend-only package diagnostics. Future versions may validate attached files,
+// signatures, document lifecycle statuses and issued/reviewed package states here.
+export function buildFinalPackageReadiness(
+  summary: Pick<FinalPackageSummary, 'acts' | 'certificates' | 'objectDocuments'>,
+): FinalPackageReadiness {
+  const issues: string[] = [];
+
+  if (summary.acts === 0) {
+    issues.push('Нет актов');
+  }
+
+  if (summary.certificates === 0) {
+    issues.push('Нет сертификатов');
+  }
+
+  if (summary.objectDocuments === 0) {
+    issues.push('Нет документов объекта');
+  }
+
+  const status: FinalPackageReadinessStatus = issues.length === 0 ? 'ready' : 'needs-attention';
+
+  return {
+    issues,
+    status,
+    statusLabel: status === 'ready' ? '🟢 Готов к выпуску' : '🟡 Требует заполнения',
   };
 }
 

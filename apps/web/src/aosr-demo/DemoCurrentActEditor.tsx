@@ -12,7 +12,9 @@ import type {
 } from './demo-aosr-workspace.js';
 import { getDraftComplianceStatement, hasDraftComplianceOverride } from './demo-aosr-workspace.js';
 import type { MoveDirection, RepresentativeFormState } from './demo-aosr-ui.js';
+import { buildDemoAosrReadiness } from './demo-aosr-readiness.js';
 import { DemoActApplicationsSection } from './DemoActApplicationsSection.js';
+import { DemoAosrReadinessPanel } from './DemoAosrReadinessPanel.js';
 import { DemoMaterialsSelector } from './DemoMaterialsSelector.js';
 import { DemoObjectDocumentsEditor } from './DemoObjectDocumentsEditor.js';
 import { DemoSignatoriesEditor } from './DemoSignatoriesEditor.js';
@@ -115,6 +117,12 @@ export function DemoCurrentActEditor({
 }: DemoCurrentActEditorProps): React.JSX.Element {
   const complianceStatement = getDraftComplianceStatement(selectedDraft, objectDefaults);
   const isComplianceOverridden = hasDraftComplianceOverride(selectedDraft);
+  const readiness = buildDemoAosrReadiness({
+    complianceStatement,
+    materialsCount: selectedMaterials.length,
+    objectDocumentsCount: selectedObjectDocuments.length,
+    signatoriesCount: selectedSignatories.length,
+  });
 
   return (
     <section
@@ -168,6 +176,8 @@ export function DemoCurrentActEditor({
           </dd>
         </div>
       </dl>
+
+      <DemoAosrReadinessPanel readiness={readiness} />
 
       <section className="form-section act-editor-card" aria-labelledby="act-header-data-title">
         <h3 id="act-header-data-title">Общие данные</h3>
