@@ -11,7 +11,11 @@ import type {
   DemoObjectDocumentType,
 } from './demo-aosr-workspace.js';
 import { getDraftComplianceStatement, hasDraftComplianceOverride } from './demo-aosr-workspace.js';
-import type { MoveDirection, RepresentativeFormState } from './demo-aosr-ui.js';
+import {
+  formatDocumentDate,
+  type MoveDirection,
+  type RepresentativeFormState,
+} from './demo-aosr-ui.js';
 import { buildDemoAosrReadiness } from './demo-aosr-readiness.js';
 import { DemoActApplicationsSection } from './DemoActApplicationsSection.js';
 import { DemoAosrReadinessPanel } from './DemoAosrReadinessPanel.js';
@@ -133,6 +137,20 @@ export function DemoCurrentActEditor({
       <div className="scope-heading current-act-editor__heading">
         <p className="scope-label">Уровень акта</p>
         <h3 id="current-act-title">Текущий акт</h3>
+        <dl className="current-act-metadata" aria-label="Метаданные текущего акта">
+          <div>
+            <dt>Документ</dt>
+            <dd>{selectedDraft.actNumber}</dd>
+          </div>
+          <div>
+            <dt>Версия документа</dt>
+            <dd>v1.0</dd>
+          </div>
+          <div>
+            <dt>Последнее изменение</dt>
+            <dd>{formatDocumentDate(selectedDraft.actDate)}</dd>
+          </div>
+        </dl>
       </div>
 
       <dl className="act-summary-strip" aria-label="Сводка текущего акта">

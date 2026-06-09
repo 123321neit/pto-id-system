@@ -1,5 +1,6 @@
 import type { DemoActTypeMetadata } from '../act-types/act-types.js';
 import type { DemoAosrDraft } from './demo-aosr-workspace.js';
+import { formatDocumentDate } from './demo-aosr-ui.js';
 
 interface DemoDocumentTreeProps {
   readonly actType: DemoActTypeMetadata;
@@ -32,7 +33,7 @@ export function DemoDocumentTree({
       <div className="document-tree" aria-label="Дерево документов">
         <div className="tree-folder">
           <span className="tree-folder__chevron" aria-hidden="true">
-            /
+            ▾
           </span>
           <span>
             <strong>{actType.code}</strong>
@@ -71,6 +72,10 @@ export function DemoDocumentTree({
               <span className="act-tree-item__number">{draft.actNumber}</span>
               <span className={`act-tree-item__status act-tree-item__status--${draft.status}`}>
                 {draft.status === 'draft' ? 'Черновик' : 'На проверку'}
+              </span>
+              <span className="act-tree-item__meta">
+                <small>Версия документа {index + 1}.0</small>
+                <small>Последнее изменение: {formatDocumentDate(draft.actDate)}</small>
               </span>
             </button>
           ))}

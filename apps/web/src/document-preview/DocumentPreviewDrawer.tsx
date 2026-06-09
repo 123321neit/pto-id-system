@@ -50,6 +50,11 @@ export function DocumentPreviewDrawer({
             Закрыть
           </button>
         </header>
+        <div className="document-preview-drawer__toolbar" aria-label="Параметры предпросмотра">
+          <span>2 страницы</span>
+          <span>Формат A4</span>
+          <span>Масштаб 100%</span>
+        </div>
         <div className="document-preview-drawer__body">{children}</div>
       </aside>
     </div>

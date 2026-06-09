@@ -91,11 +91,25 @@ export function DemoMaterialsSelector({
               <span>
                 <p className="scope-label">Материалы</p>
                 <h2 id="certificate-picker-title">Выбор материалов из библиотеки сертификатов</h2>
+                <p className="drawer-lead">
+                  Выберите подтверждающие документы качества для текущего акта.
+                </p>
               </span>
               <button className="compact-toggle" onClick={onToggleCertificateLibrary} type="button">
                 Закрыть библиотеку
               </button>
             </div>
+
+            <dl className="drawer-metadata" aria-label="Сводка выбора материалов">
+              <div>
+                <dt>В библиотеке</dt>
+                <dd>{certificateLibrary.length}</dd>
+              </div>
+              <div>
+                <dt>Выбрано в акт</dt>
+                <dd>{selectedMaterials.length}</dd>
+              </div>
+            </dl>
 
             <label className="search-field">
               Найти материал в библиотеке сертификатов

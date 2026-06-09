@@ -39,7 +39,7 @@ describe('App shell mock navigation', () => {
     await user.click(getFirstOpenObjectButton());
 
     expect(screen.getByRole('navigation', { name: 'Разделы объекта' })).toBeTruthy();
-    expect(screen.getByText(/Акты \/ АОСР/u)).toBeTruthy();
+    expect(screen.getAllByText(/Акты \/ АОСР/u).length).toBeGreaterThan(0);
     expect(screen.getByRole('button', { name: 'Назад к объектам' })).toBeTruthy();
     expect(screen.getByRole('heading', { name: 'Дерево проекта' })).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Предпросмотр документа' })).toBeTruthy();
@@ -93,6 +93,12 @@ describe('App shell mock navigation', () => {
     expect(within(metrics).getByLabelText('Сертификаты: 4')).toBeTruthy();
     expect(within(metrics).getByLabelText('Документы: 8')).toBeTruthy();
     expect(within(metrics).getByLabelText('Представители: 6')).toBeTruthy();
+
+    const objectMetadata = screen.getByLabelText('Метаданные объекта');
+    expect(within(objectMetadata).getByText('Открыт раздел')).toBeTruthy();
+    expect(within(objectMetadata).getByText('Акты / АОСР')).toBeTruthy();
+    expect(within(objectMetadata).getByText('Последнее изменение')).toBeTruthy();
+    expect(within(objectMetadata).getByText('сегодня')).toBeTruthy();
   });
 
   it('switches object workspace sections and renders the object documents page', async () => {

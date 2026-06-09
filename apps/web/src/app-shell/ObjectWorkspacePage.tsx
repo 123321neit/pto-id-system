@@ -204,17 +204,33 @@ function ObjectWorkspaceHeader({
   metrics,
   object,
 }: ObjectWorkspaceHeaderProps): React.JSX.Element {
+  const sectionBreadcrumb = getSectionBreadcrumb(activeSection);
+
   return (
     <header className="object-workspace-header">
       <div className="object-workspace-header__title">
         <p className="object-workspace-breadcrumbs">
-          Объекты / {object.title} / {getSectionBreadcrumb(activeSection)}
+          Объекты / {object.title} / {sectionBreadcrumb}
         </p>
         <div className="object-workspace-header__heading">
           <h1 id="object-workspace-title">{object.title}</h1>
           <span className={`status-chip status-chip--${object.status}`}>{object.statusLabel}</span>
         </div>
         <p>{object.address}</p>
+        <dl className="object-workspace-header__meta-list" aria-label="Метаданные объекта">
+          <div>
+            <dt>Открыт раздел</dt>
+            <dd>{sectionBreadcrumb}</dd>
+          </div>
+          <div>
+            <dt>Последнее изменение</dt>
+            <dd>{object.updatedAtLabel}</dd>
+          </div>
+          <div>
+            <dt>Документов в объекте</dt>
+            <dd>{object.documentsCount}</dd>
+          </div>
+        </dl>
       </div>
 
       <dl className="object-workspace-metrics" aria-label="Показатели открытого объекта">

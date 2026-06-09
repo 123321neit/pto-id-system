@@ -107,6 +107,9 @@ export function DemoObjectDocumentsEditor({
               <span>
                 <p className="scope-label">Документы</p>
                 <h2 id="object-document-picker-title">Документы объекта</h2>
+                <p className="drawer-lead">
+                  Добавьте схемы, протоколы, журналы или другие документы в пункт 4 акта.
+                </p>
               </span>
               <button
                 className="compact-toggle"
@@ -116,6 +119,17 @@ export function DemoObjectDocumentsEditor({
                 Закрыть документы
               </button>
             </div>
+
+            <dl className="drawer-metadata" aria-label="Сводка выбора документов объекта">
+              <div>
+                <dt>В реестре объекта</dt>
+                <dd>{objectDocumentLibrary.length}</dd>
+              </div>
+              <div>
+                <dt>Выбрано в пункт 4</dt>
+                <dd>{selectedObjectDocuments.length}</dd>
+              </div>
+            </dl>
 
             <label className="search-field">
               Найти документ объекта
