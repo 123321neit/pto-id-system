@@ -904,3 +904,27 @@ A: Реализован owned workspace baseline only.
 
 Статус решения: narrow Phase 3 skeleton after `docs/20`. Next phase requires a
 separate Phase 4 workspace share codes task.
+
+---
+
+## 38. Global Reusable Libraries and Act Snapshots
+
+### Q: Где должны жить переиспользуемые сертификаты, организации и представители, и как защитить уже сформированные акты от будущих изменений справочников?
+
+A: Принято решение: certificates, organizations and representatives are global user-level reusable libraries.
+
+Objects do not own separate copies of those libraries. Objects store links, assignments or bindings to global entities, with object-specific details where needed. The same representative can have different role, position, authority basis/order and organization relation on different objects.
+
+Acts should not accept free-text signatories, organizations or certificates as the final data model. Correct flow:
+
+- search the global library;
+- select an existing entity;
+- or create a new entity from the search flow;
+- newly created entity goes into the global library first;
+- then it is linked/assigned to the current object or act.
+
+When an organization, representative or certificate is included in an act, the act stores a snapshot of required printed details: representative full name, position, organization, authority basis/order, role in the act, organization labels/requisites and certificate number/date/issuer/materials. Later edits to the global library must not silently change already formed acts.
+
+Certificates are global. Objects do not own certificate libraries. Acts select materials/certificates from the global certificate library, and final ID registries/packages derive used certificates from acts and deduplicate them by referenced certificate identity/provenance.
+
+Статус решения: accepted architecture decision, recorded in `docs/adr/0006-global-reusable-libraries-and-act-snapshots.md` and consolidated into `docs/PROJECT_MEMORY.md`. No backend/API, Prisma/schema/migration, upload, OCR/AI, generation or production business logic was introduced by this documentation step.

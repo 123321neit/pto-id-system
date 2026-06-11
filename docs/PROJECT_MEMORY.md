@@ -6,9 +6,9 @@
 
 # MASTER CONTEXT / SOURCE OF TRUTH
 
-# VERSION: 2026-06-11-OBJECT-OVERVIEW-GLOBAL-CERTIFICATE-ARCHITECTURE-CORRECTION
+# VERSION: 2026-06-11-GLOBAL-REUSABLE-LIBRARIES-AND-ACT-SNAPSHOTS
 
-# STATUS: FIRST ALLOWED INFRASTRUCTURE BOOTSTRAP SCAFFOLD; CANONICAL ADR BASELINE ACCEPTED; BACKEND MODULE ARCHITECTURE SKELETON INTRODUCED; FIRST TECHNICAL FRONTEND-BACKEND STATUS SLICE INTRODUCED; DATABASE FOUNDATION TECHNICAL SLICE INTRODUCED; OBJECT STORAGE FOUNDATION TECHNICAL SLICE INTRODUCED; AUTH SHARING IMPLEMENTATION PLAN ADDED; USER IDENTITY SKELETON INTRODUCED; GLOBAL SYSTEM ADMIN MARKER INTRODUCED; OWNED WORKSPACE BASELINE INTRODUCED; FIRST MOCK AOSR DEMO UI SLICE INTRODUCED; MOCK AOSR CONFIGURABLE OBJECT HEADER ORGANIZATIONS AND REPRESENTATIVE LIBRARY INTRODUCED; MOCK AOSR DEMO UX/PREVIEW REFINED; MOCK APP SHELL AND OBJECT DASHBOARD INTRODUCED; FRONTEND-ONLY MOCK REPRESENTATIVES/ORGANIZATIONS MANAGEMENT PAGE INTRODUCED; FRONTEND-ONLY MOCK CERTIFICATE LIBRARY PAGE INTRODUCED; STAGE 5 MOCK AOSR WORKSPACE UX STABILIZED; AOSR EDITOR UX CLEANUP INTRODUCED; AOSR WORKSPACE DRAWER UX INTRODUCED; FRONTEND-ONLY MOCK OBJECT DOCUMENT LIBRARY INTRODUCED; AOSR WORKSPACE APPLICATIONS UX CLEANUP INTRODUCED; FRONTEND-ONLY MOCK OBJECT COMPLIANCE DEFAULTS AND ACT OVERRIDES INTRODUCED; FRONTEND-ONLY MOCK OBJECT WORKSPACE VISUAL PASS INTRODUCED; FRONTEND-ONLY MOCK OBJECT WORKSPACE SHELL INTRODUCED; AOSR DOCUMENT PREVIEW DRAWER UX INTRODUCED; AOSR DOCUMENT PREVIEW PAGE VISUALIZATION REFINED; FRONTEND-ONLY OBJECT DOCUMENT WORKSPACE INTRODUCED; FRONTEND-ONLY OBJECT CERTIFICATE WORKSPACE INTRODUCED; FRONTEND-ONLY ID REGISTRY V1 INTRODUCED; FRONTEND-ONLY FINAL ID PACKAGE MOCK INTRODUCED; FRONTEND-ONLY ACT TYPE METADATA PREP INTRODUCED; AOSR READINESS PANEL V1 INTRODUCED; FINAL PACKAGE READINESS V1 INTRODUCED; FRONTEND-ONLY OBJECT WORKSPACE UX HIERARCHY POLISH INTRODUCED; FRONTEND-ONLY OBJECT OVERVIEW AND GLOBAL CERTIFICATE ARCHITECTURE UX CORRECTION INTRODUCED
+# STATUS: FIRST ALLOWED INFRASTRUCTURE BOOTSTRAP SCAFFOLD; CANONICAL ADR BASELINE ACCEPTED; BACKEND MODULE ARCHITECTURE SKELETON INTRODUCED; FIRST TECHNICAL FRONTEND-BACKEND STATUS SLICE INTRODUCED; DATABASE FOUNDATION TECHNICAL SLICE INTRODUCED; OBJECT STORAGE FOUNDATION TECHNICAL SLICE INTRODUCED; AUTH SHARING IMPLEMENTATION PLAN ADDED; USER IDENTITY SKELETON INTRODUCED; GLOBAL SYSTEM ADMIN MARKER INTRODUCED; OWNED WORKSPACE BASELINE INTRODUCED; FIRST MOCK AOSR DEMO UI SLICE INTRODUCED; MOCK AOSR CONFIGURABLE OBJECT HEADER ORGANIZATIONS AND REPRESENTATIVE LIBRARY INTRODUCED; MOCK AOSR DEMO UX/PREVIEW REFINED; MOCK APP SHELL AND OBJECT DASHBOARD INTRODUCED; FRONTEND-ONLY MOCK REPRESENTATIVES/ORGANIZATIONS MANAGEMENT PAGE INTRODUCED; FRONTEND-ONLY MOCK CERTIFICATE LIBRARY PAGE INTRODUCED; STAGE 5 MOCK AOSR WORKSPACE UX STABILIZED; AOSR EDITOR UX CLEANUP INTRODUCED; AOSR WORKSPACE DRAWER UX INTRODUCED; FRONTEND-ONLY MOCK OBJECT DOCUMENT LIBRARY INTRODUCED; AOSR WORKSPACE APPLICATIONS UX CLEANUP INTRODUCED; FRONTEND-ONLY MOCK OBJECT COMPLIANCE DEFAULTS AND ACT OVERRIDES INTRODUCED; FRONTEND-ONLY MOCK OBJECT WORKSPACE VISUAL PASS INTRODUCED; FRONTEND-ONLY MOCK OBJECT WORKSPACE SHELL INTRODUCED; AOSR DOCUMENT PREVIEW DRAWER UX INTRODUCED; AOSR DOCUMENT PREVIEW PAGE VISUALIZATION REFINED; FRONTEND-ONLY OBJECT DOCUMENT WORKSPACE INTRODUCED; FRONTEND-ONLY OBJECT CERTIFICATE WORKSPACE INTRODUCED; FRONTEND-ONLY ID REGISTRY V1 INTRODUCED; FRONTEND-ONLY FINAL ID PACKAGE MOCK INTRODUCED; FRONTEND-ONLY ACT TYPE METADATA PREP INTRODUCED; AOSR READINESS PANEL V1 INTRODUCED; FINAL PACKAGE READINESS V1 INTRODUCED; FRONTEND-ONLY OBJECT WORKSPACE UX HIERARCHY POLISH INTRODUCED; FRONTEND-ONLY OBJECT OVERVIEW AND GLOBAL CERTIFICATE ARCHITECTURE UX CORRECTION INTRODUCED; GLOBAL REUSABLE LIBRARIES AND ACT SNAPSHOTS ADR ACCEPTED
 
 # LANGUAGE: RU
 
@@ -31,7 +31,7 @@
 Текущая стадия проекта:
 
 ```text
-FIRST ALLOWED INFRASTRUCTURE BOOTSTRAP SCAFFOLD; CANONICAL ADR BASELINE ACCEPTED; BACKEND MODULE ARCHITECTURE SKELETON INTRODUCED; FIRST TECHNICAL FRONTEND-BACKEND STATUS SLICE INTRODUCED; DATABASE FOUNDATION TECHNICAL SLICE INTRODUCED; OBJECT STORAGE FOUNDATION TECHNICAL SLICE INTRODUCED; AUTH SHARING IMPLEMENTATION PLAN ADDED; USER IDENTITY SKELETON INTRODUCED; GLOBAL SYSTEM ADMIN MARKER INTRODUCED; OWNED WORKSPACE BASELINE INTRODUCED; FIRST MOCK AOSR DEMO UI SLICE INTRODUCED; MOCK AOSR CONFIGURABLE OBJECT HEADER ORGANIZATIONS AND REPRESENTATIVE LIBRARY INTRODUCED; MOCK AOSR DEMO UX/PREVIEW REFINED; MOCK APP SHELL AND OBJECT DASHBOARD INTRODUCED; FRONTEND-ONLY MOCK REPRESENTATIVES/ORGANIZATIONS MANAGEMENT PAGE INTRODUCED; FRONTEND-ONLY MOCK CERTIFICATE LIBRARY PAGE INTRODUCED; STAGE 5 MOCK AOSR WORKSPACE UX STABILIZED; AOSR EDITOR UX CLEANUP INTRODUCED; AOSR WORKSPACE DRAWER UX INTRODUCED; FRONTEND-ONLY MOCK OBJECT DOCUMENT LIBRARY INTRODUCED; AOSR WORKSPACE APPLICATIONS UX CLEANUP INTRODUCED; FRONTEND-ONLY MOCK OBJECT COMPLIANCE DEFAULTS AND ACT OVERRIDES INTRODUCED; FRONTEND-ONLY MOCK OBJECT WORKSPACE VISUAL PASS INTRODUCED; FRONTEND-ONLY MOCK OBJECT WORKSPACE SHELL INTRODUCED; AOSR DOCUMENT PREVIEW DRAWER UX INTRODUCED; AOSR DOCUMENT PREVIEW PAGE VISUALIZATION REFINED; FRONTEND-ONLY OBJECT DOCUMENT WORKSPACE INTRODUCED; FRONTEND-ONLY OBJECT CERTIFICATE WORKSPACE INTRODUCED; FRONTEND-ONLY ID REGISTRY V1 INTRODUCED; FRONTEND-ONLY FINAL ID PACKAGE MOCK INTRODUCED; FRONTEND-ONLY ACT TYPE METADATA PREP INTRODUCED; AOSR READINESS PANEL V1 INTRODUCED; FINAL PACKAGE READINESS V1 INTRODUCED; FRONTEND-ONLY OBJECT WORKSPACE UX HIERARCHY POLISH INTRODUCED; FRONTEND-ONLY OBJECT OVERVIEW AND GLOBAL CERTIFICATE ARCHITECTURE UX CORRECTION INTRODUCED
+FIRST ALLOWED INFRASTRUCTURE BOOTSTRAP SCAFFOLD; CANONICAL ADR BASELINE ACCEPTED; BACKEND MODULE ARCHITECTURE SKELETON INTRODUCED; FIRST TECHNICAL FRONTEND-BACKEND STATUS SLICE INTRODUCED; DATABASE FOUNDATION TECHNICAL SLICE INTRODUCED; OBJECT STORAGE FOUNDATION TECHNICAL SLICE INTRODUCED; AUTH SHARING IMPLEMENTATION PLAN ADDED; USER IDENTITY SKELETON INTRODUCED; GLOBAL SYSTEM ADMIN MARKER INTRODUCED; OWNED WORKSPACE BASELINE INTRODUCED; FIRST MOCK AOSR DEMO UI SLICE INTRODUCED; MOCK AOSR CONFIGURABLE OBJECT HEADER ORGANIZATIONS AND REPRESENTATIVE LIBRARY INTRODUCED; MOCK AOSR DEMO UX/PREVIEW REFINED; MOCK APP SHELL AND OBJECT DASHBOARD INTRODUCED; FRONTEND-ONLY MOCK REPRESENTATIVES/ORGANIZATIONS MANAGEMENT PAGE INTRODUCED; FRONTEND-ONLY MOCK CERTIFICATE LIBRARY PAGE INTRODUCED; STAGE 5 MOCK AOSR WORKSPACE UX STABILIZED; AOSR EDITOR UX CLEANUP INTRODUCED; AOSR WORKSPACE DRAWER UX INTRODUCED; FRONTEND-ONLY MOCK OBJECT DOCUMENT LIBRARY INTRODUCED; AOSR WORKSPACE APPLICATIONS UX CLEANUP INTRODUCED; FRONTEND-ONLY MOCK OBJECT COMPLIANCE DEFAULTS AND ACT OVERRIDES INTRODUCED; FRONTEND-ONLY MOCK OBJECT WORKSPACE VISUAL PASS INTRODUCED; FRONTEND-ONLY MOCK OBJECT WORKSPACE SHELL INTRODUCED; AOSR DOCUMENT PREVIEW DRAWER UX INTRODUCED; AOSR DOCUMENT PREVIEW PAGE VISUALIZATION REFINED; FRONTEND-ONLY OBJECT DOCUMENT WORKSPACE INTRODUCED; FRONTEND-ONLY OBJECT CERTIFICATE WORKSPACE INTRODUCED; FRONTEND-ONLY ID REGISTRY V1 INTRODUCED; FRONTEND-ONLY FINAL ID PACKAGE MOCK INTRODUCED; FRONTEND-ONLY ACT TYPE METADATA PREP INTRODUCED; AOSR READINESS PANEL V1 INTRODUCED; FINAL PACKAGE READINESS V1 INTRODUCED; FRONTEND-ONLY OBJECT WORKSPACE UX HIERARCHY POLISH INTRODUCED; FRONTEND-ONLY OBJECT OVERVIEW AND GLOBAL CERTIFICATE ARCHITECTURE UX CORRECTION INTRODUCED; GLOBAL REUSABLE LIBRARIES AND ACT SNAPSHOTS ADR ACCEPTED
 ```
 
 Проект принял первый явно разрешённый infrastructure/bootstrap scaffold,
@@ -50,6 +50,7 @@ Canonical ADR baseline accepted. Authoritative ADR references:
 - `docs/adr/0003-file-backed-evidence-and-derived-artifacts.md`
 - `docs/adr/0004-immutable-revisions-and-package-snapshots.md`
 - `docs/adr/0005-modular-monolith-and-bounded-contexts.md`
+- `docs/adr/0006-global-reusable-libraries-and-act-snapshots.md`
 
 Future implementation must comply with these ADRs. They consolidate existing accepted decisions only and do not permit production feature coding.
 
@@ -373,6 +374,33 @@ trees or summaries; only document number, `Последнее изменение
 `Версия документа` remain. This is frontend mock UX only and adds no backend,
 API, persistence, Prisma/schema/migrations, auth, uploads, OCR/AI, DOCX/PDF/ZIP
 generation or production business logic.
+
+Architecture decision accepted: global reusable libraries and act snapshots.
+Certificates, organizations and representatives are global user-level reusable
+libraries. Objects do not own separate copies of these libraries. Objects store
+links, assignments or bindings to global entities and may carry object-specific
+assignment details such as role, position, authority basis/order, organization
+relation, captions and ordering.
+
+Acts must not accept free-text signatories, organizations or certificates as the
+final data model. The correct flow is: search the global library, select an
+existing entity, or create a new entity from the search flow; a newly created
+entity is stored in the global library first and only then linked/assigned to
+the current object or act.
+
+When an organization, representative or certificate is included in an act, the
+act must store a snapshot of the required printed details: representative full
+name, position, organization, authority basis/order, role in the act,
+organization labels/requisites and certificate number/date/issuer/materials.
+Later edits to the global library must not silently change already formed acts.
+This can later be implemented through snapshots, versions or issued-document
+records, but historical print stability is mandatory.
+
+Certificates remain global. Objects do not own certificate libraries. Acts
+select materials/certificates from the global certificate library, and final ID
+registries/packages derive used certificates from acts and deduplicate them by
+source certificate identity/provenance. This decision is recorded in
+`docs/adr/0006-global-reusable-libraries-and-act-snapshots.md`.
 
 ---
 
@@ -1026,7 +1054,11 @@ Document editor:
 - подстрочный текст должен быть дефолтным, но редактируемым;
 - в одном блоке может быть несколько фамилий;
 - порядок представителей критически важен;
-- возможны global representatives, object representatives и temporary representatives.
+- global representative является reusable entity;
+- object-level representative assignment хранит объектовые роль, должность,
+  основание полномочий, связь с организацией и порядок;
+- акт выбирает object assignment и фиксирует printed snapshot для исторической
+  стабильности.
 
 ### Gray / document number
 
@@ -1113,27 +1145,34 @@ Document editor:
 
 ## 21. Representatives
 
-Поддерживаются:
+Representative — глобальная user-level reusable entity.
 
-- global representatives;
-- object representatives;
-- temporary representatives.
+Object не владеет отдельной копией базы представителей. На объекте хранится
+`ObjectRepresentativeAssignment` / binding to global representative with
+object-specific printed details.
 
-Representative fields:
+Object assignment может отличаться для одного и того же представителя на разных
+объектах:
 
-- organization;
-- role;
-- subtitle;
-- sort_order;
-- authority basis;
-- contact info, если нужно;
-- registry/doc block mapping.
+- role / signature label;
+- position;
+- authority basis/order;
+- organization relation;
+- subtitle/caption;
+- sort order;
+- registry/doc block mapping;
+- contact info, если нужно.
 
 Порядок критически важен.
 
 В одном блоке может быть несколько фамилий.
 
-Temporary representatives создаются только внутри конкретного документа и не обязательно попадают в глобальную библиотеку.
+Акт не должен хранить свободного temporary representative как final source of
+truth. Если нужного человека нет в поиске, пользователь создаёт новую карточку
+представителя в глобальной библиотеке from the search flow, затем назначает её
+объекту или акту. При включении в акт сохраняется snapshot печатных реквизитов,
+чтобы последующие изменения глобальной карточки не меняли уже сформированный
+акт.
 
 ---
 
@@ -1205,6 +1244,15 @@ ObjectCompanySnapshot может включать:
 - work contract data;
 - project section data.
 
+Global organization library and object assignments:
+
+- Organization is a global user-level reusable entity.
+- Object stores links/assignments and object-specific organization details for
+  headers, contract context, SRO, captions and printed requisites.
+- Acts use the object assignment where applicable and store printed snapshots.
+- Editing the global organization card later must not silently change already
+  formed acts or historical object/document snapshots.
+
 ---
 
 ## 24. Certificate Library
@@ -1243,7 +1291,7 @@ Certificate fields:
 - timestamps;
 - soft delete.
 
-Критическое business rule:
+Критические business rules:
 
 ```text
 Нельзя просто вбить номер сертификата вручную, если сертификата нет в библиотеке.
@@ -1252,6 +1300,14 @@ Certificate fields:
 Причина: иначе при package build нечего будет прикладывать.
 
 Сначала сертификат должен существовать физически.
+
+Certificate — global user-level reusable entity. Object не владеет отдельной
+certificate library. Acts select materials/certificates from the global
+certificate library; registries and final packages derive used certificates from
+acts and deduplicate them by source certificate identity/provenance. When a
+certificate is included in an act, the act stores required printed details in an
+output snapshot so later certificate-card corrections do not silently change
+already formed acts.
 
 ---
 
@@ -2168,7 +2224,7 @@ docs/18-initial-repository-bootstrap-and-development-rules-v1.md
 | `FolderTree` / `Folder`  | Самостоятельный object-scoped aggregate и его business collection nodes                      | Draft baseline `docs/09-aggregate-boundaries-and-invariants.md`: владеет hierarchy/placement, move, duplicate и soft delete; не владеет lifecycle документов. |
 | `CompanyProfile`         | Переиспользуемая карточка компании внутри tenant                                             | Может меняться для будущих объектов; не должна ретроспективно менять исторические документы.                                                                  |
 | `ObjectCompanySnapshot`  | Зафиксированные данные компании на объекте                                                   | Используется документами и реестром для исторически устойчивого рендера.                                                                                      |
-| `Representative`         | Представитель/подписант и его полномочия                                                     | Допускаются global, object и temporary representatives; важны порядок и overrides.                                                                            |
+| `Representative`         | Глобальная карточка представителя/подписанта                                                  | Object-specific assignments store role, position, authority, organization relation and order; acts capture printed snapshots.                                  |
 | `RegistrySignerSnapshot` | Выбранный подписант конкретного реестра                                                      | Подписант реестра может отличаться от подписантов актов.                                                                                                      |
 | `ProjectDrawingSet`      | Комплект рабочих чертежей, по которым выполняются работы                                     | Draft baseline: owned entity в `ObjectDocumentationContext`; не является исполнительной схемой; участвует в АОСР и блоке реестра.                             |
 | `ProjectSourceFile`      | Загруженный project source material: PDF, drawing, specification или future supported source | Принадлежит конкретным `Workspace` и `Object`; служит provenance/reference context, но не становится единственным source of truth.                            |
@@ -2616,7 +2672,7 @@ Initial Repository Bootstrap and Development Rules V1:
 31. Foreman active permissions must not be implemented without separate approval.
 32. Exact first AOSR participant requirements must not be hardcoded before template review.
 33. Infrastructure provider/server lock-in is forbidden: database, Redis, storage, public/download URLs, CORS, session secrets and app base URLs are config-driven; provider SDKs stay inside narrow infrastructure adapters.
-34. Canonical ADR baseline 0001-0005 in `docs/adr/` is accepted and must be followed by all future implementation work.
+34. Canonical ADR baseline 0001-0005 in `docs/adr/` is accepted, and ADR 0006 adds the accepted global reusable libraries / act snapshots rule; all must be followed by future implementation work.
 35. `docs/19-sharing-and-access-model-v1.md` supersedes `docs/10-auth-workspace-rbac-model.md` for MVP implementation scope.
 36. `docs/20-auth-sharing-implementation-plan-v1.md` fixes auth/sharing implementation sequence; do not skip from docs to share grants, certificate-library sharing, Prisma models, migrations or API routes without separate phase-scoped approval.
 37. Phase 1 user identity skeleton is only `Actor` primitive plus current actor resolver utility/port; identity alone grants no workspace, document, certificate, package or file access.
@@ -2628,6 +2684,10 @@ Initial Repository Bootstrap and Development Rules V1:
     owner-only access utility; it is not persistent workspace creation, Prisma,
     migrations, routes/controllers, frontend UI, share codes/grants, admin
     support tenant browsing or business feature implementation.
+40. Certificates, organizations and representatives are global reusable
+    user-level libraries. Objects store assignments/links, and acts store
+    printed snapshots so later global library edits do not silently change
+    already formed acts.
 
 ---
 
@@ -2642,6 +2702,7 @@ Initial Repository Bootstrap and Development Rules V1:
 | Должен ли реестр быть отдельным редактируемым документом?                    | Нет, registry is derived projection.                                                                                                                                                                                                                                                                                                                                                                                    | Разрешены overrides порядка/видимости/примечаний, но не ручная замена source fields.                                                                                                                                                                                                                           |
 | Как трактовать цветовую разметку АОСР?                                       | Жёлтый object, зелёный representatives, серый number, фиолетовый date, бирюзовый variable document data.                                                                                                                                                                                                                                                                                                                | Разметка формирует boundaries данных документа и объекта.                                                                                                                                                                                                                                                      |
 | Можно ли вписать certificate number без сертификата?                         | Нет.                                                                                                                                                                                                                                                                                                                                                                                                                    | Certificate Library item с физическим файлом обязателен до ссылки из акта/реестра.                                                                                                                                                                                                                             |
+| Где живут сертификаты, организации и представители?                          | В глобальных user-level reusable libraries.                                                                                                                                                                                                                                                                                                                                                                             | Objects store assignments/links and object-specific details; acts store printed snapshots. Free-text direct entry into acts is not the final model.                                                                                                                                                              |
 | На какую дату валидировать сертификат?                                       | На дату документа, не на сегодняшнюю дату.                                                                                                                                                                                                                                                                                                                                                                              | Исторически корректный документ сохраняет валидность; просрочка для нового документа даёт warning.                                                                                                                                                                                                             |
 | Можно ли править final document?                                             | Да.                                                                                                                                                                                                                                                                                                                                                                                                                     | `final` — validated published revision, правка вызывает `revision++`, revalidation и invalidation package snapshots.                                                                                                                                                                                           |
 | Можно ли изменить template version после использования?                      | Нет.                                                                                                                                                                                                                                                                                                                                                                                                                    | Used template version immutable; новая форма оформляется новой версией.                                                                                                                                                                                                                                        |
@@ -2653,7 +2714,7 @@ Initial Repository Bootstrap and Development Rules V1:
 | Можно ли использовать загруженный проект для AI-assisted ИД и поиска ошибок? | Да, как Workspace/Object-scoped source material с proposals-only workflow.                                                                                                                                                                                                                                                                                                                                              | Structured data остаются source of truth; extracted data/links/findings требуют user confirmation, traceability and audit.                                                                                                                                                                                     |
 | Где хранить данные компании на объекте?                                      | Через `ObjectCompanySnapshot`.                                                                                                                                                                                                                                                                                                                                                                                          | Изменение профиля компании не переписывает исторические документы объекта.                                                                                                                                                                                                                                     |
 | Может ли Object владеть всем сразу?                                          | Нет.                                                                                                                                                                                                                                                                                                                                                                                                                    | Требуются отдельные aggregates/contexts для documents, certificates, schemes, templates и packages.                                                                                                                                                                                                            |
-| Какая стадия проекта сейчас?                                                 | Infrastructure scaffold accepted; canonical ADR baseline accepted; backend module skeleton, technical status slice, database foundation technical slice, object storage foundation technical slice, auth sharing implementation plan, Phase 1 user identity skeleton, Phase 2 global system admin marker and Phase 3 owned workspace baseline introduced; feature coding still blocked beyond explicitly scoped slices. | Следующий implementation step требует отдельного явного задания и проверки against project memory, ADR 0001-0005 and `docs/20` when auth/sharing is involved.                                                                                                                                                  |
+| Какая стадия проекта сейчас?                                                 | Infrastructure scaffold accepted; canonical ADR baseline accepted; backend module skeleton, technical status slice, database foundation technical slice, object storage foundation technical slice, auth sharing implementation plan, Phase 1 user identity skeleton, Phase 2 global system admin marker, Phase 3 owned workspace baseline and ADR 0006 global reusable libraries introduced; feature coding still blocked beyond explicitly scoped slices. | Следующий implementation step требует отдельного явного задания и проверки against project memory, ADR 0001-0006 and `docs/20` when auth/sharing is involved.                                                                                                                                                  |
 | Кто является пользователем SaaS?                                             | Физическое лицо с одним аккаунтом и owned working context.                                                                                                                                                                                                                                                                                                                                                              | Пользователь может работать сам и подключаться к чужим resources через share grants.                                                                                                                                                                                                                           |
 | Где живут права доступа в MVP?                                               | В resource-scoped `ShareGrant`, выданном owner через share code / invite code.                                                                                                                                                                                                                                                                                                                                          | Capabilities replace roles; default access is view-only and default deny when capability missing.                                                                                                                                                                                                              |
 | Что случилось с RBAC role matrix?                                            | Superseded for MVP by `docs/19-sharing-and-access-model-v1.md`.                                                                                                                                                                                                                                                                                                                                                         | `Foreman` и `Owner/Admin/PTO Engineer/Viewer` matrix deferred.                                                                                                                                                                                                                                                 |
@@ -2668,7 +2729,7 @@ Initial Repository Bootstrap and Development Rules V1:
 | Какой first MVP scope принят к review?                                       | `docs/16-mvp-scope-and-first-forms-v1.md`.                                                                                                                                                                                                                                                                                                                                                                              | АОСР mandatory first-class form; certificate library, executive schemes, derived registry, package outputs and onboarding hints входят; `TestAct`/`TechnicalReadinessAct`, AI/OCR dependency and enterprise/platform features deferred.                                                                        |
 | Какой stack/implementation direction выбран для MVP?                         | `docs/17-tech-stack-and-implementation-strategy-v1.md`.                                                                                                                                                                                                                                                                                                                                                                 | React/TypeScript/Vite frontend, NestJS modular monolith backend, PostgreSQL, Redis/BullMQ, domain-scoped storage, deterministic DOCX/PDF/ZIP generation, PostgreSQL-first search and optional proposal-only AI/OCR. Feature coding remains blocked without separate explicit task.                             |
 | Какие правила первого scaffold действуют?                                    | `docs/18-initial-repository-bootstrap-and-development-rules-v1.md`.                                                                                                                                                                                                                                                                                                                                                     | First scaffold limited to tooling/app shells/placeholders. Database and object storage foundations now have separately authorized technical health boundaries only; no domain models, migrations, OpenAPI, real auth/uploads/file APIs/queue/generation, AI/OCR or deployment infra without separate approval. |
-| Какие ADR являются canonical baseline?                                       | `docs/adr/0001-structured-data-source-of-truth.md`, `docs/adr/0002-typed-document-domain-model.md`, `docs/adr/0003-file-backed-evidence-and-derived-artifacts.md`, `docs/adr/0004-immutable-revisions-and-package-snapshots.md`, `docs/adr/0005-modular-monolith-and-bounded-contexts.md`.                                                                                                                              | Future implementation must comply with these files; they consolidate existing decisions only and do not add feature/code permission.                                                                                                                                                                           |
+| Какие ADR являются canonical/accepted?                                       | `docs/adr/0001-structured-data-source-of-truth.md`, `docs/adr/0002-typed-document-domain-model.md`, `docs/adr/0003-file-backed-evidence-and-derived-artifacts.md`, `docs/adr/0004-immutable-revisions-and-package-snapshots.md`, `docs/adr/0005-modular-monolith-and-bounded-contexts.md`, `docs/adr/0006-global-reusable-libraries-and-act-snapshots.md`.                                                              | Future implementation must comply with these files; they consolidate/record accepted decisions only and do not add feature/code permission.                                                                                                                                                                   |
 
 ### 51.1 Accepted ADR register
 
@@ -2679,6 +2740,7 @@ Initial Repository Bootstrap and Development Rules V1:
 | ADR 0003 | `docs/adr/0003-file-backed-evidence-and-derived-artifacts.md`: certificates and executive schemes are file-backed evidence; generated artifacts are derived; no evidence without physical file; storage/provider isolation required. | Принято; canonical. |
 | ADR 0004 | `docs/adr/0004-immutable-revisions-and-package-snapshots.md`: final edits create new revisions; released revisions and package snapshots are immutable; no silent mutation/history rewrite.                                          | Принято; canonical. |
 | ADR 0005 | `docs/adr/0005-modular-monolith-and-bounded-contexts.md`: modular monolith first with bounded contexts; no premature microservices/event sourcing/CQRS split; infrastructure adapters isolated.                                      | Принято; canonical. |
+| ADR 0006 | `docs/adr/0006-global-reusable-libraries-and-act-snapshots.md`: certificates, organizations and representatives are global reusable libraries; objects store assignments/links; acts store printed snapshots.                       | Принято.            |
 
 ### 51.2 Boundary baseline applied in Conceptual Database Schema V1
 
@@ -4204,6 +4266,41 @@ production domain/API/persistence work remain separate explicit tasks.
 - no share codes/grants;
 - no production registry, package, certificate, object-document or AOSR
   business logic.
+
+### 2026-06-11 — Global reusable libraries and act snapshots ADR accepted
+
+- Документ: `docs/adr/0006-global-reusable-libraries-and-act-snapshots.md`
+- Статус: `accepted architecture decision`
+- Описание: records the global reusable entity model for certificates,
+  organizations and representatives, plus act snapshots for historical print
+  stability.
+
+Зафиксировано:
+
+- certificates are global user-level library entities;
+- organizations are global user-level library entities;
+- representatives are global user-level library entities;
+- objects store assignments/links to global entities, with object-specific
+  role, position, authority, organization relation, captions and ordering where
+  needed;
+- acts must avoid direct free-text signatories, organizations and certificates
+  as the final data model;
+- "create new" from search creates a global entity first, then assigns/links it
+  to the current object or act;
+- acts store printed snapshots for included organizations, representatives and
+  certificates, so later global library edits do not silently change already
+  formed acts;
+- registries and final packages derive used certificates from acts and
+  deduplicate them by source certificate identity/provenance.
+
+Что не было введено:
+
+- no backend/API behavior;
+- no Prisma/schema/migrations;
+- no persistence;
+- no uploads or OCR/AI;
+- no DOCX/PDF/ZIP generation;
+- no production data-model implementation.
 
 ### 2026-06-09 — Frontend-only act type metadata prep introduced
 

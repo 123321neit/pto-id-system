@@ -40,7 +40,7 @@ const emptyRepresentativeForm: RepresentativeFormState = {
 
 export function RepresentativesOrganizationsPage({
   backLabel = 'Вернуться к объектам',
-  description = 'Сначала сохраните организации и представителей, потом добавляйте их в объект и акты через поиск.',
+  description = 'Глобальные библиотеки организаций и представителей. Из поиска создавайте или выбирайте карточку, затем назначайте ее объекту и акту.',
   onBackToObjects,
 }: RepresentativesOrganizationsPageProps): React.JSX.Element {
   const {
@@ -130,8 +130,8 @@ export function RepresentativesOrganizationsPage({
         >
           <WorkflowStep index="1" title="Добавьте организацию" />
           <WorkflowStep index="2" title="Добавьте представителя" />
-          <WorkflowStep index="3" title="Откройте объект" />
-          <WorkflowStep index="4" title="Добавьте подписанта в акт" />
+          <WorkflowStep index="3" title="Назначьте на объект" />
+          <WorkflowStep index="4" title="Выберите в акт" />
         </ol>
 
         <label className="dashboard-search management-search">
@@ -280,7 +280,7 @@ export function RepresentativesOrganizationsPage({
                   />
                 </label>
                 <label>
-                  Роль / подпись
+                  Базовая роль / подпись
                   <input
                     required
                     onChange={(event) => {
@@ -290,7 +290,7 @@ export function RepresentativesOrganizationsPage({
                   />
                 </label>
                 <label>
-                  Должность
+                  Базовая должность
                   <input
                     required
                     onChange={(event) => {
@@ -300,7 +300,7 @@ export function RepresentativesOrganizationsPage({
                   />
                 </label>
                 <label>
-                  Организация представителя
+                  Базовая организация
                   <input
                     required
                     onChange={(event) => {
@@ -355,9 +355,9 @@ export function RepresentativesOrganizationsPage({
             </ul>
 
             <ConceptNote title="Представители в объекте">
-              Представителя можно переиспользовать из библиотеки. В объекте отдельно редактируются
-              роль, порядок подписи и основание полномочий. Если человек нужен только для одного
-              акта, его можно добавить временно внутри этого акта без сохранения в объектовую базу.
+              Представителя переиспользуют из глобальной библиотеки. На объекте отдельно
+              редактируются роль, должность, порядок подписи, организация и основание полномочий.
+              Акт выбирает назначение и хранит печатный снимок.
             </ConceptNote>
           </section>
         </div>

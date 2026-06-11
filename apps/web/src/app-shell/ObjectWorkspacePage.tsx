@@ -226,7 +226,7 @@ export function ObjectWorkspacePage({
         {activeSection === 'representatives' ? (
           <RepresentativesOrganizationsPage
             backLabel="Вернуться к обзору"
-            description="Организации, представители и основания полномочий для объекта и актов"
+            description="Глобальные организации и представители плюс объектовые назначения для актов"
             onBackToObjects={() => {
               setActiveSection('overview');
             }}

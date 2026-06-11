@@ -72,22 +72,24 @@ export function DemoSignatoriesEditor({
       </div>
 
       <label className="search-field">
-        Добавить подписанта из базы объекта
+        Добавить подписанта из назначений объекта
         <input
           onChange={(event) => {
             onChangeActRepresentativeSearch(event.currentTarget.value);
           }}
-          placeholder="ФИО, роль или организация из базы объекта"
+          placeholder="ФИО, роль или организация из назначения"
           value={actRepresentativeSearch}
         />
       </label>
-      <p className="helper-note">Если нужного человека нет, добавьте временного подписанта.</p>
+      <p className="helper-note">
+        Акт выбирает назначение объекта и сохраняет печатный снимок подписанта.
+      </p>
 
       {actRepresentativeSearch.trim() !== '' ? (
         <div
           className="library-list library-list--compact"
           role="list"
-          aria-label="Представители объекта для текущего акта"
+          aria-label="Назначения представителей для текущего акта"
         >
           {filteredRepresentatives.map((representative) => {
             const isInCurrentAct = selectedSignatories.some(({ id }) => id === representative.id);
@@ -128,19 +130,19 @@ export function DemoSignatoriesEditor({
                 type="checkbox"
               />
               <span>
-                <strong>Добавить этого представителя в базу представителей объекта</strong>
+                <strong>Также оставить назначение в настройках объекта</strong>
               </span>
             </label>
           }
           form={manualRepresentativeForm}
           labels={{
-            authorityBasis: 'Основание полномочий для акта',
-            details: 'Детали для акта',
-            fullName: 'ФИО для акта',
-            nrsId: 'Номер НРС для акта',
-            organization: 'Организация для акта',
-            position: 'Должность для акта',
-            roleLabel: 'Роль для акта',
+            authorityBasis: 'Основание полномочий для снимка акта',
+            details: 'Детали для снимка акта',
+            fullName: 'ФИО для снимка акта',
+            nrsId: 'Номер НРС для снимка акта',
+            organization: 'Организация для снимка акта',
+            position: 'Должность для снимка акта',
+            roleLabel: 'Роль для снимка акта',
           }}
           onChange={onChangeManualRepresentativeForm}
           onSubmit={onAddManualRepresentative}

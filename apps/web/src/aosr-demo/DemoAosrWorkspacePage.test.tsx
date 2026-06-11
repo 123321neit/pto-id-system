@@ -162,7 +162,9 @@ describe('DemoAosrWorkspacePage', () => {
 
     expect(screen.getByRole('button', { name: 'Настройки объекта' })).toBeTruthy();
     expect(screen.queryByRole('dialog', { name: 'Настройки объекта' })).toBeNull();
-    expect(screen.queryByRole('region', { name: 'Представители объекта' })).toBeNull();
+    expect(
+      screen.queryByRole('region', { name: 'Назначения представителей на объект' }),
+    ).toBeNull();
     expect(screen.queryByLabelText('Найти организацию в глобальной библиотеке')).toBeNull();
     expect(screen.queryByLabelText('Найти материал в библиотеке сертификатов')).toBeNull();
     expect(
@@ -309,18 +311,16 @@ describe('DemoAosrWorkspacePage', () => {
     await openObjectSettings(user);
 
     expect(
-      screen.getByText(
-        'Демо-база представителей уже заполнена; на реальном объекте пользователь выбирает их сам.',
-      ),
+      screen.getByText(/Демо-назначения уже заполнены; в реальной модели пользователь выбирает/u),
     ).toBeTruthy();
   });
 
   it('explains the act signatory search source and fallback', () => {
     renderDemoWorkspace();
 
-    expect(screen.getByLabelText('Добавить подписанта из базы объекта')).toBeTruthy();
+    expect(screen.getByLabelText('Добавить подписанта из назначений объекта')).toBeTruthy();
     expect(
-      screen.getByText('Если нужного человека нет, добавьте временного подписанта.'),
+      screen.getByText('Акт выбирает назначение объекта и сохраняет печатный снимок подписанта.'),
     ).toBeTruthy();
   });
 
@@ -575,13 +575,13 @@ describe('DemoAosrWorkspacePage', () => {
     expect(previewText).toContain('объектовый договор N ГП-1');
   });
 
-  it('adds a representative to the object base from the mock global representative library search', async () => {
+  it('adds a representative assignment from the mock global representative library search', async () => {
     const user = userEvent.setup();
 
     renderDemoWorkspace();
 
     await openObjectSettings(user);
-    await user.click(screen.getByRole('button', { name: 'Добавить представителя' }));
+    await user.click(screen.getByRole('button', { name: 'Добавить назначение' }));
     await user.type(
       screen.getByLabelText('Найти представителя в глобальной библиотеке'),
       'генподряд',
@@ -603,11 +603,9 @@ describe('DemoAosrWorkspacePage', () => {
     );
     await user.clear(screen.getByLabelText('Роль на этом объекте'));
     await user.type(screen.getByLabelText('Роль на этом объекте'), 'Представитель генподрядчика');
-    await user.click(
-      screen.getByRole('button', { name: 'Сохранить представителя в базу объекта' }),
-    );
+    await user.click(screen.getByRole('button', { name: 'Сохранить назначение представителя' }));
 
-    const objectLibrary = screen.getByRole('list', { name: 'Представители объекта' });
+    const objectLibrary = screen.getByRole('list', { name: 'Назначения представителей объекта' });
     expect(within(objectLibrary).getByText('Николаев Н.Н.')).toBeTruthy();
   });
 
@@ -618,15 +616,18 @@ describe('DemoAosrWorkspacePage', () => {
 
     expect(getPreviewText()).not.toContain('Кузнецова А.А.');
 
-    await user.type(screen.getByLabelText('Добавить подписанта из базы объекта'), 'заказчика');
+    await user.type(
+      screen.getByLabelText('Добавить подписанта из назначений объекта'),
+      'заказчика',
+    );
 
     const objectPicker = screen.getByRole('list', {
-      name: 'Представители объекта для текущего акта',
+      name: 'Назначения представителей для текущего акта',
     });
     const customerRow = within(objectPicker).getByText('Кузнецова А.А.').closest('.library-row');
 
     if (customerRow === null) {
-      throw new Error('В тесте ожидается строка представителя объекта.');
+      throw new Error('В тесте ожидается строка назначения представителя.');
     }
 
     await user.click(
@@ -638,7 +639,7 @@ describe('DemoAosrWorkspacePage', () => {
     expect(previewText).toContain('Представитель заказчика:');
   });
 
-  it('adds a temporary representative only to the current act when the checkbox is clear', async () => {
+  it('adds a manual representative snapshot only to the current act when the checkbox is clear', async () => {
     const user = userEvent.setup();
 
     renderDemoWorkspace({ initialDocumentPreviewOpen: true });
@@ -654,13 +655,13 @@ describe('DemoAosrWorkspacePage', () => {
     expect(getPreviewText()).toContain('Сидоров С.С.');
 
     await openObjectSettings(user);
-    await user.click(screen.getByRole('button', { name: 'Представители объекта' }));
+    await user.click(screen.getByRole('button', { name: 'Назначения объекта' }));
 
-    const objectLibrary = screen.getByRole('list', { name: 'Представители объекта' });
+    const objectLibrary = screen.getByRole('list', { name: 'Назначения представителей объекта' });
     expect(within(objectLibrary).queryByText('Сидоров С.С.')).toBeNull();
   });
 
-  it('adds a temporary representative to the object base too when selected', async () => {
+  it('stores a manual representative as an object assignment when selected', async () => {
     const user = userEvent.setup();
 
     renderDemoWorkspace({ initialDocumentPreviewOpen: true });
@@ -680,9 +681,9 @@ describe('DemoAosrWorkspacePage', () => {
     expect(getPreviewText()).toContain('Орлова О.О.');
 
     await openObjectSettings(user);
-    await user.click(screen.getByRole('button', { name: 'Представители объекта' }));
+    await user.click(screen.getByRole('button', { name: 'Назначения объекта' }));
 
-    const objectLibrary = screen.getByRole('list', { name: 'Представители объекта' });
+    const objectLibrary = screen.getByRole('list', { name: 'Назначения представителей объекта' });
     expect(within(objectLibrary).getByText('Орлова О.О.')).toBeTruthy();
   });
 
@@ -1005,19 +1006,22 @@ async function addManualRepresentative(
   shouldAddToObjectLibrary = false,
 ): Promise<void> {
   await user.click(screen.getByRole('button', { name: 'Добавить подписанта' }));
-  await user.type(screen.getByLabelText('Роль для акта'), representative.roleLabel);
-  await user.type(screen.getByLabelText('ФИО для акта'), representative.fullName);
-  await user.type(screen.getByLabelText('Должность для акта'), representative.position);
-  await user.type(screen.getByLabelText('Организация для акта'), representative.organization);
+  await user.type(screen.getByLabelText('Роль для снимка акта'), representative.roleLabel);
+  await user.type(screen.getByLabelText('ФИО для снимка акта'), representative.fullName);
+  await user.type(screen.getByLabelText('Должность для снимка акта'), representative.position);
   await user.type(
-    screen.getByLabelText('Основание полномочий для акта'),
+    screen.getByLabelText('Организация для снимка акта'),
+    representative.organization,
+  );
+  await user.type(
+    screen.getByLabelText('Основание полномочий для снимка акта'),
     representative.authorityBasis,
   );
 
   if (shouldAddToObjectLibrary) {
     await user.click(
       screen.getByRole('checkbox', {
-        name: 'Добавить этого представителя в базу представителей объекта',
+        name: 'Также оставить назначение в настройках объекта',
       }),
     );
   }

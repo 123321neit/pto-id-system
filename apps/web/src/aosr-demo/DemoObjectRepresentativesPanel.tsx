@@ -42,23 +42,24 @@ export function DemoObjectRepresentativesPanel({
     <section className="form-section" aria-labelledby="representative-library-title">
       <div className="scope-heading scope-heading--with-action">
         <span>
-          <h3 id="representative-library-title">Представители объекта</h3>
+          <h3 id="representative-library-title">Назначения представителей на объект</h3>
           <p className="helper-note">
-            Выбранные для объекта представители затем используются как подписанты актов.
+            Глобальный представитель получает объектовые роль, должность, организацию и основание, а
+            затем выбирается в актах.
           </p>
         </span>
         <span className="inline-actions">
           <button className="compact-toggle" onClick={onToggleLibrary} type="button">
-            {isLibraryOpen ? 'Скрыть представителей объекта' : 'Представители объекта'}
+            {isLibraryOpen ? 'Скрыть назначения' : 'Назначения объекта'}
           </button>
           <button className="compact-toggle" onClick={onToggleForm} type="button">
-            {isFormOpen ? 'Свернуть добавление' : 'Добавить представителя'}
+            {isFormOpen ? 'Свернуть добавление' : 'Добавить назначение'}
           </button>
         </span>
       </div>
 
-      <div className="compact-summary-list" aria-label="Кратко о базе представителей объекта">
-        <span>{objectRepresentatives.length} представителей в объектовой базе</span>
+      <div className="compact-summary-list" aria-label="Кратко о назначениях представителей">
+        <span>{objectRepresentatives.length} назначений на объекте</span>
         <span>доступны для текущих актов</span>
       </div>
 
@@ -67,7 +68,7 @@ export function DemoObjectRepresentativesPanel({
           <div
             className="library-list library-list--compact"
             role="list"
-            aria-label="Представители объекта"
+            aria-label="Назначения представителей объекта"
           >
             {objectRepresentatives.map((representative) => (
               <div className="library-row" key={representative.id} role="listitem">
@@ -137,7 +138,7 @@ export function DemoObjectRepresentativesPanel({
             }}
             onChange={onChangeForm}
             onSubmit={onSubmit}
-            submitLabel="Сохранить представителя в базу объекта"
+            submitLabel="Сохранить назначение представителя"
           />
         </div>
       ) : null}

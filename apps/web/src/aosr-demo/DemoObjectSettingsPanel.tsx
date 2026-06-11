@@ -96,12 +96,13 @@ export function DemoObjectSettingsPanel({
 
         <div className="compact-summary-list" aria-label="Кратко об объектовых настройках">
           <span>{objectDefaults.headerOrganizations.length} блока шапки</span>
-          <span>{objectDefaults.representativeLibrary.length} представителей объекта</span>
+          <span>{objectDefaults.representativeLibrary.length} назначений представителей</span>
           <span>проектная документация задана на объекте</span>
           <span>нормативная база задана на объекте</span>
         </div>
         <p className="helper-note">
-          Демо-база представителей уже заполнена; на реальном объекте пользователь выбирает их сам.
+          Демо-назначения уже заполнены; в реальной модели пользователь выбирает представителя из
+          глобальной библиотеки и назначает его на объект.
         </p>
 
         <div className="object-settings-dialog__body">

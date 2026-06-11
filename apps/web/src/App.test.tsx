@@ -660,9 +660,9 @@ describe('App shell mock navigation', () => {
     expect(within(certificateList).getByText('Противопожарный состав для проходок')).toBeTruthy();
 
     expect(screen.getByRole('region', { name: 'Как это будет работать' })).toBeTruthy();
-    expect(screen.getByText('Сертификаты хранятся в библиотеке.')).toBeTruthy();
-    expect(screen.getByText('Объект использует сертификаты из библиотеки.')).toBeTruthy();
-    expect(screen.getByText('Акт выбирает материалы через поиск.')).toBeTruthy();
+    expect(screen.getByText('Сертификаты хранятся в глобальной библиотеке.')).toBeTruthy();
+    expect(screen.getByText('Объект не хранит отдельную библиотеку сертификатов.')).toBeTruthy();
+    expect(screen.getByText('Акт выбирает материалы и сертификаты через поиск.')).toBeTruthy();
     expect(screen.getByText('Инженер включает приложения чекбоксами.')).toBeTruthy();
     expect(
       screen.getByText(
@@ -805,14 +805,14 @@ describe('App shell mock navigation', () => {
     expect(screen.getByRole('heading', { name: 'Представители и организации' })).toBeTruthy();
     expect(
       screen.getByText(
-        'Сначала сохраните организации и представителей, потом добавляйте их в объект и акты через поиск.',
+        'Глобальные библиотеки организаций и представителей. Из поиска создавайте или выбирайте карточку, затем назначайте ее объекту и акту.',
       ),
     ).toBeTruthy();
     const workflow = screen.getByRole('list', { name: 'Порядок работы с подписантами' });
     expect(within(workflow).getByText('Добавьте организацию')).toBeTruthy();
     expect(within(workflow).getByText('Добавьте представителя')).toBeTruthy();
-    expect(within(workflow).getByText('Откройте объект')).toBeTruthy();
-    expect(within(workflow).getByText('Добавьте подписанта в акт')).toBeTruthy();
+    expect(within(workflow).getByText('Назначьте на объект')).toBeTruthy();
+    expect(within(workflow).getByText('Выберите в акт')).toBeTruthy();
     expect(screen.getByRole('region', { name: 'Организации' })).toBeTruthy();
     expect(screen.getByRole('region', { name: 'Представители' })).toBeTruthy();
     expect(screen.getByText('Организации в объекте')).toBeTruthy();
@@ -944,9 +944,12 @@ describe('App shell mock navigation', () => {
 
     await user.click(screen.getByRole('button', { name: 'Добавить представителя' }));
     await user.type(screen.getByLabelText('ФИО представителя'), 'Орлова О.О.');
-    await user.type(screen.getByLabelText('Роль / подпись'), 'Представитель монтажного участка');
-    await user.type(screen.getByLabelText('Должность'), 'Инженер ПТО');
-    await user.type(screen.getByLabelText('Организация представителя'), 'ООО "Новый участник"');
+    await user.type(
+      screen.getByLabelText('Базовая роль / подпись'),
+      'Представитель монтажного участка',
+    );
+    await user.type(screen.getByLabelText('Базовая должность'), 'Инженер ПТО');
+    await user.type(screen.getByLabelText('Базовая организация'), 'ООО "Новый участник"');
     await user.type(screen.getByLabelText('Основание полномочий'), 'Приказ N О-7 от 03.06.2026');
     await user.type(screen.getByLabelText('НРС / детали'), 'НРС С-66-000111');
     await user.click(screen.getByRole('button', { name: 'Сохранить представителя' }));
@@ -969,19 +972,22 @@ describe('App shell mock navigation', () => {
 
     await user.click(screen.getByRole('button', { name: 'Добавить представителя' }));
     await user.type(screen.getByLabelText('ФИО представителя'), 'Яковлев Я.Я.');
-    await user.type(screen.getByLabelText('Роль / подпись'), 'Представитель службы качества');
-    await user.type(screen.getByLabelText('Должность'), 'Инженер службы качества');
-    await user.type(screen.getByLabelText('Организация представителя'), 'ООО "Авторский контроль"');
+    await user.type(
+      screen.getByLabelText('Базовая роль / подпись'),
+      'Представитель службы качества',
+    );
+    await user.type(screen.getByLabelText('Базовая должность'), 'Инженер службы качества');
+    await user.type(screen.getByLabelText('Базовая организация'), 'ООО "Авторский контроль"');
     await user.type(screen.getByLabelText('Основание полномочий'), 'Приказ N Я-1 от 03.06.2026');
     await user.click(screen.getByRole('button', { name: 'Сохранить представителя' }));
 
     await user.click(screen.getByRole('button', { name: 'Вернуться к объектам' }));
     await user.click(getFirstOpenObjectButton());
     await user.click(screen.getByRole('button', { name: 'АОСР' }));
-    await user.type(screen.getByLabelText('Добавить подписанта из базы объекта'), 'яковлев');
+    await user.type(screen.getByLabelText('Добавить подписанта из назначений объекта'), 'яковлев');
 
     const signatoryPicker = screen.getByRole('list', {
-      name: 'Представители объекта для текущего акта',
+      name: 'Назначения представителей для текущего акта',
     });
     const representativeRow = within(signatoryPicker)
       .getByText('Яковлев Я.Я.')
@@ -1040,10 +1046,13 @@ describe('App shell mock navigation', () => {
     );
     await user.click(screen.getByRole('button', { name: 'Закрыть библиотеку' }));
 
-    await user.type(screen.getByLabelText('Добавить подписанта из базы объекта'), 'заказчика');
+    await user.type(
+      screen.getByLabelText('Добавить подписанта из назначений объекта'),
+      'заказчика',
+    );
 
     const objectPicker = screen.getByRole('list', {
-      name: 'Представители объекта для текущего акта',
+      name: 'Назначения представителей для текущего акта',
     });
     const customerRow = within(objectPicker).getByText('Кузнецова А.А.').closest('.library-row');
 
