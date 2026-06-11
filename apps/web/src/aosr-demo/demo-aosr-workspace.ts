@@ -221,7 +221,7 @@ export const demoAosrWorkspace: DemoAosrWorkspace = {
   ],
   drafts: [
     {
-      actDate: '2026-06-01',
+      actDate: '2026-09-04',
       actNumber: 'АОСР-001',
       additionalInfo: 'Дополнительные сведения для демо-акта не требуются.',
       axes: 'оси 1-4 / А-В',
@@ -231,8 +231,8 @@ export const demoAosrWorkspace: DemoAosrWorkspace = {
       id: 'aosr-draft-001',
       materialCertificateIds: ['certificate-ducts-001', 'certificate-fasteners-001'],
       objectDocumentIds: ['object-document-scheme-ov-04', 'object-document-journal-input-control'],
-      periodEnd: '2026-05-31',
-      periodStart: '2026-05-28',
+      periodEnd: '2026-09-03',
+      periodStart: '2026-09-01',
       representatives: [
         contractorRepresentative,
         buildingControlRepresentative,
@@ -245,7 +245,7 @@ export const demoAosrWorkspace: DemoAosrWorkspace = {
         'Монтаж скрытых участков воздуховодов до закрытия теплоизоляцией и облицовкой.',
     },
     {
-      actDate: '2026-06-03',
+      actDate: '2026-10-06',
       actNumber: 'АОСР-002',
       additionalInfo: 'Дополнительные сведения отсутствуют.',
       axes: 'оси 5-7 / Г-Д',
@@ -255,8 +255,8 @@ export const demoAosrWorkspace: DemoAosrWorkspace = {
       id: 'aosr-draft-002',
       materialCertificateIds: ['certificate-firestop-001'],
       objectDocumentIds: ['object-document-project-ov-set'],
-      periodEnd: '2026-06-02',
-      periodStart: '2026-06-01',
+      periodEnd: '2026-10-05',
+      periodStart: '2026-10-01',
       representatives: [
         contractorRepresentative,
         customerRepresentative,

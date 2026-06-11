@@ -30,7 +30,6 @@ interface DemoCurrentActEditorProps {
   readonly documentSearch: string;
   readonly documentTypeFilter: 'all' | DemoObjectDocumentType;
   readonly draggedRepresentativeId: string | null;
-  readonly finalApplications: readonly DemoActApplication[];
   readonly isCertificateLibraryOpen: boolean;
   readonly isManualRepresentativeFormOpen: boolean;
   readonly isObjectDocumentLibraryOpen: boolean;
@@ -78,7 +77,6 @@ export function DemoCurrentActEditor({
   documentSearch,
   documentTypeFilter,
   draggedRepresentativeId,
-  finalApplications,
   isCertificateLibraryOpen,
   isManualRepresentativeFormOpen,
   isObjectDocumentLibraryOpen,
@@ -148,37 +146,6 @@ export function DemoCurrentActEditor({
           </div>
         </dl>
       </div>
-
-      <dl className="act-summary-strip" aria-label="Сводка текущего акта">
-        <div aria-label={`Материалы: ${String(selectedMaterials.length)}`}>
-          <dt>Материалы</dt>
-          <dd>
-            <strong>{selectedMaterials.length}</strong>
-            <span>из сертификатов</span>
-          </dd>
-        </div>
-        <div aria-label={`Документы: ${String(selectedObjectDocuments.length)}`}>
-          <dt>Документы</dt>
-          <dd>
-            <strong>{selectedObjectDocuments.length}</strong>
-            <span>пункт 4</span>
-          </dd>
-        </div>
-        <div aria-label={`Приложения: ${String(finalApplications.length)}`}>
-          <dt>Приложения</dt>
-          <dd>
-            <strong>{finalApplications.length}</strong>
-            <span>в печать</span>
-          </dd>
-        </div>
-        <div aria-label={`Подписанты: ${String(selectedSignatories.length)}`}>
-          <dt>Подписанты</dt>
-          <dd>
-            <strong>{selectedSignatories.length}</strong>
-            <span>по порядку</span>
-          </dd>
-        </div>
-      </dl>
 
       <DemoAosrReadinessPanel readiness={readiness} />
 

@@ -6,6 +6,7 @@ interface DemoDocumentTreeProps {
   readonly actType: DemoActTypeMetadata;
   readonly drafts: readonly DemoAosrDraft[];
   readonly draggedDraftId: string | null;
+  readonly periodName?: string | undefined;
   readonly selectedDraftId: string;
   readonly onDragEnd: () => void;
   readonly onDragStart: (draftId: string) => void;
@@ -17,6 +18,7 @@ export function DemoDocumentTree({
   actType,
   drafts,
   draggedDraftId,
+  periodName,
   selectedDraftId,
   onDragEnd,
   onDragStart,
@@ -26,18 +28,28 @@ export function DemoDocumentTree({
   return (
     <section className="document-tree-panel" aria-labelledby="document-tree-title">
       <div className="panel-heading">
-        <p className="section-kicker">Документы</p>
-        <h2 id="document-tree-title">Дерево проекта</h2>
+        <p className="section-kicker">Период</p>
+        <h2 id="document-tree-title">Документы периода</h2>
       </div>
 
-      <div className="document-tree" aria-label="Дерево документов">
+      <div className="document-tree" aria-label="Навигация документов периода">
         <div className="tree-folder">
           <span className="tree-folder__chevron" aria-hidden="true">
             ▾
           </span>
           <span>
-            <strong>{actType.code}</strong>
-            <small>{drafts.length} документа</small>
+            <strong>{periodName ?? 'Текущий период'}</strong>
+            <small>документы / реестр / комплект</small>
+          </span>
+        </div>
+
+        <div className="tree-folder tree-folder--nested">
+          <span className="tree-folder__chevron" aria-hidden="true">
+            ▾
+          </span>
+          <span>
+            <strong>Документы</strong>
+            <small>{actType.code}</small>
           </span>
         </div>
 

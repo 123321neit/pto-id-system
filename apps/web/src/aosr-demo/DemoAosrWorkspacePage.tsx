@@ -61,17 +61,21 @@ const aosrActType = getDemoActTypeById('aosr');
 
 interface DemoAosrWorkspacePageProps {
   readonly initialDocumentPreviewOpen?: boolean;
+  readonly initialSelectedDraftId?: string;
   readonly isEmbeddedInObjectWorkspace?: boolean;
   readonly onBackToObjects?: () => void;
   readonly onObjectSettingsClosed?: () => void;
+  readonly periodName?: string;
   readonly settingsOpenRequest?: number;
 }
 
 export function DemoAosrWorkspacePage({
   initialDocumentPreviewOpen = false,
+  initialSelectedDraftId,
   isEmbeddedInObjectWorkspace = false,
   onBackToObjects,
   onObjectSettingsClosed,
+  periodName,
   settingsOpenRequest,
 }: DemoAosrWorkspacePageProps = {}): React.JSX.Element {
   const { certificates, objectDocuments, organizations, representatives } = useDemoStore();
@@ -83,7 +87,9 @@ export function DemoAosrWorkspacePage({
     representativeLibrary: globalRepresentatives,
   }));
   const [drafts, setDrafts] = useState<readonly DemoAosrDraft[]>(demoAosrWorkspace.drafts);
-  const [selectedDraftId, setSelectedDraftId] = useState(demoAosrWorkspace.drafts[0]?.id ?? '');
+  const [selectedDraftId, setSelectedDraftId] = useState(
+    initialSelectedDraftId ?? demoAosrWorkspace.drafts[0]?.id ?? '',
+  );
   const [draggedDraftId, setDraggedDraftId] = useState<string | null>(null);
   const [draggedRepresentativeId, setDraggedRepresentativeId] = useState<string | null>(null);
   const [isObjectSettingsOpen, setObjectSettingsOpen] = useState(false);
@@ -117,6 +123,12 @@ export function DemoAosrWorkspacePage({
       setObjectSettingsOpen(true);
     }
   }, [settingsOpenRequest]);
+
+  useEffect(() => {
+    if (initialSelectedDraftId !== undefined) {
+      setSelectedDraftId(initialSelectedDraftId);
+    }
+  }, [initialSelectedDraftId]);
 
   const selectedDraft = getSelectedDraft(drafts, selectedDraftId);
   const selectedSignatories = getDraftRepresentatives(selectedDraft);
@@ -297,9 +309,10 @@ export function DemoAosrWorkspacePage({
           </p>
           <p
             className="workspace-header__current-act"
-            aria-label={`Выбранный акт в шапке: ${selectedDraft.actNumber}`}
+            aria-label={`Текущий документ: ${selectedDraft.actNumber}`}
           >
-            Текущий акт: <strong>{selectedDraft.actNumber}</strong>
+            Документ: <strong>{selectedDraft.actNumber}</strong>
+            {periodName === undefined ? null : <span>{periodName}</span>}
           </p>
         </div>
         <div className="workspace-header__aside">
@@ -329,38 +342,6 @@ export function DemoAosrWorkspacePage({
               Предпросмотр документа
             </button>
           </div>
-          <dl className="workspace-summary" aria-label="Сводка рабочей области">
-            <div aria-label={`Акты: ${String(drafts.length)}`}>
-              <dt>Акты</dt>
-              <dd>
-                <strong>{drafts.length}</strong>
-                <span>акта в объекте</span>
-              </dd>
-            </div>
-            <div aria-label={`Текущий акт: ${selectedDraft.actNumber}`}>
-              <dt>Текущий акт</dt>
-              <dd>
-                <strong>{selectedDraft.actNumber}</strong>
-                <span>{selectedDraft.actDate}</span>
-              </dd>
-            </div>
-            <div
-              aria-label={`Организации объекта: ${String(objectDefaults.headerOrganizations.length)}`}
-            >
-              <dt>Организации</dt>
-              <dd>
-                <strong>{objectDefaults.headerOrganizations.length}</strong>
-                <span>в шапке</span>
-              </dd>
-            </div>
-            <div aria-label={`Подписанты: ${String(selectedSignatories.length)}`}>
-              <dt>Подписанты</dt>
-              <dd>
-                <strong>{selectedSignatories.length}</strong>
-                <span>в акте</span>
-              </dd>
-            </div>
-          </dl>
         </div>
       </section>
 
@@ -369,6 +350,7 @@ export function DemoAosrWorkspacePage({
           actType={aosrActType}
           draggedDraftId={draggedDraftId}
           drafts={drafts}
+          periodName={periodName}
           selectedDraftId={selectedDraft.id}
           onDragEnd={() => {
             setDraggedDraftId(null);
@@ -392,7 +374,6 @@ export function DemoAosrWorkspacePage({
               documentSearch={objectDocumentSearch}
               documentTypeFilter={objectDocumentTypeFilter}
               draggedRepresentativeId={draggedRepresentativeId}
-              finalApplications={finalApplications}
               isCertificateLibraryOpen={isCertificateLibraryOpen}
               isManualRepresentativeFormOpen={isManualRepresentativeFormOpen}
               isObjectDocumentLibraryOpen={isObjectDocumentLibraryOpen}

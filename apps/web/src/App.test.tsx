@@ -49,7 +49,7 @@ describe('App shell mock navigation', () => {
     expect(screen.getAllByText('г. Екатеринбург, ул. Демонстрационная, 10').length).toBeGreaterThan(
       0,
     );
-    expect(screen.queryByRole('heading', { name: 'Дерево проекта' })).toBeNull();
+    expect(screen.queryByRole('heading', { name: 'Документы периода' })).toBeNull();
     expect(screen.queryByRole('button', { name: 'Предпросмотр документа' })).toBeNull();
     expect(screen.queryByLabelText('Демо-предпросмотр печатной формы АОСР')).toBeNull();
 
@@ -67,12 +67,13 @@ describe('App shell mock navigation', () => {
     await user.click(getFirstOpenObjectButton());
 
     const overviewMetrics = screen.getByLabelText('Ключевые показатели объекта');
-    expect(within(overviewMetrics).getByLabelText('Акты: 2')).toBeTruthy();
+    expect(within(overviewMetrics).getByLabelText('Документы в периодах: 2')).toBeTruthy();
     expect(within(overviewMetrics).getByLabelText('Использовано сертификатов: 3')).toBeTruthy();
     expect(within(overviewMetrics).getByLabelText('Документы объекта: 8')).toBeTruthy();
     expect(within(overviewMetrics).getByLabelText('Представители: 6')).toBeTruthy();
 
-    expect(screen.getByRole('heading', { name: 'Акты и документы' })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: 'Периоды работ' })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: 'Документы в периодах' })).toBeTruthy();
     expect(screen.getByText('АОСР-001')).toBeTruthy();
 
     await user.click(getFirstCreateDocumentButton());
@@ -81,19 +82,24 @@ describe('App shell mock navigation', () => {
     expect(within(selector).getByText('АОСР — Акт освидетельствования скрытых работ')).toBeTruthy();
     expect(
       within(selector).getByText(
-        'Автонумерация будет настраиваться в правилах оформления объекта. Предложенный номер всегда можно будет изменить вручную.',
+        'Выберите тип документа. В демо документ открывается в выбранном периоде без сохранения в backend.',
       ),
     ).toBeTruthy();
-    expect(within(selector).getByText('ОВ-1, ОВ-2, ОВ-3')).toBeTruthy();
-    expect(within(selector).getByText('12-1-ОВ, 12-2-ОВ, 12-3-ОВ')).toBeTruthy();
+    expect(within(selector).getByText('ОВ-{n}')).toBeTruthy();
+    expect(within(selector).getByText('12-{n}-ОВ')).toBeTruthy();
+    expect(within(selector).getByText('АОСР/{YYYY}/{n}')).toBeTruthy();
     expect(
-      within(selector).getByText('Правило будет отдельным для каждого типа документа.'),
+      within(selector).getByText(
+        'Шаблон номера будет настраиваться отдельно для объекта или периода.',
+      ),
     ).toBeTruthy();
+    expect(within(selector).getByText('Акт испытаний')).toBeTruthy();
+    expect(within(selector).getAllByRole('button', { name: 'Скоро' })).toHaveLength(2);
 
-    await user.click(within(selector).getByRole('button', { name: 'Создать АОСР' }));
+    await user.click(within(selector).getByRole('button', { name: 'Создать документ' }));
 
-    expect(screen.getAllByText(/Акты \/ АОСР/u).length).toBeGreaterThan(0);
-    expect(screen.getByRole('heading', { name: 'Дерево проекта' })).toBeTruthy();
+    expect(screen.getAllByText(/Периоды \/ АОСР/u).length).toBeGreaterThan(0);
+    expect(screen.getByRole('heading', { name: 'Документы периода' })).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Предпросмотр документа' })).toBeTruthy();
 
     await openDocumentPreview(user);
@@ -109,8 +115,9 @@ describe('App shell mock navigation', () => {
 
     const objectNavigation = screen.getByRole('navigation', { name: 'Разделы объекта' });
     expect(within(objectNavigation).getByRole('button', { name: 'Обзор' })).toBeTruthy();
-    expect(within(objectNavigation).getByRole('button', { name: 'Акты' })).toBeTruthy();
-    expect(within(objectNavigation).getByRole('button', { name: 'АОСР' })).toBeTruthy();
+    expect(within(objectNavigation).getByRole('button', { name: 'Периоды' })).toBeTruthy();
+    expect(within(objectNavigation).getByRole('button', { name: 'Сентябрь 2026' })).toBeTruthy();
+    expect(within(objectNavigation).getByRole('button', { name: 'Октябрь 2026' })).toBeTruthy();
     expect(
       within(objectNavigation).queryByRole('button', { name: /сертификаты объекта/iu }),
     ).toBeNull();
@@ -119,9 +126,11 @@ describe('App shell mock navigation', () => {
       within(objectNavigation).getByRole('button', { name: 'Открыть документы объекта' }),
     ).toBeTruthy();
     expect(within(objectNavigation).getByRole('button', { name: 'Представители' })).toBeTruthy();
+    expect(within(objectNavigation).queryByRole('button', { name: 'Акты' })).toBeNull();
+    expect(within(objectNavigation).queryByRole('button', { name: 'АОСР' })).toBeNull();
     expect(
-      within(objectNavigation).getByRole('button', { name: 'Открыть реестр ИД' }),
-    ).toBeTruthy();
+      within(objectNavigation).queryByRole('button', { name: 'Открыть реестр ИД' }),
+    ).toBeNull();
     expect(
       within(objectNavigation).getByRole('button', { name: 'Открыть итоговый комплект ИД' }),
     ).toBeTruthy();
@@ -146,7 +155,7 @@ describe('App shell mock navigation', () => {
     expect(within(objectMetadata).queryByText('Документов в объекте')).toBeNull();
 
     const overviewMetrics = screen.getByLabelText('Ключевые показатели объекта');
-    expect(within(overviewMetrics).getByLabelText('Акты: 2')).toBeTruthy();
+    expect(within(overviewMetrics).getByLabelText('Документы в периодах: 2')).toBeTruthy();
     expect(within(overviewMetrics).getByLabelText('Использовано сертификатов: 3')).toBeTruthy();
     expect(within(overviewMetrics).getByLabelText('Документы объекта: 8')).toBeTruthy();
     expect(within(overviewMetrics).getByLabelText('Представители: 6')).toBeTruthy();
@@ -181,13 +190,11 @@ describe('App shell mock navigation', () => {
     ).toBeTruthy();
     expect(screen.getAllByText('Используется в 1 актах').length).toBeGreaterThan(0);
 
-    await user.click(within(objectNavigation).getByRole('button', { name: 'Открыть реестр ИД' }));
-    expect(
-      screen.getByRole('heading', { name: 'Реестр исполнительной документации' }),
-    ).toBeTruthy();
-    expect(
-      screen.getByText('Сводный перечень документов исполнительной документации объекта.'),
-    ).toBeTruthy();
+    await user.click(within(objectNavigation).getByRole('button', { name: 'Сентябрь 2026' }));
+    expect(screen.getByRole('heading', { name: 'Сентябрь 2026' })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: 'Документы периода' })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: 'Реестр периода за Сентябрь 2026' })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: 'Комплект периода за Сентябрь 2026' })).toBeTruthy();
 
     await user.click(
       within(objectNavigation).getByRole('button', { name: 'Открыть итоговый комплект ИД' }),
@@ -195,94 +202,29 @@ describe('App shell mock navigation', () => {
     expect(screen.getByRole('heading', { name: 'Итоговая ИД по объекту' })).toBeTruthy();
     expect(
       screen.getByText(
-        'Итоговая ИД собирается из всех актов, документов объекта и сертификатов, использованных в актах, без дублей.',
+        'Итоговая ИД собирается из всех периодов, документов объекта и сертификатов, использованных в документах, без дублей.',
       ),
     ).toBeTruthy();
   });
 
-  it('renders the read-only registry page with derived rows and summary counts', async () => {
+  it('opens a period with documents and registry/package placeholders', async () => {
     const user = userEvent.setup();
 
     render(<App />);
-    await openObjectRegistryPage(user);
+    await user.click(getFirstOpenObjectButton());
 
-    expect(
-      screen.getByRole('heading', { name: 'Реестр исполнительной документации' }),
-    ).toBeTruthy();
-    expect(
-      screen.getByText('Сводный перечень документов исполнительной документации объекта.'),
-    ).toBeTruthy();
+    const objectNavigation = screen.getByRole('navigation', { name: 'Разделы объекта' });
+    await user.click(within(objectNavigation).getByRole('button', { name: 'Октябрь 2026' }));
 
-    const summary = screen.getByLabelText('Сводка реестра ИД');
-    expect(within(summary).getByLabelText('Всего документов: 14')).toBeTruthy();
-    expect(within(summary).getByLabelText('АОСР: 2')).toBeTruthy();
-    expect(within(summary).getByLabelText('Документы объекта: 8')).toBeTruthy();
-    expect(within(summary).getByLabelText('Сертификаты: 4')).toBeTruthy();
+    expect(screen.getByRole('heading', { name: 'Октябрь 2026' })).toBeTruthy();
+    expect(screen.getByText('АОСР-002')).toBeTruthy();
+    expect(screen.getByRole('heading', { name: 'Реестр периода за Октябрь 2026' })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: 'Комплект периода за Октябрь 2026' })).toBeTruthy();
 
-    const table = screen.getByRole('table');
-    expect(screen.getByRole('columnheader', { name: 'Раздел' })).toBeTruthy();
-    expect(screen.getByRole('columnheader', { name: 'Наименование' })).toBeTruthy();
-    expect(screen.getByRole('columnheader', { name: 'Номер' })).toBeTruthy();
-    expect(screen.getByRole('columnheader', { name: 'Дата' })).toBeTruthy();
-    expect(screen.getByRole('columnheader', { name: 'Сведения' })).toBeTruthy();
-    expect(screen.queryByRole('columnheader', { name: 'Статус' })).toBeNull();
-    expect(within(table).getByText('АОСР-001')).toBeTruthy();
-    expect(
-      within(table).getByText(
-        /Акт освидетельствования скрытых работ\. Монтаж скрытых участков воздуховодов/u,
-      ),
-    ).toBeTruthy();
-    expect(
-      within(table).getByText('Исполнительная схема скрытых участков вентиляции'),
-    ).toBeTruthy();
-    expect(
-      within(table).getByText(/Сертификат соответствия\. Воздуховоды оцинкованные 0,7 мм/u),
-    ).toBeTruthy();
-    expect(
-      screen.getByText(/В следующих версиях реестр будет автоматически включать/u),
-    ).toBeTruthy();
-  });
+    await user.click(screen.getByRole('button', { name: /АОСР-002/u }));
 
-  it('filters registry rows by section', async () => {
-    const user = userEvent.setup();
-
-    render(<App />);
-    await openObjectRegistryPage(user);
-
-    const filters = screen.getByLabelText('Фильтры реестра ИД');
-    const table = screen.getByRole('table');
-
-    await user.click(within(filters).getByRole('button', { name: 'АОСР' }));
-    expect(within(table).getByText('АОСР-001')).toBeTruthy();
-    expect(
-      within(table).queryByText('Исполнительная схема скрытых участков вентиляции'),
-    ).toBeNull();
-    expect(within(table).queryByText(/Воздуховоды оцинкованные/u)).toBeNull();
-
-    await user.click(within(filters).getByRole('button', { name: 'Документы объекта' }));
-    expect(
-      within(table).getByText('Исполнительная схема скрытых участков вентиляции'),
-    ).toBeTruthy();
-    expect(within(table).queryByText('АОСР-001')).toBeNull();
-    expect(within(table).queryByText(/Воздуховоды оцинкованные/u)).toBeNull();
-
-    await user.click(within(filters).getByRole('button', { name: 'Сертификаты' }));
-    expect(
-      within(table).getByText(/Сертификат соответствия\. Воздуховоды оцинкованные 0,7 мм/u),
-    ).toBeTruthy();
-    expect(within(table).queryByText('АОСР-001')).toBeNull();
-    expect(
-      within(table).queryByText('Исполнительная схема скрытых участков вентиляции'),
-    ).toBeNull();
-
-    await user.click(within(filters).getByRole('button', { name: 'Все' }));
-    expect(within(table).getByText('АОСР-001')).toBeTruthy();
-    expect(
-      within(table).getByText('Исполнительная схема скрытых участков вентиляции'),
-    ).toBeTruthy();
-    expect(
-      within(table).getByText(/Сертификат соответствия\. Воздуховоды оцинкованные 0,7 мм/u),
-    ).toBeTruthy();
+    expect(screen.getByRole('heading', { name: 'Документы периода' })).toBeTruthy();
+    expect(screen.getByLabelText('Текущий документ: АОСР-002')).toBeTruthy();
   });
 
   it('opens the final ID package page with derived summary counts and grouped composition', async () => {
@@ -298,7 +240,7 @@ describe('App shell mock navigation', () => {
     ).toBeTruthy();
     expect(
       within(finalPackagePage).getByText(
-        'Итоговая ИД собирается из всех актов, документов объекта и сертификатов, использованных в актах, без дублей.',
+        'Итоговая ИД собирается из всех периодов, документов объекта и сертификатов, использованных в документах, без дублей.',
       ),
     ).toBeTruthy();
     expect(
@@ -306,7 +248,7 @@ describe('App shell mock navigation', () => {
         name: 'Периодическая ИД → Итоговая ИД',
       }),
     ).toBeTruthy();
-    expect(within(finalPackagePage).getByText('все акты из периодов;')).toBeTruthy();
+    expect(within(finalPackagePage).getByText('все документы из периодов;')).toBeTruthy();
     expect(
       within(finalPackagePage).getByText('все использованные сертификаты без дублей;'),
     ).toBeTruthy();
@@ -317,18 +259,18 @@ describe('App shell mock navigation', () => {
     ).toBeTruthy();
     expect(within(finalPackagePage).getByText('итоговый реестр.')).toBeTruthy();
 
-    const mayPackage = within(finalPackagePage).getByLabelText('Состав пакета Май 2026');
-    expect(within(mayPackage).getByLabelText('Акты: 1')).toBeTruthy();
-    expect(within(mayPackage).getByLabelText('Использовано сертификатов: 2')).toBeTruthy();
-    expect(within(mayPackage).getByLabelText('Документы объекта: 2')).toBeTruthy();
+    const septemberPackage = within(finalPackagePage).getByLabelText('Состав пакета Сентябрь 2026');
+    expect(within(septemberPackage).getByLabelText('Документы: 1')).toBeTruthy();
+    expect(within(septemberPackage).getByLabelText('Использовано сертификатов: 2')).toBeTruthy();
+    expect(within(septemberPackage).getByLabelText('Документы объекта: 2')).toBeTruthy();
 
-    const junePackage = within(finalPackagePage).getByLabelText('Состав пакета Июнь 2026');
-    expect(within(junePackage).getByLabelText('Акты: 1')).toBeTruthy();
-    expect(within(junePackage).getByLabelText('Использовано сертификатов: 1')).toBeTruthy();
-    expect(within(junePackage).getByLabelText('Документы объекта: 1')).toBeTruthy();
+    const octoberPackage = within(finalPackagePage).getByLabelText('Состав пакета Октябрь 2026');
+    expect(within(octoberPackage).getByLabelText('Документы: 1')).toBeTruthy();
+    expect(within(octoberPackage).getByLabelText('Использовано сертификатов: 1')).toBeTruthy();
+    expect(within(octoberPackage).getByLabelText('Документы объекта: 1')).toBeTruthy();
 
     const summary = within(finalPackagePage).getByLabelText('Сводка итогового комплекта ИД');
-    expect(within(summary).getByLabelText('Акты: 2')).toBeTruthy();
+    expect(within(summary).getByLabelText('Документы из периодов: 2')).toBeTruthy();
     expect(within(summary).getByLabelText('Сертификаты без дублей: 3')).toBeTruthy();
     expect(within(summary).getByLabelText('Документы / чертежи без дублей: 3')).toBeTruthy();
     expect(within(summary).getByLabelText('Всего позиций: 9')).toBeTruthy();
@@ -345,7 +287,9 @@ describe('App shell mock navigation', () => {
     expect(within(readinessCard).getByText('Пробелов по демо-проверкам нет.')).toBeTruthy();
 
     expect(within(finalPackagePage).getByRole('heading', { name: 'Реестр ИД' })).toBeTruthy();
-    expect(within(finalPackagePage).getByRole('heading', { name: 'Акты' })).toBeTruthy();
+    expect(
+      within(finalPackagePage).getByRole('heading', { name: 'Документы из периодов' }),
+    ).toBeTruthy();
     expect(within(finalPackagePage).getByRole('heading', { name: 'Сертификаты' })).toBeTruthy();
     expect(
       within(finalPackagePage).getByRole('heading', { name: 'Документы объекта' }),
@@ -367,13 +311,13 @@ describe('App shell mock navigation', () => {
 
     expect(packageOverview.periodicPackages).toHaveLength(2);
     expect(packageOverview.periodicPackages[0]?.type).toBe('periodic');
-    expect(packageOverview.periodicPackages[0]?.periodName).toBe('Май 2026');
+    expect(packageOverview.periodicPackages[0]?.periodName).toBe('Сентябрь 2026');
     expect(packageOverview.periodicPackages[0]?.summary).toEqual({
       acts: 1,
       objectDocuments: 2,
       usedCertificates: 2,
     });
-    expect(packageOverview.periodicPackages[1]?.periodName).toBe('Июнь 2026');
+    expect(packageOverview.periodicPackages[1]?.periodName).toBe('Октябрь 2026');
     expect(packageOverview.periodicPackages[1]?.summary).toEqual({
       acts: 1,
       objectDocuments: 1,
@@ -446,7 +390,11 @@ describe('App shell mock navigation', () => {
 
     expect(readiness.status).toBe('needs-attention');
     expect(readiness.statusLabel).toBe('🟡 Есть пустые разделы');
-    expect(readiness.issues).toEqual(['Нет актов', 'Нет сертификатов', 'Нет документов объекта']);
+    expect(readiness.issues).toEqual([
+      'Нет документов периода',
+      'Нет сертификатов',
+      'Нет документов объекта',
+    ]);
   });
 
   it('keeps the final ID package download action disabled in demo mode', async () => {
@@ -470,10 +418,9 @@ describe('App shell mock navigation', () => {
     render(<App />);
     await openObjectFinalPackagePage(user);
 
-    const objectNavigation = screen.getByRole('navigation', { name: 'Разделы объекта' });
-    await user.click(within(objectNavigation).getByRole('button', { name: 'АОСР' }));
+    await openSeptemberAosrDocument(user);
 
-    expect(screen.getByRole('heading', { name: 'Дерево проекта' })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: 'Документы периода' })).toBeTruthy();
     expect(screen.getByRole('heading', { name: 'Рабочая область акта' })).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Предпросмотр документа' })).toBeTruthy();
   });
@@ -551,8 +498,7 @@ describe('App shell mock navigation', () => {
     await user.type(screen.getByLabelText('Дата'), '2026-06-06');
     await user.click(screen.getByRole('button', { name: 'Добавить документ' }));
 
-    const objectNavigation = screen.getByRole('navigation', { name: 'Разделы объекта' });
-    await user.click(within(objectNavigation).getByRole('button', { name: 'АОСР' }));
+    await openSeptemberAosrDocument(user);
     await user.click(screen.getByRole('button', { name: 'Добавить документ' }));
     await user.type(screen.getByLabelText('Найти документ объекта'), 'ВК-12');
 
@@ -561,7 +507,7 @@ describe('App shell mock navigation', () => {
     expect(within(documentLibrary).getByText('Исполнительная схема / ИС-ВК-12')).toBeTruthy();
   });
 
-  it('navigates from AOSR to the registry and back to AOSR inside acts', async () => {
+  it('navigates from a period placeholder back into its AOSR document', async () => {
     const user = userEvent.setup();
 
     render(<App />);
@@ -569,15 +515,12 @@ describe('App shell mock navigation', () => {
 
     const objectNavigation = screen.getByRole('navigation', { name: 'Разделы объекта' });
 
-    await user.click(within(objectNavigation).getByRole('button', { name: 'Открыть реестр ИД' }));
-    expect(
-      screen.getByRole('heading', { name: 'Реестр исполнительной документации' }),
-    ).toBeTruthy();
-    expect(screen.getByRole('table')).toBeTruthy();
+    await user.click(within(objectNavigation).getByRole('button', { name: 'Сентябрь 2026' }));
+    expect(screen.getByRole('heading', { name: 'Реестр периода за Сентябрь 2026' })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: 'Комплект периода за Сентябрь 2026' })).toBeTruthy();
+    await user.click(screen.getByRole('button', { name: /АОСР-001/u }));
 
-    await user.click(within(objectNavigation).getByRole('button', { name: 'АОСР' }));
-
-    expect(screen.getByRole('heading', { name: 'Дерево проекта' })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: 'Документы периода' })).toBeTruthy();
     expect(screen.getByRole('heading', { name: 'Рабочая область акта' })).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Предпросмотр документа' })).toBeTruthy();
   });
@@ -758,7 +701,7 @@ describe('App shell mock navigation', () => {
 
     await user.click(screen.getByRole('button', { name: 'Вернуться к объектам' }));
     await user.click(getFirstOpenObjectButton());
-    await user.click(screen.getByRole('button', { name: 'АОСР' }));
+    await openSeptemberAosrDocument(user);
     await user.click(screen.getByRole('button', { name: 'Библиотека сертификатов' }));
     await user.type(screen.getByLabelText('Найти материал в библиотеке сертификатов'), 'насос');
 
@@ -1007,7 +950,7 @@ describe('App shell mock navigation', () => {
 
     await user.click(screen.getByRole('button', { name: 'Вернуться к объектам' }));
     await user.click(getFirstOpenObjectButton());
-    await user.click(screen.getByRole('button', { name: 'АОСР' }));
+    await openSeptemberAosrDocument(user);
     await user.type(screen.getByLabelText('Добавить назначение представителя в акт'), 'яковлев');
 
     const signatoryPicker = screen.getByRole('list', {
@@ -1051,7 +994,7 @@ describe('App shell mock navigation', () => {
 
     render(<App />);
     await user.click(getFirstOpenObjectButton());
-    await user.click(screen.getByRole('button', { name: 'АОСР' }));
+    await openSeptemberAosrDocument(user);
 
     await user.click(screen.getByRole('button', { name: 'Библиотека сертификатов' }));
     await user.type(screen.getByLabelText('Найти материал в библиотеке сертификатов'), 'изоляц');
@@ -1162,12 +1105,11 @@ async function openObjectDocumentsPage(user: ReturnType<typeof userEvent.setup>)
   );
 }
 
-async function openObjectRegistryPage(user: ReturnType<typeof userEvent.setup>): Promise<void> {
-  await user.click(getFirstOpenObjectButton());
-
+async function openSeptemberAosrDocument(user: ReturnType<typeof userEvent.setup>): Promise<void> {
   const objectNavigation = screen.getByRole('navigation', { name: 'Разделы объекта' });
 
-  await user.click(within(objectNavigation).getByRole('button', { name: 'Открыть реестр ИД' }));
+  await user.click(within(objectNavigation).getByRole('button', { name: 'Сентябрь 2026' }));
+  await user.click(screen.getByRole('button', { name: /АОСР-001/u }));
 }
 
 async function openObjectFinalPackagePage(user: ReturnType<typeof userEvent.setup>): Promise<void> {

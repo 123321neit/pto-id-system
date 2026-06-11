@@ -6,7 +6,6 @@ import { demoAosrWorkspace, type DemoAosrDraft } from '../aosr-demo/demo-aosr-wo
 import { useDemoStore, type DemoCertificate } from '../demo-store/demo-store.js';
 import { ObjectDocumentsPage } from './ObjectDocumentsPage.js';
 import { ObjectFinalPackagePage } from './ObjectFinalPackagePage.js';
-import { ObjectRegistryPage } from './ObjectRegistryPage.js';
 import { RepresentativesOrganizationsPage } from './RepresentativesOrganizationsPage.js';
 import type { MockObjectCard } from './mock-dashboard.js';
 import {
@@ -14,15 +13,23 @@ import {
   type IdPackageOverviewModel,
   type PeriodicIdPackageModel,
 } from './object-final-package-model.js';
+import {
+  demoObjectPeriods,
+  getDemoObjectPeriodById,
+  getDemoObjectPeriodDrafts,
+  getDemoObjectPeriodForDraftId,
+  type DemoObjectPeriod,
+  type DemoObjectPeriodId,
+} from './object-periods.js';
 
 const aosrActType = getDemoActTypeById('aosr');
 
 type ObjectWorkspaceSection =
   | 'overview'
+  | 'period'
   | 'aosr'
   | 'documents'
   | 'representatives'
-  | 'registry'
   | 'final-package'
   | 'settings';
 
@@ -44,9 +51,13 @@ export function ObjectWorkspacePage({
 }: ObjectWorkspacePageProps): React.JSX.Element {
   const { certificates, objectDocuments, representatives } = useDemoStore();
   const [activeSection, setActiveSection] = useState<ObjectWorkspaceSection>('overview');
+  const [selectedPeriodId, setSelectedPeriodId] = useState<DemoObjectPeriodId>('period-2026-09');
+  const [selectedDraftId, setSelectedDraftId] = useState(demoAosrWorkspace.drafts[0]?.id ?? '');
   const [isCreateDocumentPanelOpen, setCreateDocumentPanelOpen] = useState(false);
   const [settingsOpenRequest, setSettingsOpenRequest] = useState(0);
   const isAosrVisible = activeSection === 'aosr' || activeSection === 'settings';
+  const selectedPeriod = getDemoObjectPeriodById(selectedPeriodId);
+  const selectedPeriodDrafts = getDemoObjectPeriodDrafts(selectedPeriod, demoAosrWorkspace.drafts);
   const usedCertificateCount = useMemo(
     () => getUsedCertificateCount(demoAosrWorkspace.drafts, certificates),
     [certificates],
@@ -62,9 +73,27 @@ export function ObjectWorkspacePage({
     representativeCount: representatives.length,
   };
 
-  const openAosr = (): void => {
+  const openPeriod = (periodId: DemoObjectPeriodId): void => {
     setCreateDocumentPanelOpen(false);
+    setSelectedPeriodId(periodId);
+    const period = getDemoObjectPeriodById(periodId);
+    setSelectedDraftId(period.draftIds[0] ?? demoAosrWorkspace.drafts[0]?.id ?? '');
+    setActiveSection('period');
+  };
+
+  const openAosr = (periodId: DemoObjectPeriodId = selectedPeriodId, draftId?: string): void => {
+    const period = getDemoObjectPeriodById(periodId);
+
+    setCreateDocumentPanelOpen(false);
+    setSelectedPeriodId(periodId);
+    setSelectedDraftId(draftId ?? period.draftIds[0] ?? demoAosrWorkspace.drafts[0]?.id ?? '');
     setActiveSection('aosr');
+  };
+
+  const openDraft = (draft: DemoAosrDraft): void => {
+    const period = getDemoObjectPeriodForDraftId(draft.id);
+
+    openAosr(period.id, draft.id);
   };
 
   const openObjectSettings = (): void => {
@@ -104,22 +133,36 @@ export function ObjectWorkspacePage({
             Обзор
           </button>
           <button
-            aria-current={activeSection === 'aosr' ? 'page' : undefined}
-            onClick={openAosr}
+            aria-current={
+              activeSection === 'period' || activeSection === 'aosr' ? 'page' : undefined
+            }
+            onClick={() => {
+              openPeriod(selectedPeriodId);
+            }}
             type="button"
           >
-            <span aria-hidden="true">□</span>
-            Акты
+            <span aria-hidden="true">▦</span>
+            Периоды
           </button>
-          <button
-            aria-current={activeSection === 'aosr' ? 'page' : undefined}
-            className="object-workspace-nav__subitem"
-            onClick={openAosr}
-            type="button"
-          >
-            <span aria-hidden="true">↳</span>
-            {aosrActType.code}
-          </button>
+          {demoObjectPeriods.map((period) => (
+            <button
+              aria-current={
+                (activeSection === 'period' || activeSection === 'aosr') &&
+                selectedPeriodId === period.id
+                  ? 'page'
+                  : undefined
+              }
+              className="object-workspace-nav__subitem"
+              key={period.id}
+              onClick={() => {
+                openPeriod(period.id);
+              }}
+              type="button"
+            >
+              <span aria-hidden="true">↳</span>
+              {period.name}
+            </button>
+          ))}
           <button
             aria-current={activeSection === 'documents' ? 'page' : undefined}
             aria-label="Открыть документы объекта"
@@ -144,18 +187,6 @@ export function ObjectWorkspacePage({
             Представители
           </button>
           <button
-            aria-current={activeSection === 'registry' ? 'page' : undefined}
-            aria-label="Открыть реестр ИД"
-            onClick={() => {
-              setCreateDocumentPanelOpen(false);
-              setActiveSection('registry');
-            }}
-            type="button"
-          >
-            <span aria-hidden="true">≡</span>
-            Реестр ИД
-          </button>
-          <button
             aria-current={activeSection === 'final-package' ? 'page' : undefined}
             aria-label="Открыть итоговый комплект ИД"
             onClick={() => {
@@ -165,7 +196,7 @@ export function ObjectWorkspacePage({
             type="button"
           >
             <span aria-hidden="true">▣</span>
-            Итоговый комплект
+            Итоговая ИД
           </button>
           <button
             aria-current={activeSection === 'settings' ? 'page' : undefined}
@@ -188,11 +219,15 @@ export function ObjectWorkspacePage({
             metrics={metrics}
             object={object}
             packageOverview={packageOverview}
+            periods={demoObjectPeriods}
             onCloseCreateDocumentPanel={() => {
               setCreateDocumentPanelOpen(false);
             }}
-            onCreateAosr={openAosr}
-            onOpenAosr={openAosr}
+            onCreateAosr={() => {
+              openAosr(selectedPeriodId);
+            }}
+            onOpenDraft={openDraft}
+            onOpenPeriod={openPeriod}
             onOpenCreateDocumentPanel={() => {
               setCreateDocumentPanelOpen(true);
             }}
@@ -204,16 +239,24 @@ export function ObjectWorkspacePage({
               setCreateDocumentPanelOpen(false);
               setActiveSection('final-package');
             }}
-            onOpenRegistry={() => {
-              setCreateDocumentPanelOpen(false);
-              setActiveSection('registry');
+          />
+        ) : null}
+
+        {activeSection === 'period' ? (
+          <ObjectPeriodPage
+            drafts={selectedPeriodDrafts}
+            period={selectedPeriod}
+            onOpenAosr={(draftId) => {
+              openAosr(selectedPeriod.id, draftId);
             }}
           />
         ) : null}
 
         {isAosrVisible ? (
           <DemoAosrWorkspacePage
+            initialSelectedDraftId={selectedDraftId}
             isEmbeddedInObjectWorkspace
+            periodName={selectedPeriod.name}
             settingsOpenRequest={settingsOpenRequest}
             onObjectSettingsClosed={() => {
               setActiveSection('aosr');
@@ -232,8 +275,6 @@ export function ObjectWorkspacePage({
             }}
           />
         ) : null}
-
-        {activeSection === 'registry' ? <ObjectRegistryPage /> : null}
 
         {activeSection === 'final-package' ? <ObjectFinalPackagePage /> : null}
       </section>
@@ -296,17 +337,18 @@ function getSectionBreadcrumb(section: ObjectWorkspaceSection): string {
   switch (section) {
     case 'overview':
       return 'Обзор';
+    case 'period':
+      return 'Периоды';
     case 'aosr':
+      return `Периоды / ${aosrActType.code}`;
     case 'settings':
-      return `Акты / ${aosrActType.code}`;
+      return 'Настройки объекта';
     case 'documents':
       return 'Документы объекта';
     case 'representatives':
       return 'Представители';
-    case 'registry':
-      return 'Реестр ИД';
     case 'final-package':
-      return 'Итоговый комплект';
+      return 'Итоговая ИД';
   }
 }
 
@@ -315,13 +357,14 @@ interface ObjectOverviewProps {
   readonly metrics: ObjectWorkspaceMetrics;
   readonly object: MockObjectCard;
   readonly packageOverview: IdPackageOverviewModel;
+  readonly periods: readonly DemoObjectPeriod[];
   readonly onCloseCreateDocumentPanel: () => void;
   readonly onCreateAosr: () => void;
-  readonly onOpenAosr: () => void;
   readonly onOpenCreateDocumentPanel: () => void;
   readonly onOpenDocuments: () => void;
+  readonly onOpenDraft: (draft: DemoAosrDraft) => void;
   readonly onOpenFinalPackage: () => void;
-  readonly onOpenRegistry: () => void;
+  readonly onOpenPeriod: (periodId: DemoObjectPeriodId) => void;
 }
 
 function ObjectOverview({
@@ -329,13 +372,14 @@ function ObjectOverview({
   metrics,
   object,
   packageOverview,
+  periods,
   onCloseCreateDocumentPanel,
   onCreateAosr,
-  onOpenAosr,
   onOpenCreateDocumentPanel,
   onOpenDocuments,
+  onOpenDraft,
   onOpenFinalPackage,
-  onOpenRegistry,
+  onOpenPeriod,
 }: ObjectOverviewProps): React.JSX.Element {
   return (
     <section className="object-overview" aria-labelledby="object-overview-title">
@@ -365,19 +409,20 @@ function ObjectOverview({
             <p className="section-kicker">Новый документ</p>
             <h3 id="create-document-title">Создать документ</h3>
             <p>
-              Автонумерация будет настраиваться в правилах оформления объекта. Предложенный номер
-              всегда можно будет изменить вручную.
+              Выберите тип документа. В демо документ открывается в выбранном периоде без сохранения
+              в backend.
             </p>
           </div>
           <div className="object-overview__numbering-note">
-            <h4>Основа автонумерации</h4>
-            <p>Правило будет отдельным для каждого типа документа.</p>
+            <h4>Будущая автонумерация</h4>
+            <p>Шаблон номера будет настраиваться отдельно для объекта или периода.</p>
             <ul>
-              <li>ОВ-1, ОВ-2, ОВ-3</li>
-              <li>12-1-ОВ, 12-2-ОВ, 12-3-ОВ</li>
+              <li>ОВ-&#123;n&#125;</li>
+              <li>12-&#123;n&#125;-ОВ</li>
+              <li>АОСР/&#123;YYYY&#125;/&#123;n&#125;</li>
             </ul>
           </div>
-          <ul aria-label="Доступные типы актов">
+          <ul aria-label="Доступные типы документов">
             {registeredDemoActTypes.map((actType) => (
               <li key={actType.id}>
                 <span>
@@ -391,10 +436,28 @@ function ObjectOverview({
                   onClick={onCreateAosr}
                   type="button"
                 >
-                  Создать {actType.code}
+                  Создать документ
                 </button>
               </li>
             ))}
+            <li aria-disabled="true">
+              <span>
+                <strong>Акт испытаний</strong>
+                <small>Другие типы документов появятся позже</small>
+              </span>
+              <button className="compact-toggle" disabled type="button">
+                Скоро
+              </button>
+            </li>
+            <li aria-disabled="true">
+              <span>
+                <strong>Техническая готовность</strong>
+                <small>Будущий тип документа после отдельной ратификации формы</small>
+              </span>
+              <button className="compact-toggle" disabled type="button">
+                Скоро
+              </button>
+            </li>
           </ul>
           <button className="compact-toggle" onClick={onCloseCreateDocumentPanel} type="button">
             Закрыть
@@ -403,7 +466,7 @@ function ObjectOverview({
       ) : null}
 
       <dl className="object-overview__metrics" aria-label="Ключевые показатели объекта">
-        <MetricItem label="Акты" value={metrics.aosrCount} />
+        <MetricItem label="Документы в периодах" value={metrics.aosrCount} />
         <MetricItem label="Использовано сертификатов" value={metrics.usedCertificateCount} />
         <MetricItem label="Документы объекта" value={metrics.objectDocumentCount} />
         <MetricItem label="Представители" value={metrics.representativeCount} />
@@ -421,43 +484,92 @@ function ObjectOverview({
             <button onClick={onOpenCreateDocumentPanel} type="button">
               <span aria-hidden="true">＋</span>
               <strong>Создать документ</strong>
-              <small>Выбор типа акта из зарегистрированной метадаты</small>
+              <small>Выбор типа документа из зарегистрированной метадаты</small>
             </button>
-            <button onClick={onOpenAosr} type="button">
-              <span aria-hidden="true">□</span>
-              <strong>Открыть {aosrActType.code}</strong>
-              <small>{aosrActType.title}</small>
+            <button
+              onClick={() => {
+                onOpenPeriod(periods[0]?.id ?? 'period-2026-09');
+              }}
+              type="button"
+            >
+              <span aria-hidden="true">▦</span>
+              <strong>Открыть период</strong>
+              <small>{periods[0]?.name ?? 'Сентябрь 2026'}: документы, реестр и комплект</small>
             </button>
             <button onClick={onOpenDocuments} type="button">
               <span aria-hidden="true">▤</span>
               <strong>Документы объекта</strong>
               <small>Схемы, чертежи, протоколы и журналы</small>
             </button>
-            <button onClick={onOpenRegistry} type="button">
-              <span aria-hidden="true">≡</span>
-              <strong>Реестр ИД</strong>
-              <small>Производный перечень документов</small>
-            </button>
             <button onClick={onOpenFinalPackage} type="button">
               <span aria-hidden="true">▣</span>
-              <strong>Итоговый комплект</strong>
-              <small>Комплект из актов, документов и использованных сертификатов</small>
+              <strong>Итоговая ИД</strong>
+              <small>Агрегирует все периоды объекта</small>
             </button>
           </div>
         </section>
 
-        <section className="object-overview__panel" aria-labelledby="overview-recent-title">
+        <section className="object-overview__panel" aria-labelledby="overview-periods-title">
           <div className="object-overview__panel-heading">
-            <p className="section-kicker">Недавние документы</p>
-            <h3 id="overview-recent-title">Акты и документы</h3>
+            <p className="section-kicker">Недавние периоды</p>
+            <h3 id="overview-periods-title">Периоды работ</h3>
           </div>
           <ul className="object-overview__recent-list">
-            {demoAosrWorkspace.drafts.map((draft, index) => (
+            {packageOverview.periodicPackages.map((idPackage) => (
+              <li key={idPackage.id}>
+                <button
+                  onClick={() => {
+                    const period = periods.find(
+                      (candidate) => candidate.name === idPackage.periodName,
+                    );
+
+                    if (period !== undefined) {
+                      onOpenPeriod(period.id);
+                    }
+                  }}
+                  type="button"
+                >
+                  <span>
+                    <strong>{idPackage.periodName}</strong>
+                    <small>Документы / реестр / комплект периода</small>
+                  </span>
+                  <span>
+                    <small>Документы</small>
+                    <strong>{idPackage.summary.acts}</strong>
+                  </span>
+                  <span>
+                    <small>Комплект</small>
+                    <strong>скоро</strong>
+                  </span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        </section>
+      </div>
+
+      <section className="object-overview__panel" aria-labelledby="overview-recent-documents-title">
+        <div className="object-overview__panel-heading">
+          <p className="section-kicker">Недавние документы</p>
+          <h3 id="overview-recent-documents-title">Документы в периодах</h3>
+        </div>
+        <ul className="object-overview__recent-list object-overview__recent-list--wide">
+          {demoAosrWorkspace.drafts.map((draft, index) => {
+            const period = getDemoObjectPeriodForDraftId(draft.id);
+
+            return (
               <li key={draft.id}>
-                <button onClick={onOpenAosr} type="button">
+                <button
+                  onClick={() => {
+                    onOpenDraft(draft);
+                  }}
+                  type="button"
+                >
                   <span>
                     <strong>{draft.actNumber}</strong>
-                    <small>{aosrActType.title}</small>
+                    <small>
+                      {period.name} / {aosrActType.title}
+                    </small>
                   </span>
                   <span>
                     <small>Последнее изменение</small>
@@ -469,8 +581,94 @@ function ObjectOverview({
                   </span>
                 </button>
               </li>
+            );
+          })}
+        </ul>
+      </section>
+    </section>
+  );
+}
+
+interface ObjectPeriodPageProps {
+  readonly drafts: readonly DemoAosrDraft[];
+  readonly period: DemoObjectPeriod;
+  readonly onOpenAosr: (draftId: string) => void;
+}
+
+function ObjectPeriodPage({
+  drafts,
+  period,
+  onOpenAosr,
+}: ObjectPeriodPageProps): React.JSX.Element {
+  return (
+    <section className="object-period-workspace" aria-labelledby="object-period-title">
+      <div className="object-period-hero">
+        <div>
+          <p className="section-kicker">Период</p>
+          <h2 id="object-period-title">{period.name}</h2>
+          <p>Документы периода, будущий реестр периода и будущий комплект периода.</p>
+        </div>
+      </div>
+
+      <div className="object-period-grid">
+        <section className="object-period-panel" aria-labelledby="period-documents-title">
+          <div className="object-overview__panel-heading">
+            <p className="section-kicker">Документы</p>
+            <h3 id="period-documents-title">Документы периода</h3>
+          </div>
+          <ul className="object-overview__recent-list object-overview__recent-list--wide">
+            {drafts.map((draft, index) => (
+              <li key={draft.id}>
+                <button
+                  onClick={() => {
+                    onOpenAosr(draft.id);
+                  }}
+                  type="button"
+                >
+                  <span>
+                    <strong>{draft.actNumber}</strong>
+                    <small>{aosrActType.title}</small>
+                  </span>
+                  <span>
+                    <small>Дата документа</small>
+                    <strong>{draft.actDate}</strong>
+                  </span>
+                  <span>
+                    <small>Версия документа</small>
+                    <strong>{index + 1}.0</strong>
+                  </span>
+                </button>
+              </li>
             ))}
           </ul>
+        </section>
+
+        <section
+          className="object-period-panel object-period-placeholder"
+          aria-labelledby="period-registry-title"
+        >
+          <div>
+            <p className="section-kicker">Реестр периода</p>
+            <h3 id="period-registry-title">{period.registryTitle}</h3>
+            <p>
+              Здесь будет периодический реестр документов. Сейчас это только placeholder без backend
+              и без редактирования.
+            </p>
+          </div>
+        </section>
+
+        <section
+          className="object-period-panel object-period-placeholder"
+          aria-labelledby="period-package-title"
+        >
+          <div>
+            <p className="section-kicker">Комплект периода</p>
+            <h3 id="period-package-title">{period.packageTitle}</h3>
+            <p>
+              Здесь появится будущая сборка пакета периода. Итоговая ИД будет агрегировать все
+              периоды объекта.
+            </p>
+          </div>
         </section>
       </div>
     </section>
@@ -517,8 +715,8 @@ function OverviewPackageSection({
           <h4 id="overview-final-package-title">{packageOverview.finalPackage.title}</h4>
           <p>{packageOverview.finalPackage.description}</p>
           <ul>
-            <li>все акты из периодов;</li>
-            <li>сертификаты из актов без дублей;</li>
+            <li>все документы из периодов;</li>
+            <li>сертификаты из документов без дублей;</li>
             <li>чертежи и документы объекта без дублей;</li>
             <li>итоговый реестр.</li>
           </ul>
@@ -542,9 +740,9 @@ function OverviewPeriodicPackageRow({
         <p>{idPackage.note}</p>
       </div>
       <dl aria-label={`Состав пакета ${idPackage.periodName}`}>
-        <MetricItem label="Акты" value={idPackage.summary.acts} />
+        <MetricItem label="Документы периода" value={idPackage.summary.acts} />
         <MetricItem label="Сертификаты" value={idPackage.summary.usedCertificates} />
-        <MetricItem label="Документы" value={idPackage.summary.objectDocuments} />
+        <MetricItem label="Документы объекта" value={idPackage.summary.objectDocuments} />
       </dl>
     </article>
   );

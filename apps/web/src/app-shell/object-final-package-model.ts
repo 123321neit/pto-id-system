@@ -1,6 +1,7 @@
 import { getDemoActTypeById } from '../act-types/act-types.js';
 import type { DemoAosrDraft, DemoObjectDocument } from '../aosr-demo/demo-aosr-workspace.js';
 import { getCertificateMaterialNames, type DemoCertificate } from '../demo-store/demo-store.js';
+import { demoObjectPeriods, getDemoObjectPeriodDrafts } from './object-periods.js';
 
 type FinalPackageGroupId = 'registry' | 'acts' | 'certificates' | 'object-documents';
 
@@ -71,25 +72,8 @@ export interface FinalPackageModel {
 
 const aosrActType = getDemoActTypeById('aosr');
 
-const mockPeriodicPackageDefinitions: readonly {
-  readonly draftIds: readonly string[];
-  readonly id: string;
-  readonly periodName: string;
-}[] = [
-  {
-    draftIds: ['aosr-draft-001'],
-    id: 'periodic-id-2026-05',
-    periodName: 'Май 2026',
-  },
-  {
-    draftIds: ['aosr-draft-002'],
-    id: 'periodic-id-2026-06',
-    periodName: 'Июнь 2026',
-  },
-];
-
 export const finalIdPackageDescription =
-  'Итоговая ИД собирается из всех актов, документов объекта и сертификатов, использованных в актах, без дублей.';
+  'Итоговая ИД собирается из всех периодов, документов объекта и сертификатов, использованных в документах, без дублей.';
 
 export function buildIdPackageOverviewModel(
   drafts: readonly DemoAosrDraft[],
@@ -110,15 +94,15 @@ export function buildIdPackageOverviewModel(
       title: 'Итоговая ИД по объекту',
       type: 'final',
     },
-    periodicPackages: mockPeriodicPackageDefinitions.map((packageDefinition) => {
-      const packageDrafts = drafts.filter((draft) => packageDefinition.draftIds.includes(draft.id));
+    periodicPackages: demoObjectPeriods.map((period) => {
+      const packageDrafts = getDemoObjectPeriodDrafts(period, drafts);
 
       return {
-        id: packageDefinition.id,
+        id: `periodic-id-${period.id}`,
         note: 'frontend mock only: период задан вручную, без реальной месячной архивации.',
-        periodName: packageDefinition.periodName,
+        periodName: period.name,
         summary: buildIdPackageCompositionSummary(packageDrafts, objectDocuments, certificates),
-        title: `Периодическая ИД за ${packageDefinition.periodName}`,
+        title: period.packageTitle,
         type: 'periodic',
       };
     }),
@@ -176,7 +160,7 @@ export function buildFinalPackageModel(
   return {
     groups: [
       { id: 'registry', items: registryItems, title: 'Реестр ИД' },
-      { id: 'acts', items: actItems, title: 'Акты' },
+      { id: 'acts', items: actItems, title: 'Документы из периодов' },
       { id: 'certificates', items: certificateItems, title: 'Сертификаты' },
       { id: 'object-documents', items: objectDocumentItems, title: 'Документы объекта' },
     ],
@@ -193,7 +177,7 @@ export function buildFinalPackageReadiness(
   const issues: string[] = [];
 
   if (summary.acts === 0) {
-    issues.push('Нет актов');
+    issues.push('Нет документов периода');
   }
 
   if (summary.certificates === 0) {

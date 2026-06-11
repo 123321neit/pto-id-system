@@ -5,7 +5,7 @@ Web-система автоматизации исполнительной до�
 Текущий статус:
 
 ```text
-FIRST ALLOWED INFRASTRUCTURE BOOTSTRAP SCAFFOLD ACCEPTED; CANONICAL ADR BASELINE ACCEPTED; BACKEND MODULE ARCHITECTURE SKELETON INTRODUCED; FIRST TECHNICAL FRONTEND-BACKEND STATUS SLICE INTRODUCED; DATABASE FOUNDATION TECHNICAL SLICE INTRODUCED; OBJECT STORAGE FOUNDATION TECHNICAL SLICE INTRODUCED; AUTH SHARING IMPLEMENTATION PLAN ADDED; USER IDENTITY SKELETON INTRODUCED; GLOBAL SYSTEM ADMIN MARKER INTRODUCED; OWNED WORKSPACE BASELINE INTRODUCED; FIRST MOCK AOSR DEMO UI SLICE INTRODUCED; MOCK AOSR DEMO UX/PREVIEW REFINED; MOCK APP SHELL AND OBJECT DASHBOARD INTRODUCED; FRONTEND-ONLY MOCK REPRESENTATIVES/ORGANIZATIONS MANAGEMENT PAGE INTRODUCED; FRONTEND-ONLY MOCK CERTIFICATE LIBRARY PAGE INTRODUCED; STAGE 5 MOCK AOSR WORKSPACE UX STABILIZED; AOSR EDITOR UX CLEANUP INTRODUCED; AOSR WORKSPACE DRAWER UX INTRODUCED; FRONTEND-ONLY MOCK OBJECT DOCUMENT LIBRARY INTRODUCED; AOSR WORKSPACE APPLICATIONS UX CLEANUP INTRODUCED; FRONTEND-ONLY MOCK OBJECT COMPLIANCE DEFAULTS AND ACT OVERRIDES INTRODUCED; FRONTEND-ONLY MOCK OBJECT WORKSPACE VISUAL PASS INTRODUCED; FRONTEND-ONLY MOCK OBJECT WORKSPACE SHELL INTRODUCED; AOSR DOCUMENT PREVIEW DRAWER UX INTRODUCED; AOSR DOCUMENT PREVIEW PAGE VISUALIZATION REFINED; FRONTEND-ONLY OBJECT DOCUMENT WORKSPACE INTRODUCED; FRONTEND-ONLY OBJECT CERTIFICATE WORKSPACE INTRODUCED; FRONTEND-ONLY ID REGISTRY V1 INTRODUCED; FRONTEND-ONLY FINAL ID PACKAGE MOCK INTRODUCED; FRONTEND-ONLY ACT TYPE METADATA PREP INTRODUCED; AOSR READINESS PANEL V1 INTRODUCED; FINAL PACKAGE READINESS V1 INTRODUCED; FRONTEND-ONLY OBJECT WORKSPACE UX HIERARCHY POLISH INTRODUCED; FRONTEND-ONLY OBJECT OVERVIEW AND GLOBAL CERTIFICATE ARCHITECTURE UX CORRECTION INTRODUCED; GLOBAL REUSABLE LIBRARIES AND ACT SNAPSHOTS ADR ACCEPTED
+FIRST ALLOWED INFRASTRUCTURE BOOTSTRAP SCAFFOLD ACCEPTED; CANONICAL ADR BASELINE ACCEPTED; BACKEND MODULE ARCHITECTURE SKELETON INTRODUCED; FIRST TECHNICAL FRONTEND-BACKEND STATUS SLICE INTRODUCED; DATABASE FOUNDATION TECHNICAL SLICE INTRODUCED; OBJECT STORAGE FOUNDATION TECHNICAL SLICE INTRODUCED; AUTH SHARING IMPLEMENTATION PLAN ADDED; USER IDENTITY SKELETON INTRODUCED; GLOBAL SYSTEM ADMIN MARKER INTRODUCED; OWNED WORKSPACE BASELINE INTRODUCED; FIRST MOCK AOSR DEMO UI SLICE INTRODUCED; MOCK AOSR DEMO UX/PREVIEW REFINED; MOCK APP SHELL AND OBJECT DASHBOARD INTRODUCED; FRONTEND-ONLY MOCK REPRESENTATIVES/ORGANIZATIONS MANAGEMENT PAGE INTRODUCED; FRONTEND-ONLY MOCK CERTIFICATE LIBRARY PAGE INTRODUCED; STAGE 5 MOCK AOSR WORKSPACE UX STABILIZED; AOSR EDITOR UX CLEANUP INTRODUCED; AOSR WORKSPACE DRAWER UX INTRODUCED; FRONTEND-ONLY MOCK OBJECT DOCUMENT LIBRARY INTRODUCED; AOSR WORKSPACE APPLICATIONS UX CLEANUP INTRODUCED; FRONTEND-ONLY MOCK OBJECT COMPLIANCE DEFAULTS AND ACT OVERRIDES INTRODUCED; FRONTEND-ONLY MOCK OBJECT WORKSPACE VISUAL PASS INTRODUCED; FRONTEND-ONLY MOCK OBJECT WORKSPACE SHELL INTRODUCED; AOSR DOCUMENT PREVIEW DRAWER UX INTRODUCED; AOSR DOCUMENT PREVIEW PAGE VISUALIZATION REFINED; FRONTEND-ONLY OBJECT DOCUMENT WORKSPACE INTRODUCED; FRONTEND-ONLY OBJECT CERTIFICATE WORKSPACE INTRODUCED; FRONTEND-ONLY ID REGISTRY V1 INTRODUCED; FRONTEND-ONLY FINAL ID PACKAGE MOCK INTRODUCED; FRONTEND-ONLY ACT TYPE METADATA PREP INTRODUCED; AOSR READINESS PANEL V1 INTRODUCED; FINAL PACKAGE READINESS V1 INTRODUCED; FRONTEND-ONLY OBJECT WORKSPACE UX HIERARCHY POLISH INTRODUCED; FRONTEND-ONLY OBJECT OVERVIEW AND GLOBAL CERTIFICATE ARCHITECTURE UX CORRECTION INTRODUCED; GLOBAL REUSABLE LIBRARIES AND ACT SNAPSHOTS ADR ACCEPTED; FRONTEND-ONLY PERIOD-FIRST OBJECT WORKSPACE MOCK INTRODUCED
 ```
 
 В репозитории принят первый разрешённый scaffold. Это только infrastructure/bootstrap
@@ -243,10 +243,11 @@ migrations, uploads, OCR/AI or DOCX/PDF generation were introduced.
 The frontend-only object overview and certificate architecture correction makes
 `Обзор` the default opened-object section. Opening an object now lands on an
 object overview with name, address, key metrics, last update, quick actions,
-recent acts/documents and a frontend-only `Создать документ` selector. The
-selector reads registered act metadata and currently offers only `АОСР — Акт
-освидетельствования скрытых работ`; choosing `Создать АОСР` opens the existing
-AOSR editor without creating a real draft. The previous object-owned
+recent periods, recent documents and a frontend-only `Создать документ`
+selector. The selector reads registered act metadata and currently offers
+`АОСР — Акт освидетельствования скрытых работ`, while future document types are
+disabled as `скоро`; choosing `Создать документ` opens the existing AOSR editor
+without creating a real draft. The previous object-owned
 `Сертификаты` navigation is removed: certificates remain a global user-level
 library, acts use that library, and object/registry/final package screens show
 only derived used certificates. Readiness wording is informational:
@@ -273,6 +274,53 @@ in-memory mock simplification only: no production snapshot table, backend/API
 behavior, Prisma schema, migration or persistence was implemented. Empty
 organization/representative fields remain allowed so future print forms can
 render manual-fill lines instead of blocking saving.
+
+The frontend-only period-first object workspace mock makes `Периоды` the main
+opened-object navigation path after `Обзор`. Mock periods such as
+`Сентябрь 2026` and `Октябрь 2026` contain documents, a period registry
+placeholder and a future package placeholder. AOSR remains the only working
+document editor and is opened through a period/document path. Object-wide counts
+stay on `Обзор`; the embedded editor keeps only document context such as current
+document number, date, work period and version. The final object ID remains the
+aggregate over all periods. This is frontend demo UX only: no backend/API,
+Prisma/schema/migrations, persistence, uploads, OCR/AI, DOCX/PDF/ZIP generation
+or production business logic was introduced.
+
+Future period-first structure:
+
+```text
+Object
+├── Overview
+├── Periods
+│   ├── September 2026
+│   │   ├── documents
+│   │   ├── registry
+│   │   └── package
+│   └── ...
+├── Object documents
+├── Representatives
+├── Final ID
+└── Settings
+```
+
+Future numbering engine is documentation-only at this stage. The intended
+template is:
+
+```text
+{prefix}{number}{suffix}
+```
+
+Examples:
+
+```text
+ОВ-{n}
+12-{n}-ОВ
+АОСР/{YYYY}/{n}
+```
+
+The future engine must support both global numbering per object and numbering
+restarted per period. No numbering engine, backend rules, persistence or
+production numbering logic is implemented in this frontend mock.
 
 Production feature coding remains blocked outside explicitly requested narrow
 demo/technical slices.
@@ -487,6 +535,13 @@ Scaffold включает:
   hierarchy, document tree selected states, current-act metadata, clearer
   drawers and preview framing, with no new document statuses, approvals,
   workflow changes, backend/API behavior, persistence or generation.
+- frontend-only period-first object workspace mock: opened objects still land on
+  `Обзор`, but object navigation now flows through `Периоды` such as
+  `Сентябрь 2026` and `Октябрь 2026`; each period contains documents plus
+  registry/package placeholders, AOSR opens through a period/document path,
+  duplicate workspace/editor counters are removed outside Overview, and no
+  backend/API, persistence, Prisma/schema/migration, generation or production
+  business logic is added.
 
 The backend module skeleton includes module boundaries, README ownership notes,
 placeholder tokens/ports, `apps/api/src/ARCHITECTURE.md`, and ESLint import
@@ -498,14 +553,14 @@ OpenAPI, domain database state, file APIs or real use cases. They exist only to
 validate frontend -> backend connectivity, shared types, env-driven API/storage
 configuration, Prisma client generation and infrastructure health boundaries.
 The mock object dashboard now opens an object overview first; users explicitly
-open AOSR from object actions, recent acts or the create-document selector. The
-AOSR screen remains a frontend-only mock for feedback, not a production
-workflow. Its mock printed-page preview separates object-level defaults from
-current-act fields, lets the current act reuse mock representatives and global
-mock certificate/material records, derives applications at the final end of the
-preview before final signature blocks, and remains without real PDF generation,
-certificate library implementation, signatory database behavior, uploads or
-persistence.
+open AOSR through a period/document path from recent periods, recent documents
+or the create-document selector. The AOSR screen remains a frontend-only mock
+for feedback, not a production workflow. Its mock printed-page preview
+separates object-level defaults from current-act fields, lets the current act
+reuse mock representatives and global mock certificate/material records,
+derives applications at the final end of the preview before final signature
+blocks, and remains without real PDF generation, certificate library
+implementation, signatory database behavior, uploads or persistence.
 The separate mock representatives/organizations dashboard page is also
 frontend-only and in-memory: global libraries and object-level binding concepts
 are demonstrated without schema, API routes, auth, uploads or production

@@ -32,16 +32,15 @@ describe('DemoAosrWorkspacePage', () => {
     expect(screen.queryByLabelText('Название проекта / объекта')).toBeNull();
   });
 
-  it('shows a compact summary strip with current act counts and status', () => {
+  it('keeps the act editor focused on document metadata instead of repeated counters', () => {
     renderDemoWorkspace();
 
-    const summary = screen.getByLabelText('Сводка текущего акта');
+    const metadata = screen.getByLabelText('Метаданные текущего акта');
 
-    expect(within(summary).getByLabelText('Материалы: 2')).toBeTruthy();
-    expect(within(summary).getByLabelText('Документы: 2')).toBeTruthy();
-    expect(within(summary).getByLabelText('Приложения: 4')).toBeTruthy();
-    expect(within(summary).getByLabelText('Подписанты: 3')).toBeTruthy();
-    expect(within(summary).queryByText('Статус')).toBeNull();
+    expect(within(metadata).getByText('Документ')).toBeTruthy();
+    expect(within(metadata).getByText('АОСР-001')).toBeTruthy();
+    expect(screen.queryByLabelText('Сводка текущего акта')).toBeNull();
+    expect(screen.queryByText('Статус')).toBeNull();
     expect(screen.queryByText('Черновик')).toBeNull();
     expect(screen.queryByText('На проверку')).toBeNull();
     expect(screen.queryByText('Готов')).toBeNull();
@@ -107,16 +106,14 @@ describe('DemoAosrWorkspacePage', () => {
     expect(within(readinessPanel).getByText('Не заполнена нормативная база')).toBeTruthy();
   });
 
-  it('shows polished object workspace status cards in the header', () => {
+  it('shows document context in the header without object-wide counters', () => {
     renderDemoWorkspace();
 
-    const workspaceSummary = screen.getByLabelText('Сводка рабочей области');
-
-    expect(screen.getByLabelText('Выбранный акт в шапке: АОСР-001')).toBeTruthy();
-    expect(within(workspaceSummary).getByLabelText('Акты: 2')).toBeTruthy();
-    expect(within(workspaceSummary).getByLabelText('Текущий акт: АОСР-001')).toBeTruthy();
-    expect(within(workspaceSummary).getByLabelText('Организации объекта: 3')).toBeTruthy();
-    expect(within(workspaceSummary).getByLabelText('Подписанты: 3')).toBeTruthy();
+    expect(screen.getByLabelText('Текущий документ: АОСР-001')).toBeTruthy();
+    expect(screen.queryByLabelText('Сводка рабочей области')).toBeNull();
+    expect(screen.queryByLabelText('Акты: 2')).toBeNull();
+    expect(screen.queryByLabelText('Организации объекта: 3')).toBeNull();
+    expect(screen.queryByLabelText('Подписанты: 3')).toBeNull();
   });
 
   it('keeps the workspace usable without the document preview drawer open', () => {
@@ -125,7 +122,7 @@ describe('DemoAosrWorkspacePage', () => {
     expect(screen.getByRole('button', { name: 'Предпросмотр документа' })).toBeTruthy();
     expect(screen.queryByRole('dialog', { name: 'Предпросмотр документа' })).toBeNull();
     expect(screen.queryByLabelText('Демо-предпросмотр печатной формы АОСР')).toBeNull();
-    expect(screen.getByRole('heading', { name: 'Дерево проекта' })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: 'Документы периода' })).toBeTruthy();
     expect(screen.getByRole('heading', { name: 'Рабочая область акта' })).toBeTruthy();
   });
 
@@ -141,7 +138,7 @@ describe('DemoAosrWorkspacePage', () => {
     const drawerContext = within(drawer).getByLabelText('Контекст предпросмотра документа');
 
     expect(drawerContext.textContent).toContain('Акт АОСР-001');
-    expect(drawerContext.textContent).toContain('"01" июня 2026 г.');
+    expect(drawerContext.textContent).toContain('"04" сентября 2026 г.');
     expect(drawerContext.textContent).toContain('4 приложений');
     expect(within(preview).getByText('Страница 1')).toBeTruthy();
     expect(within(preview).getByText('Страница 2')).toBeTruthy();
@@ -739,8 +736,6 @@ describe('DemoAosrWorkspacePage', () => {
     await user.click(applicationCheckbox);
 
     expect((applicationCheckbox as HTMLInputElement).checked).toBe(false);
-
-    expect(screen.getByLabelText('Приложения: 3')).toBeTruthy();
 
     const pointFourList = screen.getByRole('list', {
       name: 'Документы пункта 4 текущего акта',

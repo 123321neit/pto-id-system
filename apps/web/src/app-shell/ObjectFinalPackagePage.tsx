@@ -39,7 +39,7 @@ export function ObjectFinalPackagePage(): React.JSX.Element {
       <PeriodicPackageOverview packages={packageOverview.periodicPackages} />
 
       <dl className="object-documents-summary" aria-label="Сводка итогового комплекта ИД">
-        <SummaryItem label="Акты" value={finalPackage.summary.acts} />
+        <SummaryItem label="Документы из периодов" value={finalPackage.summary.acts} />
         <SummaryItem label="Сертификаты без дублей" value={finalPackage.summary.certificates} />
         <SummaryItem
           label="Документы / чертежи без дублей"
@@ -121,7 +121,7 @@ function FinalPackageFlowExplanation(): React.JSX.Element {
       </div>
 
       <ul className="id-package-flow__list">
-        <li>все акты из периодов;</li>
+        <li>все документы из периодов;</li>
         <li>все использованные сертификаты без дублей;</li>
         <li>все использованные чертежи и документы объекта без дублей;</li>
         <li>итоговый реестр.</li>
@@ -139,7 +139,7 @@ function PeriodicPackageOverview({ packages }: PeriodicPackageOverviewProps): Re
     <section className="periodic-package-overview" aria-labelledby="periodic-package-title">
       <div className="periodic-package-overview__heading">
         <div>
-          <p className="section-kicker">Пакеты ИД</p>
+          <p className="section-kicker">Периоды</p>
           <h3 id="periodic-package-title">Периодическая ИД</h3>
         </div>
         <p>Первые mock-периоды для будущей структуры комплектов.</p>
@@ -154,7 +154,7 @@ function PeriodicPackageOverview({ packages }: PeriodicPackageOverviewProps): Re
               <p>{idPackage.title}</p>
             </div>
             <dl aria-label={`Состав пакета ${idPackage.periodName}`}>
-              <SummaryItem label="Акты" value={idPackage.summary.acts} />
+              <SummaryItem label="Документы" value={idPackage.summary.acts} />
               <SummaryItem
                 label="Использовано сертификатов"
                 value={idPackage.summary.usedCertificates}

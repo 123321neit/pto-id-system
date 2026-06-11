@@ -1,0 +1,57 @@
+import type { DemoAosrDraft } from '../aosr-demo/demo-aosr-workspace.js';
+
+export type DemoObjectPeriodId = 'period-2026-09' | 'period-2026-10';
+
+export interface DemoObjectPeriod {
+  readonly draftIds: readonly string[];
+  readonly id: DemoObjectPeriodId;
+  readonly name: string;
+  readonly packageTitle: string;
+  readonly registryTitle: string;
+}
+
+export const defaultDemoObjectPeriod: DemoObjectPeriod = {
+  draftIds: ['aosr-draft-001'],
+  id: 'period-2026-09',
+  name: 'Сентябрь 2026',
+  packageTitle: 'Комплект периода за Сентябрь 2026',
+  registryTitle: 'Реестр периода за Сентябрь 2026',
+};
+
+export const demoObjectPeriods: readonly DemoObjectPeriod[] = [
+  defaultDemoObjectPeriod,
+  {
+    draftIds: ['aosr-draft-002'],
+    id: 'period-2026-10',
+    name: 'Октябрь 2026',
+    packageTitle: 'Комплект периода за Октябрь 2026',
+    registryTitle: 'Реестр периода за Октябрь 2026',
+  },
+];
+
+export function getDemoObjectPeriodById(periodId: DemoObjectPeriodId): DemoObjectPeriod {
+  const period = demoObjectPeriods.find((candidate) => candidate.id === periodId);
+
+  if (period === undefined) {
+    throw new Error(`Unknown demo object period: ${periodId}`);
+  }
+
+  return period;
+}
+
+export function getDemoObjectPeriodForDraftId(draftId: string): DemoObjectPeriod {
+  const period = demoObjectPeriods.find((candidate) => candidate.draftIds.includes(draftId));
+
+  if (period === undefined) {
+    return defaultDemoObjectPeriod;
+  }
+
+  return period;
+}
+
+export function getDemoObjectPeriodDrafts(
+  period: DemoObjectPeriod,
+  drafts: readonly DemoAosrDraft[],
+): readonly DemoAosrDraft[] {
+  return drafts.filter((draft) => period.draftIds.includes(draft.id));
+}
