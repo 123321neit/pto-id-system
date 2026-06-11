@@ -318,7 +318,7 @@ describe('DemoAosrWorkspacePage', () => {
   it('explains the act signatory search source and fallback', () => {
     renderDemoWorkspace();
 
-    expect(screen.getByLabelText('Добавить подписанта из назначений объекта')).toBeTruthy();
+    expect(screen.getByLabelText('Добавить назначение представителя в акт')).toBeTruthy();
     expect(
       screen.getByText('Акт выбирает назначение объекта и сохраняет печатный снимок подписанта.'),
     ).toBeTruthy();
@@ -616,10 +616,7 @@ describe('DemoAosrWorkspacePage', () => {
 
     expect(getPreviewText()).not.toContain('Кузнецова А.А.');
 
-    await user.type(
-      screen.getByLabelText('Добавить подписанта из назначений объекта'),
-      'заказчика',
-    );
+    await user.type(screen.getByLabelText('Добавить назначение представителя в акт'), 'заказчика');
 
     const objectPicker = screen.getByRole('list', {
       name: 'Назначения представителей для текущего акта',
@@ -631,7 +628,7 @@ describe('DemoAosrWorkspacePage', () => {
     }
 
     await user.click(
-      within(customerRow as HTMLElement).getByRole('button', { name: 'Добавить подписанта' }),
+      within(customerRow as HTMLElement).getByRole('button', { name: 'Добавить назначение' }),
     );
 
     const previewText = getPreviewText();
@@ -639,12 +636,12 @@ describe('DemoAosrWorkspacePage', () => {
     expect(previewText).toContain('Представитель заказчика:');
   });
 
-  it('adds a manual representative snapshot only to the current act when the checkbox is clear', async () => {
+  it('creates a representative assignment from the act form and adds its snapshot to the act', async () => {
     const user = userEvent.setup();
 
     renderDemoWorkspace({ initialDocumentPreviewOpen: true });
 
-    await addManualRepresentative(user, {
+    await addRepresentativeAssignmentFromAct(user, {
       authorityBasis: 'Доверенность N Т-1',
       fullName: 'Сидоров С.С.',
       organization: 'ООО "Разовая проверка"',
@@ -658,33 +655,28 @@ describe('DemoAosrWorkspacePage', () => {
     await user.click(screen.getByRole('button', { name: 'Назначения объекта' }));
 
     const objectLibrary = screen.getByRole('list', { name: 'Назначения представителей объекта' });
-    expect(within(objectLibrary).queryByText('Сидоров С.С.')).toBeNull();
+    expect(within(objectLibrary).getByText('Сидоров С.С.')).toBeTruthy();
   });
 
-  it('stores a manual representative as an object assignment when selected', async () => {
+  it('does not expose the old act-only representative creation model', async () => {
     const user = userEvent.setup();
 
-    renderDemoWorkspace({ initialDocumentPreviewOpen: true });
+    renderDemoWorkspace();
 
-    await addManualRepresentative(
-      user,
-      {
-        authorityBasis: 'Приказ N Б-77',
-        fullName: 'Орлова О.О.',
-        organization: 'ООО "Новый участник"',
-        position: 'Руководитель проекта',
-        roleLabel: 'Представитель нового участника',
-      },
-      true,
-    );
+    await user.click(screen.getByRole('button', { name: 'Создать представителя и назначение' }));
 
-    expect(getPreviewText()).toContain('Орлова О.О.');
-
-    await openObjectSettings(user);
-    await user.click(screen.getByRole('button', { name: 'Назначения объекта' }));
-
-    const objectLibrary = screen.getByRole('list', { name: 'Назначения представителей объекта' });
-    expect(within(objectLibrary).getByText('Орлова О.О.')).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'Добавить подписанта в акт' })).toBeNull();
+    expect(
+      screen.queryByRole('checkbox', { name: 'Также оставить назначение в настройках объекта' }),
+    ).toBeNull();
+    expect(screen.queryByLabelText('ФИО для снимка акта')).toBeNull();
+    expect(screen.getByLabelText('ФИО глобального представителя')).toBeTruthy();
+    expect(screen.getByLabelText('Роль назначения на объекте')).toBeTruthy();
+    expect(
+      screen.getByText(
+        'В production это создаст глобального представителя, назначение на объект и снимок для акта.',
+      ),
+    ).toBeTruthy();
   });
 
   it('updates the document signatory order in the preview', async () => {
@@ -984,7 +976,7 @@ function renderDemoWorkspace({
   );
 }
 
-interface ManualRepresentativeInput {
+interface RepresentativeAssignmentInput {
   readonly authorityBasis: string;
   readonly fullName: string;
   readonly organization: string;
@@ -1000,33 +992,24 @@ async function openObjectSettings(user: ReturnType<typeof userEvent.setup>): Pro
   }
 }
 
-async function addManualRepresentative(
+async function addRepresentativeAssignmentFromAct(
   user: ReturnType<typeof userEvent.setup>,
-  representative: ManualRepresentativeInput,
-  shouldAddToObjectLibrary = false,
+  representative: RepresentativeAssignmentInput,
 ): Promise<void> {
-  await user.click(screen.getByRole('button', { name: 'Добавить подписанта' }));
-  await user.type(screen.getByLabelText('Роль для снимка акта'), representative.roleLabel);
-  await user.type(screen.getByLabelText('ФИО для снимка акта'), representative.fullName);
-  await user.type(screen.getByLabelText('Должность для снимка акта'), representative.position);
+  await user.click(screen.getByRole('button', { name: 'Создать представителя и назначение' }));
+  await user.type(screen.getByLabelText('Роль назначения на объекте'), representative.roleLabel);
+  await user.type(screen.getByLabelText('ФИО глобального представителя'), representative.fullName);
+  await user.type(screen.getByLabelText('Должность в назначении объекта'), representative.position);
   await user.type(
-    screen.getByLabelText('Организация для снимка акта'),
+    screen.getByLabelText('Организация в назначении объекта'),
     representative.organization,
   );
   await user.type(
-    screen.getByLabelText('Основание полномочий для снимка акта'),
+    screen.getByLabelText('Основание полномочий в назначении объекта'),
     representative.authorityBasis,
   );
 
-  if (shouldAddToObjectLibrary) {
-    await user.click(
-      screen.getByRole('checkbox', {
-        name: 'Также оставить назначение в настройках объекта',
-      }),
-    );
-  }
-
-  await user.click(screen.getByRole('button', { name: 'Добавить подписанта в акт' }));
+  await user.click(screen.getByRole('button', { name: 'Создать и добавить в акт' }));
 }
 
 function getPreviewText(): string {

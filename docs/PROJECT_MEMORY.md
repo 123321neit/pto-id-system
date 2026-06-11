@@ -402,6 +402,18 @@ registries/packages derive used certificates from acts and deduplicate them by
 source certificate identity/provenance. This decision is recorded in
 `docs/adr/0006-global-reusable-libraries-and-act-snapshots.md`.
 
+Stage: frontend-only ADR 0006 demo wording alignment. Remaining AOSR signatory
+creation copy now follows the accepted global reusable library flow: create or
+select a global representative, assign that representative to the object, add
+the object assignment to the act, and store a printed snapshot for the act. The
+old act-only/temporary representative mental model was removed from the visible
+mock flow; in-memory demo storage is only a simplification and not a production
+snapshot/data-model implementation. Global organization and representative mock
+forms no longer use browser `required` blocking, because empty fields remain
+allowed and future print forms should render manual-fill lines. No backend/API,
+Prisma/schema/migrations, auth, uploads, OCR/AI, DOCX/PDF/ZIP generation,
+persistence or production business logic was introduced.
+
 ---
 
 ## 1. Product idea
@@ -4266,6 +4278,42 @@ production domain/API/persistence work remain separate explicit tasks.
 - no share codes/grants;
 - no production registry, package, certificate, object-document or AOSR
   business logic.
+
+### 2026-06-11 — Frontend-only ADR 0006 demo wording alignment introduced
+
+- Статус: `Frontend mock wording and non-blocking form alignment only`
+- Описание: aligned remaining AOSR signatory and representatives/organizations
+  demo copy with ADR 0006.
+
+Добавлено/уточнено:
+
+- AOSR signatory creation now says `Создать представителя и назначение`;
+- submit action now says `Создать и добавить в акт`;
+- helper copy says production will create a global representative, an object
+  assignment and an act snapshot;
+- creating from the AOSR act form now stores the simplified in-memory object
+  assignment before adding the assignment to the act;
+- the old visible mental model of a temporary act-only representative was
+  removed;
+- existing search/select flow from object assignments into the current act is
+  preserved;
+- global organization and representative mock forms no longer use HTML
+  `required` attributes;
+- empty organization/representative fields remain allowed so future print forms
+  can leave manual-fill lines.
+
+Что не было введено:
+
+- no production representative/organization/certificate data model;
+- no real act snapshot table or snapshot persistence;
+- no backend/API behavior;
+- no Prisma/schema/migrations;
+- no uploads or file storage;
+- no OCR or AI extraction;
+- no DOCX/PDF/ZIP generation;
+- no auth/session/login/register;
+- no share codes/grants;
+- no production AOSR business logic.
 
 ### 2026-06-11 — Global reusable libraries and act snapshots ADR accepted
 

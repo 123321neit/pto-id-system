@@ -37,7 +37,6 @@ export function DemoRepresentativeForm({
           onChange={(event) => {
             onChange('roleLabel', event.currentTarget.value);
           }}
-          required
           value={form.roleLabel}
         />
       </label>
@@ -47,7 +46,6 @@ export function DemoRepresentativeForm({
           onChange={(event) => {
             onChange('fullName', event.currentTarget.value);
           }}
-          required
           value={form.fullName}
         />
       </label>
@@ -57,7 +55,6 @@ export function DemoRepresentativeForm({
           onChange={(event) => {
             onChange('position', event.currentTarget.value);
           }}
-          required
           value={form.position}
         />
       </label>
@@ -67,7 +64,6 @@ export function DemoRepresentativeForm({
           onChange={(event) => {
             onChange('organization', event.currentTarget.value);
           }}
-          required
           value={form.organization}
         />
       </label>
@@ -77,7 +73,6 @@ export function DemoRepresentativeForm({
           onChange={(event) => {
             onChange('authorityBasis', event.currentTarget.value);
           }}
-          required
           value={form.authorityBasis}
         />
       </label>

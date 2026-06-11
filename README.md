@@ -265,6 +265,15 @@ certificates as the final model. A "create new" action from search creates a
 global entity first, then links or assigns it to the current object or act.
 Later global library edits must not silently change already formed acts.
 
+The frontend-only demo wording is now aligned with ADR 0006 for remaining AOSR
+signatory creation flows: the UI describes creating/selecting a global
+representative, assigning the representative to the object, adding that
+assignment to the act, and storing a printed snapshot. This remains an
+in-memory mock simplification only: no production snapshot table, backend/API
+behavior, Prisma schema, migration or persistence was implemented. Empty
+organization/representative fields remain allowed so future print forms can
+render manual-fill lines instead of blocking saving.
+
 Production feature coding remains blocked outside explicitly requested narrow
 demo/technical slices.
 
@@ -456,6 +465,11 @@ Scaffold включает:
   assignments/links; acts capture printed snapshots for historical stability;
   direct free-text signatories, organizations and certificates are not the final
   model.
+- frontend-only ADR 0006 demo wording alignment: remaining AOSR signatory
+  creation copy now says `Создать представителя и назначение` /
+  `Создать и добавить в акт`, creates an in-memory object assignment before
+  adding it to the current act, and removes required blocking from mock global
+  organization/representative forms while preserving empty fields.
 - frontend-only ID Registry V1: read-only object registry page derived from
   AOSR drafts, object documents and the shared global certificate demo store,
   with summary counts, section filters and frontend act type metadata for AOSR

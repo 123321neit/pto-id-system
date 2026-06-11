@@ -883,6 +883,18 @@ describe('App shell mock navigation', () => {
     ).toBeTruthy();
   });
 
+  it('allows saving an empty global organization mock card', async () => {
+    const user = userEvent.setup();
+
+    render(<App />);
+    await openRepresentativesManagementPage(user);
+
+    await user.click(screen.getByRole('button', { name: 'Добавить организацию' }));
+    await user.click(screen.getByRole('button', { name: 'Сохранить организацию' }));
+
+    expect(screen.queryByLabelText('Название организации')).toBeNull();
+  });
+
   it('shows a newly added organization in the object organization picker', async () => {
     const user = userEvent.setup();
 
@@ -964,6 +976,18 @@ describe('App shell mock navigation', () => {
     expect(within(representativeLibrary).getByText('НРС С-66-000111')).toBeTruthy();
   });
 
+  it('allows saving an empty global representative mock card', async () => {
+    const user = userEvent.setup();
+
+    render(<App />);
+    await openRepresentativesManagementPage(user);
+
+    await user.click(screen.getByRole('button', { name: 'Добавить представителя' }));
+    await user.click(screen.getByRole('button', { name: 'Сохранить представителя' }));
+
+    expect(screen.queryByLabelText('ФИО представителя')).toBeNull();
+  });
+
   it('shows a newly added representative in the act signatory search', async () => {
     const user = userEvent.setup();
 
@@ -984,7 +1008,7 @@ describe('App shell mock navigation', () => {
     await user.click(screen.getByRole('button', { name: 'Вернуться к объектам' }));
     await user.click(getFirstOpenObjectButton());
     await user.click(screen.getByRole('button', { name: 'АОСР' }));
-    await user.type(screen.getByLabelText('Добавить подписанта из назначений объекта'), 'яковлев');
+    await user.type(screen.getByLabelText('Добавить назначение представителя в акт'), 'яковлев');
 
     const signatoryPicker = screen.getByRole('list', {
       name: 'Назначения представителей для текущего акта',
@@ -999,7 +1023,7 @@ describe('App shell mock navigation', () => {
 
     await user.click(
       within(representativeRow as HTMLElement).getByRole('button', {
-        name: 'Добавить подписанта',
+        name: 'Добавить назначение',
       }),
     );
 
@@ -1046,10 +1070,7 @@ describe('App shell mock navigation', () => {
     );
     await user.click(screen.getByRole('button', { name: 'Закрыть библиотеку' }));
 
-    await user.type(
-      screen.getByLabelText('Добавить подписанта из назначений объекта'),
-      'заказчика',
-    );
+    await user.type(screen.getByLabelText('Добавить назначение представителя в акт'), 'заказчика');
 
     const objectPicker = screen.getByRole('list', {
       name: 'Назначения представителей для текущего акта',
@@ -1061,7 +1082,7 @@ describe('App shell mock navigation', () => {
     }
 
     await user.click(
-      within(customerRow as HTMLElement).getByRole('button', { name: 'Добавить подписанта' }),
+      within(customerRow as HTMLElement).getByRole('button', { name: 'Добавить назначение' }),
     );
 
     await openDocumentPreview(user);

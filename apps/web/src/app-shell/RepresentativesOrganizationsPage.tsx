@@ -181,7 +181,6 @@ export function RepresentativesOrganizationsPage({
                 <label>
                   Название организации
                   <input
-                    required
                     onChange={(event) => {
                       updateOrganizationForm('name', event.currentTarget.value);
                     }}
@@ -191,7 +190,6 @@ export function RepresentativesOrganizationsPage({
                 <label>
                   ИНН / ОГРН / реквизиты
                   <textarea
-                    required
                     onChange={(event) => {
                       updateOrganizationForm('details', event.currentTarget.value);
                     }}
@@ -201,7 +199,6 @@ export function RepresentativesOrganizationsPage({
                 <label>
                   Где используется
                   <textarea
-                    required
                     onChange={(event) => {
                       updateOrganizationForm('usageNote', event.currentTarget.value);
                     }}
@@ -272,7 +269,6 @@ export function RepresentativesOrganizationsPage({
                 <label>
                   ФИО представителя
                   <input
-                    required
                     onChange={(event) => {
                       updateRepresentativeForm('fullName', event.currentTarget.value);
                     }}
@@ -282,7 +278,6 @@ export function RepresentativesOrganizationsPage({
                 <label>
                   Базовая роль / подпись
                   <input
-                    required
                     onChange={(event) => {
                       updateRepresentativeForm('roleLabel', event.currentTarget.value);
                     }}
@@ -292,7 +287,6 @@ export function RepresentativesOrganizationsPage({
                 <label>
                   Базовая должность
                   <input
-                    required
                     onChange={(event) => {
                       updateRepresentativeForm('position', event.currentTarget.value);
                     }}
@@ -302,7 +296,6 @@ export function RepresentativesOrganizationsPage({
                 <label>
                   Базовая организация
                   <input
-                    required
                     onChange={(event) => {
                       updateRepresentativeForm('organization', event.currentTarget.value);
                     }}
@@ -312,7 +305,6 @@ export function RepresentativesOrganizationsPage({
                 <label>
                   Основание полномочий
                   <textarea
-                    required
                     onChange={(event) => {
                       updateRepresentativeForm('authorityBasis', event.currentTarget.value);
                     }}

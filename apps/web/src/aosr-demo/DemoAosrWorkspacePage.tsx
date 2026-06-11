@@ -109,8 +109,6 @@ export function DemoAosrWorkspacePage({
   const [objectDocumentTypeFilter, setObjectDocumentTypeFilter] = useState<
     'all' | DemoObjectDocumentType
   >('all');
-  const [shouldAddManualRepresentativeToLibrary, setShouldAddManualRepresentativeToLibrary] =
-    useState(false);
   const [createdHeaderOrganizationCount, setCreatedHeaderOrganizationCount] = useState(1);
   const [createdRepresentativeCount, setCreatedRepresentativeCount] = useState(1);
 
@@ -213,22 +211,17 @@ export function DemoAosrWorkspacePage({
     event.preventDefault();
 
     const representative = createRepresentativeFromForm(
-      shouldAddManualRepresentativeToLibrary
-        ? `representative-created-${String(createdRepresentativeCount)}`
-        : `temporary-representative-${String(createdRepresentativeCount)}`,
+      `representative-created-${String(createdRepresentativeCount)}`,
       manualRepresentativeForm,
     );
 
-    if (shouldAddManualRepresentativeToLibrary) {
-      setObjectDefaults((currentDefaults) =>
-        addRepresentativeToLibrary(currentDefaults, representative),
-      );
-    }
+    setObjectDefaults((currentDefaults) =>
+      addRepresentativeToLibrary(currentDefaults, representative),
+    );
 
     updateSelectedDraftWith((draft) => addRepresentativeToDraft(draft, representative));
     setCreatedRepresentativeCount((currentCount) => currentCount + 1);
     setManualRepresentativeForm(emptyRepresentativeForm);
-    setShouldAddManualRepresentativeToLibrary(false);
     setManualRepresentativeFormOpen(false);
   };
 
@@ -411,7 +404,6 @@ export function DemoAosrWorkspacePage({
               selectedMaterials={selectedMaterials}
               selectedObjectDocuments={selectedObjectDocuments}
               selectedSignatories={selectedSignatories}
-              shouldAddManualRepresentativeToLibrary={shouldAddManualRepresentativeToLibrary}
               onAddManualRepresentative={addManualRepresentative}
               onAddMaterialToAct={(certificateId) => {
                 updateSelectedDraftWith((draft) =>
@@ -430,9 +422,6 @@ export function DemoAosrWorkspacePage({
               onChangeDocumentTypeFilter={setObjectDocumentTypeFilter}
               onChangeManualRepresentativeForm={updateManualRepresentativeForm}
               onChangeMaterialSearch={setMaterialSearch}
-              onChangeShouldAddManualRepresentativeToLibrary={
-                setShouldAddManualRepresentativeToLibrary
-              }
               onDragRepresentativeEnd={() => {
                 setDraggedRepresentativeId(null);
               }}

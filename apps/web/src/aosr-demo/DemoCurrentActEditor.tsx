@@ -42,7 +42,6 @@ interface DemoCurrentActEditorProps {
   readonly selectedMaterials: readonly DemoMaterialCertificate[];
   readonly selectedObjectDocuments: readonly DemoObjectDocument[];
   readonly selectedSignatories: readonly DemoAosrRepresentative[];
-  readonly shouldAddManualRepresentativeToLibrary: boolean;
   readonly onAddManualRepresentative: (event: SyntheticEvent<HTMLFormElement>) => void;
   readonly onAddMaterialToAct: (certificateId: string) => void;
   readonly onAddObjectDocumentToAct: (documentId: string) => void;
@@ -55,7 +54,6 @@ interface DemoCurrentActEditorProps {
     value: string,
   ) => void;
   readonly onChangeMaterialSearch: (value: string) => void;
-  readonly onChangeShouldAddManualRepresentativeToLibrary: (value: boolean) => void;
   readonly onDragRepresentativeEnd: () => void;
   readonly onDragRepresentativeStart: (representativeId: string) => void;
   readonly onMoveSelectedSignatory: (representativeId: string, direction: MoveDirection) => void;
@@ -92,7 +90,6 @@ export function DemoCurrentActEditor({
   selectedMaterials,
   selectedObjectDocuments,
   selectedSignatories,
-  shouldAddManualRepresentativeToLibrary,
   onAddManualRepresentative,
   onAddMaterialToAct,
   onAddObjectDocumentToAct,
@@ -102,7 +99,6 @@ export function DemoCurrentActEditor({
   onChangeDocumentTypeFilter,
   onChangeManualRepresentativeForm,
   onChangeMaterialSearch,
-  onChangeShouldAddManualRepresentativeToLibrary,
   onDragRepresentativeEnd,
   onDragRepresentativeStart,
   onMoveSelectedSignatory,
@@ -422,14 +418,10 @@ export function DemoCurrentActEditor({
         manualRepresentativeForm={manualRepresentativeForm}
         objectRepresentatives={objectDefaults.representativeLibrary}
         selectedSignatories={selectedSignatories}
-        shouldAddManualRepresentativeToLibrary={shouldAddManualRepresentativeToLibrary}
         onAddManualRepresentative={onAddManualRepresentative}
         onAddRepresentativeToAct={onAddRepresentativeToAct}
         onChangeActRepresentativeSearch={onChangeActRepresentativeSearch}
         onChangeManualRepresentativeForm={onChangeManualRepresentativeForm}
-        onChangeShouldAddManualRepresentativeToLibrary={
-          onChangeShouldAddManualRepresentativeToLibrary
-        }
         onDragRepresentativeEnd={onDragRepresentativeEnd}
         onDragRepresentativeStart={onDragRepresentativeStart}
         onMoveSelectedSignatory={onMoveSelectedSignatory}

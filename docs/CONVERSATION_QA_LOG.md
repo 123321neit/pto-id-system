@@ -928,3 +928,42 @@ When an organization, representative or certificate is included in an act, the a
 Certificates are global. Objects do not own certificate libraries. Acts select materials/certificates from the global certificate library, and final ID registries/packages derive used certificates from acts and deduplicate them by referenced certificate identity/provenance.
 
 Статус решения: accepted architecture decision, recorded in `docs/adr/0006-global-reusable-libraries-and-act-snapshots.md` and consolidated into `docs/PROJECT_MEMORY.md`. No backend/API, Prisma/schema/migration, upload, OCR/AI, generation or production business logic was introduced by this documentation step.
+
+---
+
+## 39. Frontend demo wording alignment with ADR 0006
+
+### Q: Как убрать из frontend mock ощущение, что подписанта можно добавить как свободный act-only текст, не реализуя production data model?
+
+A: Выполнена frontend-only корректировка wording/flow в текущем демо.
+
+Решение:
+
+- AOSR signatory creation now uses `Создать представителя и назначение`;
+- submit action now uses `Создать и добавить в акт`;
+- helper explains that production will create a global representative, an
+  object assignment and an act snapshot;
+- the mock no longer exposes the checkbox/mental model of adding a
+  representative only to the act versus also keeping it on the object;
+- simplified in-memory behavior now creates an object assignment before adding
+  the assignment to the current act;
+- existing search/select from object representative assignments into the act is
+  preserved;
+- global organization and representative mock forms no longer use HTML
+  `required` attributes;
+- empty fields remain allowed, because future print forms should leave
+  manual-fill lines instead of blocking saving.
+
+Что не было введено:
+
+- no production data model;
+- no real snapshot persistence;
+- no backend/API behavior;
+- no Prisma/schema/migrations;
+- no auth/session;
+- no uploads;
+- no OCR/AI;
+- no DOCX/PDF/ZIP generation;
+- no production AOSR business logic.
+
+Статус решения: frontend mock wording and form-behavior alignment only.

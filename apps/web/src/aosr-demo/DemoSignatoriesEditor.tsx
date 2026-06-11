@@ -11,7 +11,6 @@ interface DemoSignatoriesEditorProps {
   readonly manualRepresentativeForm: RepresentativeFormState;
   readonly objectRepresentatives: readonly DemoAosrRepresentative[];
   readonly selectedSignatories: readonly DemoAosrRepresentative[];
-  readonly shouldAddManualRepresentativeToLibrary: boolean;
   readonly onAddManualRepresentative: (event: SyntheticEvent<HTMLFormElement>) => void;
   readonly onAddRepresentativeToAct: (representative: DemoAosrRepresentative) => void;
   readonly onChangeActRepresentativeSearch: (value: string) => void;
@@ -19,7 +18,6 @@ interface DemoSignatoriesEditorProps {
     field: keyof RepresentativeFormState,
     value: string,
   ) => void;
-  readonly onChangeShouldAddManualRepresentativeToLibrary: (value: boolean) => void;
   readonly onDragRepresentativeEnd: () => void;
   readonly onDragRepresentativeStart: (representativeId: string) => void;
   readonly onMoveSelectedSignatory: (representativeId: string, direction: MoveDirection) => void;
@@ -35,12 +33,10 @@ export function DemoSignatoriesEditor({
   manualRepresentativeForm,
   objectRepresentatives,
   selectedSignatories,
-  shouldAddManualRepresentativeToLibrary,
   onAddManualRepresentative,
   onAddRepresentativeToAct,
   onChangeActRepresentativeSearch,
   onChangeManualRepresentativeForm,
-  onChangeShouldAddManualRepresentativeToLibrary,
   onDragRepresentativeEnd,
   onDragRepresentativeStart,
   onMoveSelectedSignatory,
@@ -67,12 +63,12 @@ export function DemoSignatoriesEditor({
           onClick={onToggleManualRepresentativeForm}
           type="button"
         >
-          Добавить подписанта
+          Создать представителя и назначение
         </button>
       </div>
 
       <label className="search-field">
-        Добавить подписанта из назначений объекта
+        Добавить назначение представителя в акт
         <input
           onChange={(event) => {
             onChangeActRepresentativeSearch(event.currentTarget.value);
@@ -110,7 +106,7 @@ export function DemoSignatoriesEditor({
                   }}
                   type="button"
                 >
-                  {isInCurrentAct ? 'В акте' : 'Добавить подписанта'}
+                  {isInCurrentAct ? 'В акте' : 'Добавить назначение'}
                 </button>
               </div>
             );
@@ -121,32 +117,24 @@ export function DemoSignatoriesEditor({
       {isManualRepresentativeFormOpen ? (
         <DemoRepresentativeForm
           afterFields={
-            <label className="checkbox-row checkbox-row--inline">
-              <input
-                checked={shouldAddManualRepresentativeToLibrary}
-                onChange={(event) => {
-                  onChangeShouldAddManualRepresentativeToLibrary(event.currentTarget.checked);
-                }}
-                type="checkbox"
-              />
-              <span>
-                <strong>Также оставить назначение в настройках объекта</strong>
-              </span>
-            </label>
+            <p className="helper-note act-form-grid__wide">
+              В production это создаст глобального представителя, назначение на объект и снимок для
+              акта.
+            </p>
           }
           form={manualRepresentativeForm}
           labels={{
-            authorityBasis: 'Основание полномочий для снимка акта',
-            details: 'Детали для снимка акта',
-            fullName: 'ФИО для снимка акта',
-            nrsId: 'Номер НРС для снимка акта',
-            organization: 'Организация для снимка акта',
-            position: 'Должность для снимка акта',
-            roleLabel: 'Роль для снимка акта',
+            authorityBasis: 'Основание полномочий в назначении объекта',
+            details: 'Детали назначения для печатного снимка',
+            fullName: 'ФИО глобального представителя',
+            nrsId: 'Номер НРС для назначения',
+            organization: 'Организация в назначении объекта',
+            position: 'Должность в назначении объекта',
+            roleLabel: 'Роль назначения на объекте',
           }}
           onChange={onChangeManualRepresentativeForm}
           onSubmit={onAddManualRepresentative}
-          submitLabel="Добавить подписанта в акт"
+          submitLabel="Создать и добавить в акт"
         />
       ) : null}
 
