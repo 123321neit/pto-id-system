@@ -9,6 +9,11 @@ import { ObjectFinalPackagePage } from './ObjectFinalPackagePage.js';
 import { ObjectRegistryPage } from './ObjectRegistryPage.js';
 import { RepresentativesOrganizationsPage } from './RepresentativesOrganizationsPage.js';
 import type { MockObjectCard } from './mock-dashboard.js';
+import {
+  buildIdPackageOverviewModel,
+  type IdPackageOverviewModel,
+  type PeriodicIdPackageModel,
+} from './object-final-package-model.js';
 
 const aosrActType = getDemoActTypeById('aosr');
 
@@ -45,6 +50,10 @@ export function ObjectWorkspacePage({
   const usedCertificateCount = useMemo(
     () => getUsedCertificateCount(demoAosrWorkspace.drafts, certificates),
     [certificates],
+  );
+  const packageOverview = useMemo(
+    () => buildIdPackageOverviewModel(demoAosrWorkspace.drafts, objectDocuments, certificates),
+    [certificates, objectDocuments],
   );
   const metrics: ObjectWorkspaceMetrics = {
     aosrCount: demoAosrWorkspace.drafts.length,
@@ -171,13 +180,14 @@ export function ObjectWorkspacePage({
       </aside>
 
       <section className="object-workspace-main" aria-labelledby="object-workspace-title">
-        <ObjectWorkspaceHeader object={object} activeSection={activeSection} metrics={metrics} />
+        <ObjectWorkspaceHeader object={object} activeSection={activeSection} />
 
         {activeSection === 'overview' ? (
           <ObjectOverview
             isCreateDocumentPanelOpen={isCreateDocumentPanelOpen}
             metrics={metrics}
             object={object}
+            packageOverview={packageOverview}
             onCloseCreateDocumentPanel={() => {
               setCreateDocumentPanelOpen(false);
             }}
@@ -233,13 +243,11 @@ export function ObjectWorkspacePage({
 
 interface ObjectWorkspaceHeaderProps {
   readonly activeSection: ObjectWorkspaceSection;
-  readonly metrics: ObjectWorkspaceMetrics;
   readonly object: MockObjectCard;
 }
 
 function ObjectWorkspaceHeader({
   activeSection,
-  metrics,
   object,
 }: ObjectWorkspaceHeaderProps): React.JSX.Element {
   const sectionBreadcrumb = getSectionBreadcrumb(activeSection);
@@ -264,19 +272,8 @@ function ObjectWorkspaceHeader({
             <dt>Последнее изменение</dt>
             <dd>{object.updatedAtLabel}</dd>
           </div>
-          <div>
-            <dt>Документов в объекте</dt>
-            <dd>{object.documentsCount}</dd>
-          </div>
         </dl>
       </div>
-
-      <dl className="object-workspace-metrics" aria-label="Показатели открытого объекта">
-        <MetricItem label={aosrActType.code} value={metrics.aosrCount} />
-        <MetricItem label="Использовано сертификатов" value={metrics.usedCertificateCount} />
-        <MetricItem label="Документы" value={metrics.objectDocumentCount} />
-        <MetricItem label="Представители" value={metrics.representativeCount} />
-      </dl>
     </header>
   );
 }
@@ -317,6 +314,7 @@ interface ObjectOverviewProps {
   readonly isCreateDocumentPanelOpen: boolean;
   readonly metrics: ObjectWorkspaceMetrics;
   readonly object: MockObjectCard;
+  readonly packageOverview: IdPackageOverviewModel;
   readonly onCloseCreateDocumentPanel: () => void;
   readonly onCreateAosr: () => void;
   readonly onOpenAosr: () => void;
@@ -330,6 +328,7 @@ function ObjectOverview({
   isCreateDocumentPanelOpen,
   metrics,
   object,
+  packageOverview,
   onCloseCreateDocumentPanel,
   onCreateAosr,
   onOpenAosr,
@@ -366,9 +365,17 @@ function ObjectOverview({
             <p className="section-kicker">Новый документ</p>
             <h3 id="create-document-title">Создать документ</h3>
             <p>
-              В следующих версиях номер будет предложен автоматически, с возможностью ручного
-              изменения.
+              Автонумерация будет настраиваться в правилах оформления объекта. Предложенный номер
+              всегда можно будет изменить вручную.
             </p>
+          </div>
+          <div className="object-overview__numbering-note">
+            <h4>Основа автонумерации</h4>
+            <p>Правило будет отдельным для каждого типа документа.</p>
+            <ul>
+              <li>ОВ-1, ОВ-2, ОВ-3</li>
+              <li>12-1-ОВ, 12-2-ОВ, 12-3-ОВ</li>
+            </ul>
           </div>
           <ul aria-label="Доступные типы актов">
             {registeredDemoActTypes.map((actType) => (
@@ -401,6 +408,8 @@ function ObjectOverview({
         <MetricItem label="Документы объекта" value={metrics.objectDocumentCount} />
         <MetricItem label="Представители" value={metrics.representativeCount} />
       </dl>
+
+      <OverviewPackageSection packageOverview={packageOverview} />
 
       <div className="object-overview__grid">
         <section className="object-overview__panel" aria-labelledby="overview-actions-title">
@@ -465,6 +474,79 @@ function ObjectOverview({
         </section>
       </div>
     </section>
+  );
+}
+
+interface OverviewPackageSectionProps {
+  readonly packageOverview: IdPackageOverviewModel;
+}
+
+function OverviewPackageSection({
+  packageOverview,
+}: OverviewPackageSectionProps): React.JSX.Element {
+  return (
+    <section className="object-overview__package-section" aria-labelledby="overview-package-title">
+      <div className="object-overview__package-heading">
+        <div>
+          <p className="section-kicker">Комплекты ИД</p>
+          <h3 id="overview-package-title">Периодическая ИД и итоговая ИД</h3>
+        </div>
+        <div className="id-package-flow__track id-package-flow__track--compact">
+          <span>Периодическая ИД</span>
+          <strong aria-hidden="true">→</strong>
+          <span>Итоговая ИД</span>
+        </div>
+      </div>
+
+      <div className="object-overview__package-grid">
+        <section aria-labelledby="overview-periodic-package-title">
+          <p className="section-kicker">Периоды</p>
+          <h4 id="overview-periodic-package-title">Периодическая ИД</h4>
+          <div className="periodic-package-list periodic-package-list--compact">
+            {packageOverview.periodicPackages.map((idPackage) => (
+              <OverviewPeriodicPackageRow idPackage={idPackage} key={idPackage.id} />
+            ))}
+          </div>
+        </section>
+
+        <section
+          className="object-overview__final-package-note"
+          aria-labelledby="overview-final-package-title"
+        >
+          <p className="section-kicker">Финал объекта</p>
+          <h4 id="overview-final-package-title">{packageOverview.finalPackage.title}</h4>
+          <p>{packageOverview.finalPackage.description}</p>
+          <ul>
+            <li>все акты из периодов;</li>
+            <li>сертификаты из актов без дублей;</li>
+            <li>чертежи и документы объекта без дублей;</li>
+            <li>итоговый реестр.</li>
+          </ul>
+        </section>
+      </div>
+    </section>
+  );
+}
+
+interface OverviewPeriodicPackageRowProps {
+  readonly idPackage: PeriodicIdPackageModel;
+}
+
+function OverviewPeriodicPackageRow({
+  idPackage,
+}: OverviewPeriodicPackageRowProps): React.JSX.Element {
+  return (
+    <article className="periodic-package-row periodic-package-row--compact">
+      <div>
+        <h5>{idPackage.periodName}</h5>
+        <p>{idPackage.note}</p>
+      </div>
+      <dl aria-label={`Состав пакета ${idPackage.periodName}`}>
+        <MetricItem label="Акты" value={idPackage.summary.acts} />
+        <MetricItem label="Сертификаты" value={idPackage.summary.usedCertificates} />
+        <MetricItem label="Документы" value={idPackage.summary.objectDocuments} />
+      </dl>
+    </article>
   );
 }
 

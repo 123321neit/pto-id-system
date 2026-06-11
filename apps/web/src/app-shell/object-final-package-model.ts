@@ -4,6 +4,36 @@ import { getCertificateMaterialNames, type DemoCertificate } from '../demo-store
 
 type FinalPackageGroupId = 'registry' | 'acts' | 'certificates' | 'object-documents';
 
+export type IdPackageType = 'periodic' | 'final';
+
+export interface IdPackageCompositionSummary {
+  readonly acts: number;
+  readonly objectDocuments: number;
+  readonly usedCertificates: number;
+}
+
+export interface PeriodicIdPackageModel {
+  readonly id: string;
+  readonly note: string;
+  readonly periodName: string;
+  readonly summary: IdPackageCompositionSummary;
+  readonly title: string;
+  readonly type: 'periodic';
+}
+
+export interface FinalIdPackageOverviewModel {
+  readonly description: string;
+  readonly id: string;
+  readonly summary: IdPackageCompositionSummary;
+  readonly title: string;
+  readonly type: 'final';
+}
+
+export interface IdPackageOverviewModel {
+  readonly finalPackage: FinalIdPackageOverviewModel;
+  readonly periodicPackages: readonly PeriodicIdPackageModel[];
+}
+
 interface FinalPackageSummary {
   readonly acts: number;
   readonly certificates: number;
@@ -40,6 +70,60 @@ export interface FinalPackageModel {
 }
 
 const aosrActType = getDemoActTypeById('aosr');
+
+const mockPeriodicPackageDefinitions: readonly {
+  readonly draftIds: readonly string[];
+  readonly id: string;
+  readonly periodName: string;
+}[] = [
+  {
+    draftIds: ['aosr-draft-001'],
+    id: 'periodic-id-2026-05',
+    periodName: 'Май 2026',
+  },
+  {
+    draftIds: ['aosr-draft-002'],
+    id: 'periodic-id-2026-06',
+    periodName: 'Июнь 2026',
+  },
+];
+
+export const finalIdPackageDescription =
+  'Итоговая ИД собирается из всех актов, документов объекта и сертификатов, использованных в актах, без дублей.';
+
+export function buildIdPackageOverviewModel(
+  drafts: readonly DemoAosrDraft[],
+  objectDocuments: readonly DemoObjectDocument[],
+  certificates: readonly DemoCertificate[],
+): IdPackageOverviewModel {
+  const finalPackage = buildFinalPackageModel(drafts, objectDocuments, certificates);
+
+  return {
+    finalPackage: {
+      description: finalIdPackageDescription,
+      id: 'final-object-id-package',
+      summary: {
+        acts: finalPackage.summary.acts,
+        objectDocuments: finalPackage.summary.objectDocuments,
+        usedCertificates: finalPackage.summary.certificates,
+      },
+      title: 'Итоговая ИД по объекту',
+      type: 'final',
+    },
+    periodicPackages: mockPeriodicPackageDefinitions.map((packageDefinition) => {
+      const packageDrafts = drafts.filter((draft) => packageDefinition.draftIds.includes(draft.id));
+
+      return {
+        id: packageDefinition.id,
+        note: 'frontend mock only: период задан вручную, без реальной месячной архивации.',
+        periodName: packageDefinition.periodName,
+        summary: buildIdPackageCompositionSummary(packageDrafts, objectDocuments, certificates),
+        title: `Периодическая ИД за ${packageDefinition.periodName}`,
+        type: 'periodic',
+      };
+    }),
+  };
+}
 
 export function buildFinalPackageModel(
   drafts: readonly DemoAosrDraft[],
@@ -174,4 +258,16 @@ function getUniqueObjectDocumentsUsedInDrafts(
   }
 
   return [...usedObjectDocuments.values()];
+}
+
+function buildIdPackageCompositionSummary(
+  drafts: readonly DemoAosrDraft[],
+  objectDocuments: readonly DemoObjectDocument[],
+  certificates: readonly DemoCertificate[],
+): IdPackageCompositionSummary {
+  return {
+    acts: drafts.length,
+    objectDocuments: getUniqueObjectDocumentsUsedInDrafts(drafts, objectDocuments).length,
+    usedCertificates: getUniqueCertificatesUsedInDrafts(drafts, certificates).length,
+  };
 }

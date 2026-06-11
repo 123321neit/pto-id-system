@@ -2,12 +2,22 @@ import { useMemo } from 'react';
 
 import { demoAosrWorkspace } from '../aosr-demo/demo-aosr-workspace.js';
 import { useDemoStore } from '../demo-store/demo-store.js';
-import { buildFinalPackageModel, type FinalPackageGroup } from './object-final-package-model.js';
+import {
+  buildFinalPackageModel,
+  buildIdPackageOverviewModel,
+  finalIdPackageDescription,
+  type FinalPackageGroup,
+  type PeriodicIdPackageModel,
+} from './object-final-package-model.js';
 
 export function ObjectFinalPackagePage(): React.JSX.Element {
   const { certificates, objectDocuments } = useDemoStore();
   const finalPackage = useMemo(
     () => buildFinalPackageModel(demoAosrWorkspace.drafts, objectDocuments, certificates),
+    [certificates, objectDocuments],
+  );
+  const packageOverview = useMemo(
+    () => buildIdPackageOverviewModel(demoAosrWorkspace.drafts, objectDocuments, certificates),
     [certificates, objectDocuments],
   );
 
@@ -19,10 +29,14 @@ export function ObjectFinalPackagePage(): React.JSX.Element {
       <header className="object-documents-hero object-final-package-hero">
         <div>
           <p className="section-kicker">Итоговый комплект</p>
-          <h2 id="object-final-package-title">Итоговый комплект ИД</h2>
-          <p>Финальный комплект исполнительной документации по объекту.</p>
+          <h2 id="object-final-package-title">{packageOverview.finalPackage.title}</h2>
+          <p>{finalIdPackageDescription}</p>
         </div>
       </header>
+
+      <FinalPackageFlowExplanation />
+
+      <PeriodicPackageOverview packages={packageOverview.periodicPackages} />
 
       <dl className="object-documents-summary" aria-label="Сводка итогового комплекта ИД">
         <SummaryItem label="Акты" value={finalPackage.summary.acts} />
@@ -84,6 +98,73 @@ export function ObjectFinalPackagePage(): React.JSX.Element {
           Скачать итоговую ИД
         </button>
       </section>
+    </section>
+  );
+}
+
+function FinalPackageFlowExplanation(): React.JSX.Element {
+  return (
+    <section className="id-package-flow" aria-labelledby="final-package-flow-title">
+      <div>
+        <p className="section-kicker">Логика комплекта</p>
+        <h3 id="final-package-flow-title">Периодическая ИД → Итоговая ИД</h3>
+        <p>
+          Периодические комплекты готовятся за отдельные периоды работ, а итоговая ИД собирает
+          документацию по объекту целиком.
+        </p>
+      </div>
+
+      <div className="id-package-flow__track" aria-label="Периодическая ИД переходит в итоговую ИД">
+        <span>Периодическая ИД</span>
+        <strong aria-hidden="true">→</strong>
+        <span>Итоговая ИД</span>
+      </div>
+
+      <ul className="id-package-flow__list">
+        <li>все акты из периодов;</li>
+        <li>все использованные сертификаты без дублей;</li>
+        <li>все использованные чертежи и документы объекта без дублей;</li>
+        <li>итоговый реестр.</li>
+      </ul>
+    </section>
+  );
+}
+
+interface PeriodicPackageOverviewProps {
+  readonly packages: readonly PeriodicIdPackageModel[];
+}
+
+function PeriodicPackageOverview({ packages }: PeriodicPackageOverviewProps): React.JSX.Element {
+  return (
+    <section className="periodic-package-overview" aria-labelledby="periodic-package-title">
+      <div className="periodic-package-overview__heading">
+        <div>
+          <p className="section-kicker">Пакеты ИД</p>
+          <h3 id="periodic-package-title">Периодическая ИД</h3>
+        </div>
+        <p>Первые mock-периоды для будущей структуры комплектов.</p>
+      </div>
+
+      <div className="periodic-package-list">
+        {packages.map((idPackage) => (
+          <article className="periodic-package-row" key={idPackage.id}>
+            <div>
+              <p className="section-tag">Период</p>
+              <h4>{idPackage.periodName}</h4>
+              <p>{idPackage.title}</p>
+            </div>
+            <dl aria-label={`Состав пакета ${idPackage.periodName}`}>
+              <SummaryItem label="Акты" value={idPackage.summary.acts} />
+              <SummaryItem
+                label="Использовано сертификатов"
+                value={idPackage.summary.usedCertificates}
+              />
+              <SummaryItem label="Документы объекта" value={idPackage.summary.objectDocuments} />
+            </dl>
+            <p className="periodic-package-row__note">{idPackage.note}</p>
+          </article>
+        ))}
+      </div>
     </section>
   );
 }

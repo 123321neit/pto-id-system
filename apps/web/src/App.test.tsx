@@ -7,6 +7,7 @@ import { App } from './App.js';
 import {
   buildFinalPackageModel,
   buildFinalPackageReadiness,
+  buildIdPackageOverviewModel,
 } from './app-shell/object-final-package-model.js';
 import { demoAosrWorkspace, type DemoAosrDraft } from './aosr-demo/demo-aosr-workspace.js';
 import { initialDemoCertificates, initialDemoObjectDocuments } from './demo-store/demo-store.js';
@@ -80,8 +81,13 @@ describe('App shell mock navigation', () => {
     expect(within(selector).getByText('АОСР — Акт освидетельствования скрытых работ')).toBeTruthy();
     expect(
       within(selector).getByText(
-        'В следующих версиях номер будет предложен автоматически, с возможностью ручного изменения.',
+        'Автонумерация будет настраиваться в правилах оформления объекта. Предложенный номер всегда можно будет изменить вручную.',
       ),
+    ).toBeTruthy();
+    expect(within(selector).getByText('ОВ-1, ОВ-2, ОВ-3')).toBeTruthy();
+    expect(within(selector).getByText('12-1-ОВ, 12-2-ОВ, 12-3-ОВ')).toBeTruthy();
+    expect(
+      within(selector).getByText('Правило будет отдельным для каждого типа документа.'),
     ).toBeTruthy();
 
     await user.click(within(selector).getByRole('button', { name: 'Создать АОСР' }));
@@ -94,7 +100,7 @@ describe('App shell mock navigation', () => {
     expect(getDocumentPreview()).toBeTruthy();
   });
 
-  it('renders object workspace navigation with object status and quick metrics', async () => {
+  it('renders object workspace navigation and keeps object-wide metrics on the overview', async () => {
     const user = userEvent.setup();
 
     render(<App />);
@@ -130,17 +136,20 @@ describe('App shell mock navigation', () => {
     ).toBeTruthy();
     expect(screen.getAllByText('В работе').length).toBeGreaterThan(0);
 
-    const metrics = screen.getByLabelText('Показатели открытого объекта');
-    expect(within(metrics).getByLabelText('АОСР: 2')).toBeTruthy();
-    expect(within(metrics).getByLabelText('Использовано сертификатов: 3')).toBeTruthy();
-    expect(within(metrics).getByLabelText('Документы: 8')).toBeTruthy();
-    expect(within(metrics).getByLabelText('Представители: 6')).toBeTruthy();
+    expect(screen.queryByLabelText('Показатели открытого объекта')).toBeNull();
 
     const objectMetadata = screen.getByLabelText('Метаданные объекта');
     expect(within(objectMetadata).getByText('Открыт раздел')).toBeTruthy();
     expect(within(objectMetadata).getByText('Обзор')).toBeTruthy();
     expect(within(objectMetadata).getByText('Последнее изменение')).toBeTruthy();
     expect(within(objectMetadata).getByText('сегодня')).toBeTruthy();
+    expect(within(objectMetadata).queryByText('Документов в объекте')).toBeNull();
+
+    const overviewMetrics = screen.getByLabelText('Ключевые показатели объекта');
+    expect(within(overviewMetrics).getByLabelText('Акты: 2')).toBeTruthy();
+    expect(within(overviewMetrics).getByLabelText('Использовано сертификатов: 3')).toBeTruthy();
+    expect(within(overviewMetrics).getByLabelText('Документы объекта: 8')).toBeTruthy();
+    expect(within(overviewMetrics).getByLabelText('Представители: 6')).toBeTruthy();
   });
 
   it('switches object workspace sections and renders the object documents page', async () => {
@@ -183,9 +192,11 @@ describe('App shell mock navigation', () => {
     await user.click(
       within(objectNavigation).getByRole('button', { name: 'Открыть итоговый комплект ИД' }),
     );
-    expect(screen.getByRole('heading', { name: 'Итоговый комплект ИД' })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: 'Итоговая ИД по объекту' })).toBeTruthy();
     expect(
-      screen.getByText('Финальный комплект исполнительной документации по объекту.'),
+      screen.getByText(
+        'Итоговая ИД собирается из всех актов, документов объекта и сертификатов, использованных в актах, без дублей.',
+      ),
     ).toBeTruthy();
   });
 
@@ -280,16 +291,41 @@ describe('App shell mock navigation', () => {
     render(<App />);
     await openObjectFinalPackagePage(user);
 
-    const finalPackagePage = screen.getByRole('region', { name: 'Итоговый комплект ИД' });
+    const finalPackagePage = screen.getByRole('region', { name: 'Итоговая ИД по объекту' });
 
     expect(
-      within(finalPackagePage).getByRole('heading', { name: 'Итоговый комплект ИД' }),
+      within(finalPackagePage).getByRole('heading', { name: 'Итоговая ИД по объекту' }),
     ).toBeTruthy();
     expect(
       within(finalPackagePage).getByText(
-        'Финальный комплект исполнительной документации по объекту.',
+        'Итоговая ИД собирается из всех актов, документов объекта и сертификатов, использованных в актах, без дублей.',
       ),
     ).toBeTruthy();
+    expect(
+      within(finalPackagePage).getByRole('heading', {
+        name: 'Периодическая ИД → Итоговая ИД',
+      }),
+    ).toBeTruthy();
+    expect(within(finalPackagePage).getByText('все акты из периодов;')).toBeTruthy();
+    expect(
+      within(finalPackagePage).getByText('все использованные сертификаты без дублей;'),
+    ).toBeTruthy();
+    expect(
+      within(finalPackagePage).getByText(
+        'все использованные чертежи и документы объекта без дублей;',
+      ),
+    ).toBeTruthy();
+    expect(within(finalPackagePage).getByText('итоговый реестр.')).toBeTruthy();
+
+    const mayPackage = within(finalPackagePage).getByLabelText('Состав пакета Май 2026');
+    expect(within(mayPackage).getByLabelText('Акты: 1')).toBeTruthy();
+    expect(within(mayPackage).getByLabelText('Использовано сертификатов: 2')).toBeTruthy();
+    expect(within(mayPackage).getByLabelText('Документы объекта: 2')).toBeTruthy();
+
+    const junePackage = within(finalPackagePage).getByLabelText('Состав пакета Июнь 2026');
+    expect(within(junePackage).getByLabelText('Акты: 1')).toBeTruthy();
+    expect(within(junePackage).getByLabelText('Использовано сертификатов: 1')).toBeTruthy();
+    expect(within(junePackage).getByLabelText('Документы объекта: 1')).toBeTruthy();
 
     const summary = within(finalPackagePage).getByLabelText('Сводка итогового комплекта ИД');
     expect(within(summary).getByLabelText('Акты: 2')).toBeTruthy();
@@ -320,6 +356,38 @@ describe('App shell mock navigation', () => {
     expect(within(finalPackagePage).getByText('АОСР-001')).toBeTruthy();
     expect(within(finalPackagePage).getByText('СТ-ОВ-2026-017')).toBeTruthy();
     expect(within(finalPackagePage).getByText('ИС-ОВ-04')).toBeTruthy();
+  });
+
+  it('builds the frontend-only periodic and final ID package overview model', () => {
+    const packageOverview = buildIdPackageOverviewModel(
+      demoAosrWorkspace.drafts,
+      initialDemoObjectDocuments,
+      initialDemoCertificates,
+    );
+
+    expect(packageOverview.periodicPackages).toHaveLength(2);
+    expect(packageOverview.periodicPackages[0]?.type).toBe('periodic');
+    expect(packageOverview.periodicPackages[0]?.periodName).toBe('Май 2026');
+    expect(packageOverview.periodicPackages[0]?.summary).toEqual({
+      acts: 1,
+      objectDocuments: 2,
+      usedCertificates: 2,
+    });
+    expect(packageOverview.periodicPackages[1]?.periodName).toBe('Июнь 2026');
+    expect(packageOverview.periodicPackages[1]?.summary).toEqual({
+      acts: 1,
+      objectDocuments: 1,
+      usedCertificates: 1,
+    });
+    expect(packageOverview.finalPackage).toMatchObject({
+      title: 'Итоговая ИД по объекту',
+      type: 'final',
+    });
+    expect(packageOverview.finalPackage.summary).toEqual({
+      acts: 2,
+      objectDocuments: 3,
+      usedCertificates: 3,
+    });
   });
 
   it('does not repeat duplicate certificates or object documents in the final package model', () => {
