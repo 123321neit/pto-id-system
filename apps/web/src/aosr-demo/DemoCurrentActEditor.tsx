@@ -182,17 +182,6 @@ export function DemoCurrentActEditor({
             <span>по порядку</span>
           </dd>
         </div>
-        <div aria-label={`Статус: ${getDraftStatusLabel(selectedDraft.status)}`}>
-          <dt>Статус</dt>
-          <dd>
-            <strong
-              className={`act-summary-strip__status act-summary-strip__status--${selectedDraft.status}`}
-            >
-              {getDraftStatusLabel(selectedDraft.status)}
-            </strong>
-            <span>текущий</span>
-          </dd>
-        </div>
       </dl>
 
       <DemoAosrReadinessPanel readiness={readiness} />
@@ -450,8 +439,4 @@ export function DemoCurrentActEditor({
       />
     </section>
   );
-}
-
-function getDraftStatusLabel(status: DemoAosrDraft['status']): string {
-  return status === 'draft' ? 'Черновик' : 'На проверку';
 }

@@ -13,8 +13,8 @@ export interface DemoAosrReadiness {
   readonly statusLabel: string;
 }
 
-// Frontend-only diagnostics for the mock demo. Future versions may validate attached
-// files, signature presence, document statuses and issued/reviewed states here.
+// Frontend-only diagnostics for the mock demo. Future versions may check attached
+// files, signature presence and empty sections here without blocking print output.
 export function buildDemoAosrReadiness({
   complianceStatement,
   materialsCount,
@@ -44,6 +44,6 @@ export function buildDemoAosrReadiness({
   return {
     issues,
     status,
-    statusLabel: status === 'ready' ? '🟢 Готов к выпуску' : '🟡 Требует заполнения',
+    statusLabel: status === 'ready' ? '🟢 Поля заполнены' : '🟡 Есть пустые разделы',
   };
 }

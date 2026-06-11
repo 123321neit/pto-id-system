@@ -49,7 +49,7 @@ export function buildFinalPackageModel(
   const actItems = drafts.map((draft) => ({
     date: draft.actDate,
     id: `final-act-${draft.id}`,
-    meta: `${aosrActType.code}: ${draft.status === 'draft' ? 'Черновик' : 'На проверку'}`,
+    meta: `${aosrActType.code}: версия документа v1.0`,
     number: draft.actNumber,
     title: `${aosrActType.title}. ${draft.workDescription}`,
   }));
@@ -101,8 +101,8 @@ export function buildFinalPackageModel(
   };
 }
 
-// Frontend-only package diagnostics. Future versions may validate attached files,
-// signatures, document lifecycle statuses and issued/reviewed package states here.
+// Frontend-only package diagnostics. Future versions may check attached files and
+// empty package sections here without blocking print output.
 export function buildFinalPackageReadiness(
   summary: Pick<FinalPackageSummary, 'acts' | 'certificates' | 'objectDocuments'>,
 ): FinalPackageReadiness {
@@ -125,7 +125,7 @@ export function buildFinalPackageReadiness(
   return {
     issues,
     status,
-    statusLabel: status === 'ready' ? '🟢 Готов к выпуску' : '🟡 Требует заполнения',
+    statusLabel: status === 'ready' ? '🟢 Поля заполнены' : '🟡 Есть пустые разделы',
   };
 }
 

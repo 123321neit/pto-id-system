@@ -306,8 +306,7 @@ export function DemoAosrWorkspacePage({
             className="workspace-header__current-act"
             aria-label={`Выбранный акт в шапке: ${selectedDraft.actNumber}`}
           >
-            Текущий акт: <strong>{selectedDraft.actNumber}</strong> /{' '}
-            {selectedDraft.status === 'draft' ? 'черновик' : 'на проверку'}
+            Текущий акт: <strong>{selectedDraft.actNumber}</strong>
           </p>
         </div>
         <div className="workspace-header__aside">
@@ -338,8 +337,8 @@ export function DemoAosrWorkspacePage({
             </button>
           </div>
           <dl className="workspace-summary" aria-label="Сводка рабочей области">
-            <div aria-label={`Черновики: ${String(drafts.length)}`}>
-              <dt>Черновики</dt>
+            <div aria-label={`Акты: ${String(drafts.length)}`}>
+              <dt>Акты</dt>
               <dd>
                 <strong>{drafts.length}</strong>
                 <span>акта в объекте</span>

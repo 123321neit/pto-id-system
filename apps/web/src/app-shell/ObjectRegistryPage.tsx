@@ -148,13 +148,13 @@ function buildRegistryRows(
   certificates: readonly DemoCertificate[],
 ): readonly RegistryRow[] {
   return [
-    ...demoAosrWorkspace.drafts.map((draft) => ({
+    ...demoAosrWorkspace.drafts.map((draft, index) => ({
       date: draft.actDate,
       id: `aosr-${draft.id}`,
       name: `${aosrActType.title}. ${draft.workDescription}`,
       number: draft.actNumber,
       section: aosrActType.registrySectionName,
-      details: `Состояние акта: ${draft.status === 'draft' ? 'Черновик' : 'На проверку'}`,
+      details: `Версия документа: ${String(index + 1)}.0; последнее изменение: ${draft.actDate}`,
     })),
     ...objectDocuments.map((document) => ({
       date: document.documentDate,

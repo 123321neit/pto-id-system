@@ -41,18 +41,29 @@ describe('DemoAosrWorkspacePage', () => {
     expect(within(summary).getByLabelText('Документы: 2')).toBeTruthy();
     expect(within(summary).getByLabelText('Приложения: 4')).toBeTruthy();
     expect(within(summary).getByLabelText('Подписанты: 3')).toBeTruthy();
-    expect(within(summary).getByLabelText('Статус: Черновик')).toBeTruthy();
+    expect(within(summary).queryByText('Статус')).toBeNull();
+    expect(screen.queryByText('Черновик')).toBeNull();
+    expect(screen.queryByText('На проверку')).toBeNull();
+    expect(screen.queryByText('Готов')).toBeNull();
+    expect(screen.queryByText('Выпущен')).toBeNull();
   });
 
   it('renders readiness panel with a ready act state', () => {
     renderDemoWorkspace();
 
-    const readinessPanel = screen.getByRole('region', { name: 'Готовность акта' });
+    const readinessPanel = screen.getByRole('region', { name: 'Проверка заполнения' });
 
-    expect(within(readinessPanel).getByRole('heading', { name: 'Готовность акта' })).toBeTruthy();
-    expect(within(readinessPanel).getByText('🟢 Готов к выпуску')).toBeTruthy();
+    expect(
+      within(readinessPanel).getByRole('heading', { name: 'Проверка заполнения' }),
+    ).toBeTruthy();
+    expect(within(readinessPanel).getByText('🟢 Поля заполнены')).toBeTruthy();
+    expect(
+      within(readinessPanel).getByText(
+        'Пустые поля не блокируют печать: в печатной форме будут оставлены строки для заполнения от руки.',
+      ),
+    ).toBeTruthy();
     expect(within(readinessPanel).getByText('Пробелов по демо-проверкам нет.')).toBeTruthy();
-    expect(within(readinessPanel).queryByText('Требует внимания:')).toBeNull();
+    expect(within(readinessPanel).queryByText('Пустые разделы:')).toBeNull();
   });
 
   it('shows readiness warnings when required demo data is missing', async () => {
@@ -86,10 +97,10 @@ describe('DemoAosrWorkspacePage', () => {
     await user.click(screen.getByRole('button', { name: 'Изменить только для этого акта' }));
     await user.clear(screen.getByLabelText('Значение только для этого акта'));
 
-    const readinessPanel = screen.getByRole('region', { name: 'Готовность акта' });
+    const readinessPanel = screen.getByRole('region', { name: 'Проверка заполнения' });
 
-    expect(within(readinessPanel).getByText('🟡 Требует заполнения')).toBeTruthy();
-    expect(within(readinessPanel).getByText('Требует внимания:')).toBeTruthy();
+    expect(within(readinessPanel).getByText('🟡 Есть пустые разделы')).toBeTruthy();
+    expect(within(readinessPanel).getByText('Пустые разделы:')).toBeTruthy();
     expect(within(readinessPanel).getByText('Нет подписантов')).toBeTruthy();
     expect(within(readinessPanel).getByText('Не выбраны материалы')).toBeTruthy();
     expect(within(readinessPanel).getByText('Не выбраны документы объекта')).toBeTruthy();
@@ -102,7 +113,7 @@ describe('DemoAosrWorkspacePage', () => {
     const workspaceSummary = screen.getByLabelText('Сводка рабочей области');
 
     expect(screen.getByLabelText('Выбранный акт в шапке: АОСР-001')).toBeTruthy();
-    expect(within(workspaceSummary).getByLabelText('Черновики: 2')).toBeTruthy();
+    expect(within(workspaceSummary).getByLabelText('Акты: 2')).toBeTruthy();
     expect(within(workspaceSummary).getByLabelText('Текущий акт: АОСР-001')).toBeTruthy();
     expect(within(workspaceSummary).getByLabelText('Организации объекта: 3')).toBeTruthy();
     expect(within(workspaceSummary).getByLabelText('Подписанты: 3')).toBeTruthy();

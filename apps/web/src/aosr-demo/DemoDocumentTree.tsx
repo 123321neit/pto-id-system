@@ -37,7 +37,7 @@ export function DemoDocumentTree({
           </span>
           <span>
             <strong>{actType.code}</strong>
-            <small>{drafts.length} черновика</small>
+            <small>{drafts.length} документа</small>
           </span>
         </div>
 
@@ -70,9 +70,6 @@ export function DemoDocumentTree({
               </span>
               <span className="act-tree-item__index">{index + 1}</span>
               <span className="act-tree-item__number">{draft.actNumber}</span>
-              <span className={`act-tree-item__status act-tree-item__status--${draft.status}`}>
-                {draft.status === 'draft' ? 'Черновик' : 'На проверку'}
-              </span>
               <span className="act-tree-item__meta">
                 <small>Версия документа {index + 1}.0</small>
                 <small>Последнее изменение: {formatDocumentDate(draft.actDate)}</small>

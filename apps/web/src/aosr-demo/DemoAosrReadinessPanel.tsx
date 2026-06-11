@@ -17,14 +17,19 @@ export function DemoAosrReadinessPanel({
       <div className="readiness-card__header">
         <div>
           <p className="section-kicker">Диагностика</p>
-          <h3 id={headingId}>Готовность акта</h3>
+          <h3 id={headingId}>Проверка заполнения</h3>
         </div>
         <strong className="readiness-card__status">{readiness.statusLabel}</strong>
       </div>
 
+      <p className="readiness-card__helper">
+        Пустые поля не блокируют печать: в печатной форме будут оставлены строки для заполнения от
+        руки.
+      </p>
+
       {readiness.issues.length > 0 ? (
         <div className="readiness-card__issues">
-          <p>Требует внимания:</p>
+          <p>Пустые разделы:</p>
           <ul>
             {readiness.issues.map((issue) => (
               <li key={issue}>{issue}</li>
