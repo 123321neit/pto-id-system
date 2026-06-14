@@ -6,7 +6,7 @@
 
 # MASTER CONTEXT / SOURCE OF TRUTH
 
-# VERSION: 2026-06-14-GENERATED-ID-PACKAGE-VIEWS-UX
+# VERSION: 2026-06-14-DERIVED-PERIOD-FINAL-REGISTRY-UX
 
 # STATUS: FIRST ALLOWED INFRASTRUCTURE BOOTSTRAP SCAFFOLD; CANONICAL ADR BASELINE ACCEPTED; BACKEND MODULE ARCHITECTURE SKELETON INTRODUCED; FIRST TECHNICAL FRONTEND-BACKEND STATUS SLICE INTRODUCED; DATABASE FOUNDATION TECHNICAL SLICE INTRODUCED; OBJECT STORAGE FOUNDATION TECHNICAL SLICE INTRODUCED; AUTH SHARING IMPLEMENTATION PLAN ADDED; USER IDENTITY SKELETON INTRODUCED; GLOBAL SYSTEM ADMIN MARKER INTRODUCED; OWNED WORKSPACE BASELINE INTRODUCED; FIRST MOCK AOSR DEMO UI SLICE INTRODUCED; MOCK AOSR CONFIGURABLE OBJECT HEADER ORGANIZATIONS AND REPRESENTATIVE LIBRARY INTRODUCED; MOCK AOSR DEMO UX/PREVIEW REFINED; MOCK APP SHELL AND OBJECT DASHBOARD INTRODUCED; FRONTEND-ONLY MOCK REPRESENTATIVES/ORGANIZATIONS MANAGEMENT PAGE INTRODUCED; FRONTEND-ONLY MOCK CERTIFICATE LIBRARY PAGE INTRODUCED; STAGE 5 MOCK AOSR WORKSPACE UX STABILIZED; AOSR EDITOR UX CLEANUP INTRODUCED; AOSR WORKSPACE DRAWER UX INTRODUCED; FRONTEND-ONLY MOCK OBJECT DOCUMENT LIBRARY INTRODUCED; AOSR WORKSPACE APPLICATIONS UX CLEANUP INTRODUCED; FRONTEND-ONLY MOCK OBJECT COMPLIANCE DEFAULTS AND ACT OVERRIDES INTRODUCED; FRONTEND-ONLY MOCK OBJECT WORKSPACE VISUAL PASS INTRODUCED; FRONTEND-ONLY MOCK OBJECT WORKSPACE SHELL INTRODUCED; AOSR DOCUMENT PREVIEW DRAWER UX INTRODUCED; AOSR DOCUMENT PREVIEW PAGE VISUALIZATION REFINED; FRONTEND-ONLY OBJECT DOCUMENT WORKSPACE INTRODUCED; FRONTEND-ONLY OBJECT CERTIFICATE WORKSPACE INTRODUCED; FRONTEND-ONLY ID REGISTRY V1 INTRODUCED; FRONTEND-ONLY FINAL ID PACKAGE MOCK INTRODUCED; FRONTEND-ONLY ACT TYPE METADATA PREP INTRODUCED; AOSR READINESS PANEL V1 INTRODUCED; FINAL PACKAGE READINESS V1 INTRODUCED; FRONTEND-ONLY OBJECT WORKSPACE UX HIERARCHY POLISH INTRODUCED; FRONTEND-ONLY OBJECT OVERVIEW AND GLOBAL CERTIFICATE ARCHITECTURE UX CORRECTION INTRODUCED; GLOBAL REUSABLE LIBRARIES AND ACT SNAPSHOTS ADR ACCEPTED; FRONTEND-ONLY PERIOD-FIRST OBJECT WORKSPACE MOCK INTRODUCED; FRONTEND-ONLY PERIOD-SCOPED AOSR CREATION MOCK INTRODUCED; FRONTEND-ONLY AOSR MANUAL NUMBER OVERRIDE MOCK INTRODUCED; FRONTEND-ONLY OBJECT WORKSPACE PREMIUM UX POLISH INTRODUCED; FRONTEND-ONLY GENERATED ID PACKAGE VIEWS UX INTRODUCED
 
@@ -489,8 +489,8 @@ Stage: frontend-only object workspace premium UX polish. The current object
 workspace keeps the same frontend-only mock functionality but improves the
 visual hierarchy around the period-first model. Periods now read more like work
 folders with documents, registry and package context; the period page presents
-title, short context, primary `Создать документ`, documents, registry
-placeholder and package placeholder in that order; the create-document selector
+title, short context, primary `Создать АОСР`, documents, derived registry and
+periodic ID package action in that order; the create-document selector
 uses document-type cards instead of a technical list; and the overview behaves
 more like a command center for quick actions, recent periods, recent documents
 and final ID. The design direction intentionally avoids relying on bright
@@ -511,6 +511,31 @@ does not introduce closed period status, issued status, locked package state,
 package persistence, archive records, backend/API, persistence,
 Prisma/schema/migrations, auth, uploads, OCR/AI or DOCX/PDF/ZIP generation.
 Historical ZIP storage is outside the domain model.
+
+Stage: frontend-only derived period and final registry UX. The current
+period-first mock no longer has a standalone object registry page or object
+registry navigation. Registry exists only as:
+
+- period registry: belongs to a specific period and is derived from documents
+  in that period;
+- final registry: belongs to Final ID and is derived from documents across all
+  periods.
+
+The frontend helper builds read-only registry rows from current in-memory
+document drafts with row number, document type code/title, document number,
+document date, period name and document/work description. AOSR rows use the
+registered act type metadata (`code`, `title`) instead of hardcoded registry
+labels, so future act types can enter the same derived registry projection via
+metadata. The selected period page now replaces the old `Реестр периода`
+placeholder with a real derived table that updates when a frontend-only AOSR
+draft is created in that period. Periodic ID includes the period registry as
+its first group. Final ID includes the final registry as its first group and
+collects documents from all periods. Registries are not stored business
+entities, are not editable row stores and are always rebuilt from current
+documents. This stage adds no standalone object registry, no statuses, no
+locked periods, no issued package state, no package/registry persistence, no
+backend/API, no Prisma/schema/migrations, no auth, no uploads, no OCR/AI and no
+DOCX/PDF/ZIP generation.
 
 ---
 
@@ -4565,8 +4590,8 @@ production domain/API/persistence work remain separate explicit tasks.
 - object navigation now feels more file-manager-like with clearer visual
   nesting for `Overview -> Period -> Document`;
 - periods read as work folders with document, registry and package context;
-- the period page hierarchy is title/context, primary `Создать документ`,
-  documents, registry placeholder and package placeholder;
+- the period page hierarchy is title/context, primary `Создать АОСР`,
+  documents, derived registry and periodic ID action;
 - the create-document selector uses document-type cards with active AOSR and
   disabled future document types;
 - the overview keeps command-center emphasis through object identity, quick
@@ -4626,6 +4651,45 @@ production domain/API/persistence work remain separate explicit tasks.
 - no OCR or AI extraction;
 - no DOCX/PDF/ZIP generation;
 - no production registry/package generation or business logic.
+
+### 2026-06-14 — Frontend-only derived period and final registry UX
+
+- Статус: `Frontend mock derived registry architecture only`
+- Описание: corrected the period-first registry architecture so registry is a
+  generated view inside Periodic ID or Final ID, not a standalone object
+  section.
+
+Добавлено/уточнено:
+
+- added a frontend-only derived registry helper/model for period and final
+  registries;
+- period registry rows derive from documents in the selected period;
+- final registry rows derive from documents across all periods;
+- registry rows include row number, document type code/title, document number,
+  document date, period name and document/work description;
+- registry code/title use registered act type metadata, so future document
+  types can enter the registry without AOSR-only one-off logic;
+- period page now renders a real derived `Реестр периода` table that updates
+  when a frontend-only AOSR draft is created in that period;
+- Periodic ID includes the period registry as the first group;
+- Final ID includes the final registry as the first group;
+- the old standalone `ObjectRegistryPage` frontend file was removed from the
+  current mock.
+
+Что не было введено:
+
+- no standalone object registry nav/page/entity;
+- no editable registry rows;
+- no closed period status;
+- no issued or locked package state;
+- no package or registry persistence;
+- no backend routes/controllers or API;
+- no Prisma/schema/migrations;
+- no persistence or localStorage;
+- no uploads or file storage;
+- no OCR or AI extraction;
+- no DOCX/PDF/ZIP generation;
+- no production registry/package business logic.
 
 ### 2026-06-09 — Frontend-only act type metadata prep introduced
 

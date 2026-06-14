@@ -8,6 +8,7 @@ import {
   type DemoAosrDraft,
 } from '../aosr-demo/demo-aosr-workspace.js';
 import { useDemoStore, type DemoCertificate } from '../demo-store/demo-store.js';
+import { DerivedRegistryTable } from './DerivedRegistryTable.js';
 import { ObjectDocumentsPage } from './ObjectDocumentsPage.js';
 import { ObjectFinalPackagePage, ObjectPeriodicPackagePage } from './ObjectFinalPackagePage.js';
 import { RepresentativesOrganizationsPage } from './RepresentativesOrganizationsPage.js';
@@ -28,6 +29,7 @@ import {
   type DemoObjectPeriodId,
   type DemoObjectPeriods,
 } from './object-periods.js';
+import { buildPeriodRegistryModel } from './object-registry-model.js';
 
 const aosrActType = getDemoActTypeById('aosr');
 
@@ -620,7 +622,7 @@ function ObjectOverview({
                   </span>
                   <span className="object-overview__folder-meta">
                     <small>Реестр</small>
-                    <strong>скоро</strong>
+                    <strong>{idPackage.summary.acts}</strong>
                   </span>
                   <span className="object-overview__folder-meta">
                     <small>ИД</small>
@@ -799,6 +801,8 @@ function ObjectPeriodPage({
   onOpenCreateDocumentPanel,
   onOpenPeriodicPackage,
 }: ObjectPeriodPageProps): React.JSX.Element {
+  const periodRegistry = useMemo(() => buildPeriodRegistryModel(period, drafts), [drafts, period]);
+
   return (
     <section className="object-period-workspace" aria-labelledby="object-period-title">
       <div className="object-period-hero">
@@ -817,7 +821,7 @@ function ObjectPeriodPage({
           onClick={onOpenCreateDocumentPanel}
           type="button"
         >
-          Создать документ
+          Создать АОСР
         </button>
       </div>
 
@@ -868,48 +872,41 @@ function ObjectPeriodPage({
           </ul>
         </section>
 
-        <div className="object-period-support-grid">
-          <section
-            className="object-period-panel object-period-placeholder"
-            aria-labelledby="period-registry-title"
-          >
-            <span className="object-period-placeholder__icon" aria-hidden="true">
-              ▤
-            </span>
-            <div>
-              <p className="section-kicker">Реестр периода</p>
-              <h3 id="period-registry-title">{period.registryTitle}</h3>
-              <p>
-                Производный реестр документов выбранного периода. Пока это frontend placeholder без
-                сохранения и без редактирования.
-              </p>
-            </div>
-          </section>
+        <section
+          className="object-period-panel object-period-panel--registry"
+          aria-labelledby="period-registry-title"
+        >
+          <div className="object-overview__panel-heading">
+            <p className="section-kicker">Реестр периода</p>
+            <h3 id="period-registry-title">{periodRegistry.title}</h3>
+          </div>
+          <p className="derived-registry-context">{periodRegistry.description}</p>
+          <DerivedRegistryTable registry={periodRegistry} />
+        </section>
 
-          <section
-            className="object-period-panel object-period-placeholder"
-            aria-labelledby="period-package-title"
-          >
-            <span className="object-period-placeholder__icon" aria-hidden="true">
-              ◫
-            </span>
-            <div>
-              <p className="section-kicker">Периодическая ИД</p>
-              <h3 id="period-package-title">{period.periodicIdTitle}</h3>
-              <p>
-                Генерируемое представление по текущим документам периода. Повторное формирование
-                покажет обновленный состав без закрытия периода и без архива.
-              </p>
-              <button
-                className="compact-toggle compact-toggle--accent"
-                onClick={onOpenPeriodicPackage}
-                type="button"
-              >
-                Сформировать периодическую ИД
-              </button>
-            </div>
-          </section>
-        </div>
+        <section
+          className="object-period-panel object-period-placeholder"
+          aria-labelledby="period-package-title"
+        >
+          <span className="object-period-placeholder__icon" aria-hidden="true">
+            ◫
+          </span>
+          <div>
+            <p className="section-kicker">Периодическая ИД</p>
+            <h3 id="period-package-title">{period.periodicIdTitle}</h3>
+            <p>
+              Генерируемое представление по текущим документам и реестру периода. Повторное
+              формирование покажет обновленный состав без закрытия периода и без архива.
+            </p>
+            <button
+              className="compact-toggle compact-toggle--accent"
+              onClick={onOpenPeriodicPackage}
+              type="button"
+            >
+              Сформировать периодическую ИД
+            </button>
+          </div>
+        </section>
       </div>
     </section>
   );

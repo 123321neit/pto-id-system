@@ -359,6 +359,17 @@ period status, issued status, locked package state, package persistence,
 archive records, backend/API, ZIP generation or production package logic.
 Historical ZIP storage is outside the domain model.
 
+The frontend-only derived registry correction removes the standalone
+object-registry mental model from the current object workspace. Registry exists
+only as a period registry, derived from documents in one selected period, or as
+a final registry, derived from documents across all periods for Final ID.
+Registry rows are generated from current in-memory document drafts and act type
+metadata (`code`, `title`), so future act types can enter the same projection
+without one-off AOSR-only registry logic. Registries are not stored business
+entities, are not editable row stores, and add no backend/API, persistence,
+Prisma/schema/migrations, uploads, OCR/AI, DOCX/PDF/ZIP generation or
+production registry/package logic.
+
 Production feature coding remains blocked outside explicitly requested narrow
 demo/technical slices.
 

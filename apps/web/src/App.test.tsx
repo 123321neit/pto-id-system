@@ -11,6 +11,11 @@ import {
   buildPeriodicPackageModel,
 } from './app-shell/object-final-package-model.js';
 import { demoObjectPeriods } from './app-shell/object-periods.js';
+import {
+  buildDerivedRegistryRows,
+  buildFinalRegistryModel,
+  buildPeriodRegistryModel,
+} from './app-shell/object-registry-model.js';
 import { demoAosrWorkspace, type DemoAosrDraft } from './aosr-demo/demo-aosr-workspace.js';
 import { initialDemoCertificates, initialDemoObjectDocuments } from './demo-store/demo-store.js';
 
@@ -246,6 +251,16 @@ describe('App shell mock navigation', () => {
     expect(screen.getByRole('heading', { name: 'Реестр периода за Сентябрь 2026' })).toBeTruthy();
     expect(screen.getByRole('heading', { name: 'Периодическая ИД за Сентябрь 2026' })).toBeTruthy();
 
+    const septemberRegistry = within(getSectionByHeading('Реестр периода за Сентябрь 2026'));
+    expect(septemberRegistry.getByRole('columnheader', { name: 'Код' })).toBeTruthy();
+    expect(septemberRegistry.getAllByText('АОСР').length).toBeGreaterThan(0);
+    expect(
+      septemberRegistry.getAllByText('Акт освидетельствования скрытых работ').length,
+    ).toBeGreaterThan(0);
+    expect(septemberRegistry.getByText('ОВ-1')).toBeTruthy();
+    expect(septemberRegistry.getByText('Сентябрь 2026')).toBeTruthy();
+    expect(septemberRegistry.queryByText('ОВ-2')).toBeNull();
+
     await user.click(
       within(objectNavigation).getByRole('button', { name: 'Открыть итоговый комплект ИД' }),
     );
@@ -267,9 +282,18 @@ describe('App shell mock navigation', () => {
     await user.click(within(objectNavigation).getByRole('button', { name: 'Октябрь 2026' }));
 
     expect(screen.getByRole('heading', { name: 'Октябрь 2026' })).toBeTruthy();
-    expect(screen.getByText('ОВ-2')).toBeTruthy();
+    expect(screen.getAllByText('ОВ-2').length).toBeGreaterThan(0);
     expect(screen.getByRole('heading', { name: 'Реестр периода за Октябрь 2026' })).toBeTruthy();
     expect(screen.getByRole('heading', { name: 'Периодическая ИД за Октябрь 2026' })).toBeTruthy();
+
+    const octoberRegistry = within(getSectionByHeading('Реестр периода за Октябрь 2026'));
+    expect(octoberRegistry.getAllByText('АОСР').length).toBeGreaterThan(0);
+    expect(
+      octoberRegistry.getAllByText('Акт освидетельствования скрытых работ').length,
+    ).toBeGreaterThan(0);
+    expect(octoberRegistry.getByText('ОВ-2')).toBeTruthy();
+    expect(octoberRegistry.getByText('Октябрь 2026')).toBeTruthy();
+    expect(octoberRegistry.queryByText('ОВ-1')).toBeNull();
 
     await user.click(screen.getByRole('button', { name: /ОВ-2/u }));
 
@@ -316,11 +340,24 @@ describe('App shell mock navigation', () => {
     expect(
       within(periodicPackagePage).getByRole('heading', { name: 'Реестр периода' }),
     ).toBeTruthy();
+    const periodicRegistry = within(getSectionByHeading('Реестр периода'));
+    expect(
+      periodicRegistry.getByText(
+        'Построен из текущих документов периода. Реестр не сохраняется, не блокируется и не закрывает период.',
+      ),
+    ).toBeTruthy();
+    expect(periodicRegistry.getByRole('columnheader', { name: '№' })).toBeTruthy();
+    expect(periodicRegistry.getAllByText('АОСР').length).toBeGreaterThan(0);
+    expect(
+      periodicRegistry.getAllByText('Акт освидетельствования скрытых работ').length,
+    ).toBeGreaterThan(0);
+    expect(periodicRegistry.getByText('ОВ-2')).toBeTruthy();
+    expect(periodicRegistry.getByText('Октябрь 2026')).toBeTruthy();
+    expect(periodicRegistry.queryByText('ОВ-1')).toBeNull();
     expect(
       within(periodicPackagePage).getByRole('heading', { name: 'Документы периода' }),
     ).toBeTruthy();
-    expect(within(periodicPackagePage).getByText('ОВ-2')).toBeTruthy();
-    expect(within(periodicPackagePage).queryByText('ОВ-1')).toBeNull();
+    expect(within(periodicPackagePage).getAllByText('ОВ-2').length).toBeGreaterThan(0);
     expect(
       within(periodicPackagePage).getByText(
         'Повторное формирование всегда берет текущие документы периода. В этом frontend-моке нет backend-логики, генерации ZIP, сохранения пакета, закрытия периода или архивных записей.',
@@ -344,7 +381,7 @@ describe('App shell mock navigation', () => {
     const objectNavigation = screen.getByRole('navigation', { name: 'Разделы объекта' });
     await user.click(within(objectNavigation).getByRole('button', { name: 'Октябрь 2026' }));
 
-    await user.click(screen.getByRole('button', { name: 'Создать документ' }));
+    await user.click(screen.getByRole('button', { name: 'Создать АОСР' }));
 
     const selector = screen.getByRole('dialog', { name: 'Создать документ' });
     expect(selector.textContent).toContain('Октябрь 2026');
@@ -361,6 +398,10 @@ describe('App shell mock navigation', () => {
     await user.click(within(objectNavigation).getByRole('button', { name: 'Октябрь 2026' }));
     expect(screen.getByRole('button', { name: /ОВ-2/u })).toBeTruthy();
     expect(screen.getByRole('button', { name: /ОВ-3/u })).toBeTruthy();
+    const updatedOctoberRegistry = within(getSectionByHeading('Реестр периода за Октябрь 2026'));
+    expect(updatedOctoberRegistry.getByText('ОВ-3')).toBeTruthy();
+    expect(updatedOctoberRegistry.getAllByText('Октябрь 2026').length).toBeGreaterThan(1);
+    expect(updatedOctoberRegistry.getAllByText('АОСР').length).toBeGreaterThan(1);
 
     await user.click(within(objectNavigation).getByRole('button', { name: 'Сентябрь 2026' }));
     expect(screen.getByRole('button', { name: /ОВ-1/u })).toBeTruthy();
@@ -390,6 +431,9 @@ describe('App shell mock navigation', () => {
     ).toBeTruthy();
     expect(within(finalPackagePage).getByText('все документы из периодов;')).toBeTruthy();
     expect(
+      within(finalPackagePage).getByText('финальный реестр из документов всех периодов;'),
+    ).toBeTruthy();
+    expect(
       within(finalPackagePage).getByText('все использованные сертификаты без дублей;'),
     ).toBeTruthy();
     expect(
@@ -397,7 +441,6 @@ describe('App shell mock navigation', () => {
         'все использованные чертежи и документы объекта без дублей;',
       ),
     ).toBeTruthy();
-    expect(within(finalPackagePage).getByText('итоговый реестр.')).toBeTruthy();
 
     const septemberPackage = within(finalPackagePage).getByLabelText('Состав пакета Сентябрь 2026');
     expect(within(septemberPackage).getByLabelText('Документы: 1')).toBeTruthy();
@@ -421,12 +464,38 @@ describe('App shell mock navigation', () => {
     expect(within(readinessCard).getByText('🟢 Поля заполнены')).toBeTruthy();
     expect(
       within(readinessCard).getByText(
-        'Пустые поля не блокируют печать: в печатной форме будут оставлены строки для заполнения от руки.',
+        'Финальный реестр строится из документов всех периодов. Он не сохраняется как отдельная сущность, не блокируется и не архивируется. Пустые поля не блокируют печатные формы.',
       ),
     ).toBeTruthy();
     expect(within(readinessCard).getByText('Пробелов по демо-проверкам нет.')).toBeTruthy();
 
-    expect(within(finalPackagePage).getByRole('heading', { name: 'Реестр ИД' })).toBeTruthy();
+    expect(
+      within(finalPackagePage).getByRole('heading', { name: 'Финальный реестр итоговой ИД' }),
+    ).toBeTruthy();
+    const finalRegistry = within(getSectionByHeading('Финальный реестр итоговой ИД'));
+    expect(
+      finalRegistry.getByText(
+        'Построен из документов всех периодов. Финальный реестр не сохраняется как сущность, не блокируется и не архивируется.',
+      ),
+    ).toBeTruthy();
+    expect(finalRegistry.getByText('ОВ-1')).toBeTruthy();
+    expect(finalRegistry.getByText('ОВ-2')).toBeTruthy();
+    expect(finalRegistry.getByText('Сентябрь 2026')).toBeTruthy();
+    expect(finalRegistry.getByText('Октябрь 2026')).toBeTruthy();
+    expect(finalRegistry.getAllByText('АОСР').length).toBeGreaterThan(1);
+    expect(
+      finalRegistry.getAllByText('Акт освидетельствования скрытых работ').length,
+    ).toBeGreaterThan(1);
+    expect(
+      finalRegistry.getByText(
+        'Монтаж скрытых участков воздуховодов до закрытия теплоизоляцией и облицовкой.',
+      ),
+    ).toBeTruthy();
+    expect(
+      finalRegistry.getByText(
+        'Установка гильз трубопроводов перед заделкой отверстий в перекрытии.',
+      ),
+    ).toBeTruthy();
     expect(
       within(finalPackagePage).getByRole('heading', { name: 'Документы из периодов' }),
     ).toBeTruthy();
@@ -434,10 +503,7 @@ describe('App shell mock navigation', () => {
     expect(
       within(finalPackagePage).getByRole('heading', { name: 'Документы объекта' }),
     ).toBeTruthy();
-    expect(
-      within(finalPackagePage).getByText('Итоговый реестр исполнительной документации'),
-    ).toBeTruthy();
-    expect(within(finalPackagePage).getByText('ОВ-1')).toBeTruthy();
+    expect(within(finalPackagePage).getAllByText('ОВ-1').length).toBeGreaterThan(0);
     expect(within(finalPackagePage).getByText('СТ-ОВ-2026-017')).toBeTruthy();
     expect(within(finalPackagePage).getByText('ИС-ОВ-04')).toBeTruthy();
   });
@@ -496,9 +562,58 @@ describe('App shell mock navigation', () => {
     expect(periodicPackage.groups.find((group) => group.id === 'registry')?.title).toBe(
       'Реестр периода',
     );
+    expect(periodicPackage.groups.find((group) => group.id === 'registry')?.registry?.rows).toEqual(
+      [
+        expect.objectContaining({
+          documentNumber: 'ОВ-2',
+          documentTypeCode: 'АОСР',
+          documentTypeTitle: 'Акт освидетельствования скрытых работ',
+          periodName: 'Октябрь 2026',
+          rowNumber: 1,
+          workDescription: 'Установка гильз трубопроводов перед заделкой отверстий в перекрытии.',
+        }),
+      ],
+    );
     expect(periodicPackage.groups.find((group) => group.id === 'acts')?.items).toEqual([
       expect.objectContaining({
         number: 'ОВ-2',
+      }),
+    ]);
+
+    const octoberRegistry = buildPeriodRegistryModel(octoberPeriod, demoAosrWorkspace.drafts);
+    expect(octoberRegistry.rows).toEqual([
+      expect.objectContaining({
+        documentNumber: 'ОВ-2',
+        documentTypeCode: 'АОСР',
+        documentTypeTitle: 'Акт освидетельствования скрытых работ',
+        periodName: 'Октябрь 2026',
+      }),
+    ]);
+
+    const finalRegistry = buildFinalRegistryModel(demoAosrWorkspace.drafts, demoObjectPeriods);
+    expect(finalRegistry.rows.map((row) => row.documentNumber)).toEqual(['ОВ-1', 'ОВ-2']);
+    expect(finalRegistry.rows.map((row) => row.periodName)).toEqual([
+      'Сентябрь 2026',
+      'Октябрь 2026',
+    ]);
+
+    expect(
+      buildDerivedRegistryRows([
+        {
+          actTypeId: 'aosr',
+          documentDate: '2026-11-01',
+          documentNumber: 'ОВ-meta',
+          id: 'metadata-driven-row',
+          periodName: 'Ноябрь 2026',
+          workDescription: 'Проверка строки через метаданные типа документа',
+        },
+      ]),
+    ).toEqual([
+      expect.objectContaining({
+        documentNumber: 'ОВ-meta',
+        documentTypeCode: 'АОСР',
+        documentTypeTitle: 'Акт освидетельствования скрытых работ',
+        periodName: 'Ноябрь 2026',
       }),
     ]);
   });
@@ -1246,6 +1361,16 @@ function getFirstCreateDocumentButton(): HTMLElement {
   }
 
   return createButton;
+}
+
+function getSectionByHeading(name: string): HTMLElement {
+  const section = screen.getByRole('heading', { name }).closest('section');
+
+  if (section === null) {
+    throw new Error(`Для заголовка "${name}" должна существовать секция.`);
+  }
+
+  return section;
 }
 
 async function openRepresentativesManagementPage(

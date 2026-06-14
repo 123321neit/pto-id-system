@@ -7,6 +7,11 @@ import {
   type DemoObjectPeriod,
   type DemoObjectPeriods,
 } from './object-periods.js';
+import {
+  buildFinalRegistryModel,
+  buildPeriodRegistryModel,
+  type DerivedRegistryModel,
+} from './object-registry-model.js';
 
 type FinalPackageGroupId = 'registry' | 'acts' | 'certificates' | 'object-documents';
 
@@ -66,6 +71,7 @@ interface FinalPackageItem {
 export interface FinalPackageGroup {
   readonly id: FinalPackageGroupId;
   readonly items: readonly FinalPackageItem[];
+  readonly registry?: DerivedRegistryModel;
   readonly title: string;
 }
 
@@ -89,7 +95,7 @@ export function buildIdPackageOverviewModel(
   certificates: readonly DemoCertificate[],
   periods: DemoObjectPeriods = demoObjectPeriods,
 ): IdPackageOverviewModel {
-  const finalPackage = buildFinalPackageModel(drafts, objectDocuments, certificates);
+  const finalPackage = buildFinalPackageModel(drafts, objectDocuments, certificates, periods);
 
   return {
     finalPackage: {
@@ -108,7 +114,7 @@ export function buildIdPackageOverviewModel(
 
       return {
         id: `periodic-id-${period.id}`,
-        note: 'Генерируемое представление: пересобирается из текущих документов периода, без закрытия периода и без архива.',
+        note: 'Реестр и периодическая ИД пересобираются из текущих документов периода, без закрытия периода и без архива.',
         periodName: period.name,
         summary: buildIdPackageCompositionSummary(packageDrafts, objectDocuments, certificates),
         title: period.periodicIdTitle,
@@ -125,6 +131,7 @@ export function buildPeriodicPackageModel(
   certificates: readonly DemoCertificate[],
 ): FinalPackageModel {
   const periodDrafts = getDemoObjectPeriodDrafts(period, drafts);
+  const periodRegistry = buildPeriodRegistryModel(period, drafts);
   const packageModel = buildFinalPackageModel(periodDrafts, objectDocuments, certificates);
   const [, actsGroup, certificatesGroup, objectDocumentsGroup] = packageModel.groups;
 
@@ -141,15 +148,8 @@ export function buildPeriodicPackageModel(
     groups: [
       {
         id: 'registry',
-        items: [
-          {
-            date: 'Демо',
-            id: `periodic-registry-${period.id}`,
-            meta: 'Производный реестр выбранного периода',
-            number: 'Реестр периода',
-            title: period.registryTitle,
-          },
-        ],
+        items: [],
+        registry: periodRegistry,
         title: 'Реестр периода',
       },
       { ...actsGroup, title: 'Документы периода' },
@@ -163,7 +163,9 @@ export function buildFinalPackageModel(
   drafts: readonly DemoAosrDraft[],
   objectDocuments: readonly DemoObjectDocument[],
   certificates: readonly DemoCertificate[],
+  periods: DemoObjectPeriods = demoObjectPeriods,
 ): FinalPackageModel {
+  const finalRegistry = buildFinalRegistryModel(drafts, periods);
   const actItems = drafts.map((draft) => ({
     date: draft.actDate,
     id: `final-act-${draft.id}`,
@@ -189,27 +191,16 @@ export function buildFinalPackageModel(
       title: document.title,
     }),
   );
-  const registryItems: readonly FinalPackageItem[] = [
-    {
-      date: 'Демо',
-      id: 'final-registry',
-      meta: 'Производный реестр итоговой ИД',
-      number: 'Реестр ИД',
-      title: 'Итоговый реестр исполнительной документации',
-    },
-  ];
-
   const summary: FinalPackageSummary = {
     acts: actItems.length,
     certificates: certificateItems.length,
     objectDocuments: objectDocumentItems.length,
-    total:
-      registryItems.length + actItems.length + certificateItems.length + objectDocumentItems.length,
+    total: 1 + actItems.length + certificateItems.length + objectDocumentItems.length,
   };
 
   return {
     groups: [
-      { id: 'registry', items: registryItems, title: 'Реестр ИД' },
+      { id: 'registry', items: [], registry: finalRegistry, title: finalRegistry.title },
       { id: 'acts', items: actItems, title: 'Документы из периодов' },
       { id: 'certificates', items: certificateItems, title: 'Сертификаты' },
       { id: 'object-documents', items: objectDocumentItems, title: 'Документы объекта' },

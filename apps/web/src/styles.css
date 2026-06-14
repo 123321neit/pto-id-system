@@ -1274,18 +1274,6 @@ button {
     minmax(150px, 0.22fr) auto;
 }
 
-.object-registry-note {
-  border: 1px solid #c7d4dc;
-  border-left: 3px solid #0f766e;
-  border-radius: 8px;
-  background: #f0fdfa;
-  padding: 12px 14px;
-  color: #2f5f5a;
-  font-size: 0.84rem;
-  font-weight: 750;
-  line-height: 1.5;
-}
-
 .id-package-flow,
 .periodic-package-overview {
   display: grid;
@@ -1481,6 +1469,37 @@ button {
 
 .final-package-table {
   min-width: 760px;
+}
+
+.derived-registry-context {
+  max-width: 840px;
+  color: #516064;
+  font-size: 0.86rem;
+  font-weight: 720;
+  line-height: 1.5;
+}
+
+.derived-registry-empty {
+  border: 1px dashed #c9d8e6;
+  border-radius: 8px;
+  background: #f8fbff;
+  padding: 14px;
+  color: #607078;
+  font-size: 0.86rem;
+  font-weight: 750;
+  line-height: 1.45;
+}
+
+.derived-registry-table {
+  min-width: 980px;
+}
+
+.derived-registry-table th:first-child,
+.derived-registry-table td:first-child {
+  width: 56px;
+  color: #687680;
+  font-weight: 850;
+  text-align: center;
 }
 
 .final-package-download {

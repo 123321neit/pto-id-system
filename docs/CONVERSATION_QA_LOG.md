@@ -141,6 +141,28 @@ A: Нет.
 
 Формирование всегда использует текущее состояние. Если документы изменились, повторное формирование даёт обновлённый состав. Нельзя вводить `closed period`, `issued`, `locked package` или package persistence как доменные состояния только ради этого UX. Historical ZIP storage, если понадобится, находится вне доменной модели и не становится source of truth.
 
+### Q: Есть ли отдельный объектный реестр ИД?
+
+A: Нет.
+
+В period-first workflow нет standalone object registry как бизнес-сущности или отдельной редактируемой страницы.
+
+Реестр существует только как:
+
+1. `Period registry` — производная проекция документов конкретного периода.
+2. `Final registry` — производная проекция документов всех периодов внутри Final ID.
+
+`Periodic ID` строится на period registry. `Final ID` строится на final registry. Оба реестра всегда пересобираются из текущих документов и не хранят собственные editable rows. Будущие типы актов должны попадать в эти реестры через metadata документа (`code`, `title`, etc.), а не через AOSR-only ветвления.
+
+Что не вводится этим решением:
+
+- standalone object registry nav/page/entity;
+- editable registry rows;
+- closed period status;
+- issued/locked package state;
+- package or registry persistence;
+- backend/API/Prisma/generation behavior.
+
 ---
 
 ## 12. Executive schemes

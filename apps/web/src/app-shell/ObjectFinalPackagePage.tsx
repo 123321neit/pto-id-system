@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 
 import { demoAosrWorkspace, type DemoAosrDraft } from '../aosr-demo/demo-aosr-workspace.js';
 import { useDemoStore } from '../demo-store/demo-store.js';
+import { DerivedRegistryTable } from './DerivedRegistryTable.js';
 import {
   buildFinalPackageModel,
   buildIdPackageOverviewModel,
@@ -28,8 +29,8 @@ export function ObjectFinalPackagePage({
 }: ObjectFinalPackagePageProps = {}): React.JSX.Element {
   const { certificates, objectDocuments } = useDemoStore();
   const finalPackage = useMemo(
-    () => buildFinalPackageModel(drafts, objectDocuments, certificates),
-    [certificates, drafts, objectDocuments],
+    () => buildFinalPackageModel(drafts, objectDocuments, certificates, periods),
+    [certificates, drafts, objectDocuments, periods],
   );
   const packageOverview = useMemo(
     () => buildIdPackageOverviewModel(drafts, objectDocuments, certificates, periods),
@@ -76,8 +77,8 @@ export function ObjectFinalPackagePage({
         </div>
 
         <p className="readiness-card__helper">
-          Пустые поля не блокируют печать: в печатной форме будут оставлены строки для заполнения от
-          руки.
+          Финальный реестр строится из документов всех периодов. Он не сохраняется как отдельная
+          сущность, не блокируется и не архивируется. Пустые поля не блокируют печатные формы.
         </p>
 
         {finalPackage.readiness.issues.length > 0 ? (
@@ -172,8 +173,9 @@ export function ObjectPeriodicPackagePage({
         </div>
 
         <p className="readiness-card__helper">
-          Проверка смотрит только текущий состав документов периода. Она не закрывает период и не
-          создает архив.
+          Реестр периода и периодическая ИД строятся из текущих документов выбранного периода. Они
+          не сохраняются как сущности, не блокируются и не закрывают период. Пустые поля остаются
+          допустимыми для ручного заполнения в будущих печатных формах.
         </p>
 
         {periodicPackage.readiness.issues.length > 0 ? (
@@ -221,7 +223,7 @@ function FinalPackageFlowExplanation(): React.JSX.Element {
         <h3 id="final-package-flow-title">Периодическая ИД → Итоговая ИД</h3>
         <p>
           Периодическая и итоговая ИД не хранятся как бизнес-сущности. Это генерируемые
-          представления, которые каждый раз собираются из текущих документов.
+          представления, которые каждый раз собираются из текущих документов и производных реестров.
         </p>
       </div>
 
@@ -233,9 +235,9 @@ function FinalPackageFlowExplanation(): React.JSX.Element {
 
       <ul className="id-package-flow__list">
         <li>все документы из периодов;</li>
+        <li>финальный реестр из документов всех периодов;</li>
         <li>все использованные сертификаты без дублей;</li>
         <li>все использованные чертежи и документы объекта без дублей;</li>
-        <li>итоговый реестр.</li>
       </ul>
     </section>
   );
@@ -255,7 +257,7 @@ function PeriodicPackageFlowExplanation({
         <h3 id="periodic-package-flow-title">Документы периода → Периодическая ИД</h3>
         <p>
           {periodName} остается рабочей папкой. Периодическая ИД формируется из ее текущих
-          документов, реестра периода и связанных приложений.
+          документов, производного реестра периода и связанных приложений.
         </p>
       </div>
 
@@ -270,7 +272,7 @@ function PeriodicPackageFlowExplanation({
 
       <ul className="id-package-flow__list">
         <li>документы выбранного периода;</li>
-        <li>производный реестр периода;</li>
+        <li>реестр периода из текущих документов;</li>
         <li>использованные сертификаты без дублей;</li>
         <li>использованные документы объекта без дублей.</li>
       </ul>
@@ -344,33 +346,40 @@ function FinalPackageGroupSection({ group }: FinalPackageGroupSectionProps): Rea
         <div>
           <p className="section-kicker">Группа</p>
           <h3 id={headingId}>{group.title}</h3>
+          {group.registry !== undefined ? (
+            <p className="derived-registry-context">{group.registry.description}</p>
+          ) : null}
         </div>
       </div>
 
-      <div className="object-documents-table-wrap">
-        <table className="object-documents-table final-package-table">
-          <thead>
-            <tr>
-              <th scope="col">Наименование</th>
-              <th scope="col">Номер</th>
-              <th scope="col">Дата</th>
-              <th scope="col">Детали</th>
-            </tr>
-          </thead>
-          <tbody>
-            {group.items.map((item) => (
-              <tr key={item.id}>
-                <td>
-                  <strong>{item.title}</strong>
-                </td>
-                <td>{item.number}</td>
-                <td>{item.date}</td>
-                <td>{item.meta}</td>
+      {group.registry !== undefined ? (
+        <DerivedRegistryTable registry={group.registry} />
+      ) : (
+        <div className="object-documents-table-wrap">
+          <table className="object-documents-table final-package-table">
+            <thead>
+              <tr>
+                <th scope="col">Наименование</th>
+                <th scope="col">Номер</th>
+                <th scope="col">Дата</th>
+                <th scope="col">Детали</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody>
+              {group.items.map((item) => (
+                <tr key={item.id}>
+                  <td>
+                    <strong>{item.title}</strong>
+                  </td>
+                  <td>{item.number}</td>
+                  <td>{item.date}</td>
+                  <td>{item.meta}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </section>
   );
 }
