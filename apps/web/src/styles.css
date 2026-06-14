@@ -471,6 +471,31 @@ button {
   line-height: 1.3;
 }
 
+.object-overview__number-field {
+  display: grid;
+  gap: 6px;
+  color: #172033;
+  font-size: 0.84rem;
+  font-weight: 820;
+  line-height: 1.35;
+}
+
+.object-overview__number-field input {
+  width: 100%;
+  border: 1px solid #a8c4e7;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #172033;
+  font: inherit;
+  font-weight: 780;
+  padding: 9px 10px;
+}
+
+.object-overview__number-field input:focus-visible {
+  outline: 3px solid rgb(37 99 235 / 20%);
+  outline-offset: 1px;
+}
+
 .object-overview__numbering-note p,
 .object-overview__numbering-note li {
   color: #38516c;

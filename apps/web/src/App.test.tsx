@@ -78,12 +78,14 @@ describe('App shell mock navigation', () => {
 
     await user.click(getFirstCreateDocumentButton());
 
-    const selector = screen.getByRole('dialog', { name: 'Создать документ' });
+    let selector = screen.getByRole('dialog', { name: 'Создать документ' });
     expect(within(selector).getByText('АОСР — Акт освидетельствования скрытых работ')).toBeTruthy();
     expect(selector.textContent).toContain('Сентябрь 2026');
     expect(selector.textContent).toContain('Предлагаемый номер: ОВ-3');
+    let documentNumberInput = within(selector).getByLabelText<HTMLInputElement>('Номер документа');
+    expect(documentNumberInput.value).toBe('ОВ-3');
     expect(selector.textContent).toContain(
-      'Позже номер можно будет изменить вручную перед созданием.',
+      'Автонумерация работает как подсказка: номер можно изменить вручную перед созданием.',
     );
     expect(within(selector).getByText('ОВ-{n}')).toBeTruthy();
     expect(within(selector).getByText('12-{n}-ОВ')).toBeTruthy();
@@ -92,12 +94,25 @@ describe('App shell mock navigation', () => {
     expect(within(selector).getByText('Акт испытаний')).toBeTruthy();
     expect(within(selector).getAllByRole('button', { name: 'Скоро' })).toHaveLength(2);
 
+    await user.clear(documentNumberInput);
+    await user.type(documentNumberInput, 'ОВ-черновик');
+    expect(documentNumberInput.value).toBe('ОВ-черновик');
+    await user.click(within(selector).getByRole('button', { name: 'Закрыть' }));
+
+    await user.click(getFirstCreateDocumentButton());
+    selector = screen.getByRole('dialog', { name: 'Создать документ' });
+    documentNumberInput = within(selector).getByLabelText<HTMLInputElement>('Номер документа');
+    expect(documentNumberInput.value).toBe('ОВ-3');
+
+    await user.clear(documentNumberInput);
+    await user.type(documentNumberInput, '12-3-ОВ');
+
     await user.click(within(selector).getByRole('button', { name: 'Создать документ' }));
 
     expect(screen.getAllByText(/Периоды \/ АОСР/u).length).toBeGreaterThan(0);
     expect(screen.getByRole('heading', { name: 'Документы периода' })).toBeTruthy();
-    expect(screen.getByLabelText('Текущий документ: ОВ-3')).toBeTruthy();
-    expect(screen.getByDisplayValue('ОВ-3')).toBeTruthy();
+    expect(screen.getByLabelText('Текущий документ: 12-3-ОВ')).toBeTruthy();
+    expect(screen.getByDisplayValue('12-3-ОВ')).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Предпросмотр документа' })).toBeTruthy();
 
     await openDocumentPreview(user);
@@ -109,7 +124,7 @@ describe('App shell mock navigation', () => {
 
     const updatedOverviewMetrics = screen.getByLabelText('Ключевые показатели объекта');
     expect(within(updatedOverviewMetrics).getByLabelText('Документы в периодах: 3')).toBeTruthy();
-    expect(screen.getByText('ОВ-3')).toBeTruthy();
+    expect(screen.getByText('12-3-ОВ')).toBeTruthy();
 
     await user.click(
       within(objectNavigation).getByRole('button', { name: 'Открыть итоговый комплект ИД' }),
@@ -118,6 +133,29 @@ describe('App shell mock navigation', () => {
     const finalSummary = screen.getByLabelText('Сводка итогового комплекта ИД');
     expect(within(finalSummary).getByLabelText('Документы из периодов: 3')).toBeTruthy();
     expect(within(finalSummary).getByLabelText('Всего позиций: 10')).toBeTruthy();
+  });
+
+  it('creates an AOSR draft with an empty manual number without blocking the editor', async () => {
+    const user = userEvent.setup();
+
+    render(<App />);
+
+    await user.click(getFirstOpenObjectButton());
+    await user.click(getFirstCreateDocumentButton());
+
+    const selector = screen.getByRole('dialog', { name: 'Создать документ' });
+    const documentNumberInput =
+      within(selector).getByLabelText<HTMLInputElement>('Номер документа');
+    expect(documentNumberInput.value).toBe('ОВ-3');
+
+    await user.clear(documentNumberInput);
+    expect(documentNumberInput.value).toBe('');
+    await user.click(within(selector).getByRole('button', { name: 'Создать документ' }));
+
+    expect(screen.getAllByText(/Периоды \/ АОСР/u).length).toBeGreaterThan(0);
+    expect(screen.getByRole('heading', { name: 'Документы периода' })).toBeTruthy();
+    expect(screen.getByLabelText<HTMLInputElement>('Номер акта').value).toBe('');
+    expect(screen.getByRole('button', { name: 'Предпросмотр документа' })).toBeTruthy();
   });
 
   it('renders object workspace navigation and keeps object-wide metrics on the overview', async () => {
@@ -255,6 +293,7 @@ describe('App shell mock navigation', () => {
     const selector = screen.getByRole('dialog', { name: 'Создать документ' });
     expect(selector.textContent).toContain('Октябрь 2026');
     expect(selector.textContent).toContain('Предлагаемый номер: ОВ-3');
+    expect(within(selector).getByLabelText<HTMLInputElement>('Номер документа').value).toBe('ОВ-3');
 
     await user.click(within(selector).getByRole('button', { name: 'Создать документ' }));
 

@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import { getDemoActTypeById, registeredDemoActTypes } from '../act-types/act-types.js';
 import { DemoAosrWorkspacePage } from '../aosr-demo/DemoAosrWorkspacePage.js';
@@ -64,6 +64,7 @@ export function ObjectWorkspacePage({
   const [selectedDraftId, setSelectedDraftId] = useState(demoAosrWorkspace.drafts[0]?.id ?? '');
   const [createdAosrDraftCount, setCreatedAosrDraftCount] = useState(1);
   const [isCreateDocumentPanelOpen, setCreateDocumentPanelOpen] = useState(false);
+  const [documentNumberInput, setDocumentNumberInput] = useState('');
   const [settingsOpenRequest, setSettingsOpenRequest] = useState(0);
   const isAosrVisible = activeSection === 'aosr' || activeSection === 'settings';
   const selectedPeriod = getDemoObjectPeriodById(selectedPeriodId, periods);
@@ -93,6 +94,17 @@ export function ObjectWorkspacePage({
     representativeCount: representatives.length,
   };
 
+  useEffect(() => {
+    if (isCreateDocumentPanelOpen) {
+      setDocumentNumberInput(proposedAosrNumber);
+    }
+  }, [isCreateDocumentPanelOpen, proposedAosrNumber]);
+
+  const openCreateDocumentPanel = (): void => {
+    setDocumentNumberInput(proposedAosrNumber);
+    setCreateDocumentPanelOpen(true);
+  };
+
   const openPeriod = (periodId: DemoObjectPeriodId): void => {
     setCreateDocumentPanelOpen(false);
     setSelectedPeriodId(periodId);
@@ -118,7 +130,7 @@ export function ObjectWorkspacePage({
 
   const createAosrDraft = (): void => {
     const draft = createEmptyDemoAosrDraft({
-      actNumber: proposedAosrNumber,
+      actNumber: documentNumberInput,
       id: `aosr-draft-created-${String(createdAosrDraftCount)}`,
     });
 
@@ -257,17 +269,17 @@ export function ObjectWorkspacePage({
             object={object}
             packageOverview={packageOverview}
             periods={periods}
+            documentNumber={documentNumberInput}
             proposedAosrNumber={proposedAosrNumber}
             selectedPeriod={selectedPeriod}
+            onChangeDocumentNumber={setDocumentNumberInput}
             onCloseCreateDocumentPanel={() => {
               setCreateDocumentPanelOpen(false);
             }}
             onCreateAosr={createAosrDraft}
             onOpenDraft={openDraft}
             onOpenPeriod={openPeriod}
-            onOpenCreateDocumentPanel={() => {
-              setCreateDocumentPanelOpen(true);
-            }}
+            onOpenCreateDocumentPanel={openCreateDocumentPanel}
             onOpenDocuments={() => {
               setCreateDocumentPanelOpen(false);
               setActiveSection('documents');
@@ -282,9 +294,11 @@ export function ObjectWorkspacePage({
         {activeSection === 'period' ? (
           <ObjectPeriodPage
             drafts={selectedPeriodDrafts}
+            documentNumber={documentNumberInput}
             isCreateDocumentPanelOpen={isCreateDocumentPanelOpen}
             period={selectedPeriod}
             proposedAosrNumber={proposedAosrNumber}
+            onChangeDocumentNumber={setDocumentNumberInput}
             onCloseCreateDocumentPanel={() => {
               setCreateDocumentPanelOpen(false);
             }}
@@ -292,9 +306,7 @@ export function ObjectWorkspacePage({
             onOpenAosr={(draftId) => {
               openAosr(selectedPeriod.id, draftId);
             }}
-            onOpenCreateDocumentPanel={() => {
-              setCreateDocumentPanelOpen(true);
-            }}
+            onOpenCreateDocumentPanel={openCreateDocumentPanel}
           />
         ) : null}
 
@@ -405,6 +417,7 @@ function getSectionBreadcrumb(section: ObjectWorkspaceSection): string {
 
 interface ObjectOverviewProps {
   readonly drafts: readonly DemoAosrDraft[];
+  readonly documentNumber: string;
   readonly isCreateDocumentPanelOpen: boolean;
   readonly metrics: ObjectWorkspaceMetrics;
   readonly object: MockObjectCard;
@@ -412,6 +425,7 @@ interface ObjectOverviewProps {
   readonly periods: readonly DemoObjectPeriod[];
   readonly proposedAosrNumber: string;
   readonly selectedPeriod: DemoObjectPeriod;
+  readonly onChangeDocumentNumber: (value: string) => void;
   readonly onCloseCreateDocumentPanel: () => void;
   readonly onCreateAosr: () => void;
   readonly onOpenCreateDocumentPanel: () => void;
@@ -423,6 +437,7 @@ interface ObjectOverviewProps {
 
 function ObjectOverview({
   drafts,
+  documentNumber,
   isCreateDocumentPanelOpen,
   metrics,
   object,
@@ -430,6 +445,7 @@ function ObjectOverview({
   periods,
   proposedAosrNumber,
   selectedPeriod,
+  onChangeDocumentNumber,
   onCloseCreateDocumentPanel,
   onCreateAosr,
   onOpenCreateDocumentPanel,
@@ -458,8 +474,10 @@ function ObjectOverview({
 
       {isCreateDocumentPanelOpen ? (
         <CreateDocumentPanel
+          documentNumber={documentNumber}
           proposedAosrNumber={proposedAosrNumber}
           selectedPeriod={selectedPeriod}
+          onChangeDocumentNumber={onChangeDocumentNumber}
           onClose={onCloseCreateDocumentPanel}
           onCreateAosr={onCreateAosr}
         />
@@ -590,15 +608,19 @@ function ObjectOverview({
 }
 
 interface CreateDocumentPanelProps {
+  readonly documentNumber: string;
   readonly proposedAosrNumber: string;
   readonly selectedPeriod: DemoObjectPeriod;
+  readonly onChangeDocumentNumber: (value: string) => void;
   readonly onClose: () => void;
   readonly onCreateAosr: () => void;
 }
 
 function CreateDocumentPanel({
+  documentNumber,
   proposedAosrNumber,
   selectedPeriod,
+  onChangeDocumentNumber,
   onClose,
   onCreateAosr,
 }: CreateDocumentPanelProps): React.JSX.Element {
@@ -619,7 +641,18 @@ function CreateDocumentPanel({
       </div>
       <div className="object-overview__numbering-note">
         <h4>Предлагаемый номер: {proposedAosrNumber}</h4>
-        <p>Позже номер можно будет изменить вручную перед созданием.</p>
+        <label className="object-overview__number-field">
+          <span>Номер документа</span>
+          <input
+            aria-label="Номер документа"
+            onChange={(event) => {
+              onChangeDocumentNumber(event.currentTarget.value);
+            }}
+            type="text"
+            value={documentNumber}
+          />
+        </label>
+        <p>Автонумерация работает как подсказка: номер можно изменить вручную перед созданием.</p>
         <p>Будущая настройка шаблона поддержит нумерацию по объекту или заново в периоде.</p>
         <ul>
           <li>ОВ-&#123;n&#125;</li>
@@ -673,9 +706,11 @@ function CreateDocumentPanel({
 
 interface ObjectPeriodPageProps {
   readonly drafts: readonly DemoAosrDraft[];
+  readonly documentNumber: string;
   readonly isCreateDocumentPanelOpen: boolean;
   readonly period: DemoObjectPeriod;
   readonly proposedAosrNumber: string;
+  readonly onChangeDocumentNumber: (value: string) => void;
   readonly onCloseCreateDocumentPanel: () => void;
   readonly onCreateAosr: () => void;
   readonly onOpenAosr: (draftId: string) => void;
@@ -684,9 +719,11 @@ interface ObjectPeriodPageProps {
 
 function ObjectPeriodPage({
   drafts,
+  documentNumber,
   isCreateDocumentPanelOpen,
   period,
   proposedAosrNumber,
+  onChangeDocumentNumber,
   onCloseCreateDocumentPanel,
   onCreateAosr,
   onOpenAosr,
@@ -711,8 +748,10 @@ function ObjectPeriodPage({
 
       {isCreateDocumentPanelOpen ? (
         <CreateDocumentPanel
+          documentNumber={documentNumber}
           proposedAosrNumber={proposedAosrNumber}
           selectedPeriod={period}
+          onChangeDocumentNumber={onChangeDocumentNumber}
           onClose={onCloseCreateDocumentPanel}
           onCreateAosr={onCreateAosr}
         />
