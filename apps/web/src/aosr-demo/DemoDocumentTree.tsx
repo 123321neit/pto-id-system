@@ -34,22 +34,22 @@ export function DemoDocumentTree({
 
       <div className="document-tree" aria-label="Навигация документов периода">
         <div className="tree-folder">
-          <span className="tree-folder__chevron" aria-hidden="true">
-            ▾
+          <span className="tree-folder__icon" aria-hidden="true">
+            ▣
           </span>
           <span>
             <strong>{periodName ?? 'Текущий период'}</strong>
-            <small>документы / реестр / комплект</small>
+            <small>период / документы / реестр / комплект</small>
           </span>
         </div>
 
         <div className="tree-folder tree-folder--nested">
-          <span className="tree-folder__chevron" aria-hidden="true">
-            ▾
+          <span className="tree-folder__icon" aria-hidden="true">
+            ▤
           </span>
           <span>
             <strong>Документы</strong>
-            <small>{actType.code}</small>
+            <small>{actType.code} / акты периода</small>
           </span>
         </div>
 

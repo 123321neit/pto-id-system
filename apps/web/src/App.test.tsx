@@ -85,12 +85,8 @@ describe('App shell mock navigation', () => {
     let documentNumberInput = within(selector).getByLabelText<HTMLInputElement>('Номер документа');
     expect(documentNumberInput.value).toBe('ОВ-3');
     expect(selector.textContent).toContain(
-      'Автонумерация работает как подсказка: номер можно изменить вручную перед созданием.',
+      'Автонумерация — только подсказка. Номер можно изменить или оставить пустым.',
     );
-    expect(within(selector).getByText('ОВ-{n}')).toBeTruthy();
-    expect(within(selector).getByText('12-{n}-ОВ')).toBeTruthy();
-    expect(within(selector).getByText('АОСР/{YYYY}/{n}')).toBeTruthy();
-    expect(within(selector).getByText(/нумерацию по объекту или заново в периоде/u)).toBeTruthy();
     expect(within(selector).getByText('Акт испытаний')).toBeTruthy();
     expect(within(selector).getAllByRole('button', { name: 'Скоро' })).toHaveLength(2);
 

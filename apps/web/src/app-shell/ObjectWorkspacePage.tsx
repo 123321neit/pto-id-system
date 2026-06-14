@@ -171,16 +171,23 @@ export function ObjectWorkspacePage({
         <nav className="object-workspace-nav__sections" aria-label="Разделы объекта">
           <button
             aria-current={activeSection === 'overview' ? 'page' : undefined}
+            aria-label="Обзор"
             onClick={() => {
               setCreateDocumentPanelOpen(false);
               setActiveSection('overview');
             }}
             type="button"
           >
-            <span aria-hidden="true">⌂</span>
-            Обзор
+            <span className="object-workspace-nav__icon" aria-hidden="true">
+              ⌂
+            </span>
+            <span className="object-workspace-nav__label">
+              <strong>Обзор</strong>
+              <small>Командный центр</small>
+            </span>
           </button>
           <button
+            aria-label="Периоды"
             aria-current={
               activeSection === 'period' || activeSection === 'aosr' ? 'page' : undefined
             }
@@ -189,11 +196,17 @@ export function ObjectWorkspacePage({
             }}
             type="button"
           >
-            <span aria-hidden="true">▦</span>
-            Периоды
+            <span className="object-workspace-nav__icon" aria-hidden="true">
+              ▦
+            </span>
+            <span className="object-workspace-nav__label">
+              <strong>Периоды</strong>
+              <small>Рабочие папки</small>
+            </span>
           </button>
           {demoObjectPeriods.map((period) => (
             <button
+              aria-label={period.name}
               aria-current={
                 (activeSection === 'period' || activeSection === 'aosr') &&
                 selectedPeriodId === period.id
@@ -207,8 +220,13 @@ export function ObjectWorkspacePage({
               }}
               type="button"
             >
-              <span aria-hidden="true">↳</span>
-              {period.name}
+              <span className="object-workspace-nav__icon" aria-hidden="true">
+                ▣
+              </span>
+              <span className="object-workspace-nav__label">
+                <strong>{period.name}</strong>
+                <small>Документы / реестр / комплект</small>
+              </span>
             </button>
           ))}
           <button
@@ -220,19 +238,30 @@ export function ObjectWorkspacePage({
             }}
             type="button"
           >
-            <span aria-hidden="true">▤</span>
-            Документы объекта
+            <span className="object-workspace-nav__icon" aria-hidden="true">
+              ▤
+            </span>
+            <span className="object-workspace-nav__label">
+              <strong>Документы объекта</strong>
+              <small>Схемы и журналы</small>
+            </span>
           </button>
           <button
             aria-current={activeSection === 'representatives' ? 'page' : undefined}
+            aria-label="Представители"
             onClick={() => {
               setCreateDocumentPanelOpen(false);
               setActiveSection('representatives');
             }}
             type="button"
           >
-            <span aria-hidden="true">△</span>
-            Представители
+            <span className="object-workspace-nav__icon" aria-hidden="true">
+              △
+            </span>
+            <span className="object-workspace-nav__label">
+              <strong>Представители</strong>
+              <small>Глобальная база</small>
+            </span>
           </button>
           <button
             aria-current={activeSection === 'final-package' ? 'page' : undefined}
@@ -243,8 +272,13 @@ export function ObjectWorkspacePage({
             }}
             type="button"
           >
-            <span aria-hidden="true">▣</span>
-            Итоговая ИД
+            <span className="object-workspace-nav__icon" aria-hidden="true">
+              ◫
+            </span>
+            <span className="object-workspace-nav__label">
+              <strong>Итоговая ИД</strong>
+              <small>Все периоды</small>
+            </span>
           </button>
           <button
             aria-current={activeSection === 'settings' ? 'page' : undefined}
@@ -252,8 +286,13 @@ export function ObjectWorkspacePage({
             onClick={openObjectSettings}
             type="button"
           >
-            <span aria-hidden="true">○</span>
-            Настройки объекта
+            <span className="object-workspace-nav__icon" aria-hidden="true">
+              ○
+            </span>
+            <span className="object-workspace-nav__label">
+              <strong>Настройки объекта</strong>
+              <small>Общие данные</small>
+            </span>
           </button>
         </nav>
       </aside>
@@ -457,19 +496,28 @@ function ObjectOverview({
   return (
     <section className="object-overview" aria-labelledby="object-overview-title">
       <div className="object-overview__intro">
-        <div>
+        <div className="object-overview__intro-copy">
           <p className="section-kicker">Обзор</p>
           <h2 id="object-overview-title">Обзор объекта</h2>
           <strong>{object.title}</strong>
-          <p>{object.address}</p>
+          <p>
+            {object.address}. Рабочий центр для периодов, документов и итоговой исполнительной
+            документации.
+          </p>
         </div>
-        <button
-          className="action-button action-button--primary"
-          onClick={onOpenCreateDocumentPanel}
-          type="button"
-        >
-          Создать документ
-        </button>
+        <div className="object-overview__intro-actions">
+          <button
+            aria-label="Создать документ"
+            className="action-button action-button--primary"
+            onClick={onOpenCreateDocumentPanel}
+            type="button"
+          >
+            + Создать документ
+          </button>
+          <button className="action-button" onClick={onOpenFinalPackage} type="button">
+            Итоговая ИД
+          </button>
+        </div>
       </div>
 
       {isCreateDocumentPanelOpen ? (
@@ -499,10 +547,10 @@ function ObjectOverview({
             <h3 id="overview-actions-title">Работа по объекту</h3>
           </div>
           <div className="object-overview__actions">
-            <button onClick={onOpenCreateDocumentPanel} type="button">
+            <button aria-label="Создать документ" onClick={onOpenCreateDocumentPanel} type="button">
               <span aria-hidden="true">＋</span>
               <strong>Создать документ</strong>
-              <small>Выбор типа документа из зарегистрированной метадаты</small>
+              <small>АОСР в выбранном периоде</small>
             </button>
             <button
               onClick={() => {
@@ -512,7 +560,7 @@ function ObjectOverview({
             >
               <span aria-hidden="true">▦</span>
               <strong>Открыть период</strong>
-              <small>{periods[0]?.name ?? 'Сентябрь 2026'}: документы, реестр и комплект</small>
+              <small>{periods[0]?.name ?? 'Сентябрь 2026'}: рабочая папка периода</small>
             </button>
             <button onClick={onOpenDocuments} type="button">
               <span aria-hidden="true">▤</span>
@@ -522,7 +570,7 @@ function ObjectOverview({
             <button onClick={onOpenFinalPackage} type="button">
               <span aria-hidden="true">▣</span>
               <strong>Итоговая ИД</strong>
-              <small>Агрегирует все периоды объекта</small>
+              <small>Собирает документы всех периодов</small>
             </button>
           </div>
         </section>
@@ -532,7 +580,7 @@ function ObjectOverview({
             <p className="section-kicker">Недавние периоды</p>
             <h3 id="overview-periods-title">Периоды работ</h3>
           </div>
-          <ul className="object-overview__recent-list">
+          <ul className="object-overview__period-folders">
             {packageOverview.periodicPackages.map((idPackage) => (
               <li key={idPackage.id}>
                 <button
@@ -547,16 +595,23 @@ function ObjectOverview({
                   }}
                   type="button"
                 >
-                  <span>
-                    <strong>{idPackage.periodName}</strong>
-                    <small>Документы / реестр / комплект периода</small>
+                  <span className="object-overview__folder-icon" aria-hidden="true">
+                    ▣
                   </span>
-                  <span>
+                  <span className="object-overview__folder-main">
+                    <strong>{idPackage.periodName}</strong>
+                    <small>Рабочая папка периода</small>
+                  </span>
+                  <span className="object-overview__folder-meta">
                     <small>Документы</small>
                     <strong>{idPackage.summary.acts}</strong>
                   </span>
-                  <span>
-                    <small>Комплект</small>
+                  <span className="object-overview__folder-meta">
+                    <small>Реестр</small>
+                    <strong>скоро</strong>
+                  </span>
+                  <span className="object-overview__folder-meta">
+                    <small>Пакет</small>
                     <strong>скоро</strong>
                   </span>
                 </button>
@@ -630,13 +685,11 @@ function CreateDocumentPanel({
       role="dialog"
       aria-labelledby="create-document-title"
     >
-      <div>
+      <div className="object-overview__create-panel-header">
         <p className="section-kicker">Новый документ</p>
         <h3 id="create-document-title">Создать документ</h3>
         <p>
-          Выберите тип документа. В демо новый черновик создается в периоде{' '}
-          <strong>{selectedPeriod.name}</strong> только в памяти браузера, без backend и
-          localStorage.
+          Новый черновик будет создан в рабочей папке <strong>{selectedPeriod.name}</strong>.
         </p>
       </div>
       <div className="object-overview__numbering-note">
@@ -652,18 +705,15 @@ function CreateDocumentPanel({
             value={documentNumber}
           />
         </label>
-        <p>Автонумерация работает как подсказка: номер можно изменить вручную перед созданием.</p>
-        <p>Будущая настройка шаблона поддержит нумерацию по объекту или заново в периоде.</p>
-        <ul>
-          <li>ОВ-&#123;n&#125;</li>
-          <li>12-&#123;n&#125;-ОВ</li>
-          <li>АОСР/&#123;YYYY&#125;/&#123;n&#125;</li>
-        </ul>
+        <p>Автонумерация — только подсказка. Номер можно изменить или оставить пустым.</p>
       </div>
-      <ul aria-label="Доступные типы документов">
+      <ul className="document-type-card-list" aria-label="Доступные типы документов">
         {registeredDemoActTypes.map((actType) => (
-          <li key={actType.id}>
-            <span>
+          <li className="document-type-card document-type-card--available" key={actType.id}>
+            <span className="document-type-card__icon" aria-hidden="true">
+              {actType.code}
+            </span>
+            <span className="document-type-card__body">
               <strong>{actType.code}</strong>
               <small>
                 {actType.code} — {actType.title}
@@ -678,8 +728,11 @@ function CreateDocumentPanel({
             </button>
           </li>
         ))}
-        <li aria-disabled="true">
-          <span>
+        <li className="document-type-card document-type-card--disabled" aria-disabled="true">
+          <span className="document-type-card__icon" aria-hidden="true">
+            АИ
+          </span>
+          <span className="document-type-card__body">
             <strong>Акт испытаний</strong>
             <small>Другие типы документов появятся позже</small>
           </span>
@@ -687,8 +740,11 @@ function CreateDocumentPanel({
             Скоро
           </button>
         </li>
-        <li aria-disabled="true">
-          <span>
+        <li className="document-type-card document-type-card--disabled" aria-disabled="true">
+          <span className="document-type-card__icon" aria-hidden="true">
+            ТГ
+          </span>
+          <span className="document-type-card__body">
             <strong>Техническая готовность</strong>
             <small>Будущий тип документа после отдельной ратификации формы</small>
           </span>
@@ -732,10 +788,15 @@ function ObjectPeriodPage({
   return (
     <section className="object-period-workspace" aria-labelledby="object-period-title">
       <div className="object-period-hero">
-        <div>
-          <p className="section-kicker">Период</p>
-          <h2 id="object-period-title">{period.name}</h2>
-          <p>Документы периода, будущий реестр периода и будущий комплект периода.</p>
+        <div className="object-period-hero__title">
+          <span className="object-period-hero__icon" aria-hidden="true">
+            ▣
+          </span>
+          <div>
+            <p className="section-kicker">Рабочая папка периода</p>
+            <h2 id="object-period-title">{period.name}</h2>
+            <p>Документы, реестр периода и будущая сборка пакета в одном рабочем контуре.</p>
+          </div>
         </div>
         <button
           className="action-button action-button--primary"
@@ -758,7 +819,10 @@ function ObjectPeriodPage({
       ) : null}
 
       <div className="object-period-grid">
-        <section className="object-period-panel" aria-labelledby="period-documents-title">
+        <section
+          className="object-period-panel object-period-panel--documents"
+          aria-labelledby="period-documents-title"
+        >
           <div className="object-overview__panel-heading">
             <p className="section-kicker">Документы</p>
             <h3 id="period-documents-title">Документы периода</h3>
@@ -790,33 +854,35 @@ function ObjectPeriodPage({
           </ul>
         </section>
 
-        <section
-          className="object-period-panel object-period-placeholder"
-          aria-labelledby="period-registry-title"
-        >
-          <div>
-            <p className="section-kicker">Реестр периода</p>
-            <h3 id="period-registry-title">{period.registryTitle}</h3>
-            <p>
-              Здесь будет периодический реестр документов. Сейчас это только placeholder без backend
-              и без редактирования.
-            </p>
-          </div>
-        </section>
+        <div className="object-period-support-grid">
+          <section
+            className="object-period-panel object-period-placeholder"
+            aria-labelledby="period-registry-title"
+          >
+            <span className="object-period-placeholder__icon" aria-hidden="true">
+              ▤
+            </span>
+            <div>
+              <p className="section-kicker">Реестр периода</p>
+              <h3 id="period-registry-title">{period.registryTitle}</h3>
+              <p>Будущий периодический реестр документов. Сейчас это frontend placeholder.</p>
+            </div>
+          </section>
 
-        <section
-          className="object-period-panel object-period-placeholder"
-          aria-labelledby="period-package-title"
-        >
-          <div>
-            <p className="section-kicker">Комплект периода</p>
-            <h3 id="period-package-title">{period.packageTitle}</h3>
-            <p>
-              Здесь появится будущая сборка пакета периода. Итоговая ИД будет агрегировать все
-              периоды объекта.
-            </p>
-          </div>
-        </section>
+          <section
+            className="object-period-panel object-period-placeholder"
+            aria-labelledby="period-package-title"
+          >
+            <span className="object-period-placeholder__icon" aria-hidden="true">
+              ◫
+            </span>
+            <div>
+              <p className="section-kicker">Комплект периода</p>
+              <h3 id="period-package-title">{period.packageTitle}</h3>
+              <p>Будущая сборка пакета периода. Итоговая ИД агрегирует все периоды объекта.</p>
+            </div>
+          </section>
+        </div>
       </div>
     </section>
   );
