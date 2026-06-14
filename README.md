@@ -5,7 +5,7 @@ Web-система автоматизации исполнительной до�
 Текущий статус:
 
 ```text
-FIRST ALLOWED INFRASTRUCTURE BOOTSTRAP SCAFFOLD ACCEPTED; CANONICAL ADR BASELINE ACCEPTED; BACKEND MODULE ARCHITECTURE SKELETON INTRODUCED; FIRST TECHNICAL FRONTEND-BACKEND STATUS SLICE INTRODUCED; DATABASE FOUNDATION TECHNICAL SLICE INTRODUCED; OBJECT STORAGE FOUNDATION TECHNICAL SLICE INTRODUCED; AUTH SHARING IMPLEMENTATION PLAN ADDED; USER IDENTITY SKELETON INTRODUCED; GLOBAL SYSTEM ADMIN MARKER INTRODUCED; OWNED WORKSPACE BASELINE INTRODUCED; FIRST MOCK AOSR DEMO UI SLICE INTRODUCED; MOCK AOSR DEMO UX/PREVIEW REFINED; MOCK APP SHELL AND OBJECT DASHBOARD INTRODUCED; FRONTEND-ONLY MOCK REPRESENTATIVES/ORGANIZATIONS MANAGEMENT PAGE INTRODUCED; FRONTEND-ONLY MOCK CERTIFICATE LIBRARY PAGE INTRODUCED; STAGE 5 MOCK AOSR WORKSPACE UX STABILIZED; AOSR EDITOR UX CLEANUP INTRODUCED; AOSR WORKSPACE DRAWER UX INTRODUCED; FRONTEND-ONLY MOCK OBJECT DOCUMENT LIBRARY INTRODUCED; AOSR WORKSPACE APPLICATIONS UX CLEANUP INTRODUCED; FRONTEND-ONLY MOCK OBJECT COMPLIANCE DEFAULTS AND ACT OVERRIDES INTRODUCED; FRONTEND-ONLY MOCK OBJECT WORKSPACE VISUAL PASS INTRODUCED; FRONTEND-ONLY MOCK OBJECT WORKSPACE SHELL INTRODUCED; AOSR DOCUMENT PREVIEW DRAWER UX INTRODUCED; AOSR DOCUMENT PREVIEW PAGE VISUALIZATION REFINED; FRONTEND-ONLY OBJECT DOCUMENT WORKSPACE INTRODUCED; FRONTEND-ONLY OBJECT CERTIFICATE WORKSPACE INTRODUCED; FRONTEND-ONLY ID REGISTRY V1 INTRODUCED; FRONTEND-ONLY FINAL ID PACKAGE MOCK INTRODUCED; FRONTEND-ONLY ACT TYPE METADATA PREP INTRODUCED; AOSR READINESS PANEL V1 INTRODUCED; FINAL PACKAGE READINESS V1 INTRODUCED; FRONTEND-ONLY OBJECT WORKSPACE UX HIERARCHY POLISH INTRODUCED; FRONTEND-ONLY OBJECT OVERVIEW AND GLOBAL CERTIFICATE ARCHITECTURE UX CORRECTION INTRODUCED; GLOBAL REUSABLE LIBRARIES AND ACT SNAPSHOTS ADR ACCEPTED; FRONTEND-ONLY PERIOD-FIRST OBJECT WORKSPACE MOCK INTRODUCED
+FIRST ALLOWED INFRASTRUCTURE BOOTSTRAP SCAFFOLD ACCEPTED; CANONICAL ADR BASELINE ACCEPTED; BACKEND MODULE ARCHITECTURE SKELETON INTRODUCED; FIRST TECHNICAL FRONTEND-BACKEND STATUS SLICE INTRODUCED; DATABASE FOUNDATION TECHNICAL SLICE INTRODUCED; OBJECT STORAGE FOUNDATION TECHNICAL SLICE INTRODUCED; AUTH SHARING IMPLEMENTATION PLAN ADDED; USER IDENTITY SKELETON INTRODUCED; GLOBAL SYSTEM ADMIN MARKER INTRODUCED; OWNED WORKSPACE BASELINE INTRODUCED; FIRST MOCK AOSR DEMO UI SLICE INTRODUCED; MOCK AOSR DEMO UX/PREVIEW REFINED; MOCK APP SHELL AND OBJECT DASHBOARD INTRODUCED; FRONTEND-ONLY MOCK REPRESENTATIVES/ORGANIZATIONS MANAGEMENT PAGE INTRODUCED; FRONTEND-ONLY MOCK CERTIFICATE LIBRARY PAGE INTRODUCED; STAGE 5 MOCK AOSR WORKSPACE UX STABILIZED; AOSR EDITOR UX CLEANUP INTRODUCED; AOSR WORKSPACE DRAWER UX INTRODUCED; FRONTEND-ONLY MOCK OBJECT DOCUMENT LIBRARY INTRODUCED; AOSR WORKSPACE APPLICATIONS UX CLEANUP INTRODUCED; FRONTEND-ONLY MOCK OBJECT COMPLIANCE DEFAULTS AND ACT OVERRIDES INTRODUCED; FRONTEND-ONLY MOCK OBJECT WORKSPACE VISUAL PASS INTRODUCED; FRONTEND-ONLY MOCK OBJECT WORKSPACE SHELL INTRODUCED; AOSR DOCUMENT PREVIEW DRAWER UX INTRODUCED; AOSR DOCUMENT PREVIEW PAGE VISUALIZATION REFINED; FRONTEND-ONLY OBJECT DOCUMENT WORKSPACE INTRODUCED; FRONTEND-ONLY OBJECT CERTIFICATE WORKSPACE INTRODUCED; FRONTEND-ONLY ID REGISTRY V1 INTRODUCED; FRONTEND-ONLY FINAL ID PACKAGE MOCK INTRODUCED; FRONTEND-ONLY ACT TYPE METADATA PREP INTRODUCED; AOSR READINESS PANEL V1 INTRODUCED; FINAL PACKAGE READINESS V1 INTRODUCED; FRONTEND-ONLY OBJECT WORKSPACE UX HIERARCHY POLISH INTRODUCED; FRONTEND-ONLY OBJECT OVERVIEW AND GLOBAL CERTIFICATE ARCHITECTURE UX CORRECTION INTRODUCED; GLOBAL REUSABLE LIBRARIES AND ACT SNAPSHOTS ADR ACCEPTED; FRONTEND-ONLY PERIOD-FIRST OBJECT WORKSPACE MOCK INTRODUCED; FRONTEND-ONLY PERIOD-SCOPED AOSR CREATION MOCK INTRODUCED
 ```
 
 В репозитории принят первый разрешённый scaffold. Это только infrastructure/bootstrap
@@ -246,8 +246,9 @@ object overview with name, address, key metrics, last update, quick actions,
 recent periods, recent documents and a frontend-only `Создать документ`
 selector. The selector reads registered act metadata and currently offers
 `АОСР — Акт освидетельствования скрытых работ`, while future document types are
-disabled as `скоро`; choosing `Создать документ` opens the existing AOSR editor
-without creating a real draft. The previous object-owned
+disabled as `скоро`; choosing `Создать документ` now creates a new
+frontend-only AOSR draft in the selected period, shows the proposed next number
+and opens the editor immediately. The previous object-owned
 `Сертификаты` navigation is removed: certificates remain a global user-level
 library, acts use that library, and object/registry/final package screens show
 only derived used certificates. Readiness wording is informational:
@@ -286,6 +287,15 @@ aggregate over all periods. This is frontend demo UX only: no backend/API,
 Prisma/schema/migrations, persistence, uploads, OCR/AI, DOCX/PDF/ZIP generation
 or production business logic was introduced.
 
+The frontend-only period-scoped AOSR creation mock keeps the period-first model
+but makes `Создать документ -> АОСР` create a real in-memory draft for the
+selected period. The new blank draft appears in the period document list and
+the AOSR document tree, opens immediately in the editor, and is included by
+derived overview/final ID counts while the browser session lives. This uses no
+backend, no API, no localStorage and no persistence. Empty fields are allowed
+so preview/editing remain available and future print generation can render
+manual-fill lines.
+
 Future period-first structure:
 
 ```text
@@ -303,8 +313,10 @@ Object
 └── Settings
 ```
 
-Future numbering engine is documentation-only at this stage. The intended
-template is:
+The first frontend-only numbering helper is present for mock AOSR creation. It
+keeps numbering per document type and can be scoped globally by object or
+restarted per period. The current mock setting for AOSR is global by object
+with prefix `ОВ-`, suffix empty and template:
 
 ```text
 {prefix}{number}{suffix}
@@ -318,9 +330,11 @@ Examples:
 АОСР/{YYYY}/{n}
 ```
 
-The future engine must support both global numbering per object and numbering
-restarted per period. No numbering engine, backend rules, persistence or
-production numbering logic is implemented in this frontend mock.
+The create-document panel shows the proposed next number, for example
+`Предлагаемый номер: ОВ-3` when `ОВ-1` and `ОВ-2` already exist. Future UI
+settings for manual number editing and template selection are not implemented
+yet. No backend rules, persistence or production numbering logic is implemented
+in this frontend mock.
 
 Production feature coding remains blocked outside explicitly requested narrow
 demo/technical slices.
@@ -542,6 +556,11 @@ Scaffold включает:
   duplicate workspace/editor counters are removed outside Overview, and no
   backend/API, persistence, Prisma/schema/migration, generation or production
   business logic is added.
+- frontend-only period-scoped AOSR creation mock: `Создать документ -> АОСР`
+  creates a blank in-memory AOSR draft in the selected period, proposes the
+  next `ОВ-*` number through the initial numbering helper, opens the new draft
+  immediately, and updates derived mock overview/final ID counts without
+  backend, localStorage, API or persistence.
 
 The backend module skeleton includes module boundaries, README ownership notes,
 placeholder tokens/ports, `apps/api/src/ARCHITECTURE.md`, and ESLint import

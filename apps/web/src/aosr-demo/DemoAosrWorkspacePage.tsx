@@ -1,4 +1,4 @@
-import { type SyntheticEvent, useEffect, useState } from 'react';
+import { type SetStateAction, type SyntheticEvent, useEffect, useState } from 'react';
 
 import { getDemoActTypeById } from '../act-types/act-types.js';
 import { DocumentPreviewDrawer } from '../document-preview/DocumentPreviewDrawer.js';
@@ -60,23 +60,29 @@ import { DemoObjectSettingsPanel } from './DemoObjectSettingsPanel.js';
 const aosrActType = getDemoActTypeById('aosr');
 
 interface DemoAosrWorkspacePageProps {
+  readonly drafts?: readonly DemoAosrDraft[];
   readonly initialDocumentPreviewOpen?: boolean;
   readonly initialSelectedDraftId?: string;
   readonly isEmbeddedInObjectWorkspace?: boolean;
+  readonly onDraftsChange?: (drafts: readonly DemoAosrDraft[]) => void;
   readonly onBackToObjects?: () => void;
   readonly onObjectSettingsClosed?: () => void;
   readonly periodName?: string;
   readonly settingsOpenRequest?: number;
+  readonly visibleDraftIds?: readonly string[];
 }
 
 export function DemoAosrWorkspacePage({
+  drafts: controlledDrafts,
   initialDocumentPreviewOpen = false,
   initialSelectedDraftId,
   isEmbeddedInObjectWorkspace = false,
+  onDraftsChange,
   onBackToObjects,
   onObjectSettingsClosed,
   periodName,
   settingsOpenRequest,
+  visibleDraftIds,
 }: DemoAosrWorkspacePageProps = {}): React.JSX.Element {
   const { certificates, objectDocuments, organizations, representatives } = useDemoStore();
   const globalOrganizations = organizations.map(toDemoGlobalOrganization);
@@ -86,7 +92,14 @@ export function DemoAosrWorkspacePage({
     ...demoAosrWorkspace.objectDefaults,
     representativeLibrary: globalRepresentatives,
   }));
-  const [drafts, setDrafts] = useState<readonly DemoAosrDraft[]>(demoAosrWorkspace.drafts);
+  const [localDrafts, setLocalDrafts] = useState<readonly DemoAosrDraft[]>(
+    demoAosrWorkspace.drafts,
+  );
+  const drafts = controlledDrafts ?? localDrafts;
+  const visibleDrafts =
+    visibleDraftIds === undefined
+      ? drafts
+      : drafts.filter((draft) => visibleDraftIds.includes(draft.id));
   const [selectedDraftId, setSelectedDraftId] = useState(
     initialSelectedDraftId ?? demoAosrWorkspace.drafts[0]?.id ?? '',
   );
@@ -130,7 +143,7 @@ export function DemoAosrWorkspacePage({
     }
   }, [initialSelectedDraftId]);
 
-  const selectedDraft = getSelectedDraft(drafts, selectedDraftId);
+  const selectedDraft = getSelectedDraft(visibleDrafts, selectedDraftId);
   const selectedSignatories = getDraftRepresentatives(selectedDraft);
   const selectedMaterials = getDraftMaterialCertificates(selectedDraft, certificateLibrary);
   const selectedObjectDocuments = getDraftObjectDocuments(selectedDraft, objectDocuments);
@@ -152,9 +165,21 @@ export function DemoAosrWorkspacePage({
   };
 
   const updateSelectedDraftWith = (updater: (draft: DemoAosrDraft) => DemoAosrDraft): void => {
-    setDrafts((currentDrafts) =>
+    commitDrafts((currentDrafts) =>
       currentDrafts.map((draft) => (draft.id === selectedDraft.id ? updater(draft) : draft)),
     );
+  };
+
+  const commitDrafts = (draftsAction: SetStateAction<readonly DemoAosrDraft[]>): void => {
+    if (controlledDrafts === undefined) {
+      setLocalDrafts(draftsAction);
+      return;
+    }
+
+    const nextDrafts =
+      typeof draftsAction === 'function' ? draftsAction(controlledDrafts) : draftsAction;
+
+    onDraftsChange?.(nextDrafts);
   };
 
   const updateHeaderOrganizationForm = (
@@ -282,7 +307,7 @@ export function DemoAosrWorkspacePage({
       return;
     }
 
-    setDrafts((currentDrafts) => moveItemBefore(currentDrafts, draggedDraftId, targetDraftId));
+    commitDrafts((currentDrafts) => moveItemBefore(currentDrafts, draggedDraftId, targetDraftId));
     setDraggedDraftId(null);
   };
 
@@ -349,7 +374,7 @@ export function DemoAosrWorkspacePage({
         <DemoDocumentTree
           actType={aosrActType}
           draggedDraftId={draggedDraftId}
-          drafts={drafts}
+          drafts={visibleDrafts}
           periodName={periodName}
           selectedDraftId={selectedDraft.id}
           onDragEnd={() => {

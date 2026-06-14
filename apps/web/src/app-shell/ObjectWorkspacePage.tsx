@@ -2,24 +2,31 @@ import { useMemo, useState } from 'react';
 
 import { getDemoActTypeById, registeredDemoActTypes } from '../act-types/act-types.js';
 import { DemoAosrWorkspacePage } from '../aosr-demo/DemoAosrWorkspacePage.js';
-import { demoAosrWorkspace, type DemoAosrDraft } from '../aosr-demo/demo-aosr-workspace.js';
+import {
+  createEmptyDemoAosrDraft,
+  demoAosrWorkspace,
+  type DemoAosrDraft,
+} from '../aosr-demo/demo-aosr-workspace.js';
 import { useDemoStore, type DemoCertificate } from '../demo-store/demo-store.js';
 import { ObjectDocumentsPage } from './ObjectDocumentsPage.js';
 import { ObjectFinalPackagePage } from './ObjectFinalPackagePage.js';
 import { RepresentativesOrganizationsPage } from './RepresentativesOrganizationsPage.js';
 import type { MockObjectCard } from './mock-dashboard.js';
+import { getProposedDemoDocumentNumber } from './object-document-numbering.js';
 import {
   buildIdPackageOverviewModel,
   type IdPackageOverviewModel,
   type PeriodicIdPackageModel,
 } from './object-final-package-model.js';
 import {
+  addDemoObjectPeriodDraft,
   demoObjectPeriods,
   getDemoObjectPeriodById,
   getDemoObjectPeriodDrafts,
   getDemoObjectPeriodForDraftId,
   type DemoObjectPeriod,
   type DemoObjectPeriodId,
+  type DemoObjectPeriods,
 } from './object-periods.js';
 
 const aosrActType = getDemoActTypeById('aosr');
@@ -51,23 +58,36 @@ export function ObjectWorkspacePage({
 }: ObjectWorkspacePageProps): React.JSX.Element {
   const { certificates, objectDocuments, representatives } = useDemoStore();
   const [activeSection, setActiveSection] = useState<ObjectWorkspaceSection>('overview');
+  const [drafts, setDrafts] = useState<readonly DemoAosrDraft[]>(demoAosrWorkspace.drafts);
+  const [periods, setPeriods] = useState<DemoObjectPeriods>(demoObjectPeriods);
   const [selectedPeriodId, setSelectedPeriodId] = useState<DemoObjectPeriodId>('period-2026-09');
   const [selectedDraftId, setSelectedDraftId] = useState(demoAosrWorkspace.drafts[0]?.id ?? '');
+  const [createdAosrDraftCount, setCreatedAosrDraftCount] = useState(1);
   const [isCreateDocumentPanelOpen, setCreateDocumentPanelOpen] = useState(false);
   const [settingsOpenRequest, setSettingsOpenRequest] = useState(0);
   const isAosrVisible = activeSection === 'aosr' || activeSection === 'settings';
-  const selectedPeriod = getDemoObjectPeriodById(selectedPeriodId);
-  const selectedPeriodDrafts = getDemoObjectPeriodDrafts(selectedPeriod, demoAosrWorkspace.drafts);
+  const selectedPeriod = getDemoObjectPeriodById(selectedPeriodId, periods);
+  const selectedPeriodDrafts = getDemoObjectPeriodDrafts(selectedPeriod, drafts);
   const usedCertificateCount = useMemo(
-    () => getUsedCertificateCount(demoAosrWorkspace.drafts, certificates),
-    [certificates],
+    () => getUsedCertificateCount(drafts, certificates),
+    [certificates, drafts],
   );
   const packageOverview = useMemo(
-    () => buildIdPackageOverviewModel(demoAosrWorkspace.drafts, objectDocuments, certificates),
-    [certificates, objectDocuments],
+    () => buildIdPackageOverviewModel(drafts, objectDocuments, certificates, periods),
+    [certificates, drafts, objectDocuments, periods],
+  );
+  const proposedAosrNumber = useMemo(
+    () =>
+      getProposedDemoDocumentNumber({
+        documentTypeId: 'aosr',
+        drafts,
+        periodId: selectedPeriodId,
+        periods,
+      }),
+    [drafts, periods, selectedPeriodId],
   );
   const metrics: ObjectWorkspaceMetrics = {
-    aosrCount: demoAosrWorkspace.drafts.length,
+    aosrCount: drafts.length,
     usedCertificateCount,
     objectDocumentCount: objectDocuments.length,
     representativeCount: representatives.length,
@@ -76,24 +96,40 @@ export function ObjectWorkspacePage({
   const openPeriod = (periodId: DemoObjectPeriodId): void => {
     setCreateDocumentPanelOpen(false);
     setSelectedPeriodId(periodId);
-    const period = getDemoObjectPeriodById(periodId);
-    setSelectedDraftId(period.draftIds[0] ?? demoAosrWorkspace.drafts[0]?.id ?? '');
+    const period = getDemoObjectPeriodById(periodId, periods);
+    setSelectedDraftId(period.draftIds[0] ?? drafts[0]?.id ?? '');
     setActiveSection('period');
   };
 
   const openAosr = (periodId: DemoObjectPeriodId = selectedPeriodId, draftId?: string): void => {
-    const period = getDemoObjectPeriodById(periodId);
+    const period = getDemoObjectPeriodById(periodId, periods);
 
     setCreateDocumentPanelOpen(false);
     setSelectedPeriodId(periodId);
-    setSelectedDraftId(draftId ?? period.draftIds[0] ?? demoAosrWorkspace.drafts[0]?.id ?? '');
+    setSelectedDraftId(draftId ?? period.draftIds[0] ?? drafts[0]?.id ?? '');
     setActiveSection('aosr');
   };
 
   const openDraft = (draft: DemoAosrDraft): void => {
-    const period = getDemoObjectPeriodForDraftId(draft.id);
+    const period = getDemoObjectPeriodForDraftId(draft.id, periods);
 
     openAosr(period.id, draft.id);
+  };
+
+  const createAosrDraft = (): void => {
+    const draft = createEmptyDemoAosrDraft({
+      actNumber: proposedAosrNumber,
+      id: `aosr-draft-created-${String(createdAosrDraftCount)}`,
+    });
+
+    setDrafts((currentDrafts) => [...currentDrafts, draft]);
+    setPeriods((currentPeriods) =>
+      addDemoObjectPeriodDraft(currentPeriods, selectedPeriodId, draft.id),
+    );
+    setCreatedAosrDraftCount((currentCount) => currentCount + 1);
+    setCreateDocumentPanelOpen(false);
+    setSelectedDraftId(draft.id);
+    setActiveSection('aosr');
   };
 
   const openObjectSettings = (): void => {
@@ -215,17 +251,18 @@ export function ObjectWorkspacePage({
 
         {activeSection === 'overview' ? (
           <ObjectOverview
+            drafts={drafts}
             isCreateDocumentPanelOpen={isCreateDocumentPanelOpen}
             metrics={metrics}
             object={object}
             packageOverview={packageOverview}
-            periods={demoObjectPeriods}
+            periods={periods}
+            proposedAosrNumber={proposedAosrNumber}
+            selectedPeriod={selectedPeriod}
             onCloseCreateDocumentPanel={() => {
               setCreateDocumentPanelOpen(false);
             }}
-            onCreateAosr={() => {
-              openAosr(selectedPeriodId);
-            }}
+            onCreateAosr={createAosrDraft}
             onOpenDraft={openDraft}
             onOpenPeriod={openPeriod}
             onOpenCreateDocumentPanel={() => {
@@ -245,19 +282,31 @@ export function ObjectWorkspacePage({
         {activeSection === 'period' ? (
           <ObjectPeriodPage
             drafts={selectedPeriodDrafts}
+            isCreateDocumentPanelOpen={isCreateDocumentPanelOpen}
             period={selectedPeriod}
+            proposedAosrNumber={proposedAosrNumber}
+            onCloseCreateDocumentPanel={() => {
+              setCreateDocumentPanelOpen(false);
+            }}
+            onCreateAosr={createAosrDraft}
             onOpenAosr={(draftId) => {
               openAosr(selectedPeriod.id, draftId);
+            }}
+            onOpenCreateDocumentPanel={() => {
+              setCreateDocumentPanelOpen(true);
             }}
           />
         ) : null}
 
         {isAosrVisible ? (
           <DemoAosrWorkspacePage
+            drafts={drafts}
             initialSelectedDraftId={selectedDraftId}
             isEmbeddedInObjectWorkspace
+            onDraftsChange={setDrafts}
             periodName={selectedPeriod.name}
             settingsOpenRequest={settingsOpenRequest}
+            visibleDraftIds={selectedPeriod.draftIds}
             onObjectSettingsClosed={() => {
               setActiveSection('aosr');
             }}
@@ -276,7 +325,9 @@ export function ObjectWorkspacePage({
           />
         ) : null}
 
-        {activeSection === 'final-package' ? <ObjectFinalPackagePage /> : null}
+        {activeSection === 'final-package' ? (
+          <ObjectFinalPackagePage drafts={drafts} periods={periods} />
+        ) : null}
       </section>
     </main>
   );
@@ -353,11 +404,14 @@ function getSectionBreadcrumb(section: ObjectWorkspaceSection): string {
 }
 
 interface ObjectOverviewProps {
+  readonly drafts: readonly DemoAosrDraft[];
   readonly isCreateDocumentPanelOpen: boolean;
   readonly metrics: ObjectWorkspaceMetrics;
   readonly object: MockObjectCard;
   readonly packageOverview: IdPackageOverviewModel;
   readonly periods: readonly DemoObjectPeriod[];
+  readonly proposedAosrNumber: string;
+  readonly selectedPeriod: DemoObjectPeriod;
   readonly onCloseCreateDocumentPanel: () => void;
   readonly onCreateAosr: () => void;
   readonly onOpenCreateDocumentPanel: () => void;
@@ -368,11 +422,14 @@ interface ObjectOverviewProps {
 }
 
 function ObjectOverview({
+  drafts,
   isCreateDocumentPanelOpen,
   metrics,
   object,
   packageOverview,
   periods,
+  proposedAosrNumber,
+  selectedPeriod,
   onCloseCreateDocumentPanel,
   onCreateAosr,
   onOpenCreateDocumentPanel,
@@ -400,69 +457,12 @@ function ObjectOverview({
       </div>
 
       {isCreateDocumentPanelOpen ? (
-        <section
-          className="object-overview__create-panel"
-          role="dialog"
-          aria-labelledby="create-document-title"
-        >
-          <div>
-            <p className="section-kicker">Новый документ</p>
-            <h3 id="create-document-title">Создать документ</h3>
-            <p>
-              Выберите тип документа. В демо документ открывается в выбранном периоде без сохранения
-              в backend.
-            </p>
-          </div>
-          <div className="object-overview__numbering-note">
-            <h4>Будущая автонумерация</h4>
-            <p>Шаблон номера будет настраиваться отдельно для объекта или периода.</p>
-            <ul>
-              <li>ОВ-&#123;n&#125;</li>
-              <li>12-&#123;n&#125;-ОВ</li>
-              <li>АОСР/&#123;YYYY&#125;/&#123;n&#125;</li>
-            </ul>
-          </div>
-          <ul aria-label="Доступные типы документов">
-            {registeredDemoActTypes.map((actType) => (
-              <li key={actType.id}>
-                <span>
-                  <strong>{actType.code}</strong>
-                  <small>
-                    {actType.code} — {actType.title}
-                  </small>
-                </span>
-                <button
-                  className="compact-toggle compact-toggle--accent"
-                  onClick={onCreateAosr}
-                  type="button"
-                >
-                  Создать документ
-                </button>
-              </li>
-            ))}
-            <li aria-disabled="true">
-              <span>
-                <strong>Акт испытаний</strong>
-                <small>Другие типы документов появятся позже</small>
-              </span>
-              <button className="compact-toggle" disabled type="button">
-                Скоро
-              </button>
-            </li>
-            <li aria-disabled="true">
-              <span>
-                <strong>Техническая готовность</strong>
-                <small>Будущий тип документа после отдельной ратификации формы</small>
-              </span>
-              <button className="compact-toggle" disabled type="button">
-                Скоро
-              </button>
-            </li>
-          </ul>
-          <button className="compact-toggle" onClick={onCloseCreateDocumentPanel} type="button">
-            Закрыть
-          </button>
-        </section>
+        <CreateDocumentPanel
+          proposedAosrNumber={proposedAosrNumber}
+          selectedPeriod={selectedPeriod}
+          onClose={onCloseCreateDocumentPanel}
+          onCreateAosr={onCreateAosr}
+        />
       ) : null}
 
       <dl className="object-overview__metrics" aria-label="Ключевые показатели объекта">
@@ -554,8 +554,8 @@ function ObjectOverview({
           <h3 id="overview-recent-documents-title">Документы в периодах</h3>
         </div>
         <ul className="object-overview__recent-list object-overview__recent-list--wide">
-          {demoAosrWorkspace.drafts.map((draft, index) => {
-            const period = getDemoObjectPeriodForDraftId(draft.id);
+          {drafts.map((draft, index) => {
+            const period = getDemoObjectPeriodForDraftId(draft.id, periods);
 
             return (
               <li key={draft.id}>
@@ -589,16 +589,108 @@ function ObjectOverview({
   );
 }
 
+interface CreateDocumentPanelProps {
+  readonly proposedAosrNumber: string;
+  readonly selectedPeriod: DemoObjectPeriod;
+  readonly onClose: () => void;
+  readonly onCreateAosr: () => void;
+}
+
+function CreateDocumentPanel({
+  proposedAosrNumber,
+  selectedPeriod,
+  onClose,
+  onCreateAosr,
+}: CreateDocumentPanelProps): React.JSX.Element {
+  return (
+    <section
+      className="object-overview__create-panel"
+      role="dialog"
+      aria-labelledby="create-document-title"
+    >
+      <div>
+        <p className="section-kicker">Новый документ</p>
+        <h3 id="create-document-title">Создать документ</h3>
+        <p>
+          Выберите тип документа. В демо новый черновик создается в периоде{' '}
+          <strong>{selectedPeriod.name}</strong> только в памяти браузера, без backend и
+          localStorage.
+        </p>
+      </div>
+      <div className="object-overview__numbering-note">
+        <h4>Предлагаемый номер: {proposedAosrNumber}</h4>
+        <p>Позже номер можно будет изменить вручную перед созданием.</p>
+        <p>Будущая настройка шаблона поддержит нумерацию по объекту или заново в периоде.</p>
+        <ul>
+          <li>ОВ-&#123;n&#125;</li>
+          <li>12-&#123;n&#125;-ОВ</li>
+          <li>АОСР/&#123;YYYY&#125;/&#123;n&#125;</li>
+        </ul>
+      </div>
+      <ul aria-label="Доступные типы документов">
+        {registeredDemoActTypes.map((actType) => (
+          <li key={actType.id}>
+            <span>
+              <strong>{actType.code}</strong>
+              <small>
+                {actType.code} — {actType.title}
+              </small>
+            </span>
+            <button
+              className="compact-toggle compact-toggle--accent"
+              onClick={onCreateAosr}
+              type="button"
+            >
+              Создать документ
+            </button>
+          </li>
+        ))}
+        <li aria-disabled="true">
+          <span>
+            <strong>Акт испытаний</strong>
+            <small>Другие типы документов появятся позже</small>
+          </span>
+          <button className="compact-toggle" disabled type="button">
+            Скоро
+          </button>
+        </li>
+        <li aria-disabled="true">
+          <span>
+            <strong>Техническая готовность</strong>
+            <small>Будущий тип документа после отдельной ратификации формы</small>
+          </span>
+          <button className="compact-toggle" disabled type="button">
+            Скоро
+          </button>
+        </li>
+      </ul>
+      <button className="compact-toggle" onClick={onClose} type="button">
+        Закрыть
+      </button>
+    </section>
+  );
+}
+
 interface ObjectPeriodPageProps {
   readonly drafts: readonly DemoAosrDraft[];
+  readonly isCreateDocumentPanelOpen: boolean;
   readonly period: DemoObjectPeriod;
+  readonly proposedAosrNumber: string;
+  readonly onCloseCreateDocumentPanel: () => void;
+  readonly onCreateAosr: () => void;
   readonly onOpenAosr: (draftId: string) => void;
+  readonly onOpenCreateDocumentPanel: () => void;
 }
 
 function ObjectPeriodPage({
   drafts,
+  isCreateDocumentPanelOpen,
   period,
+  proposedAosrNumber,
+  onCloseCreateDocumentPanel,
+  onCreateAosr,
   onOpenAosr,
+  onOpenCreateDocumentPanel,
 }: ObjectPeriodPageProps): React.JSX.Element {
   return (
     <section className="object-period-workspace" aria-labelledby="object-period-title">
@@ -608,7 +700,23 @@ function ObjectPeriodPage({
           <h2 id="object-period-title">{period.name}</h2>
           <p>Документы периода, будущий реестр периода и будущий комплект периода.</p>
         </div>
+        <button
+          className="action-button action-button--primary"
+          onClick={onOpenCreateDocumentPanel}
+          type="button"
+        >
+          Создать документ
+        </button>
       </div>
+
+      {isCreateDocumentPanelOpen ? (
+        <CreateDocumentPanel
+          proposedAosrNumber={proposedAosrNumber}
+          selectedPeriod={period}
+          onClose={onCloseCreateDocumentPanel}
+          onCreateAosr={onCreateAosr}
+        />
+      ) : null}
 
       <div className="object-period-grid">
         <section className="object-period-panel" aria-labelledby="period-documents-title">

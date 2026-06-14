@@ -95,6 +95,11 @@ export interface DemoActApplication {
   readonly source: string;
 }
 
+export interface CreateDemoAosrDraftInput {
+  readonly actNumber: string;
+  readonly id: string;
+}
+
 export const demoObjectDocumentTypes: readonly DemoObjectDocumentType[] = [
   'Исполнительная схема',
   'Исполнительный чертеж',
@@ -222,7 +227,7 @@ export const demoAosrWorkspace: DemoAosrWorkspace = {
   drafts: [
     {
       actDate: '2026-09-04',
-      actNumber: 'АОСР-001',
+      actNumber: 'ОВ-1',
       additionalInfo: 'Дополнительные сведения для демо-акта не требуются.',
       axes: 'оси 1-4 / А-В',
       copiesCount: '4',
@@ -246,7 +251,7 @@ export const demoAosrWorkspace: DemoAosrWorkspace = {
     },
     {
       actDate: '2026-10-06',
-      actNumber: 'АОСР-002',
+      actNumber: 'ОВ-2',
       additionalInfo: 'Дополнительные сведения отсутствуют.',
       axes: 'оси 5-7 / Г-Д',
       copiesCount: '3',
@@ -311,6 +316,30 @@ export const demoAosrWorkspace: DemoAosrWorkspace = {
   ownerName: 'Демо-владелец',
   projectCode: 'PTO-DEMO-2026',
 };
+
+export function createEmptyDemoAosrDraft({
+  actNumber,
+  id,
+}: CreateDemoAosrDraftInput): DemoAosrDraft {
+  return {
+    actDate: '',
+    actNumber,
+    additionalInfo: '',
+    axes: '',
+    copiesCount: '',
+    elevationRange: '',
+    excludedApplicationIds: [],
+    id,
+    materialCertificateIds: [],
+    objectDocumentIds: [],
+    periodEnd: '',
+    periodStart: '',
+    representatives: [],
+    status: 'draft',
+    subsequentWorksPermitted: '',
+    workDescription: '',
+  };
+}
 
 export function updateDemoAosrDraftField(
   draft: DemoAosrDraft,

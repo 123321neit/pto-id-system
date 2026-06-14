@@ -1,7 +1,11 @@
 import { getDemoActTypeById } from '../act-types/act-types.js';
 import type { DemoAosrDraft, DemoObjectDocument } from '../aosr-demo/demo-aosr-workspace.js';
 import { getCertificateMaterialNames, type DemoCertificate } from '../demo-store/demo-store.js';
-import { demoObjectPeriods, getDemoObjectPeriodDrafts } from './object-periods.js';
+import {
+  demoObjectPeriods,
+  getDemoObjectPeriodDrafts,
+  type DemoObjectPeriods,
+} from './object-periods.js';
 
 type FinalPackageGroupId = 'registry' | 'acts' | 'certificates' | 'object-documents';
 
@@ -79,6 +83,7 @@ export function buildIdPackageOverviewModel(
   drafts: readonly DemoAosrDraft[],
   objectDocuments: readonly DemoObjectDocument[],
   certificates: readonly DemoCertificate[],
+  periods: DemoObjectPeriods = demoObjectPeriods,
 ): IdPackageOverviewModel {
   const finalPackage = buildFinalPackageModel(drafts, objectDocuments, certificates);
 
@@ -94,7 +99,7 @@ export function buildIdPackageOverviewModel(
       title: 'Итоговая ИД по объекту',
       type: 'final',
     },
-    periodicPackages: demoObjectPeriods.map((period) => {
+    periodicPackages: periods.map((period) => {
       const packageDrafts = getDemoObjectPeriodDrafts(period, drafts);
 
       return {

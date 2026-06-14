@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 
-import { demoAosrWorkspace } from '../aosr-demo/demo-aosr-workspace.js';
+import { demoAosrWorkspace, type DemoAosrDraft } from '../aosr-demo/demo-aosr-workspace.js';
 import { useDemoStore } from '../demo-store/demo-store.js';
 import {
   buildFinalPackageModel,
@@ -9,16 +9,25 @@ import {
   type FinalPackageGroup,
   type PeriodicIdPackageModel,
 } from './object-final-package-model.js';
+import { demoObjectPeriods, type DemoObjectPeriods } from './object-periods.js';
 
-export function ObjectFinalPackagePage(): React.JSX.Element {
+interface ObjectFinalPackagePageProps {
+  readonly drafts?: readonly DemoAosrDraft[];
+  readonly periods?: DemoObjectPeriods;
+}
+
+export function ObjectFinalPackagePage({
+  drafts = demoAosrWorkspace.drafts,
+  periods = demoObjectPeriods,
+}: ObjectFinalPackagePageProps = {}): React.JSX.Element {
   const { certificates, objectDocuments } = useDemoStore();
   const finalPackage = useMemo(
-    () => buildFinalPackageModel(demoAosrWorkspace.drafts, objectDocuments, certificates),
-    [certificates, objectDocuments],
+    () => buildFinalPackageModel(drafts, objectDocuments, certificates),
+    [certificates, drafts, objectDocuments],
   );
   const packageOverview = useMemo(
-    () => buildIdPackageOverviewModel(demoAosrWorkspace.drafts, objectDocuments, certificates),
-    [certificates, objectDocuments],
+    () => buildIdPackageOverviewModel(drafts, objectDocuments, certificates, periods),
+    [certificates, drafts, objectDocuments, periods],
   );
 
   return (

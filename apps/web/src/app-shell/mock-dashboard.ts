@@ -67,7 +67,7 @@ export const mockRecentDocuments: readonly MockRecentDocument[] = [
   {
     id: 'recent-aosr-001',
     objectTitle: 'Реконструкция поликлиники',
-    title: 'АОСР-001 от 01.06.2026',
+    title: 'ОВ-1 от 01.06.2026',
     updatedAtLabel: 'сегодня',
   },
   {

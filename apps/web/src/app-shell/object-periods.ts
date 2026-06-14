@@ -10,6 +10,8 @@ export interface DemoObjectPeriod {
   readonly registryTitle: string;
 }
 
+export type DemoObjectPeriods = readonly DemoObjectPeriod[];
+
 export const defaultDemoObjectPeriod: DemoObjectPeriod = {
   draftIds: ['aosr-draft-001'],
   id: 'period-2026-09',
@@ -29,8 +31,11 @@ export const demoObjectPeriods: readonly DemoObjectPeriod[] = [
   },
 ];
 
-export function getDemoObjectPeriodById(periodId: DemoObjectPeriodId): DemoObjectPeriod {
-  const period = demoObjectPeriods.find((candidate) => candidate.id === periodId);
+export function getDemoObjectPeriodById(
+  periodId: DemoObjectPeriodId,
+  periods: DemoObjectPeriods = demoObjectPeriods,
+): DemoObjectPeriod {
+  const period = periods.find((candidate) => candidate.id === periodId);
 
   if (period === undefined) {
     throw new Error(`Unknown demo object period: ${periodId}`);
@@ -39,8 +44,11 @@ export function getDemoObjectPeriodById(periodId: DemoObjectPeriodId): DemoObjec
   return period;
 }
 
-export function getDemoObjectPeriodForDraftId(draftId: string): DemoObjectPeriod {
-  const period = demoObjectPeriods.find((candidate) => candidate.draftIds.includes(draftId));
+export function getDemoObjectPeriodForDraftId(
+  draftId: string,
+  periods: DemoObjectPeriods = demoObjectPeriods,
+): DemoObjectPeriod {
+  const period = periods.find((candidate) => candidate.draftIds.includes(draftId));
 
   if (period === undefined) {
     return defaultDemoObjectPeriod;
@@ -54,4 +62,14 @@ export function getDemoObjectPeriodDrafts(
   drafts: readonly DemoAosrDraft[],
 ): readonly DemoAosrDraft[] {
   return drafts.filter((draft) => period.draftIds.includes(draft.id));
+}
+
+export function addDemoObjectPeriodDraft(
+  periods: DemoObjectPeriods,
+  periodId: DemoObjectPeriodId,
+  draftId: string,
+): DemoObjectPeriods {
+  return periods.map((period) =>
+    period.id === periodId ? { ...period, draftIds: [...period.draftIds, draftId] } : period,
+  );
 }

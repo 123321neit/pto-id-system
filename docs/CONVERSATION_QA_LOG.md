@@ -967,3 +967,40 @@ A: Выполнена frontend-only корректировка wording/flow в �
 - no production AOSR business logic.
 
 Статус решения: frontend mock wording and form-behavior alignment only.
+
+---
+
+## 40. Frontend-only period-scoped AOSR creation and numbering foundation
+
+### Q: Как должен работать `Создать документ -> АОСР` в period-first mock до backend/persistence?
+
+A: Выполнен frontend-only in-memory mock.
+
+Решение:
+
+- `Создать документ -> АОСР` создает новый blank AOSR draft только в React
+  memory;
+- draft назначается в выбранный период;
+- draft появляется в списке документов периода;
+- draft появляется в AOSR document tree;
+- draft сразу открывается в редакторе;
+- empty fields are allowed and do not block edit/preview;
+- overview/final ID counts update where they derive from the in-memory draft
+  list;
+- no backend, API, localStorage, Prisma/schema/migrations, upload, OCR/AI,
+  DOCX/PDF/ZIP generation or persistence is involved.
+
+Initial frontend-only numbering helper accepted:
+
+- numbering is per document type;
+- helper supports global numbering per object or numbering restarted per
+  period;
+- current AOSR mock mode is global by object;
+- current template is `{prefix}{number}{suffix}`;
+- current AOSR prefix is `ОВ-`, suffix is empty;
+- existing `ОВ-1` and `ОВ-2` produce proposed next number `ОВ-3`;
+- create panel shows `Предлагаемый номер: ОВ-3`;
+- manual number edit and numbering settings UI are deferred.
+
+Статус решения: frontend mock only. No production AOSR creation, numbering
+policy, backend/API behavior, persistence or generation was introduced.

@@ -722,6 +722,11 @@ button {
 }
 
 .object-period-hero {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: start;
+  justify-content: space-between;
   padding: 20px;
 }
 
@@ -729,6 +734,10 @@ button {
 .object-period-panel {
   display: grid;
   gap: 10px;
+}
+
+.object-period-hero > div {
+  min-width: min(100%, 420px);
 }
 
 .object-period-hero p:not(.section-kicker),

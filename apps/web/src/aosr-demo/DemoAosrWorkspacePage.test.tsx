@@ -38,7 +38,7 @@ describe('DemoAosrWorkspacePage', () => {
     const metadata = screen.getByLabelText('Метаданные текущего акта');
 
     expect(within(metadata).getByText('Документ')).toBeTruthy();
-    expect(within(metadata).getByText('АОСР-001')).toBeTruthy();
+    expect(within(metadata).getByText('ОВ-1')).toBeTruthy();
     expect(screen.queryByLabelText('Сводка текущего акта')).toBeNull();
     expect(screen.queryByText('Статус')).toBeNull();
     expect(screen.queryByText('Черновик')).toBeNull();
@@ -109,7 +109,7 @@ describe('DemoAosrWorkspacePage', () => {
   it('shows document context in the header without object-wide counters', () => {
     renderDemoWorkspace();
 
-    expect(screen.getByLabelText('Текущий документ: АОСР-001')).toBeTruthy();
+    expect(screen.getByLabelText('Текущий документ: ОВ-1')).toBeTruthy();
     expect(screen.queryByLabelText('Сводка рабочей области')).toBeNull();
     expect(screen.queryByLabelText('Акты: 2')).toBeNull();
     expect(screen.queryByLabelText('Организации объекта: 3')).toBeNull();
@@ -137,7 +137,7 @@ describe('DemoAosrWorkspacePage', () => {
     const preview = within(drawer).getByLabelText('Демо-предпросмотр печатной формы АОСР');
     const drawerContext = within(drawer).getByLabelText('Контекст предпросмотра документа');
 
-    expect(drawerContext.textContent).toContain('Акт АОСР-001');
+    expect(drawerContext.textContent).toContain('Акт ОВ-1');
     expect(drawerContext.textContent).toContain('"04" сентября 2026 г.');
     expect(drawerContext.textContent).toContain('4 приложений');
     expect(within(preview).getByText('Страница 1')).toBeTruthy();
@@ -854,11 +854,11 @@ describe('DemoAosrWorkspacePage', () => {
 
     renderDemoWorkspace({ initialDocumentPreviewOpen: true });
 
-    await user.clear(screen.getByDisplayValue('АОСР-001'));
-    await user.type(screen.getByLabelText('Номер акта'), 'АОСР-010');
+    await user.clear(screen.getByDisplayValue('ОВ-1'));
+    await user.type(screen.getByLabelText('Номер акта'), 'ОВ-10');
 
-    expect(getPreviewText()).toContain('№ АОСР-010');
-    expect(screen.getByText('АОСР-002')).toBeTruthy();
+    expect(getPreviewText()).toContain('№ ОВ-10');
+    expect(screen.getByText('ОВ-2')).toBeTruthy();
   });
 
   it('updates editable act data without mutating the source mock draft', () => {
