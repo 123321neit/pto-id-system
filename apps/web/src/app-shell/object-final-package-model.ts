@@ -4,6 +4,7 @@ import { getCertificateMaterialNames, type DemoCertificate } from '../demo-store
 import {
   demoObjectPeriods,
   getDemoObjectPeriodDrafts,
+  type DemoObjectPeriod,
   type DemoObjectPeriods,
 } from './object-periods.js';
 
@@ -77,7 +78,10 @@ export interface FinalPackageModel {
 const aosrActType = getDemoActTypeById('aosr');
 
 export const finalIdPackageDescription =
-  'Итоговая ИД собирается из всех периодов, документов объекта и сертификатов, использованных в документах, без дублей.';
+  'Итоговая ИД — генерируемое представление по текущему состоянию объекта: она собирает все периоды, документы объекта и использованные сертификаты без дублей.';
+
+export const periodicIdPackageDescription =
+  'Периодическая ИД — генерируемое представление по текущему состоянию выбранного периода. Если документы меняются, повторное формирование покажет обновленный состав.';
 
 export function buildIdPackageOverviewModel(
   drafts: readonly DemoAosrDraft[],
@@ -104,13 +108,54 @@ export function buildIdPackageOverviewModel(
 
       return {
         id: `periodic-id-${period.id}`,
-        note: 'frontend mock only: период задан вручную, без реальной месячной архивации.',
+        note: 'Генерируемое представление: пересобирается из текущих документов периода, без закрытия периода и без архива.',
         periodName: period.name,
         summary: buildIdPackageCompositionSummary(packageDrafts, objectDocuments, certificates),
-        title: period.packageTitle,
+        title: period.periodicIdTitle,
         type: 'periodic',
       };
     }),
+  };
+}
+
+export function buildPeriodicPackageModel(
+  period: DemoObjectPeriod,
+  drafts: readonly DemoAosrDraft[],
+  objectDocuments: readonly DemoObjectDocument[],
+  certificates: readonly DemoCertificate[],
+): FinalPackageModel {
+  const periodDrafts = getDemoObjectPeriodDrafts(period, drafts);
+  const packageModel = buildFinalPackageModel(periodDrafts, objectDocuments, certificates);
+  const [, actsGroup, certificatesGroup, objectDocumentsGroup] = packageModel.groups;
+
+  if (
+    actsGroup === undefined ||
+    certificatesGroup === undefined ||
+    objectDocumentsGroup === undefined
+  ) {
+    throw new Error('Final package model must contain acts, certificates and object documents.');
+  }
+
+  return {
+    ...packageModel,
+    groups: [
+      {
+        id: 'registry',
+        items: [
+          {
+            date: 'Демо',
+            id: `periodic-registry-${period.id}`,
+            meta: 'Производный реестр выбранного периода',
+            number: 'Реестр периода',
+            title: period.registryTitle,
+          },
+        ],
+        title: 'Реестр периода',
+      },
+      { ...actsGroup, title: 'Документы периода' },
+      certificatesGroup,
+      objectDocumentsGroup,
+    ],
   };
 }
 
@@ -148,7 +193,7 @@ export function buildFinalPackageModel(
     {
       date: 'Демо',
       id: 'final-registry',
-      meta: 'Производный реестр итогового комплекта',
+      meta: 'Производный реестр итоговой ИД',
       number: 'Реестр ИД',
       title: 'Итоговый реестр исполнительной документации',
     },

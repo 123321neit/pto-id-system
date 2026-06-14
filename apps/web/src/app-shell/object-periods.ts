@@ -6,7 +6,7 @@ export interface DemoObjectPeriod {
   readonly draftIds: readonly string[];
   readonly id: DemoObjectPeriodId;
   readonly name: string;
-  readonly packageTitle: string;
+  readonly periodicIdTitle: string;
   readonly registryTitle: string;
 }
 
@@ -16,7 +16,7 @@ export const defaultDemoObjectPeriod: DemoObjectPeriod = {
   draftIds: ['aosr-draft-001'],
   id: 'period-2026-09',
   name: 'Сентябрь 2026',
-  packageTitle: 'Комплект периода за Сентябрь 2026',
+  periodicIdTitle: 'Периодическая ИД за Сентябрь 2026',
   registryTitle: 'Реестр периода за Сентябрь 2026',
 };
 
@@ -26,7 +26,7 @@ export const demoObjectPeriods: readonly DemoObjectPeriod[] = [
     draftIds: ['aosr-draft-002'],
     id: 'period-2026-10',
     name: 'Октябрь 2026',
-    packageTitle: 'Комплект периода за Октябрь 2026',
+    periodicIdTitle: 'Периодическая ИД за Октябрь 2026',
     registryTitle: 'Реестр периода за Октябрь 2026',
   },
 ];

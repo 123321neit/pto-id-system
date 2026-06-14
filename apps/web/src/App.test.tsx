@@ -8,7 +8,9 @@ import {
   buildFinalPackageModel,
   buildFinalPackageReadiness,
   buildIdPackageOverviewModel,
+  buildPeriodicPackageModel,
 } from './app-shell/object-final-package-model.js';
+import { demoObjectPeriods } from './app-shell/object-periods.js';
 import { demoAosrWorkspace, type DemoAosrDraft } from './aosr-demo/demo-aosr-workspace.js';
 import { initialDemoCertificates, initialDemoObjectDocuments } from './demo-store/demo-store.js';
 
@@ -103,7 +105,7 @@ describe('App shell mock navigation', () => {
     await user.clear(documentNumberInput);
     await user.type(documentNumberInput, '12-3-ОВ');
 
-    await user.click(within(selector).getByRole('button', { name: 'Создать документ' }));
+    await user.click(within(selector).getByRole('button', { name: 'Создать АОСР' }));
 
     expect(screen.getAllByText(/Периоды \/ АОСР/u).length).toBeGreaterThan(0);
     expect(screen.getByRole('heading', { name: 'Документы периода' })).toBeTruthy();
@@ -146,7 +148,7 @@ describe('App shell mock navigation', () => {
 
     await user.clear(documentNumberInput);
     expect(documentNumberInput.value).toBe('');
-    await user.click(within(selector).getByRole('button', { name: 'Создать документ' }));
+    await user.click(within(selector).getByRole('button', { name: 'Создать АОСР' }));
 
     expect(screen.getAllByText(/Периоды \/ АОСР/u).length).toBeGreaterThan(0);
     expect(screen.getByRole('heading', { name: 'Документы периода' })).toBeTruthy();
@@ -240,9 +242,9 @@ describe('App shell mock navigation', () => {
 
     await user.click(within(objectNavigation).getByRole('button', { name: 'Сентябрь 2026' }));
     expect(screen.getByRole('heading', { name: 'Сентябрь 2026' })).toBeTruthy();
-    expect(screen.getByRole('heading', { name: 'Документы периода' })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: 'Документы' })).toBeTruthy();
     expect(screen.getByRole('heading', { name: 'Реестр периода за Сентябрь 2026' })).toBeTruthy();
-    expect(screen.getByRole('heading', { name: 'Комплект периода за Сентябрь 2026' })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: 'Периодическая ИД за Сентябрь 2026' })).toBeTruthy();
 
     await user.click(
       within(objectNavigation).getByRole('button', { name: 'Открыть итоговый комплект ИД' }),
@@ -250,12 +252,12 @@ describe('App shell mock navigation', () => {
     expect(screen.getByRole('heading', { name: 'Итоговая ИД по объекту' })).toBeTruthy();
     expect(
       screen.getByText(
-        'Итоговая ИД собирается из всех периодов, документов объекта и сертификатов, использованных в документах, без дублей.',
+        'Итоговая ИД — генерируемое представление по текущему состоянию объекта: она собирает все периоды, документы объекта и использованные сертификаты без дублей.',
       ),
     ).toBeTruthy();
   });
 
-  it('opens a period with documents and registry/package placeholders', async () => {
+  it('opens a period as a working folder with documents, registry and periodic ID', async () => {
     const user = userEvent.setup();
 
     render(<App />);
@@ -267,12 +269,70 @@ describe('App shell mock navigation', () => {
     expect(screen.getByRole('heading', { name: 'Октябрь 2026' })).toBeTruthy();
     expect(screen.getByText('ОВ-2')).toBeTruthy();
     expect(screen.getByRole('heading', { name: 'Реестр периода за Октябрь 2026' })).toBeTruthy();
-    expect(screen.getByRole('heading', { name: 'Комплект периода за Октябрь 2026' })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: 'Периодическая ИД за Октябрь 2026' })).toBeTruthy();
 
     await user.click(screen.getByRole('button', { name: /ОВ-2/u }));
 
     expect(screen.getByRole('heading', { name: 'Документы периода' })).toBeTruthy();
     expect(screen.getByLabelText('Текущий документ: ОВ-2')).toBeTruthy();
+  });
+
+  it('opens a frontend-only periodic ID page derived from the selected period', async () => {
+    const user = userEvent.setup();
+
+    render(<App />);
+    await user.click(getFirstOpenObjectButton());
+
+    const objectNavigation = screen.getByRole('navigation', { name: 'Разделы объекта' });
+    await user.click(within(objectNavigation).getByRole('button', { name: 'Октябрь 2026' }));
+    await user.click(screen.getByRole('button', { name: 'Сформировать периодическую ИД' }));
+
+    const periodicPackagePage = screen.getByRole('region', {
+      name: 'Периодическая ИД за Октябрь 2026',
+    });
+
+    expect(
+      within(periodicPackagePage).getByRole('heading', {
+        name: 'Периодическая ИД за Октябрь 2026',
+      }),
+    ).toBeTruthy();
+    expect(
+      within(periodicPackagePage).getByText(
+        'Периодическая ИД — генерируемое представление по текущему состоянию выбранного периода. Если документы меняются, повторное формирование покажет обновленный состав.',
+      ),
+    ).toBeTruthy();
+    expect(
+      within(periodicPackagePage).getByRole('heading', {
+        name: 'Документы периода → Периодическая ИД',
+      }),
+    ).toBeTruthy();
+
+    const summary = within(periodicPackagePage).getByLabelText('Сводка периодической ИД');
+    expect(within(summary).getByLabelText('Документы периода: 1')).toBeTruthy();
+    expect(within(summary).getByLabelText('Сертификаты без дублей: 1')).toBeTruthy();
+    expect(within(summary).getByLabelText('Документы / чертежи без дублей: 1')).toBeTruthy();
+    expect(within(summary).getByLabelText('Всего позиций: 4')).toBeTruthy();
+
+    expect(
+      within(periodicPackagePage).getByRole('heading', { name: 'Реестр периода' }),
+    ).toBeTruthy();
+    expect(
+      within(periodicPackagePage).getByRole('heading', { name: 'Документы периода' }),
+    ).toBeTruthy();
+    expect(within(periodicPackagePage).getByText('ОВ-2')).toBeTruthy();
+    expect(within(periodicPackagePage).queryByText('ОВ-1')).toBeNull();
+    expect(
+      within(periodicPackagePage).getByText(
+        'Повторное формирование всегда берет текущие документы периода. В этом frontend-моке нет backend-логики, генерации ZIP, сохранения пакета, закрытия периода или архивных записей.',
+      ),
+    ).toBeTruthy();
+    expect(
+      within(periodicPackagePage)
+        .getByRole('button', {
+          name: 'Сформировать периодическую ИД',
+        })
+        .hasAttribute('disabled'),
+    ).toBe(true);
   });
 
   it('creates an AOSR draft inside the selected period and shows it in that period tree', async () => {
@@ -291,7 +351,7 @@ describe('App shell mock navigation', () => {
     expect(selector.textContent).toContain('Предлагаемый номер: ОВ-3');
     expect(within(selector).getByLabelText<HTMLInputElement>('Номер документа').value).toBe('ОВ-3');
 
-    await user.click(within(selector).getByRole('button', { name: 'Создать документ' }));
+    await user.click(within(selector).getByRole('button', { name: 'Создать АОСР' }));
 
     expect(screen.getByLabelText('Текущий документ: ОВ-3')).toBeTruthy();
     expect(screen.getAllByText('Октябрь 2026').length).toBeGreaterThan(0);
@@ -320,7 +380,7 @@ describe('App shell mock navigation', () => {
     ).toBeTruthy();
     expect(
       within(finalPackagePage).getByText(
-        'Итоговая ИД собирается из всех периодов, документов объекта и сертификатов, использованных в документах, без дублей.',
+        'Итоговая ИД — генерируемое представление по текущему состоянию объекта: она собирает все периоды, документы объекта и использованные сертификаты без дублей.',
       ),
     ).toBeTruthy();
     expect(
@@ -392,6 +452,7 @@ describe('App shell mock navigation', () => {
     expect(packageOverview.periodicPackages).toHaveLength(2);
     expect(packageOverview.periodicPackages[0]?.type).toBe('periodic');
     expect(packageOverview.periodicPackages[0]?.periodName).toBe('Сентябрь 2026');
+    expect(packageOverview.periodicPackages[0]?.title).toBe('Периодическая ИД за Сентябрь 2026');
     expect(packageOverview.periodicPackages[0]?.summary).toEqual({
       acts: 1,
       objectDocuments: 2,
@@ -412,6 +473,34 @@ describe('App shell mock navigation', () => {
       objectDocuments: 3,
       usedCertificates: 3,
     });
+
+    const octoberPeriod = demoObjectPeriods[1];
+
+    if (octoberPeriod === undefined) {
+      throw new Error('Для демо нужен октябрьский период.');
+    }
+
+    const periodicPackage = buildPeriodicPackageModel(
+      octoberPeriod,
+      demoAosrWorkspace.drafts,
+      initialDemoObjectDocuments,
+      initialDemoCertificates,
+    );
+
+    expect(periodicPackage.summary).toEqual({
+      acts: 1,
+      certificates: 1,
+      objectDocuments: 1,
+      total: 4,
+    });
+    expect(periodicPackage.groups.find((group) => group.id === 'registry')?.title).toBe(
+      'Реестр периода',
+    );
+    expect(periodicPackage.groups.find((group) => group.id === 'acts')?.items).toEqual([
+      expect.objectContaining({
+        number: 'ОВ-2',
+      }),
+    ]);
   });
 
   it('does not repeat duplicate certificates or object documents in the final package model', () => {
@@ -483,11 +572,11 @@ describe('App shell mock navigation', () => {
     render(<App />);
     await openObjectFinalPackagePage(user);
 
-    const downloadButton = screen.getByRole('button', { name: 'Скачать итоговую ИД' });
+    const downloadButton = screen.getByRole('button', { name: 'Сформировать итоговую ИД' });
     expect((downloadButton as HTMLButtonElement).disabled).toBe(true);
     expect(
       screen.getByText(
-        'В демо режиме скачивание не выполняется. Позже здесь будет сборка PDF/DOCX/ZIP комплекта.',
+        'В демо режиме это только просмотр генерируемого представления. Реальная генерация PDF/DOCX/ZIP и историческое хранение ZIP находятся вне текущего frontend-мока.',
       ),
     ).toBeTruthy();
   });
@@ -597,7 +686,7 @@ describe('App shell mock navigation', () => {
 
     await user.click(within(objectNavigation).getByRole('button', { name: 'Сентябрь 2026' }));
     expect(screen.getByRole('heading', { name: 'Реестр периода за Сентябрь 2026' })).toBeTruthy();
-    expect(screen.getByRole('heading', { name: 'Комплект периода за Сентябрь 2026' })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: 'Периодическая ИД за Сентябрь 2026' })).toBeTruthy();
     await user.click(screen.getByRole('button', { name: /ОВ-1/u }));
 
     expect(screen.getByRole('heading', { name: 'Документы периода' })).toBeTruthy();

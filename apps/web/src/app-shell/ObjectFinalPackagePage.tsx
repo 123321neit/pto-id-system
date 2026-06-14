@@ -5,11 +5,17 @@ import { useDemoStore } from '../demo-store/demo-store.js';
 import {
   buildFinalPackageModel,
   buildIdPackageOverviewModel,
+  buildPeriodicPackageModel,
   finalIdPackageDescription,
+  periodicIdPackageDescription,
   type FinalPackageGroup,
   type PeriodicIdPackageModel,
 } from './object-final-package-model.js';
-import { demoObjectPeriods, type DemoObjectPeriods } from './object-periods.js';
+import {
+  demoObjectPeriods,
+  type DemoObjectPeriod,
+  type DemoObjectPeriods,
+} from './object-periods.js';
 
 interface ObjectFinalPackagePageProps {
   readonly drafts?: readonly DemoAosrDraft[];
@@ -37,7 +43,7 @@ export function ObjectFinalPackagePage({
     >
       <header className="object-documents-hero object-final-package-hero">
         <div>
-          <p className="section-kicker">Итоговый комплект</p>
+          <p className="section-kicker">Генерируемое представление</p>
           <h2 id="object-final-package-title">{packageOverview.finalPackage.title}</h2>
           <p>{finalIdPackageDescription}</p>
         </div>
@@ -97,14 +103,110 @@ export function ObjectFinalPackagePage({
       <section className="object-documents-panel final-package-download" aria-label="Скачивание">
         <div>
           <p className="section-kicker">Демо действие</p>
-          <h3>Сборка комплекта</h3>
+          <h3>Сформировать итоговую ИД</h3>
           <p>
-            В демо режиме скачивание не выполняется. Позже здесь будет сборка PDF/DOCX/ZIP
-            комплекта.
+            В демо режиме это только просмотр генерируемого представления. Реальная генерация
+            PDF/DOCX/ZIP и историческое хранение ZIP находятся вне текущего frontend-мока.
           </p>
         </div>
         <button className="action-button action-button--primary" disabled type="button">
-          Скачать итоговую ИД
+          Сформировать итоговую ИД
+        </button>
+      </section>
+    </section>
+  );
+}
+
+interface ObjectPeriodicPackagePageProps {
+  readonly drafts?: readonly DemoAosrDraft[];
+  readonly period: DemoObjectPeriod;
+}
+
+export function ObjectPeriodicPackagePage({
+  drafts = demoAosrWorkspace.drafts,
+  period,
+}: ObjectPeriodicPackagePageProps): React.JSX.Element {
+  const { certificates, objectDocuments } = useDemoStore();
+  const periodicPackage = useMemo(
+    () => buildPeriodicPackageModel(period, drafts, objectDocuments, certificates),
+    [certificates, drafts, objectDocuments, period],
+  );
+
+  return (
+    <section
+      className="object-documents-workspace object-final-package-workspace"
+      aria-labelledby="object-periodic-package-title"
+    >
+      <header className="object-documents-hero object-final-package-hero">
+        <div>
+          <p className="section-kicker">Генерируемое представление</p>
+          <h2 id="object-periodic-package-title">{period.periodicIdTitle}</h2>
+          <p>{periodicIdPackageDescription}</p>
+        </div>
+      </header>
+
+      <PeriodicPackageFlowExplanation periodName={period.name} />
+
+      <dl className="object-documents-summary" aria-label="Сводка периодической ИД">
+        <SummaryItem label="Документы периода" value={periodicPackage.summary.acts} />
+        <SummaryItem label="Сертификаты без дублей" value={periodicPackage.summary.certificates} />
+        <SummaryItem
+          label="Документы / чертежи без дублей"
+          value={periodicPackage.summary.objectDocuments}
+        />
+        <SummaryItem label="Всего позиций" value={periodicPackage.summary.total} />
+      </dl>
+
+      <section
+        className={`readiness-card readiness-card--${periodicPackage.readiness.status}`}
+        aria-labelledby="periodic-package-readiness-title"
+      >
+        <div className="readiness-card__header">
+          <div>
+            <p className="section-kicker">Диагностика</p>
+            <h3 id="periodic-package-readiness-title">Проверка периодической ИД</h3>
+          </div>
+          <strong className="readiness-card__status">
+            {periodicPackage.readiness.statusLabel}
+          </strong>
+        </div>
+
+        <p className="readiness-card__helper">
+          Проверка смотрит только текущий состав документов периода. Она не закрывает период и не
+          создает архив.
+        </p>
+
+        {periodicPackage.readiness.issues.length > 0 ? (
+          <div className="readiness-card__issues">
+            <p>Пустые разделы:</p>
+            <ul>
+              {periodicPackage.readiness.issues.map((issue) => (
+                <li key={issue}>{issue}</li>
+              ))}
+            </ul>
+          </div>
+        ) : (
+          <p className="readiness-card__empty">Пробелов по демо-проверкам нет.</p>
+        )}
+      </section>
+
+      <div className="final-package-groups">
+        {periodicPackage.groups.map((group) => (
+          <FinalPackageGroupSection group={group} key={group.id} />
+        ))}
+      </div>
+
+      <section className="object-documents-panel final-package-download" aria-label="Формирование">
+        <div>
+          <p className="section-kicker">Демо действие</p>
+          <h3>Сформировать периодическую ИД</h3>
+          <p>
+            Повторное формирование всегда берет текущие документы периода. В этом frontend-моке нет
+            backend-логики, генерации ZIP, сохранения пакета, закрытия периода или архивных записей.
+          </p>
+        </div>
+        <button className="action-button action-button--primary" disabled type="button">
+          Сформировать периодическую ИД
         </button>
       </section>
     </section>
@@ -118,8 +220,8 @@ function FinalPackageFlowExplanation(): React.JSX.Element {
         <p className="section-kicker">Логика комплекта</p>
         <h3 id="final-package-flow-title">Периодическая ИД → Итоговая ИД</h3>
         <p>
-          Периодические комплекты готовятся за отдельные периоды работ, а итоговая ИД собирает
-          документацию по объекту целиком.
+          Периодическая и итоговая ИД не хранятся как бизнес-сущности. Это генерируемые
+          представления, которые каждый раз собираются из текущих документов.
         </p>
       </div>
 
@@ -139,6 +241,43 @@ function FinalPackageFlowExplanation(): React.JSX.Element {
   );
 }
 
+interface PeriodicPackageFlowExplanationProps {
+  readonly periodName: string;
+}
+
+function PeriodicPackageFlowExplanation({
+  periodName,
+}: PeriodicPackageFlowExplanationProps): React.JSX.Element {
+  return (
+    <section className="id-package-flow" aria-labelledby="periodic-package-flow-title">
+      <div>
+        <p className="section-kicker">Логика представления</p>
+        <h3 id="periodic-package-flow-title">Документы периода → Периодическая ИД</h3>
+        <p>
+          {periodName} остается рабочей папкой. Периодическая ИД формируется из ее текущих
+          документов, реестра периода и связанных приложений.
+        </p>
+      </div>
+
+      <div
+        className="id-package-flow__track"
+        aria-label="Документы периода формируют периодическую ИД"
+      >
+        <span>Документы периода</span>
+        <strong aria-hidden="true">→</strong>
+        <span>Периодическая ИД</span>
+      </div>
+
+      <ul className="id-package-flow__list">
+        <li>документы выбранного периода;</li>
+        <li>производный реестр периода;</li>
+        <li>использованные сертификаты без дублей;</li>
+        <li>использованные документы объекта без дублей.</li>
+      </ul>
+    </section>
+  );
+}
+
 interface PeriodicPackageOverviewProps {
   readonly packages: readonly PeriodicIdPackageModel[];
 }
@@ -151,7 +290,7 @@ function PeriodicPackageOverview({ packages }: PeriodicPackageOverviewProps): Re
           <p className="section-kicker">Периоды</p>
           <h3 id="periodic-package-title">Периодическая ИД</h3>
         </div>
-        <p>Первые mock-периоды для будущей структуры комплектов.</p>
+        <p>Генерируемые представления по периодам, без закрытия периода и без сохранения пакета.</p>
       </div>
 
       <div className="periodic-package-list">

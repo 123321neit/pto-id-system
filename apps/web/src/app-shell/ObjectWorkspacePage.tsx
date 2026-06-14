@@ -9,7 +9,7 @@ import {
 } from '../aosr-demo/demo-aosr-workspace.js';
 import { useDemoStore, type DemoCertificate } from '../demo-store/demo-store.js';
 import { ObjectDocumentsPage } from './ObjectDocumentsPage.js';
-import { ObjectFinalPackagePage } from './ObjectFinalPackagePage.js';
+import { ObjectFinalPackagePage, ObjectPeriodicPackagePage } from './ObjectFinalPackagePage.js';
 import { RepresentativesOrganizationsPage } from './RepresentativesOrganizationsPage.js';
 import type { MockObjectCard } from './mock-dashboard.js';
 import { getProposedDemoDocumentNumber } from './object-document-numbering.js';
@@ -34,6 +34,7 @@ const aosrActType = getDemoActTypeById('aosr');
 type ObjectWorkspaceSection =
   | 'overview'
   | 'period'
+  | 'periodic-package'
   | 'aosr'
   | 'documents'
   | 'representatives'
@@ -189,7 +190,11 @@ export function ObjectWorkspacePage({
           <button
             aria-label="Периоды"
             aria-current={
-              activeSection === 'period' || activeSection === 'aosr' ? 'page' : undefined
+              activeSection === 'period' ||
+              activeSection === 'periodic-package' ||
+              activeSection === 'aosr'
+                ? 'page'
+                : undefined
             }
             onClick={() => {
               openPeriod(selectedPeriodId);
@@ -208,7 +213,9 @@ export function ObjectWorkspacePage({
             <button
               aria-label={period.name}
               aria-current={
-                (activeSection === 'period' || activeSection === 'aosr') &&
+                (activeSection === 'period' ||
+                  activeSection === 'periodic-package' ||
+                  activeSection === 'aosr') &&
                 selectedPeriodId === period.id
                   ? 'page'
                   : undefined
@@ -225,7 +232,7 @@ export function ObjectWorkspacePage({
               </span>
               <span className="object-workspace-nav__label">
                 <strong>{period.name}</strong>
-                <small>Документы / реестр / комплект</small>
+                <small>Документы / реестр / ИД</small>
               </span>
             </button>
           ))}
@@ -277,7 +284,7 @@ export function ObjectWorkspacePage({
             </span>
             <span className="object-workspace-nav__label">
               <strong>Итоговая ИД</strong>
-              <small>Все периоды</small>
+              <small>Генерируемый вид</small>
             </span>
           </button>
           <button
@@ -346,7 +353,15 @@ export function ObjectWorkspacePage({
               openAosr(selectedPeriod.id, draftId);
             }}
             onOpenCreateDocumentPanel={openCreateDocumentPanel}
+            onOpenPeriodicPackage={() => {
+              setCreateDocumentPanelOpen(false);
+              setActiveSection('periodic-package');
+            }}
           />
+        ) : null}
+
+        {activeSection === 'periodic-package' ? (
+          <ObjectPeriodicPackagePage drafts={drafts} period={selectedPeriod} />
         ) : null}
 
         {isAosrVisible ? (
@@ -441,6 +456,8 @@ function getSectionBreadcrumb(section: ObjectWorkspaceSection): string {
       return 'Обзор';
     case 'period':
       return 'Периоды';
+    case 'periodic-package':
+      return 'Периоды / Периодическая ИД';
     case 'aosr':
       return `Периоды / ${aosrActType.code}`;
     case 'settings':
@@ -515,7 +532,7 @@ function ObjectOverview({
             + Создать документ
           </button>
           <button className="action-button" onClick={onOpenFinalPackage} type="button">
-            Итоговая ИД
+            Сформировать итоговую ИД
           </button>
         </div>
       </div>
@@ -547,11 +564,6 @@ function ObjectOverview({
             <h3 id="overview-actions-title">Работа по объекту</h3>
           </div>
           <div className="object-overview__actions">
-            <button aria-label="Создать документ" onClick={onOpenCreateDocumentPanel} type="button">
-              <span aria-hidden="true">＋</span>
-              <strong>Создать документ</strong>
-              <small>АОСР в выбранном периоде</small>
-            </button>
             <button
               onClick={() => {
                 onOpenPeriod(periods[0]?.id ?? 'period-2026-09');
@@ -611,8 +623,8 @@ function ObjectOverview({
                     <strong>скоро</strong>
                   </span>
                   <span className="object-overview__folder-meta">
-                    <small>Пакет</small>
-                    <strong>скоро</strong>
+                    <small>ИД</small>
+                    <strong>вид</strong>
                   </span>
                 </button>
               </li>
@@ -724,7 +736,7 @@ function CreateDocumentPanel({
               onClick={onCreateAosr}
               type="button"
             >
-              Создать документ
+              Создать АОСР
             </button>
           </li>
         ))}
@@ -771,6 +783,7 @@ interface ObjectPeriodPageProps {
   readonly onCreateAosr: () => void;
   readonly onOpenAosr: (draftId: string) => void;
   readonly onOpenCreateDocumentPanel: () => void;
+  readonly onOpenPeriodicPackage: () => void;
 }
 
 function ObjectPeriodPage({
@@ -784,6 +797,7 @@ function ObjectPeriodPage({
   onCreateAosr,
   onOpenAosr,
   onOpenCreateDocumentPanel,
+  onOpenPeriodicPackage,
 }: ObjectPeriodPageProps): React.JSX.Element {
   return (
     <section className="object-period-workspace" aria-labelledby="object-period-title">
@@ -795,7 +809,7 @@ function ObjectPeriodPage({
           <div>
             <p className="section-kicker">Рабочая папка периода</p>
             <h2 id="object-period-title">{period.name}</h2>
-            <p>Документы, реестр периода и будущая сборка пакета в одном рабочем контуре.</p>
+            <p>Документы, реестр периода и генерируемая ИД в одном рабочем контуре.</p>
           </div>
         </div>
         <button
@@ -824,8 +838,8 @@ function ObjectPeriodPage({
           aria-labelledby="period-documents-title"
         >
           <div className="object-overview__panel-heading">
-            <p className="section-kicker">Документы</p>
-            <h3 id="period-documents-title">Документы периода</h3>
+            <p className="section-kicker">Рабочий блок</p>
+            <h3 id="period-documents-title">Документы</h3>
           </div>
           <ul className="object-overview__recent-list object-overview__recent-list--wide">
             {drafts.map((draft, index) => (
@@ -865,7 +879,10 @@ function ObjectPeriodPage({
             <div>
               <p className="section-kicker">Реестр периода</p>
               <h3 id="period-registry-title">{period.registryTitle}</h3>
-              <p>Будущий периодический реестр документов. Сейчас это frontend placeholder.</p>
+              <p>
+                Производный реестр документов выбранного периода. Пока это frontend placeholder без
+                сохранения и без редактирования.
+              </p>
             </div>
           </section>
 
@@ -877,9 +894,19 @@ function ObjectPeriodPage({
               ◫
             </span>
             <div>
-              <p className="section-kicker">Комплект периода</p>
-              <h3 id="period-package-title">{period.packageTitle}</h3>
-              <p>Будущая сборка пакета периода. Итоговая ИД агрегирует все периоды объекта.</p>
+              <p className="section-kicker">Периодическая ИД</p>
+              <h3 id="period-package-title">{period.periodicIdTitle}</h3>
+              <p>
+                Генерируемое представление по текущим документам периода. Повторное формирование
+                покажет обновленный состав без закрытия периода и без архива.
+              </p>
+              <button
+                className="compact-toggle compact-toggle--accent"
+                onClick={onOpenPeriodicPackage}
+                type="button"
+              >
+                Сформировать периодическую ИД
+              </button>
             </div>
           </section>
         </div>
@@ -899,7 +926,7 @@ function OverviewPackageSection({
     <section className="object-overview__package-section" aria-labelledby="overview-package-title">
       <div className="object-overview__package-heading">
         <div>
-          <p className="section-kicker">Комплекты ИД</p>
+          <p className="section-kicker">Генерируемые представления</p>
           <h3 id="overview-package-title">Периодическая ИД и итоговая ИД</h3>
         </div>
         <div className="id-package-flow__track id-package-flow__track--compact">
@@ -931,7 +958,7 @@ function OverviewPackageSection({
             <li>все документы из периодов;</li>
             <li>сертификаты из документов без дублей;</li>
             <li>чертежи и документы объекта без дублей;</li>
-            <li>итоговый реестр.</li>
+            <li>производный итоговый реестр.</li>
           </ul>
         </section>
       </div>
