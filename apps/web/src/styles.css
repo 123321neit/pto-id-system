@@ -443,6 +443,7 @@ button {
 
 .object-overview__intro,
 .object-overview__create-panel,
+.object-overview__focus,
 .object-overview__package-section,
 .object-overview__panel {
   border: 1px solid #d8e3ee;
@@ -670,6 +671,40 @@ button {
   grid-template-columns: minmax(0, 0.95fr) minmax(340px, 0.7fr);
   gap: 16px;
   align-items: start;
+}
+
+.object-overview__focus {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 16px;
+  align-items: center;
+  padding: 17px 18px;
+}
+
+.object-overview__focus-main {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+}
+
+.object-overview__focus-main h3 {
+  color: #172033;
+  font-size: 1.08rem;
+  line-height: 1.28;
+}
+
+.object-overview__focus-main p:not(.section-kicker) {
+  margin: 0;
+  color: #516064;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.object-overview__focus-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
 }
 
 .object-overview__package-section {
@@ -1305,6 +1340,12 @@ button {
   grid-template-columns: minmax(260px, 0.72fr) minmax(300px, 0.9fr) minmax(260px, 1fr);
   align-items: center;
   border-left: 3px solid #0f766e;
+}
+
+.id-package-flow--compact {
+  grid-template-columns: 1fr;
+  gap: 8px;
+  padding: 14px 16px;
 }
 
 .id-package-flow > div:first-child {
@@ -2903,12 +2944,32 @@ h3 {
   align-items: start;
 }
 
+.readiness-card__summary {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: start;
+  cursor: pointer;
+  list-style: none;
+}
+
+.readiness-card__summary::-webkit-details-marker {
+  display: none;
+}
+
 .readiness-card__header > div {
   display: grid;
   gap: 4px;
 }
 
-.readiness-card__header h3 {
+.readiness-card__summary > span {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.readiness-card__header h3,
+.readiness-card__summary h3 {
   color: #172033;
   font-size: 1rem;
   font-weight: 850;
@@ -2947,6 +3008,19 @@ h3 {
   font-size: 0.82rem;
   font-weight: 700;
   line-height: 1.45;
+}
+
+.readiness-card__content {
+  display: grid;
+  gap: 12px;
+}
+
+.readiness-card--compact {
+  padding: 12px 14px;
+}
+
+.readiness-card--compact[open] {
+  gap: 12px;
 }
 
 .readiness-card__issues {
@@ -3179,7 +3253,7 @@ h3 {
 .object-settings-dialog {
   display: grid;
   gap: 16px;
-  width: min(100%, 880px);
+  width: min(100%, 960px);
   max-height: min(880px, calc(100vh - 48px));
   overflow: auto;
   border: 1px solid #cbd7df;
@@ -3220,6 +3294,52 @@ h3 {
   gap: 14px;
   background: #fbfdff;
   box-shadow: none;
+}
+
+.object-settings-layout {
+  display: grid;
+  grid-template-columns: minmax(180px, 0.28fr) minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+
+.object-settings-menu {
+  display: grid;
+  gap: 8px;
+  align-content: start;
+}
+
+.object-settings-menu button {
+  display: grid;
+  gap: 4px;
+  width: 100%;
+  border: 1px solid #d6e1ec;
+  border-radius: 8px;
+  background: #ffffff;
+  padding: 11px 12px;
+  color: #172033;
+  text-align: left;
+}
+
+.object-settings-menu button[aria-current='page'] {
+  border-color: #8cc7bd;
+  background: #f0fdfa;
+}
+
+.object-settings-menu strong {
+  font-size: 0.88rem;
+  line-height: 1.25;
+}
+
+.object-settings-menu small {
+  color: #667583;
+  font-size: 0.74rem;
+  font-weight: 720;
+  line-height: 1.35;
+}
+
+.object-settings-panel {
+  min-width: 0;
 }
 
 .compact-card-list {
@@ -4285,10 +4405,12 @@ h3 {
   }
 
   .object-overview__package-heading,
+  .object-overview__focus,
   .object-overview__grid,
   .object-overview__package-grid,
   .object-overview__create-panel,
-  .periodic-package-overview__heading {
+  .periodic-package-overview__heading,
+  .object-settings-layout {
     grid-template-columns: 1fr;
   }
 
@@ -4473,6 +4595,7 @@ h3 {
 
   .scope-heading--with-action,
   .readiness-card__header,
+  .readiness-card__summary,
   .compact-card-list__item,
   .inline-form,
   .inline-form--representative,

@@ -49,13 +49,20 @@ describe('DemoAosrWorkspacePage', () => {
     expect(screen.queryByText('Выпущен')).toBeNull();
   });
 
-  it('renders readiness panel with a ready act state', () => {
+  it('renders a compact readiness panel with a ready act state', async () => {
+    const user = userEvent.setup();
+
     renderDemoWorkspace();
 
     const readinessPanel = screen.getByRole('region', { name: 'Подсказки по акту' });
 
+    expect((readinessPanel as HTMLDetailsElement).open).toBe(false);
     expect(within(readinessPanel).getByRole('heading', { name: 'Подсказки по акту' })).toBeTruthy();
     expect(within(readinessPanel).getByText('🟢 Поля заполнены')).toBeTruthy();
+
+    await user.click(within(readinessPanel).getByRole('heading', { name: 'Подсказки по акту' }));
+
+    expect((readinessPanel as HTMLDetailsElement).open).toBe(true);
     expect(
       within(readinessPanel).getByText(
         'Это не блокировка: пустые поля останутся строками в печатной форме и их можно будет заполнить от руки.',
@@ -99,6 +106,9 @@ describe('DemoAosrWorkspacePage', () => {
     const readinessPanel = screen.getByRole('region', { name: 'Подсказки по акту' });
 
     expect(within(readinessPanel).getByText('🟡 Есть пустые разделы')).toBeTruthy();
+
+    await user.click(within(readinessPanel).getByRole('heading', { name: 'Подсказки по акту' }));
+
     expect(within(readinessPanel).getByText('Пустые разделы:')).toBeTruthy();
     expect(within(readinessPanel).getByText('Нет подписантов')).toBeTruthy();
     expect(within(readinessPanel).getByText('Не выбраны материалы')).toBeTruthy();
@@ -200,6 +210,8 @@ describe('DemoAosrWorkspacePage', () => {
 
     const dialog = screen.getByRole('dialog', { name: 'Настройки объекта' });
 
+    await user.click(within(dialog).getByRole('button', { name: /Тексты акта/u }));
+
     expect(
       within(dialog).getByRole('heading', {
         name: 'Пункт 6. Соответствие требованиям',
@@ -212,7 +224,6 @@ describe('DemoAosrWorkspacePage', () => {
         ),
       ),
     ).toBe(demoAosrWorkspace.objectDefaults.defaultComplianceStatement);
-    expect(within(dialog).getByText(/пункте 6 текущего акта/u)).toBeTruthy();
   });
 
   it('uses object compliance value by default in the act and preview', () => {
@@ -291,6 +302,8 @@ describe('DemoAosrWorkspacePage', () => {
     await openObjectSettings(user);
 
     const dialog = screen.getByRole('dialog', { name: 'Настройки объекта' });
+    await user.click(within(dialog).getByRole('button', { name: /Тексты акта/u }));
+
     expect(
       getTextAreaValue(
         within(dialog).getByLabelText(
@@ -460,6 +473,7 @@ describe('DemoAosrWorkspacePage', () => {
     expect(getPreviewText()).toContain(demoAosrWorkspace.objectDefaults.defaultUnderTitleText);
 
     await openObjectSettings(user);
+    await user.click(screen.getByRole('button', { name: /Шапка акта/u }));
 
     const underTitleField = screen.getByLabelText('Текст под заголовком акта');
     await user.clear(underTitleField);
@@ -603,6 +617,7 @@ describe('DemoAosrWorkspacePage', () => {
     renderDemoWorkspace({ initialDocumentPreviewOpen: true });
 
     await openObjectSettings(user);
+    await user.click(screen.getByRole('button', { name: /Шапка акта/u }));
     await user.click(screen.getByRole('button', { name: 'Добавить блок шапки' }));
     await user.type(
       screen.getByLabelText('Найти организацию в глобальной библиотеке'),
@@ -641,6 +656,7 @@ describe('DemoAosrWorkspacePage', () => {
     renderDemoWorkspace();
 
     await openObjectSettings(user);
+    await user.click(screen.getByRole('button', { name: /Представители/u }));
     await user.click(screen.getByRole('button', { name: 'Добавить представителя' }));
     await user.type(
       screen.getByLabelText('Найти представителя в глобальной библиотеке'),
@@ -712,6 +728,7 @@ describe('DemoAosrWorkspacePage', () => {
     expect(getPreviewText()).toContain('Сидоров С.С.');
 
     await openObjectSettings(user);
+    await user.click(screen.getByRole('button', { name: /Представители/u }));
     await user.click(screen.getByRole('button', { name: 'Показать назначения' }));
 
     const objectLibrary = screen.getByRole('list', { name: 'Назначения представителей объекта' });

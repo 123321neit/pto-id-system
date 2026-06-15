@@ -7,18 +7,11 @@ import {
   demoAosrWorkspace,
   type DemoAosrDraft,
 } from '../aosr-demo/demo-aosr-workspace.js';
-import { useDemoStore, type DemoCertificate } from '../demo-store/demo-store.js';
 import { DerivedRegistryTable } from './DerivedRegistryTable.js';
 import { ObjectDocumentsPage } from './ObjectDocumentsPage.js';
 import { ObjectFinalPackagePage, ObjectPeriodicPackagePage } from './ObjectFinalPackagePage.js';
-import { RepresentativesOrganizationsPage } from './RepresentativesOrganizationsPage.js';
 import type { MockObjectCard } from './mock-dashboard.js';
 import { getProposedDemoDocumentNumber } from './object-document-numbering.js';
-import {
-  buildIdPackageOverviewModel,
-  type IdPackageOverviewModel,
-  type PeriodicIdPackageModel,
-} from './object-final-package-model.js';
 import {
   addDemoObjectPeriodDraft,
   demoObjectPeriods,
@@ -39,7 +32,6 @@ type ObjectWorkspaceSection =
   | 'periodic-package'
   | 'aosr'
   | 'documents'
-  | 'representatives'
   | 'final-package'
   | 'settings';
 
@@ -48,18 +40,10 @@ interface ObjectWorkspacePageProps {
   readonly onBackToObjects: () => void;
 }
 
-interface ObjectWorkspaceMetrics {
-  readonly aosrCount: number;
-  readonly usedCertificateCount: number;
-  readonly objectDocumentCount: number;
-  readonly representativeCount: number;
-}
-
 export function ObjectWorkspacePage({
   object,
   onBackToObjects,
 }: ObjectWorkspacePageProps): React.JSX.Element {
-  const { certificates, objectDocuments, representatives } = useDemoStore();
   const [activeSection, setActiveSection] = useState<ObjectWorkspaceSection>('overview');
   const [drafts, setDrafts] = useState<readonly DemoAosrDraft[]>(demoAosrWorkspace.drafts);
   const [periods, setPeriods] = useState<DemoObjectPeriods>(demoObjectPeriods);
@@ -72,14 +56,6 @@ export function ObjectWorkspacePage({
   const isAosrVisible = activeSection === 'aosr' || activeSection === 'settings';
   const selectedPeriod = getDemoObjectPeriodById(selectedPeriodId, periods);
   const selectedPeriodDrafts = getDemoObjectPeriodDrafts(selectedPeriod, drafts);
-  const usedCertificateCount = useMemo(
-    () => getUsedCertificateCount(drafts, certificates),
-    [certificates, drafts],
-  );
-  const packageOverview = useMemo(
-    () => buildIdPackageOverviewModel(drafts, objectDocuments, certificates, periods),
-    [certificates, drafts, objectDocuments, periods],
-  );
   const proposedAosrNumber = useMemo(
     () =>
       getProposedDemoDocumentNumber({
@@ -90,12 +66,6 @@ export function ObjectWorkspacePage({
       }),
     [drafts, periods, selectedPeriodId],
   );
-  const metrics: ObjectWorkspaceMetrics = {
-    aosrCount: drafts.length,
-    usedCertificateCount,
-    objectDocumentCount: objectDocuments.length,
-    representativeCount: representatives.length,
-  };
 
   useEffect(() => {
     if (isCreateDocumentPanelOpen) {
@@ -256,23 +226,6 @@ export function ObjectWorkspacePage({
             </span>
           </button>
           <button
-            aria-current={activeSection === 'representatives' ? 'page' : undefined}
-            aria-label="Представители"
-            onClick={() => {
-              setCreateDocumentPanelOpen(false);
-              setActiveSection('representatives');
-            }}
-            type="button"
-          >
-            <span className="object-workspace-nav__icon" aria-hidden="true">
-              △
-            </span>
-            <span className="object-workspace-nav__label">
-              <strong>Представители</strong>
-              <small>Глобальная база</small>
-            </span>
-          </button>
-          <button
             aria-current={activeSection === 'final-package' ? 'page' : undefined}
             aria-label="Открыть итоговый комплект ИД"
             onClick={() => {
@@ -313,9 +266,7 @@ export function ObjectWorkspacePage({
           <ObjectOverview
             drafts={drafts}
             isCreateDocumentPanelOpen={isCreateDocumentPanelOpen}
-            metrics={metrics}
             object={object}
-            packageOverview={packageOverview}
             periods={periods}
             documentNumber={documentNumberInput}
             proposedAosrNumber={proposedAosrNumber}
@@ -328,10 +279,6 @@ export function ObjectWorkspacePage({
             onOpenDraft={openDraft}
             onOpenPeriod={openPeriod}
             onOpenCreateDocumentPanel={openCreateDocumentPanel}
-            onOpenDocuments={() => {
-              setCreateDocumentPanelOpen(false);
-              setActiveSection('documents');
-            }}
             onOpenFinalPackage={() => {
               setCreateDocumentPanelOpen(false);
               setActiveSection('final-package');
@@ -383,16 +330,6 @@ export function ObjectWorkspacePage({
 
         {activeSection === 'documents' ? <ObjectDocumentsPage /> : null}
 
-        {activeSection === 'representatives' ? (
-          <RepresentativesOrganizationsPage
-            backLabel="Вернуться к обзору"
-            description="Глобальные организации и представители плюс объектовые назначения для актов"
-            onBackToObjects={() => {
-              setActiveSection('overview');
-            }}
-          />
-        ) : null}
-
         {activeSection === 'final-package' ? (
           <ObjectFinalPackagePage drafts={drafts} periods={periods} />
         ) : null}
@@ -438,20 +375,6 @@ function ObjectWorkspaceHeader({
   );
 }
 
-interface MetricItemProps {
-  readonly label: string;
-  readonly value: number;
-}
-
-function MetricItem({ label, value }: MetricItemProps): React.JSX.Element {
-  return (
-    <div aria-label={`${label}: ${String(value)}`}>
-      <dt>{label}</dt>
-      <dd>{value}</dd>
-    </div>
-  );
-}
-
 function getSectionBreadcrumb(section: ObjectWorkspaceSection): string {
   switch (section) {
     case 'overview':
@@ -466,8 +389,6 @@ function getSectionBreadcrumb(section: ObjectWorkspaceSection): string {
       return 'Настройки объекта';
     case 'documents':
       return 'Документы объекта';
-    case 'representatives':
-      return 'Представители';
     case 'final-package':
       return 'Итоговая ИД';
   }
@@ -477,9 +398,7 @@ interface ObjectOverviewProps {
   readonly drafts: readonly DemoAosrDraft[];
   readonly documentNumber: string;
   readonly isCreateDocumentPanelOpen: boolean;
-  readonly metrics: ObjectWorkspaceMetrics;
   readonly object: MockObjectCard;
-  readonly packageOverview: IdPackageOverviewModel;
   readonly periods: readonly DemoObjectPeriod[];
   readonly proposedAosrNumber: string;
   readonly selectedPeriod: DemoObjectPeriod;
@@ -487,7 +406,6 @@ interface ObjectOverviewProps {
   readonly onCloseCreateDocumentPanel: () => void;
   readonly onCreateAosr: () => void;
   readonly onOpenCreateDocumentPanel: () => void;
-  readonly onOpenDocuments: () => void;
   readonly onOpenDraft: (draft: DemoAosrDraft) => void;
   readonly onOpenFinalPackage: () => void;
   readonly onOpenPeriod: (periodId: DemoObjectPeriodId) => void;
@@ -497,9 +415,7 @@ function ObjectOverview({
   drafts,
   documentNumber,
   isCreateDocumentPanelOpen,
-  metrics,
   object,
-  packageOverview,
   periods,
   proposedAosrNumber,
   selectedPeriod,
@@ -507,7 +423,6 @@ function ObjectOverview({
   onCloseCreateDocumentPanel,
   onCreateAosr,
   onOpenCreateDocumentPanel,
-  onOpenDocuments,
   onOpenDraft,
   onOpenFinalPackage,
   onOpenPeriod,
@@ -519,10 +434,7 @@ function ObjectOverview({
           <p className="section-kicker">Обзор</p>
           <h2 id="object-overview-title">Обзор объекта</h2>
           <strong>{object.title}</strong>
-          <p>
-            {object.address}. Рабочий центр для периодов, документов и итоговой исполнительной
-            документации.
-          </p>
+          <p>{object.address}. Начните с документа или продолжите текущий период.</p>
         </div>
         <div className="object-overview__intro-actions">
           <button
@@ -547,90 +459,29 @@ function ObjectOverview({
         />
       ) : null}
 
-      <dl className="object-overview__metrics" aria-label="Ключевые показатели объекта">
-        <MetricItem label="Документы в периодах" value={metrics.aosrCount} />
-        <MetricItem label="Использовано сертификатов" value={metrics.usedCertificateCount} />
-        <MetricItem label="Документы объекта" value={metrics.objectDocumentCount} />
-        <MetricItem label="Представители" value={metrics.representativeCount} />
-      </dl>
-
-      <OverviewPackageSection packageOverview={packageOverview} />
-
-      <div className="object-overview__grid">
-        <section className="object-overview__panel" aria-labelledby="overview-actions-title">
-          <div className="object-overview__panel-heading">
-            <p className="section-kicker">Навигация</p>
-            <h3 id="overview-actions-title">Куда перейти дальше</h3>
-          </div>
-          <div className="object-overview__actions">
-            <button
-              onClick={() => {
-                onOpenPeriod(selectedPeriod.id);
-              }}
-              type="button"
-            >
-              <span aria-hidden="true">▦</span>
-              <strong>Открыть текущий период</strong>
-              <small>{selectedPeriod.name}: рабочая папка периода</small>
-            </button>
-            <button onClick={onOpenDocuments} type="button">
-              <span aria-hidden="true">▤</span>
-              <strong>Документы объекта</strong>
-              <small>Схемы, чертежи, протоколы и журналы</small>
-            </button>
-            <button onClick={onOpenFinalPackage} type="button">
-              <span aria-hidden="true">▣</span>
-              <strong>Итоговая ИД</strong>
-              <small>Собирает документы всех периодов</small>
-            </button>
-          </div>
-        </section>
-
-        <section className="object-overview__panel" aria-labelledby="overview-periods-title">
-          <div className="object-overview__panel-heading">
-            <p className="section-kicker">Недавние периоды</p>
-            <h3 id="overview-periods-title">Периоды работ</h3>
-          </div>
-          <ul className="object-overview__period-folders">
-            {packageOverview.periodicPackages.map((idPackage) => (
-              <li key={idPackage.id}>
-                <button
-                  onClick={() => {
-                    const period = periods.find(
-                      (candidate) => candidate.name === idPackage.periodName,
-                    );
-
-                    if (period !== undefined) {
-                      onOpenPeriod(period.id);
-                    }
-                  }}
-                  type="button"
-                >
-                  <span className="object-overview__folder-icon" aria-hidden="true">
-                    ▣
-                  </span>
-                  <span className="object-overview__folder-main">
-                    <strong>{idPackage.periodName}</strong>
-                    <small>Рабочая папка периода</small>
-                  </span>
-                  <span className="object-overview__folder-meta">
-                    <small>Документы</small>
-                    <strong>{idPackage.summary.acts}</strong>
-                  </span>
-                  <span className="object-overview__folder-meta">
-                    <small>Реестр</small>
-                    <strong>{idPackage.summary.acts}</strong>
-                  </span>
-                  <span className="object-overview__folder-meta">
-                    <small>ИД</small>
-                    <strong>вид</strong>
-                  </span>
-                </button>
-              </li>
-            ))}
-          </ul>
-        </section>
-      </div>
+      <section className="object-overview__focus" aria-labelledby="overview-focus-title">
+        <div className="object-overview__focus-main">
+          <p className="section-kicker">Продолжить</p>
+          <h3 id="overview-focus-title">Текущий период</h3>
+          <p>
+            <strong>{selectedPeriod.name}</strong> — рабочая папка с документами и реестром периода.
+          </p>
+        </div>
+        <div className="object-overview__focus-actions">
+          <button
+            className="compact-toggle"
+            onClick={() => {
+              onOpenPeriod(selectedPeriod.id);
+            }}
+            type="button"
+          >
+            Открыть период
+          </button>
+          <button className="compact-toggle" onClick={onOpenFinalPackage} type="button">
+            Итоговая ИД
+          </button>
+        </div>
+      </section>
 
       <section className="object-overview__panel" aria-labelledby="overview-recent-documents-title">
         <div className="object-overview__panel-heading">
@@ -810,7 +661,7 @@ function ObjectPeriodPage({
           <div>
             <p className="section-kicker">Рабочая папка периода</p>
             <h2 id="object-period-title">{period.name}</h2>
-            <p>Документы, реестр периода и генерируемая ИД в одном рабочем контуре.</p>
+            <p>Документы периода, реестр и периодическая ИД.</p>
           </div>
         </div>
         <button
@@ -877,7 +728,6 @@ function ObjectPeriodPage({
             <p className="section-kicker">Реестр периода</p>
             <h3 id="period-registry-title">{periodRegistry.title}</h3>
           </div>
-          <p className="derived-registry-context">{periodRegistry.description}</p>
           <DerivedRegistryTable registry={periodRegistry} />
         </section>
 
@@ -891,10 +741,7 @@ function ObjectPeriodPage({
           <div>
             <p className="section-kicker">Периодическая ИД</p>
             <h3 id="period-package-title">{period.periodicIdTitle}</h3>
-            <p>
-              Генерируемое представление по текущим документам и реестру периода. Повторное
-              формирование покажет обновленный состав без закрытия периода и без архива.
-            </p>
+            <p>Формируется из текущих данных. Не сохраняется и не блокирует работу.</p>
             <button className="compact-toggle" onClick={onOpenPeriodicPackage} type="button">
               Сформировать периодическую ИД
             </button>
@@ -903,104 +750,4 @@ function ObjectPeriodPage({
       </div>
     </section>
   );
-}
-
-interface OverviewPackageSectionProps {
-  readonly packageOverview: IdPackageOverviewModel;
-}
-
-function OverviewPackageSection({
-  packageOverview,
-}: OverviewPackageSectionProps): React.JSX.Element {
-  return (
-    <section className="object-overview__package-section" aria-labelledby="overview-package-title">
-      <div className="object-overview__package-heading">
-        <div>
-          <p className="section-kicker">Генерируемые представления</p>
-          <h3 id="overview-package-title">Периодическая ИД и итоговая ИД</h3>
-        </div>
-        <div className="id-package-flow__track id-package-flow__track--compact">
-          <span>Периодическая ИД</span>
-          <strong aria-hidden="true">→</strong>
-          <span>Итоговая ИД</span>
-        </div>
-      </div>
-
-      <div className="object-overview__package-grid">
-        <section aria-labelledby="overview-periodic-package-title">
-          <p className="section-kicker">Периоды</p>
-          <h4 id="overview-periodic-package-title">Периодическая ИД</h4>
-          <div className="periodic-package-list periodic-package-list--compact">
-            {packageOverview.periodicPackages.map((idPackage) => (
-              <OverviewPeriodicPackageRow idPackage={idPackage} key={idPackage.id} />
-            ))}
-          </div>
-        </section>
-
-        <section
-          className="object-overview__final-package-note"
-          aria-labelledby="overview-final-package-title"
-        >
-          <p className="section-kicker">Финал объекта</p>
-          <h4 id="overview-final-package-title">{packageOverview.finalPackage.title}</h4>
-          <p>{packageOverview.finalPackage.description}</p>
-          <ul>
-            <li>все документы из периодов;</li>
-            <li>сертификаты из документов без дублей;</li>
-            <li>чертежи и документы объекта без дублей;</li>
-            <li>производный итоговый реестр.</li>
-          </ul>
-        </section>
-      </div>
-    </section>
-  );
-}
-
-interface OverviewPeriodicPackageRowProps {
-  readonly idPackage: PeriodicIdPackageModel;
-}
-
-function OverviewPeriodicPackageRow({
-  idPackage,
-}: OverviewPeriodicPackageRowProps): React.JSX.Element {
-  return (
-    <article className="periodic-package-row periodic-package-row--compact">
-      <div>
-        <h5>{idPackage.periodName}</h5>
-        <p>{idPackage.note}</p>
-      </div>
-      <dl aria-label={`Состав пакета ${idPackage.periodName}`}>
-        <MetricItem label="Документы периода" value={idPackage.summary.acts} />
-        <MetricItem label="Сертификаты" value={idPackage.summary.usedCertificates} />
-        <MetricItem label="Документы объекта" value={idPackage.summary.objectDocuments} />
-      </dl>
-    </article>
-  );
-}
-
-function getUsedCertificateCount(
-  drafts: readonly DemoAosrDraft[],
-  certificates: readonly DemoCertificate[],
-): number {
-  const certificateByMaterialId = new Map<string, string>();
-
-  for (const certificate of certificates) {
-    for (const material of certificate.materials) {
-      certificateByMaterialId.set(material.id, certificate.id);
-    }
-  }
-
-  const usedCertificateIds = new Set<string>();
-
-  for (const draft of drafts) {
-    for (const materialCertificateId of draft.materialCertificateIds) {
-      const certificateId = certificateByMaterialId.get(materialCertificateId);
-
-      if (certificateId !== undefined) {
-        usedCertificateIds.add(certificateId);
-      }
-    }
-  }
-
-  return usedCertificateIds.size;
 }

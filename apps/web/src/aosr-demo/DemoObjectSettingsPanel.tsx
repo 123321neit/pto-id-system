@@ -1,4 +1,4 @@
-import type { SyntheticEvent } from 'react';
+import { useState, type SyntheticEvent } from 'react';
 
 import type {
   DemoAosrObjectDefaults,
@@ -50,6 +50,35 @@ interface DemoObjectSettingsPanelProps {
   readonly onUpdateObjectDefaults: (field: DemoAosrObjectDefaultsField, value: string) => void;
 }
 
+type ObjectSettingsSectionId = 'main' | 'header' | 'representatives' | 'texts';
+
+const objectSettingsSections: readonly {
+  readonly id: ObjectSettingsSectionId;
+  readonly label: string;
+  readonly summary: string;
+}[] = [
+  {
+    id: 'main',
+    label: 'Основное',
+    summary: 'Проект и объект',
+  },
+  {
+    id: 'header',
+    label: 'Шапка акта',
+    summary: 'Текст под заголовком и организации',
+  },
+  {
+    id: 'representatives',
+    label: 'Представители',
+    summary: 'Назначения для актов',
+  },
+  {
+    id: 'texts',
+    label: 'Тексты акта',
+    summary: 'Пункты 4 и 6 по умолчанию',
+  },
+];
+
 export function DemoObjectSettingsPanel({
   globalOrganizations,
   globalRepresentatives,
@@ -76,6 +105,8 @@ export function DemoObjectSettingsPanel({
   onToggleRepresentativeLibraryForm,
   onUpdateObjectDefaults,
 }: DemoObjectSettingsPanelProps): React.JSX.Element {
+  const [activeSectionId, setActiveSectionId] = useState<ObjectSettingsSectionId>('main');
+
   return (
     <div className="object-settings-overlay">
       <section
@@ -95,118 +126,151 @@ export function DemoObjectSettingsPanel({
         </div>
 
         <p className="object-settings-dialog__intro">
-          Здесь собраны данные, которые повторяются в печатных АОСР: объект, текст под заголовком,
-          проектная и нормативная база, организации в шапке и назначения представителей.
+          Здесь собраны данные, которые повторяются в печатных АОСР. Меняйте один раздел за раз:
+          основные сведения, шапку, представителей или тексты акта.
         </p>
 
-        <div className="object-settings-dialog__body">
-          <section className="form-section" aria-labelledby="object-data-title">
-            <h3 id="object-data-title">Основные данные</h3>
-            <p className="helper-note">
-              Эти значения подставляются в новые акты и помогают заполнять печатную форму без
-              повторного ввода.
-            </p>
-            <div className="act-form-grid">
-              <label className="act-form-grid__wide">
-                Название проекта / объекта
-                <input
-                  name="projectName"
-                  onChange={(event) => {
-                    onUpdateObjectDefaults('projectName', event.currentTarget.value);
-                  }}
-                  value={objectDefaults.projectName}
-                />
-              </label>
-              <label className="act-form-grid__wide">
-                Объект капитального строительства
-                <textarea
-                  className="medium-field"
-                  name="objectName"
-                  onChange={(event) => {
-                    onUpdateObjectDefaults('objectName', event.currentTarget.value);
-                  }}
-                  rows={3}
-                  value={objectDefaults.objectName}
-                />
-              </label>
-              <label className="act-form-grid__wide">
-                Текст под заголовком акта
-                <textarea
-                  className="medium-field"
-                  name="defaultUnderTitleText"
-                  onChange={(event) => {
-                    onUpdateObjectDefaults('defaultUnderTitleText', event.currentTarget.value);
-                  }}
-                  rows={3}
-                  value={objectDefaults.defaultUnderTitleText}
-                />
-              </label>
-              <label className="act-form-grid__wide">
-                Проектная документация по умолчанию
-                <textarea
-                  className="large-field"
-                  name="defaultProjectDocumentation"
-                  onChange={(event) => {
-                    onUpdateObjectDefaults(
-                      'defaultProjectDocumentation',
-                      event.currentTarget.value,
-                    );
-                  }}
-                  rows={6}
-                  value={objectDefaults.defaultProjectDocumentation}
-                />
-              </label>
-            </div>
-          </section>
-
-          <section className="form-section" aria-labelledby="object-compliance-title">
-            <h3 id="object-compliance-title">Пункт 6. Соответствие требованиям</h3>
-            <p className="helper-note">
-              Этот текст автоматически используется в пункте 6 текущего акта, пока для акта не
-              задано отдельное исключение.
-            </p>
-            <label className="act-form-grid__wide">
-              Текст для пункта 6. Соответствие работ предъявляемым требованиям
-              <textarea
-                className="large-field"
-                name="defaultComplianceStatement"
-                onChange={(event) => {
-                  onUpdateObjectDefaults('defaultComplianceStatement', event.currentTarget.value);
+        <div className="object-settings-layout">
+          <nav className="object-settings-menu" aria-label="Разделы настроек объекта">
+            {objectSettingsSections.map((section) => (
+              <button
+                aria-current={activeSectionId === section.id ? 'page' : undefined}
+                key={section.id}
+                onClick={() => {
+                  setActiveSectionId(section.id);
                 }}
-                rows={6}
-                value={objectDefaults.defaultComplianceStatement}
+                type="button"
+              >
+                <strong>{section.label}</strong>
+                <small>{section.summary}</small>
+              </button>
+            ))}
+          </nav>
+
+          <div className="object-settings-dialog__body object-settings-panel">
+            {activeSectionId === 'main' ? (
+              <section className="form-section" aria-labelledby="object-data-title">
+                <h3 id="object-data-title">Основное</h3>
+                <div className="act-form-grid">
+                  <label className="act-form-grid__wide">
+                    Название проекта / объекта
+                    <input
+                      name="projectName"
+                      onChange={(event) => {
+                        onUpdateObjectDefaults('projectName', event.currentTarget.value);
+                      }}
+                      value={objectDefaults.projectName}
+                    />
+                  </label>
+                  <label className="act-form-grid__wide">
+                    Объект капитального строительства
+                    <textarea
+                      className="medium-field"
+                      name="objectName"
+                      onChange={(event) => {
+                        onUpdateObjectDefaults('objectName', event.currentTarget.value);
+                      }}
+                      rows={3}
+                      value={objectDefaults.objectName}
+                    />
+                  </label>
+                </div>
+              </section>
+            ) : null}
+
+            {activeSectionId === 'header' ? (
+              <>
+                <section className="form-section" aria-labelledby="object-header-text-title">
+                  <h3 id="object-header-text-title">Шапка акта</h3>
+                  <label className="act-form-grid__wide">
+                    Текст под заголовком акта
+                    <textarea
+                      className="medium-field"
+                      name="defaultUnderTitleText"
+                      onChange={(event) => {
+                        onUpdateObjectDefaults('defaultUnderTitleText', event.currentTarget.value);
+                      }}
+                      rows={3}
+                      value={objectDefaults.defaultUnderTitleText}
+                    />
+                  </label>
+                </section>
+
+                <DemoHeaderOrganizationsPanel
+                  form={headerOrganizationForm}
+                  globalOrganizations={globalOrganizations}
+                  headerOrganizations={objectDefaults.headerOrganizations}
+                  isFormOpen={isHeaderOrganizationFormOpen}
+                  organizationSearch={organizationSearch}
+                  onChangeForm={onChangeHeaderOrganizationForm}
+                  onChangeSearch={onChangeOrganizationSearch}
+                  onMoveHeaderOrganization={onMoveHeaderOrganization}
+                  onSelectGlobalOrganization={onSelectGlobalOrganization}
+                  onSubmit={onAddHeaderOrganization}
+                  onToggleForm={onToggleHeaderOrganizationForm}
+                />
+              </>
+            ) : null}
+
+            {activeSectionId === 'representatives' ? (
+              <DemoObjectRepresentativesPanel
+                form={libraryRepresentativeForm}
+                globalRepresentatives={globalRepresentatives}
+                isFormOpen={isRepresentativeLibraryFormOpen}
+                isLibraryOpen={isRepresentativeLibraryOpen}
+                objectRepresentatives={objectDefaults.representativeLibrary}
+                representativeSearch={representativeSearch}
+                onChangeForm={onChangeLibraryRepresentativeForm}
+                onChangeSearch={onChangeRepresentativeSearch}
+                onSelectGlobalRepresentative={onSelectGlobalRepresentative}
+                onSubmit={onAddLibraryRepresentative}
+                onToggleForm={onToggleRepresentativeLibraryForm}
+                onToggleLibrary={onToggleRepresentativeLibrary}
               />
-            </label>
-          </section>
+            ) : null}
 
-          <DemoHeaderOrganizationsPanel
-            form={headerOrganizationForm}
-            globalOrganizations={globalOrganizations}
-            headerOrganizations={objectDefaults.headerOrganizations}
-            isFormOpen={isHeaderOrganizationFormOpen}
-            organizationSearch={organizationSearch}
-            onChangeForm={onChangeHeaderOrganizationForm}
-            onChangeSearch={onChangeOrganizationSearch}
-            onMoveHeaderOrganization={onMoveHeaderOrganization}
-            onSelectGlobalOrganization={onSelectGlobalOrganization}
-            onSubmit={onAddHeaderOrganization}
-            onToggleForm={onToggleHeaderOrganizationForm}
-          />
+            {activeSectionId === 'texts' ? (
+              <>
+                <section className="form-section" aria-labelledby="object-project-docs-title">
+                  <h3 id="object-project-docs-title">Пункт 4. Проектная документация</h3>
+                  <label className="act-form-grid__wide">
+                    Проектная документация по умолчанию
+                    <textarea
+                      className="large-field"
+                      name="defaultProjectDocumentation"
+                      onChange={(event) => {
+                        onUpdateObjectDefaults(
+                          'defaultProjectDocumentation',
+                          event.currentTarget.value,
+                        );
+                      }}
+                      rows={6}
+                      value={objectDefaults.defaultProjectDocumentation}
+                    />
+                  </label>
+                </section>
 
-          <DemoObjectRepresentativesPanel
-            form={libraryRepresentativeForm}
-            globalRepresentatives={globalRepresentatives}
-            isFormOpen={isRepresentativeLibraryFormOpen}
-            isLibraryOpen={isRepresentativeLibraryOpen}
-            objectRepresentatives={objectDefaults.representativeLibrary}
-            representativeSearch={representativeSearch}
-            onChangeForm={onChangeLibraryRepresentativeForm}
-            onChangeSearch={onChangeRepresentativeSearch}
-            onSelectGlobalRepresentative={onSelectGlobalRepresentative}
-            onSubmit={onAddLibraryRepresentative}
-            onToggleForm={onToggleRepresentativeLibraryForm}
-            onToggleLibrary={onToggleRepresentativeLibrary}
-          />
+                <section className="form-section" aria-labelledby="object-compliance-title">
+                  <h3 id="object-compliance-title">Пункт 6. Соответствие требованиям</h3>
+                  <label className="act-form-grid__wide">
+                    Текст для пункта 6. Соответствие работ предъявляемым требованиям
+                    <textarea
+                      className="large-field"
+                      name="defaultComplianceStatement"
+                      onChange={(event) => {
+                        onUpdateObjectDefaults(
+                          'defaultComplianceStatement',
+                          event.currentTarget.value,
+                        );
+                      }}
+                      rows={6}
+                      value={objectDefaults.defaultComplianceStatement}
+                    />
+                  </label>
+                </section>
+              </>
+            ) : null}
+          </div>
         </div>
       </section>
     </div>

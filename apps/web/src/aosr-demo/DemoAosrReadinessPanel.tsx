@@ -10,35 +10,38 @@ export function DemoAosrReadinessPanel({
   const headingId = 'aosr-readiness-title';
 
   return (
-    <section
-      className={`readiness-card readiness-card--${readiness.status}`}
+    <details
+      className={`readiness-card readiness-card--compact readiness-card--${readiness.status}`}
       aria-labelledby={headingId}
+      role="region"
     >
-      <div className="readiness-card__header">
-        <div>
+      <summary className="readiness-card__summary">
+        <span>
           <p className="section-kicker">Подсказки</p>
           <h3 id={headingId}>Подсказки по акту</h3>
-        </div>
+        </span>
         <strong className="readiness-card__status">{readiness.statusLabel}</strong>
+      </summary>
+
+      <div className="readiness-card__content">
+        <p className="readiness-card__helper">
+          Это не блокировка: пустые поля останутся строками в печатной форме и их можно будет
+          заполнить от руки.
+        </p>
+
+        {readiness.issues.length > 0 ? (
+          <div className="readiness-card__issues">
+            <p>Пустые разделы:</p>
+            <ul>
+              {readiness.issues.map((issue) => (
+                <li key={issue}>{issue}</li>
+              ))}
+            </ul>
+          </div>
+        ) : (
+          <p className="readiness-card__empty">Пробелов по демо-проверкам нет.</p>
+        )}
       </div>
-
-      <p className="readiness-card__helper">
-        Это не блокировка: пустые поля останутся строками в печатной форме и их можно будет
-        заполнить от руки.
-      </p>
-
-      {readiness.issues.length > 0 ? (
-        <div className="readiness-card__issues">
-          <p>Пустые разделы:</p>
-          <ul>
-            {readiness.issues.map((issue) => (
-              <li key={issue}>{issue}</li>
-            ))}
-          </ul>
-        </div>
-      ) : (
-        <p className="readiness-card__empty">Пробелов по демо-проверкам нет.</p>
-      )}
-    </section>
+    </details>
   );
 }

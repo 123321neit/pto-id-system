@@ -84,10 +84,10 @@ export interface FinalPackageModel {
 const aosrActType = getDemoActTypeById('aosr');
 
 export const finalIdPackageDescription =
-  'Итоговая ИД — генерируемое представление по текущему состоянию объекта: она собирает все периоды, документы объекта и использованные сертификаты без дублей.';
+  'Формируется из текущих данных. Не сохраняется и не блокирует работу.';
 
 export const periodicIdPackageDescription =
-  'Периодическая ИД — генерируемое представление по текущему состоянию выбранного периода. Если документы меняются, повторное формирование покажет обновленный состав.';
+  'Формируется из текущих данных выбранного периода. Не сохраняется и не закрывает период.';
 
 export function buildIdPackageOverviewModel(
   drafts: readonly DemoAosrDraft[],

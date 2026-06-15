@@ -351,15 +351,17 @@ export function DemoAosrWorkspacePage({
                 Назад к объектам
               </button>
             )}
-            <button
-              className="secondary-action"
-              onClick={() => {
-                setObjectSettingsOpen(true);
-              }}
-              type="button"
-            >
-              Настроить объект
-            </button>
+            {isEmbeddedInObjectWorkspace ? null : (
+              <button
+                className="secondary-action"
+                onClick={() => {
+                  setObjectSettingsOpen(true);
+                }}
+                type="button"
+              >
+                Настроить объект
+              </button>
+            )}
             <button
               aria-expanded={isDocumentPreviewOpen}
               className="secondary-action secondary-action--accent"

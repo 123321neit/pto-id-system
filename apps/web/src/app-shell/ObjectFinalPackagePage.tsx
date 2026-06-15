@@ -80,8 +80,7 @@ export function ObjectFinalPackagePage({
         </div>
 
         <p className="readiness-card__helper">
-          Финальный реестр строится из документов всех периодов. Он не сохраняется как отдельная
-          сущность, не блокируется и не архивируется. Пустые поля не блокируют печатные формы.
+          Формируется из текущих данных. Не сохраняется и не блокирует работу.
         </p>
 
         {finalPackage.readiness.issues.length > 0 ? (
@@ -108,10 +107,7 @@ export function ObjectFinalPackagePage({
         <div>
           <p className="section-kicker">Демо действие</p>
           <h3>Сформировать итоговую ИД</h3>
-          <p>
-            В демо режиме это только просмотр генерируемого представления. Реальная генерация
-            PDF/DOCX/ZIP и историческое хранение ZIP находятся вне текущего frontend-мока.
-          </p>
+          <p>Демо показывает состав комплекта без генерации файлов и сохранения архива.</p>
         </div>
         <button className="action-button" disabled type="button">
           Сформировать итоговую ИД
@@ -179,9 +175,7 @@ export function ObjectPeriodicPackagePage({
         </div>
 
         <p className="readiness-card__helper">
-          Реестр периода и периодическая ИД строятся из текущих документов выбранного периода. Они
-          не сохраняются как сущности, не блокируются и не закрывают период. Пустые поля остаются
-          допустимыми для ручного заполнения в будущих печатных формах.
+          Формируется из текущих данных. Не сохраняется и не закрывает период.
         </p>
 
         {periodicPackage.readiness.issues.length > 0 ? (
@@ -208,10 +202,7 @@ export function ObjectPeriodicPackagePage({
         <div>
           <p className="section-kicker">Демо действие</p>
           <h3>Сформировать периодическую ИД</h3>
-          <p>
-            Повторное формирование всегда берет текущие документы периода. В этом frontend-моке нет
-            backend-логики, генерации ZIP, сохранения пакета, закрытия периода или архивных записей.
-          </p>
+          <p>Демо показывает состав периода без генерации файлов и закрытия периода.</p>
         </div>
         <button className="action-button" disabled type="button">
           Сформировать периодическую ИД
@@ -223,28 +214,15 @@ export function ObjectPeriodicPackagePage({
 
 function FinalPackageFlowExplanation(): React.JSX.Element {
   return (
-    <section className="id-package-flow" aria-labelledby="final-package-flow-title">
+    <section
+      className="id-package-flow id-package-flow--compact"
+      aria-labelledby="final-package-flow-title"
+    >
       <div>
-        <p className="section-kicker">Логика комплекта</p>
-        <h3 id="final-package-flow-title">Периодическая ИД → Итоговая ИД</h3>
-        <p>
-          Периодическая и итоговая ИД не хранятся как бизнес-сущности. Это генерируемые
-          представления, которые каждый раз собираются из текущих документов и производных реестров.
-        </p>
+        <p className="section-kicker">Статус</p>
+        <h3 id="final-package-flow-title">Формируется из текущих данных</h3>
+        <p>Состав пересобирается из периодов, реестров и приложений без отдельного сохранения.</p>
       </div>
-
-      <div className="id-package-flow__track" aria-label="Периодическая ИД переходит в итоговую ИД">
-        <span>Периодическая ИД</span>
-        <strong aria-hidden="true">→</strong>
-        <span>Итоговая ИД</span>
-      </div>
-
-      <ul className="id-package-flow__list">
-        <li>все документы из периодов;</li>
-        <li>финальный реестр из документов всех периодов;</li>
-        <li>все использованные сертификаты без дублей;</li>
-        <li>все использованные чертежи и документы объекта без дублей;</li>
-      </ul>
     </section>
   );
 }
@@ -257,31 +235,15 @@ function PeriodicPackageFlowExplanation({
   periodName,
 }: PeriodicPackageFlowExplanationProps): React.JSX.Element {
   return (
-    <section className="id-package-flow" aria-labelledby="periodic-package-flow-title">
+    <section
+      className="id-package-flow id-package-flow--compact"
+      aria-labelledby="periodic-package-flow-title"
+    >
       <div>
-        <p className="section-kicker">Логика представления</p>
-        <h3 id="periodic-package-flow-title">Документы периода → Периодическая ИД</h3>
-        <p>
-          {periodName} остается рабочей папкой. Периодическая ИД формируется из ее текущих
-          документов, производного реестра периода и связанных приложений.
-        </p>
+        <p className="section-kicker">Статус</p>
+        <h3 id="periodic-package-flow-title">Формируется из текущих данных</h3>
+        <p>{periodName} остается рабочей папкой. Повторный просмотр покажет текущий состав.</p>
       </div>
-
-      <div
-        className="id-package-flow__track"
-        aria-label="Документы периода формируют периодическую ИД"
-      >
-        <span>Документы периода</span>
-        <strong aria-hidden="true">→</strong>
-        <span>Периодическая ИД</span>
-      </div>
-
-      <ul className="id-package-flow__list">
-        <li>документы выбранного периода;</li>
-        <li>реестр периода из текущих документов;</li>
-        <li>использованные сертификаты без дублей;</li>
-        <li>использованные документы объекта без дублей.</li>
-      </ul>
     </section>
   );
 }
