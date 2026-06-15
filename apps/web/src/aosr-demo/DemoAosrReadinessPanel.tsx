@@ -16,15 +16,15 @@ export function DemoAosrReadinessPanel({
     >
       <div className="readiness-card__header">
         <div>
-          <p className="section-kicker">Диагностика</p>
-          <h3 id={headingId}>Проверка заполнения</h3>
+          <p className="section-kicker">Подсказки</p>
+          <h3 id={headingId}>Подсказки по акту</h3>
         </div>
         <strong className="readiness-card__status">{readiness.statusLabel}</strong>
       </div>
 
       <p className="readiness-card__helper">
-        Пустые поля не блокируют печать: в печатной форме будут оставлены строки для заполнения от
-        руки.
+        Это не блокировка: пустые поля останутся строками в печатной форме и их можно будет
+        заполнить от руки.
       </p>
 
       {readiness.issues.length > 0 ? (

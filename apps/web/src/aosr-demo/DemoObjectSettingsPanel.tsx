@@ -90,25 +90,22 @@ export function DemoObjectSettingsPanel({
             <h2 id="object-settings-title">Настройки объекта</h2>
           </span>
           <button className="compact-toggle" onClick={onCloseObjectSettings} type="button">
-            Закрыть настройки
+            Закрыть
           </button>
         </div>
 
-        <div className="compact-summary-list" aria-label="Кратко об объектовых настройках">
-          <span>{objectDefaults.headerOrganizations.length} блока шапки</span>
-          <span>{objectDefaults.representativeLibrary.length} назначений представителей</span>
-          <span>текст под заголовком задан на объекте</span>
-          <span>проектная документация задана на объекте</span>
-          <span>нормативная база задана на объекте</span>
-        </div>
-        <p className="helper-note">
-          Демо-назначения уже заполнены; в реальной модели пользователь выбирает представителя из
-          глобальной библиотеки и назначает его на объект.
+        <p className="object-settings-dialog__intro">
+          Здесь собраны данные, которые повторяются в печатных АОСР: объект, текст под заголовком,
+          проектная и нормативная база, организации в шапке и назначения представителей.
         </p>
 
         <div className="object-settings-dialog__body">
           <section className="form-section" aria-labelledby="object-data-title">
-            <h3 id="object-data-title">Объектовые значения по умолчанию</h3>
+            <h3 id="object-data-title">Основные данные</h3>
+            <p className="helper-note">
+              Эти значения подставляются в новые акты и помогают заполнять печатную форму без
+              повторного ввода.
+            </p>
             <div className="act-form-grid">
               <label className="act-form-grid__wide">
                 Название проекта / объекта
@@ -163,7 +160,7 @@ export function DemoObjectSettingsPanel({
           </section>
 
           <section className="form-section" aria-labelledby="object-compliance-title">
-            <h3 id="object-compliance-title">Нормативная и проектная база объекта</h3>
+            <h3 id="object-compliance-title">Пункт 6. Соответствие требованиям</h3>
             <p className="helper-note">
               Этот текст автоматически используется в пункте 6 текущего акта, пока для акта не
               задано отдельное исключение.

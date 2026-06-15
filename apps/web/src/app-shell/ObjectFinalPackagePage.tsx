@@ -54,7 +54,10 @@ export function ObjectFinalPackagePage({
 
       <PeriodicPackageOverview packages={packageOverview.periodicPackages} />
 
-      <dl className="object-documents-summary" aria-label="Сводка итогового комплекта ИД">
+      <dl
+        className="object-documents-summary object-documents-summary--quiet"
+        aria-label="Сводка итогового комплекта ИД"
+      >
         <SummaryItem label="Документы из периодов" value={finalPackage.summary.acts} />
         <SummaryItem label="Сертификаты без дублей" value={finalPackage.summary.certificates} />
         <SummaryItem
@@ -70,8 +73,8 @@ export function ObjectFinalPackagePage({
       >
         <div className="readiness-card__header">
           <div>
-            <p className="section-kicker">Диагностика</p>
-            <h3 id="final-package-readiness-title">Проверка комплекта</h3>
+            <p className="section-kicker">Подсказки</p>
+            <h3 id="final-package-readiness-title">Подсказки по комплекту</h3>
           </div>
           <strong className="readiness-card__status">{finalPackage.readiness.statusLabel}</strong>
         </div>
@@ -110,7 +113,7 @@ export function ObjectFinalPackagePage({
             PDF/DOCX/ZIP и историческое хранение ZIP находятся вне текущего frontend-мока.
           </p>
         </div>
-        <button className="action-button action-button--primary" disabled type="button">
+        <button className="action-button" disabled type="button">
           Сформировать итоговую ИД
         </button>
       </section>
@@ -148,7 +151,10 @@ export function ObjectPeriodicPackagePage({
 
       <PeriodicPackageFlowExplanation periodName={period.name} />
 
-      <dl className="object-documents-summary" aria-label="Сводка периодической ИД">
+      <dl
+        className="object-documents-summary object-documents-summary--quiet"
+        aria-label="Сводка периодической ИД"
+      >
         <SummaryItem label="Документы периода" value={periodicPackage.summary.acts} />
         <SummaryItem label="Сертификаты без дублей" value={periodicPackage.summary.certificates} />
         <SummaryItem
@@ -164,8 +170,8 @@ export function ObjectPeriodicPackagePage({
       >
         <div className="readiness-card__header">
           <div>
-            <p className="section-kicker">Диагностика</p>
-            <h3 id="periodic-package-readiness-title">Проверка периодической ИД</h3>
+            <p className="section-kicker">Подсказки</p>
+            <h3 id="periodic-package-readiness-title">Подсказки по периодической ИД</h3>
           </div>
           <strong className="readiness-card__status">
             {periodicPackage.readiness.statusLabel}
@@ -207,7 +213,7 @@ export function ObjectPeriodicPackagePage({
             backend-логики, генерации ZIP, сохранения пакета, закрытия периода или архивных записей.
           </p>
         </div>
-        <button className="action-button action-button--primary" disabled type="button">
+        <button className="action-button" disabled type="button">
           Сформировать периодическую ИД
         </button>
       </section>

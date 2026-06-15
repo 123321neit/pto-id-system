@@ -28,7 +28,7 @@ describe('DemoAosrWorkspacePage', () => {
     renderDemoWorkspace();
 
     expect(screen.getByRole('heading', { name: 'Рабочая область акта' })).toBeTruthy();
-    expect(screen.getByRole('button', { name: 'Настройки объекта' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Настроить объект' })).toBeTruthy();
     expect(screen.getByRole('heading', { name: 'Текущий акт' })).toBeTruthy();
     expect(screen.queryByRole('dialog', { name: 'Настройки объекта' })).toBeNull();
     expect(screen.queryByLabelText('Название проекта / объекта')).toBeNull();
@@ -52,15 +52,13 @@ describe('DemoAosrWorkspacePage', () => {
   it('renders readiness panel with a ready act state', () => {
     renderDemoWorkspace();
 
-    const readinessPanel = screen.getByRole('region', { name: 'Проверка заполнения' });
+    const readinessPanel = screen.getByRole('region', { name: 'Подсказки по акту' });
 
-    expect(
-      within(readinessPanel).getByRole('heading', { name: 'Проверка заполнения' }),
-    ).toBeTruthy();
+    expect(within(readinessPanel).getByRole('heading', { name: 'Подсказки по акту' })).toBeTruthy();
     expect(within(readinessPanel).getByText('🟢 Поля заполнены')).toBeTruthy();
     expect(
       within(readinessPanel).getByText(
-        'Пустые поля не блокируют печать: в печатной форме будут оставлены строки для заполнения от руки.',
+        'Это не блокировка: пустые поля останутся строками в печатной форме и их можно будет заполнить от руки.',
       ),
     ).toBeTruthy();
     expect(within(readinessPanel).getByText('Пробелов по демо-проверкам нет.')).toBeTruthy();
@@ -98,7 +96,7 @@ describe('DemoAosrWorkspacePage', () => {
     await user.click(screen.getByRole('button', { name: 'Изменить только для этого акта' }));
     await user.clear(screen.getByLabelText('Значение только для этого акта'));
 
-    const readinessPanel = screen.getByRole('region', { name: 'Проверка заполнения' });
+    const readinessPanel = screen.getByRole('region', { name: 'Подсказки по акту' });
 
     expect(within(readinessPanel).getByText('🟡 Есть пустые разделы')).toBeTruthy();
     expect(within(readinessPanel).getByText('Пустые разделы:')).toBeTruthy();
@@ -160,11 +158,9 @@ describe('DemoAosrWorkspacePage', () => {
   it('keeps object settings and libraries compact until opened', () => {
     renderDemoWorkspace();
 
-    expect(screen.getByRole('button', { name: 'Настройки объекта' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Настроить объект' })).toBeTruthy();
     expect(screen.queryByRole('dialog', { name: 'Настройки объекта' })).toBeNull();
-    expect(
-      screen.queryByRole('region', { name: 'Назначения представителей на объект' }),
-    ).toBeNull();
+    expect(screen.queryByRole('region', { name: 'Представители для актов' })).toBeNull();
     expect(screen.queryByLabelText('Найти организацию в глобальной библиотеке')).toBeNull();
     expect(screen.queryByLabelText('Найти материал в библиотеке сертификатов')).toBeNull();
     expect(
@@ -191,7 +187,7 @@ describe('DemoAosrWorkspacePage', () => {
 
     expect(getPreviewText()).toContain('Новый демо-объект АОСР');
 
-    await user.click(within(dialog).getByRole('button', { name: 'Закрыть настройки' }));
+    await user.click(within(dialog).getByRole('button', { name: 'Закрыть' }));
 
     expect(screen.queryByRole('dialog', { name: 'Настройки объекта' })).toBeNull();
   });
@@ -206,7 +202,7 @@ describe('DemoAosrWorkspacePage', () => {
 
     expect(
       within(dialog).getByRole('heading', {
-        name: 'Нормативная и проектная база объекта',
+        name: 'Пункт 6. Соответствие требованиям',
       }),
     ).toBeTruthy();
     expect(
@@ -304,14 +300,14 @@ describe('DemoAosrWorkspacePage', () => {
     ).toBe(demoAosrWorkspace.objectDefaults.defaultComplianceStatement);
   });
 
-  it('shows the demo shortcut note for prefilled object representatives inside settings', async () => {
+  it('shows a calm explanation for object-level settings', async () => {
     const user = userEvent.setup();
 
     renderDemoWorkspace();
     await openObjectSettings(user);
 
     expect(
-      screen.getByText(/Демо-назначения уже заполнены; в реальной модели пользователь выбирает/u),
+      screen.getByText(/Здесь собраны данные, которые повторяются в печатных АОСР/u),
     ).toBeTruthy();
   });
 
@@ -645,7 +641,7 @@ describe('DemoAosrWorkspacePage', () => {
     renderDemoWorkspace();
 
     await openObjectSettings(user);
-    await user.click(screen.getByRole('button', { name: 'Добавить назначение' }));
+    await user.click(screen.getByRole('button', { name: 'Добавить представителя' }));
     await user.type(
       screen.getByLabelText('Найти представителя в глобальной библиотеке'),
       'генподряд',
@@ -716,7 +712,7 @@ describe('DemoAosrWorkspacePage', () => {
     expect(getPreviewText()).toContain('Сидоров С.С.');
 
     await openObjectSettings(user);
-    await user.click(screen.getByRole('button', { name: 'Назначения объекта' }));
+    await user.click(screen.getByRole('button', { name: 'Показать назначения' }));
 
     const objectLibrary = screen.getByRole('list', { name: 'Назначения представителей объекта' });
     expect(within(objectLibrary).getByText('Сидоров С.С.')).toBeTruthy();
@@ -1069,7 +1065,7 @@ interface RepresentativeAssignmentInput {
 }
 
 async function openObjectSettings(user: ReturnType<typeof userEvent.setup>): Promise<void> {
-  const openButton = screen.queryByRole('button', { name: 'Настройки объекта' });
+  const openButton = screen.queryByRole('button', { name: 'Настроить объект' });
 
   if (openButton !== null) {
     await user.click(openButton);

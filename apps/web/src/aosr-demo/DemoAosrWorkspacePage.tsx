@@ -352,13 +352,13 @@ export function DemoAosrWorkspacePage({
               </button>
             )}
             <button
-              className="secondary-action secondary-action--accent"
+              className="secondary-action"
               onClick={() => {
                 setObjectSettingsOpen(true);
               }}
               type="button"
             >
-              Настройки объекта
+              Настроить объект
             </button>
             <button
               aria-expanded={isDocumentPreviewOpen}

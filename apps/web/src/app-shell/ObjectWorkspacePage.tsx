@@ -533,9 +533,6 @@ function ObjectOverview({
           >
             + Создать документ
           </button>
-          <button className="action-button" onClick={onOpenFinalPackage} type="button">
-            Сформировать итоговую ИД
-          </button>
         </div>
       </div>
 
@@ -562,19 +559,19 @@ function ObjectOverview({
       <div className="object-overview__grid">
         <section className="object-overview__panel" aria-labelledby="overview-actions-title">
           <div className="object-overview__panel-heading">
-            <p className="section-kicker">Быстрые действия</p>
-            <h3 id="overview-actions-title">Работа по объекту</h3>
+            <p className="section-kicker">Навигация</p>
+            <h3 id="overview-actions-title">Куда перейти дальше</h3>
           </div>
           <div className="object-overview__actions">
             <button
               onClick={() => {
-                onOpenPeriod(periods[0]?.id ?? 'period-2026-09');
+                onOpenPeriod(selectedPeriod.id);
               }}
               type="button"
             >
               <span aria-hidden="true">▦</span>
-              <strong>Открыть период</strong>
-              <small>{periods[0]?.name ?? 'Сентябрь 2026'}: рабочая папка периода</small>
+              <strong>Открыть текущий период</strong>
+              <small>{selectedPeriod.name}: рабочая папка периода</small>
             </button>
             <button onClick={onOpenDocuments} type="button">
               <span aria-hidden="true">▤</span>
@@ -898,11 +895,7 @@ function ObjectPeriodPage({
               Генерируемое представление по текущим документам и реестру периода. Повторное
               формирование покажет обновленный состав без закрытия периода и без архива.
             </p>
-            <button
-              className="compact-toggle compact-toggle--accent"
-              onClick={onOpenPeriodicPackage}
-              type="button"
-            >
+            <button className="compact-toggle" onClick={onOpenPeriodicPackage} type="button">
               Сформировать периодическую ИД
             </button>
           </div>

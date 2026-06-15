@@ -459,7 +459,7 @@ describe('App shell mock navigation', () => {
     expect(within(summary).getByLabelText('Всего позиций: 9')).toBeTruthy();
 
     const readinessCard = within(finalPackagePage).getByRole('region', {
-      name: 'Проверка комплекта',
+      name: 'Подсказки по комплекту',
     });
     expect(within(readinessCard).getByText('🟢 Поля заполнены')).toBeTruthy();
     expect(
@@ -841,10 +841,10 @@ describe('App shell mock navigation', () => {
     const dialog = screen.getByRole('dialog', { name: 'Настройки объекта' });
     expect(within(dialog).getByLabelText('Объект капитального строительства')).toBeTruthy();
     expect(
-      within(dialog).getByRole('heading', { name: 'Нормативная и проектная база объекта' }),
+      within(dialog).getByRole('heading', { name: 'Пункт 6. Соответствие требованиям' }),
     ).toBeTruthy();
 
-    await user.click(within(dialog).getByRole('button', { name: 'Закрыть настройки' }));
+    await user.click(within(dialog).getByRole('button', { name: 'Закрыть' }));
 
     expect(screen.queryByRole('dialog', { name: 'Настройки объекта' })).toBeNull();
     expect(screen.getByRole('heading', { name: 'Рабочая область акта' })).toBeTruthy();
@@ -1166,7 +1166,7 @@ describe('App shell mock navigation', () => {
     await user.type(screen.getByLabelText('Название блока'), 'Авторский контроль');
     await user.click(screen.getByRole('button', { name: 'Сохранить организацию в шапке' }));
 
-    await user.click(screen.getByRole('button', { name: 'Закрыть настройки' }));
+    await user.click(screen.getByRole('button', { name: 'Закрыть' }));
     await openDocumentPreview(user);
 
     const previewText = getDocumentPreview().textContent;

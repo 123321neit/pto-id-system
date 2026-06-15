@@ -369,11 +369,11 @@ button {
 .object-workspace-header__meta-list div {
   display: grid;
   gap: 2px;
-  min-width: 124px;
-  border: 1px solid #dbe7f1;
+  min-width: 0;
+  border: 0;
   border-radius: 8px;
-  background: #f8fbff;
-  padding: 8px 10px;
+  background: transparent;
+  padding: 0;
 }
 
 .object-workspace-header__meta-list dt {
@@ -386,9 +386,9 @@ button {
 
 .object-workspace-header__meta-list dd {
   margin: 0;
-  color: #172033;
+  color: #425466;
   font-size: 0.82rem;
-  font-weight: 850;
+  font-weight: 760;
   line-height: 1.3;
 }
 
@@ -766,7 +766,7 @@ button {
   grid-template-columns: 34px minmax(0, 1fr);
   gap: 10px;
   align-items: center;
-  padding: 12px;
+  padding: 11px 12px;
 }
 
 .object-overview__actions button:hover,
@@ -781,8 +781,8 @@ button {
   height: 34px;
   place-items: center;
   border-radius: 8px;
-  background: #ecfdf5;
-  color: #047857;
+  background: #eef4fa;
+  color: #425466;
   font-weight: 900;
 }
 
@@ -1113,6 +1113,22 @@ button {
   font-size: 1.9rem;
   font-weight: 900;
   line-height: 1;
+}
+
+.object-documents-summary--quiet div {
+  min-height: auto;
+  gap: 6px;
+  background: #fbfdff;
+  padding: 10px 12px;
+  box-shadow: none;
+}
+
+.object-documents-summary--quiet dt {
+  font-size: 0.64rem;
+}
+
+.object-documents-summary--quiet dd {
+  font-size: 1.22rem;
 }
 
 .object-documents-panel {
@@ -1505,8 +1521,8 @@ button {
 .final-package-download {
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
-  border-left: 3px solid #2563eb;
-  background: #f8fbff;
+  border-left: 3px solid #c7d3df;
+  background: #fbfdff;
 }
 
 .final-package-download h3 {
@@ -3162,15 +3178,15 @@ h3 {
 
 .object-settings-dialog {
   display: grid;
-  gap: 14px;
-  width: min(100%, 920px);
+  gap: 16px;
+  width: min(100%, 880px);
   max-height: min(880px, calc(100vh - 48px));
   overflow: auto;
   border: 1px solid #cbd7df;
   border-radius: 8px;
   background: #ffffff;
   box-shadow: 0 24px 70px rgb(37 48 54 / 18%);
-  padding: 18px;
+  padding: 20px;
 }
 
 .object-settings-dialog__header {
@@ -3178,8 +3194,8 @@ h3 {
   align-items: start;
   justify-content: space-between;
   gap: 16px;
-  border-bottom: 1px solid #dbe4ea;
-  padding-bottom: 12px;
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 14px;
 }
 
 .object-settings-dialog__header span {
@@ -3189,7 +3205,21 @@ h3 {
 
 .object-settings-dialog__body {
   display: grid;
-  gap: 16px;
+  gap: 18px;
+}
+
+.object-settings-dialog__intro {
+  margin: 0;
+  max-width: 760px;
+  color: #516064;
+  font-size: 0.9rem;
+  line-height: 1.55;
+}
+
+.object-settings-dialog .form-section {
+  gap: 14px;
+  background: #fbfdff;
+  box-shadow: none;
 }
 
 .compact-card-list {
@@ -4255,6 +4285,7 @@ h3 {
   }
 
   .object-overview__package-heading,
+  .object-overview__grid,
   .object-overview__package-grid,
   .object-overview__create-panel,
   .periodic-package-overview__heading {
@@ -4337,6 +4368,14 @@ h3 {
   .periodic-package-row dl,
   .object-document-form {
     grid-template-columns: 1fr;
+  }
+
+  .object-workspace-nav__subitem {
+    margin-left: 0;
+  }
+
+  .object-workspace-nav__subitem::after {
+    display: none;
   }
 
   .dashboard-page {

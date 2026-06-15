@@ -42,25 +42,19 @@ export function DemoObjectRepresentativesPanel({
     <section className="form-section" aria-labelledby="representative-library-title">
       <div className="scope-heading scope-heading--with-action">
         <span>
-          <h3 id="representative-library-title">Назначения представителей на объект</h3>
+          <h3 id="representative-library-title">Представители для актов</h3>
           <p className="helper-note">
-            Глобальный представитель получает объектовые роль, должность, организацию и основание, а
-            затем выбирается в актах.
+            Назначьте людей один раз на объекте, затем выбирайте их в подписантах конкретного акта.
           </p>
         </span>
         <span className="inline-actions">
           <button className="compact-toggle" onClick={onToggleLibrary} type="button">
-            {isLibraryOpen ? 'Скрыть назначения' : 'Назначения объекта'}
+            {isLibraryOpen ? 'Скрыть назначения' : 'Показать назначения'}
           </button>
           <button className="compact-toggle" onClick={onToggleForm} type="button">
-            {isFormOpen ? 'Свернуть добавление' : 'Добавить назначение'}
+            {isFormOpen ? 'Свернуть добавление' : 'Добавить представителя'}
           </button>
         </span>
-      </div>
-
-      <div className="compact-summary-list" aria-label="Кратко о назначениях представителей">
-        <span>{objectRepresentatives.length} назначений на объекте</span>
-        <span>доступны для текущих актов</span>
       </div>
 
       {isLibraryOpen ? (

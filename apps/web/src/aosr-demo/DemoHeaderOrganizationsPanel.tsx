@@ -39,9 +39,9 @@ export function DemoHeaderOrganizationsPanel({
     <section className="form-section" aria-labelledby="header-organizations-title">
       <div className="scope-heading scope-heading--with-action">
         <span>
-          <h3 id="header-organizations-title">Организации объекта / шапка акта</h3>
+          <h3 id="header-organizations-title">Организации в шапке печатного акта</h3>
           <p className="helper-note">
-            Метки блоков задаются на объекте и попадают в шапку preview.
+            Блоки идут сверху вниз в том порядке, в котором появятся в печатном документе.
           </p>
         </span>
         <button className="compact-toggle" onClick={onToggleForm} type="button">
