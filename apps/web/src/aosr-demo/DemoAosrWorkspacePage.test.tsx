@@ -8,8 +8,10 @@ import {
   addHeaderOrganizationBlock,
   addMaterialCertificateToDraft,
   addObjectDocumentToDraft,
+  createEmptyDemoAosrDraft,
   demoAosrWorkspace,
   getDraftComplianceStatement,
+  moveHeaderOrganizationBlock,
   resetDraftComplianceToObjectDefault,
   startDraftComplianceOverride,
   updateDemoAosrDraftField,
@@ -138,6 +140,7 @@ describe('DemoAosrWorkspacePage', () => {
     const drawerContext = within(drawer).getByLabelText('Контекст предпросмотра документа');
 
     expect(drawerContext.textContent).toContain('Акт ОВ-1');
+    expect(drawerContext.textContent).toContain('АОСР 1');
     expect(drawerContext.textContent).toContain('"04" сентября 2026 г.');
     expect(drawerContext.textContent).toContain('4 приложений');
     expect(within(preview).getByText('Страница 1')).toBeTruthy();
@@ -384,7 +387,15 @@ describe('DemoAosrWorkspacePage', () => {
 
     const editorText = screen.getByRole('region', { name: 'Текущий акт' }).textContent;
     const orderedFragments = [
-      'Общие данные',
+      'Шапка печатного документа',
+      'Номер акта',
+      'Дата акта',
+      'Объект капитального строительства',
+      'Форма акта',
+      'АОСР 1',
+      'Текст под заголовком акта',
+      'Организации, участвующие в акте',
+      'Подписанты текущего акта',
       '1. Скрытые работы',
       'Описание скрытых работ',
       'Оси',
@@ -397,7 +408,6 @@ describe('DemoAosrWorkspacePage', () => {
       '7. Последующие работы',
       'Дополнительные сведения',
       'Приложения к акту',
-      'Подписанты текущего акта',
     ];
 
     for (let index = 0; index < orderedFragments.length - 1; index += 1) {
@@ -406,6 +416,63 @@ describe('DemoAosrWorkspacePage', () => {
 
       expect(editorText.indexOf(currentFragment)).toBeLessThan(editorText.indexOf(nextFragment));
     }
+  });
+
+  it('renders organization order before signatories and the numbered act body', () => {
+    renderDemoWorkspace();
+
+    const editorText = screen.getByRole('region', { name: 'Текущий акт' }).textContent;
+
+    expect(editorText.indexOf('Организации, участвующие в акте')).toBeLessThan(
+      editorText.indexOf('Подписанты текущего акта'),
+    );
+    expect(editorText.indexOf('Подписанты текущего акта')).toBeLessThan(
+      editorText.indexOf('1. Скрытые работы'),
+    );
+    expect(screen.getByRole('list', { name: 'Порядок организаций в акте' })).toBeTruthy();
+  });
+
+  it('changes organization display order from the editor and updates preview order', async () => {
+    const user = userEvent.setup();
+
+    renderDemoWorkspace({ initialDocumentPreviewOpen: true });
+
+    await user.click(
+      screen.getByRole('button', { name: 'Переместить организацию Подрядчик вверх' }),
+    );
+
+    const organizationOrder = screen.getByRole('list', { name: 'Порядок организаций в акте' });
+    const organizationOrderText = organizationOrder.textContent;
+    const previewText = getPreviewText();
+
+    expect(organizationOrderText.indexOf('Подрядчик')).toBeLessThan(
+      organizationOrderText.indexOf('Заказчик'),
+    );
+    expect(previewText.indexOf('Подрядчик:')).toBeLessThan(previewText.indexOf('Заказчик:'));
+  });
+
+  it('uses object settings as the source for under-title text in the editor and preview', async () => {
+    const user = userEvent.setup();
+    const updatedUnderTitleText =
+      'Объектовый текст под заголовком для проверки текущей печатной формы.';
+
+    renderDemoWorkspace({ initialDocumentPreviewOpen: true });
+
+    expect(screen.getByRole('region', { name: 'Текущий акт' }).textContent).toContain(
+      demoAosrWorkspace.objectDefaults.defaultUnderTitleText,
+    );
+    expect(getPreviewText()).toContain(demoAosrWorkspace.objectDefaults.defaultUnderTitleText);
+
+    await openObjectSettings(user);
+
+    const underTitleField = screen.getByLabelText('Текст под заголовком акта');
+    await user.clear(underTitleField);
+    await user.type(underTitleField, updatedUnderTitleText);
+
+    expect(screen.getByRole('region', { name: 'Текущий акт' }).textContent).toContain(
+      updatedUnderTitleText,
+    );
+    expect(getPreviewText()).toContain(updatedUnderTitleText);
   });
 
   it('does not show a separate AOSR place or location field', () => {
@@ -431,16 +498,16 @@ describe('DemoAosrWorkspacePage', () => {
     ).toBeTruthy();
   });
 
-  it('keeps applications in a separate section after additional info and before signatories', () => {
+  it('keeps applications in a separate section after additional info while signatories stay near top', () => {
     renderDemoWorkspace();
 
     const editorText = screen.getByRole('region', { name: 'Текущий акт' }).textContent;
 
+    expect(editorText.indexOf('Подписанты текущего акта')).toBeLessThan(
+      editorText.indexOf('1. Скрытые работы'),
+    );
     expect(editorText.indexOf('Дополнительные сведения')).toBeLessThan(
       editorText.indexOf('Приложения к акту'),
-    );
-    expect(editorText.indexOf('Приложения к акту')).toBeLessThan(
-      editorText.indexOf('Подписанты текущего акта'),
     );
     expect(screen.queryByText('Итоговые приложения в акте')).toBeNull();
     expect(screen.queryByRole('list', { name: 'Итоговые приложения текущего акта' })).toBeNull();
@@ -814,6 +881,7 @@ describe('DemoAosrWorkspacePage', () => {
       'Объект капитального строительства:',
       'Заказчик:',
       'ОСВИДЕТЕЛЬСТВОВАНИЯ СКРЫТЫХ РАБОТ',
+      demoAosrWorkspace.objectDefaults.defaultUnderTitleText,
       'Представитель подрядчика:',
       'произвели осмотр работ',
       'и составили настоящий акт о нижеследующем:',
@@ -954,6 +1022,27 @@ describe('DemoAosrWorkspacePage', () => {
     expect(demoAosrWorkspace.objectDefaults.headerOrganizations).not.toContainEqual(
       expect.objectContaining({ label: 'Инвестор' }),
     );
+  });
+
+  it('moves header organization blocks without mutating object defaults', () => {
+    const editedDefaults = moveHeaderOrganizationBlock(
+      demoAosrWorkspace.objectDefaults,
+      'header-organization-contractor',
+      'up',
+    );
+
+    expect(editedDefaults.headerOrganizations[0]?.label).toBe('Подрядчик');
+    expect(demoAosrWorkspace.objectDefaults.headerOrganizations[0]?.label).toBe('Заказчик');
+    expect(editedDefaults).not.toBe(demoAosrWorkspace.objectDefaults);
+  });
+
+  it('creates new blank AOSR drafts with the default AOSR 1 form variant', () => {
+    const draft = createEmptyDemoAosrDraft({
+      actNumber: '',
+      id: 'aosr-draft-form-variant-test',
+    });
+
+    expect(draft.formVariantId).toBe('aosr-1');
   });
 });
 

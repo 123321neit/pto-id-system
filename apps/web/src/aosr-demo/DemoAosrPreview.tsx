@@ -1,3 +1,4 @@
+import type { DemoAosrFormVariantMetadata } from '../act-types/act-types.js';
 import type {
   DemoActApplication,
   DemoAosrDraft,
@@ -15,6 +16,7 @@ import {
 
 interface DemoAosrPreviewProps {
   readonly finalApplications: readonly DemoActApplication[];
+  readonly formVariant: DemoAosrFormVariantMetadata;
   readonly objectDefaults: DemoAosrObjectDefaults;
   readonly selectedDraft: DemoAosrDraft;
   readonly selectedMaterials: readonly DemoMaterialCertificate[];
@@ -24,6 +26,7 @@ interface DemoAosrPreviewProps {
 
 export function DemoAosrPreview({
   finalApplications,
+  formVariant,
   objectDefaults,
   selectedDraft,
   selectedMaterials,
@@ -72,7 +75,7 @@ export function DemoAosrPreview({
 
             <section className="act-page__title-block">
               <p>АКТ</p>
-              <h3>ОСВИДЕТЕЛЬСТВОВАНИЯ СКРЫТЫХ РАБОТ</h3>
+              <h3>{formVariant.printTitle}</h3>
               <div className="act-page__number-date-row">
                 <span>
                   <strong>№ {selectedDraft.actNumber}</strong>
@@ -81,6 +84,9 @@ export function DemoAosrPreview({
                   <strong>{formatDocumentDate(selectedDraft.actDate)}</strong>
                 </span>
               </div>
+              {objectDefaults.defaultUnderTitleText.trim() === '' ? null : (
+                <p className="act-page__under-title-text">{objectDefaults.defaultUnderTitleText}</p>
+              )}
             </section>
 
             <section className="act-page__representative-blocks" aria-label="Представители">

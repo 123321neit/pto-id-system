@@ -127,7 +127,6 @@ export function DemoHeaderOrganizationsPanel({
                   onChangeForm('label', event.currentTarget.value);
                 }}
                 placeholder="Например: Генподрядчик"
-                required
                 value={form.label}
               />
             </label>
@@ -138,7 +137,6 @@ export function DemoHeaderOrganizationsPanel({
                 onChange={(event) => {
                   onChangeForm('organizationName', event.currentTarget.value);
                 }}
-                required
                 rows={3}
                 value={form.organizationName}
               />
@@ -150,7 +148,6 @@ export function DemoHeaderOrganizationsPanel({
                 onChange={(event) => {
                   onChangeForm('details', event.currentTarget.value);
                 }}
-                required
                 rows={5}
                 value={form.details}
               />

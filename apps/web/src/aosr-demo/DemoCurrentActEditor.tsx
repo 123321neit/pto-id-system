@@ -1,5 +1,6 @@
 import type { SyntheticEvent } from 'react';
 
+import type { DemoAosrFormVariantMetadata } from '../act-types/act-types.js';
 import type {
   DemoActApplication,
   DemoAosrDraft,
@@ -19,6 +20,7 @@ import {
 import { buildDemoAosrReadiness } from './demo-aosr-readiness.js';
 import { DemoActApplicationsSection } from './DemoActApplicationsSection.js';
 import { DemoAosrReadinessPanel } from './DemoAosrReadinessPanel.js';
+import { DemoHeaderOrganizationsOrderEditor } from './DemoHeaderOrganizationsOrderEditor.js';
 import { DemoMaterialsSelector } from './DemoMaterialsSelector.js';
 import { DemoObjectDocumentsEditor } from './DemoObjectDocumentsEditor.js';
 import { DemoSignatoriesEditor } from './DemoSignatoriesEditor.js';
@@ -30,6 +32,8 @@ interface DemoCurrentActEditorProps {
   readonly documentSearch: string;
   readonly documentTypeFilter: 'all' | DemoObjectDocumentType;
   readonly draggedRepresentativeId: string | null;
+  readonly dropTargetRepresentativeId: string | null;
+  readonly formVariant: DemoAosrFormVariantMetadata;
   readonly isCertificateLibraryOpen: boolean;
   readonly isManualRepresentativeFormOpen: boolean;
   readonly isObjectDocumentLibraryOpen: boolean;
@@ -55,7 +59,12 @@ interface DemoCurrentActEditorProps {
   readonly onChangeMaterialSearch: (value: string) => void;
   readonly onDragRepresentativeEnd: () => void;
   readonly onDragRepresentativeStart: (representativeId: string) => void;
+  readonly onDragRepresentativeTarget: (representativeId: string) => void;
   readonly onMoveSelectedSignatory: (representativeId: string, direction: MoveDirection) => void;
+  readonly onMoveHeaderOrganization: (
+    headerOrganizationId: string,
+    direction: MoveDirection,
+  ) => void;
   readonly onRemoveMaterialFromAct: (certificateId: string) => void;
   readonly onRemoveObjectDocumentFromAct: (documentId: string) => void;
   readonly onRemoveRepresentativeFromAct: (representativeId: string) => void;
@@ -77,6 +86,8 @@ export function DemoCurrentActEditor({
   documentSearch,
   documentTypeFilter,
   draggedRepresentativeId,
+  dropTargetRepresentativeId,
+  formVariant,
   isCertificateLibraryOpen,
   isManualRepresentativeFormOpen,
   isObjectDocumentLibraryOpen,
@@ -99,7 +110,9 @@ export function DemoCurrentActEditor({
   onChangeMaterialSearch,
   onDragRepresentativeEnd,
   onDragRepresentativeStart,
+  onDragRepresentativeTarget,
   onMoveSelectedSignatory,
+  onMoveHeaderOrganization,
   onRemoveMaterialFromAct,
   onRemoveObjectDocumentFromAct,
   onRemoveRepresentativeFromAct,
@@ -149,9 +162,12 @@ export function DemoCurrentActEditor({
 
       <DemoAosrReadinessPanel readiness={readiness} />
 
-      <section className="form-section act-editor-card" aria-labelledby="act-header-data-title">
-        <h3 id="act-header-data-title">Общие данные</h3>
-        <div className="act-form-grid act-form-grid--compact">
+      <section
+        className="form-section act-editor-card act-editor-card--featured"
+        aria-labelledby="act-header-data-title"
+      >
+        <h3 id="act-header-data-title">Шапка печатного документа</h3>
+        <div className="act-form-grid">
           <label>
             Номер акта
             <input
@@ -173,8 +189,47 @@ export function DemoCurrentActEditor({
               value={selectedDraft.actDate}
             />
           </label>
+          <div className="print-header-field act-form-grid__wide">
+            <span>Объект капитального строительства</span>
+            <p>{objectDefaults.objectName}</p>
+          </div>
+          <div className="print-header-field">
+            <span>Форма акта</span>
+            <p>{formVariant.title}</p>
+          </div>
+          <div className="print-header-field act-form-grid__wide">
+            <span>Текст под заголовком акта</span>
+            <p>{objectDefaults.defaultUnderTitleText}</p>
+            <small>Задаётся в настройках объекта и используется текущим актом.</small>
+          </div>
         </div>
       </section>
+
+      <DemoHeaderOrganizationsOrderEditor
+        headerOrganizations={objectDefaults.headerOrganizations}
+        onMoveHeaderOrganization={onMoveHeaderOrganization}
+      />
+
+      <DemoSignatoriesEditor
+        actRepresentativeSearch={actRepresentativeSearch}
+        draggedRepresentativeId={draggedRepresentativeId}
+        dropTargetRepresentativeId={dropTargetRepresentativeId}
+        isManualRepresentativeFormOpen={isManualRepresentativeFormOpen}
+        manualRepresentativeForm={manualRepresentativeForm}
+        objectRepresentatives={objectDefaults.representativeLibrary}
+        selectedSignatories={selectedSignatories}
+        onAddManualRepresentative={onAddManualRepresentative}
+        onAddRepresentativeToAct={onAddRepresentativeToAct}
+        onChangeActRepresentativeSearch={onChangeActRepresentativeSearch}
+        onChangeManualRepresentativeForm={onChangeManualRepresentativeForm}
+        onDragRepresentativeEnd={onDragRepresentativeEnd}
+        onDragRepresentativeStart={onDragRepresentativeStart}
+        onDragRepresentativeTarget={onDragRepresentativeTarget}
+        onMoveSelectedSignatory={onMoveSelectedSignatory}
+        onRemoveRepresentativeFromAct={onRemoveRepresentativeFromAct}
+        onReorderSelectedSignatory={onReorderSelectedSignatory}
+        onToggleManualRepresentativeForm={onToggleManualRepresentativeForm}
+      />
 
       <section className="form-section act-editor-card" aria-labelledby="hidden-works-data-title">
         <h3 id="hidden-works-data-title">1. Скрытые работы</h3>
@@ -376,25 +431,6 @@ export function DemoCurrentActEditor({
         allApplications={allApplications}
         selectedDraft={selectedDraft}
         onToggleApplication={onToggleApplication}
-      />
-
-      <DemoSignatoriesEditor
-        actRepresentativeSearch={actRepresentativeSearch}
-        draggedRepresentativeId={draggedRepresentativeId}
-        isManualRepresentativeFormOpen={isManualRepresentativeFormOpen}
-        manualRepresentativeForm={manualRepresentativeForm}
-        objectRepresentatives={objectDefaults.representativeLibrary}
-        selectedSignatories={selectedSignatories}
-        onAddManualRepresentative={onAddManualRepresentative}
-        onAddRepresentativeToAct={onAddRepresentativeToAct}
-        onChangeActRepresentativeSearch={onChangeActRepresentativeSearch}
-        onChangeManualRepresentativeForm={onChangeManualRepresentativeForm}
-        onDragRepresentativeEnd={onDragRepresentativeEnd}
-        onDragRepresentativeStart={onDragRepresentativeStart}
-        onMoveSelectedSignatory={onMoveSelectedSignatory}
-        onRemoveRepresentativeFromAct={onRemoveRepresentativeFromAct}
-        onReorderSelectedSignatory={onReorderSelectedSignatory}
-        onToggleManualRepresentativeForm={onToggleManualRepresentativeForm}
       />
     </section>
   );

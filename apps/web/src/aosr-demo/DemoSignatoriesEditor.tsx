@@ -1,4 +1,4 @@
-import type { SyntheticEvent } from 'react';
+import type { DragEvent, SyntheticEvent } from 'react';
 
 import type { DemoAosrRepresentative } from './demo-aosr-workspace.js';
 import type { MoveDirection, RepresentativeFormState } from './demo-aosr-ui.js';
@@ -7,6 +7,7 @@ import { DemoRepresentativeForm } from './DemoRepresentativeForm.js';
 interface DemoSignatoriesEditorProps {
   readonly actRepresentativeSearch: string;
   readonly draggedRepresentativeId: string | null;
+  readonly dropTargetRepresentativeId: string | null;
   readonly isManualRepresentativeFormOpen: boolean;
   readonly manualRepresentativeForm: RepresentativeFormState;
   readonly objectRepresentatives: readonly DemoAosrRepresentative[];
@@ -20,6 +21,7 @@ interface DemoSignatoriesEditorProps {
   ) => void;
   readonly onDragRepresentativeEnd: () => void;
   readonly onDragRepresentativeStart: (representativeId: string) => void;
+  readonly onDragRepresentativeTarget: (representativeId: string) => void;
   readonly onMoveSelectedSignatory: (representativeId: string, direction: MoveDirection) => void;
   readonly onRemoveRepresentativeFromAct: (representativeId: string) => void;
   readonly onReorderSelectedSignatory: (targetRepresentativeId: string) => void;
@@ -29,6 +31,7 @@ interface DemoSignatoriesEditorProps {
 export function DemoSignatoriesEditor({
   actRepresentativeSearch,
   draggedRepresentativeId,
+  dropTargetRepresentativeId,
   isManualRepresentativeFormOpen,
   manualRepresentativeForm,
   objectRepresentatives,
@@ -39,6 +42,7 @@ export function DemoSignatoriesEditor({
   onChangeManualRepresentativeForm,
   onDragRepresentativeEnd,
   onDragRepresentativeStart,
+  onDragRepresentativeTarget,
   onMoveSelectedSignatory,
   onRemoveRepresentativeFromAct,
   onReorderSelectedSignatory,
@@ -143,23 +147,39 @@ export function DemoSignatoriesEditor({
           <li
             className="signatory-order-item"
             data-dragging={draggedRepresentativeId === representative.id ? 'true' : undefined}
-            draggable
+            data-drop-target={
+              dropTargetRepresentativeId === representative.id &&
+              draggedRepresentativeId !== representative.id
+                ? 'true'
+                : undefined
+            }
             key={representative.id}
-            onDragEnd={onDragRepresentativeEnd}
+            onDragEnter={(event) => {
+              event.preventDefault();
+              onDragRepresentativeTarget(representative.id);
+            }}
             onDragOver={(event) => {
               event.preventDefault();
-            }}
-            onDragStart={() => {
-              onDragRepresentativeStart(representative.id);
+              event.dataTransfer.dropEffect = 'move';
             }}
             onDrop={(event) => {
               event.preventDefault();
               onReorderSelectedSignatory(representative.id);
             }}
           >
-            <span className="signatory-order-item__drag" aria-hidden="true">
-              ::
-            </span>
+            <button
+              aria-label={`Перетащить ${representative.fullName}`}
+              className="signatory-order-item__drag"
+              draggable
+              onDragEnd={onDragRepresentativeEnd}
+              onDragStart={(event: DragEvent<HTMLButtonElement>) => {
+                event.dataTransfer.effectAllowed = 'move';
+                onDragRepresentativeStart(representative.id);
+              }}
+              type="button"
+            >
+              <span aria-hidden="true">↕</span>
+            </button>
             <span className="signatory-order-item__position">{index + 1}</span>
             <span>
               <strong>{representative.roleLabel}</strong>

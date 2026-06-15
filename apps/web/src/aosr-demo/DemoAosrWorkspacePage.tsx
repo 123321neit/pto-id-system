@@ -1,6 +1,6 @@
 import { type SetStateAction, type SyntheticEvent, useEffect, useState } from 'react';
 
-import { getDemoActTypeById } from '../act-types/act-types.js';
+import { getDemoActTypeById, getDemoAosrFormVariantById } from '../act-types/act-types.js';
 import { DocumentPreviewDrawer } from '../document-preview/DocumentPreviewDrawer.js';
 import {
   getCertificateDocumentName,
@@ -105,6 +105,7 @@ export function DemoAosrWorkspacePage({
   );
   const [draggedDraftId, setDraggedDraftId] = useState<string | null>(null);
   const [draggedRepresentativeId, setDraggedRepresentativeId] = useState<string | null>(null);
+  const [representativeDropTargetId, setRepresentativeDropTargetId] = useState<string | null>(null);
   const [isObjectSettingsOpen, setObjectSettingsOpen] = useState(false);
   const [isHeaderOrganizationFormOpen, setHeaderOrganizationFormOpen] = useState(false);
   const [isRepresentativeLibraryOpen, setRepresentativeLibraryOpen] = useState(false);
@@ -144,6 +145,7 @@ export function DemoAosrWorkspacePage({
   }, [initialSelectedDraftId]);
 
   const selectedDraft = getSelectedDraft(visibleDrafts, selectedDraftId);
+  const selectedFormVariant = getDemoAosrFormVariantById(selectedDraft.formVariantId);
   const selectedSignatories = getDraftRepresentatives(selectedDraft);
   const selectedMaterials = getDraftMaterialCertificates(selectedDraft, certificateLibrary);
   const selectedObjectDocuments = getDraftObjectDocuments(selectedDraft, objectDocuments);
@@ -293,6 +295,7 @@ export function DemoAosrWorkspacePage({
 
   const reorderSelectedSignatory = (targetRepresentativeId: string): void => {
     if (draggedRepresentativeId === null || draggedRepresentativeId === targetRepresentativeId) {
+      setRepresentativeDropTargetId(null);
       return;
     }
 
@@ -300,6 +303,7 @@ export function DemoAosrWorkspacePage({
       reorderDraftRepresentatives(draft, draggedRepresentativeId, targetRepresentativeId),
     );
     setDraggedRepresentativeId(null);
+    setRepresentativeDropTargetId(null);
   };
 
   const reorderDrafts = (targetDraftId: string): void => {
@@ -399,6 +403,8 @@ export function DemoAosrWorkspacePage({
               documentSearch={objectDocumentSearch}
               documentTypeFilter={objectDocumentTypeFilter}
               draggedRepresentativeId={draggedRepresentativeId}
+              dropTargetRepresentativeId={representativeDropTargetId}
+              formVariant={selectedFormVariant}
               isCertificateLibraryOpen={isCertificateLibraryOpen}
               isManualRepresentativeFormOpen={isManualRepresentativeFormOpen}
               isObjectDocumentLibraryOpen={isObjectDocumentLibraryOpen}
@@ -430,8 +436,15 @@ export function DemoAosrWorkspacePage({
               onChangeMaterialSearch={setMaterialSearch}
               onDragRepresentativeEnd={() => {
                 setDraggedRepresentativeId(null);
+                setRepresentativeDropTargetId(null);
               }}
               onDragRepresentativeStart={setDraggedRepresentativeId}
+              onDragRepresentativeTarget={setRepresentativeDropTargetId}
+              onMoveHeaderOrganization={(headerOrganizationId, direction) => {
+                setObjectDefaults((currentDefaults) =>
+                  moveHeaderOrganizationBlock(currentDefaults, headerOrganizationId, direction),
+                );
+              }}
               onMoveSelectedSignatory={moveSelectedSignatory}
               onRemoveMaterialFromAct={(certificateId) => {
                 updateSelectedDraftWith((draft) =>
@@ -486,6 +499,7 @@ export function DemoAosrWorkspacePage({
             <span>
               Акт <strong>{selectedDraft.actNumber}</strong>
             </span>
+            <span>{selectedFormVariant.title}</span>
             <span>{formatDocumentDate(selectedDraft.actDate)}</span>
             <span>{finalApplications.length} приложений</span>
           </>
@@ -500,6 +514,7 @@ export function DemoAosrWorkspacePage({
       >
         <DemoAosrPreview
           finalApplications={finalApplications}
+          formVariant={selectedFormVariant}
           objectDefaults={objectDefaults}
           selectedDraft={selectedDraft}
           selectedMaterials={selectedMaterials}

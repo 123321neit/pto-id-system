@@ -1,3 +1,5 @@
+import { demoAosrActType, type DemoAosrFormVariantId } from '../act-types/act-types.js';
+
 export interface DemoAosrWorkspace {
   readonly id: string;
   readonly name: string;
@@ -21,6 +23,7 @@ export interface DemoAosrObjectDefaults {
   readonly projectName: string;
   readonly objectName: string;
   readonly defaultProjectDocumentation: string;
+  readonly defaultUnderTitleText: string;
   readonly headerOrganizations: readonly DemoAosrHeaderOrganization[];
   readonly representativeLibrary: readonly DemoAosrRepresentative[];
 }
@@ -79,6 +82,7 @@ export interface DemoAosrDraft {
   readonly copiesCount: string;
   readonly elevationRange: string;
   readonly excludedApplicationIds: readonly string[];
+  readonly formVariantId: DemoAosrFormVariantId;
   readonly materialCertificateIds: readonly string[];
   readonly objectDocumentIds: readonly string[];
   readonly periodEnd: string;
@@ -124,6 +128,7 @@ export type DemoAosrDraftField =
 export type DemoAosrObjectDefaultsField =
   | 'defaultComplianceStatement'
   | 'defaultProjectDocumentation'
+  | 'defaultUnderTitleText'
   | 'objectName'
   | 'projectName';
 
@@ -233,6 +238,7 @@ export const demoAosrWorkspace: DemoAosrWorkspace = {
       copiesCount: '4',
       elevationRange: 'отм. +3.200 - +3.850',
       excludedApplicationIds: [],
+      formVariantId: demoAosrActType.defaultFormVariantId,
       id: 'aosr-draft-001',
       materialCertificateIds: ['certificate-ducts-001', 'certificate-fasteners-001'],
       objectDocumentIds: ['object-document-scheme-ov-04', 'object-document-journal-input-control'],
@@ -257,6 +263,7 @@ export const demoAosrWorkspace: DemoAosrWorkspace = {
       copiesCount: '3',
       elevationRange: 'отм. 0.000 - +0.600',
       excludedApplicationIds: [],
+      formVariantId: demoAosrActType.defaultFormVariantId,
       id: 'aosr-draft-002',
       materialCertificateIds: ['certificate-firestop-001'],
       objectDocumentIds: ['object-document-project-ov-set'],
@@ -280,6 +287,8 @@ export const demoAosrWorkspace: DemoAosrWorkspace = {
       'Проектной документацией шифр РД-ОВ-12, рабочей документацией РД-ОВ-14, ППР-ОВ-2026, СП 60.13330.2020, СП 73.13330.2016, ГОСТ 34059-2017 и ТУ производителей применённых материалов.',
     defaultProjectDocumentation:
       'Рабочая документация РД-ОВ-12 лист 4; РД-ОВ-14 лист 2; спецификация оборудования и материалов СП-ОВ-02.',
+    defaultUnderTitleText:
+      'Участники освидетельствования произвели осмотр скрытых работ и составили настоящий акт.',
     headerOrganizations: [
       {
         caption:
@@ -329,6 +338,7 @@ export function createEmptyDemoAosrDraft({
     copiesCount: '',
     elevationRange: '',
     excludedApplicationIds: [],
+    formVariantId: demoAosrActType.defaultFormVariantId,
     id,
     materialCertificateIds: [],
     objectDocumentIds: [],

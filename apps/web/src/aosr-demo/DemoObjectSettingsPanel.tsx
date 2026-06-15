@@ -97,6 +97,7 @@ export function DemoObjectSettingsPanel({
         <div className="compact-summary-list" aria-label="Кратко об объектовых настройках">
           <span>{objectDefaults.headerOrganizations.length} блока шапки</span>
           <span>{objectDefaults.representativeLibrary.length} назначений представителей</span>
+          <span>текст под заголовком задан на объекте</span>
           <span>проектная документация задана на объекте</span>
           <span>нормативная база задана на объекте</span>
         </div>
@@ -129,6 +130,18 @@ export function DemoObjectSettingsPanel({
                   }}
                   rows={3}
                   value={objectDefaults.objectName}
+                />
+              </label>
+              <label className="act-form-grid__wide">
+                Текст под заголовком акта
+                <textarea
+                  className="medium-field"
+                  name="defaultUnderTitleText"
+                  onChange={(event) => {
+                    onUpdateObjectDefaults('defaultUnderTitleText', event.currentTarget.value);
+                  }}
+                  rows={3}
+                  value={objectDefaults.defaultUnderTitleText}
                 />
               </label>
               <label className="act-form-grid__wide">
