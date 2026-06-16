@@ -11,7 +11,11 @@ import type {
   DemoObjectDocument,
   DemoObjectDocumentType,
 } from './demo-aosr-workspace.js';
-import { getDraftComplianceStatement, hasDraftComplianceOverride } from './demo-aosr-workspace.js';
+import {
+  getDraftComplianceStatement,
+  isDraftComplianceFromObjectDefault,
+  isDraftUnderTitleFromObjectDefault,
+} from './demo-aosr-workspace.js';
 import {
   formatDocumentDate,
   type MoveDirection,
@@ -70,12 +74,11 @@ interface DemoCurrentActEditorProps {
   readonly onRemoveRepresentativeFromAct: (representativeId: string) => void;
   readonly onReorderSelectedSignatory: (targetRepresentativeId: string) => void;
   readonly onResetDraftComplianceToObjectDefault: () => void;
-  readonly onStartDraftComplianceOverride: () => void;
+  readonly onResetDraftUnderTitleToObjectDefault: () => void;
   readonly onToggleApplication: (applicationId: string) => void;
   readonly onToggleCertificateLibrary: () => void;
   readonly onToggleManualRepresentativeForm: () => void;
   readonly onToggleObjectDocumentLibrary: () => void;
-  readonly onUpdateDraftComplianceOverride: (value: string) => void;
   readonly onUpdateSelectedDraft: (field: DemoAosrDraftField, value: string) => void;
 }
 
@@ -118,16 +121,22 @@ export function DemoCurrentActEditor({
   onRemoveRepresentativeFromAct,
   onReorderSelectedSignatory,
   onResetDraftComplianceToObjectDefault,
-  onStartDraftComplianceOverride,
+  onResetDraftUnderTitleToObjectDefault,
   onToggleApplication,
   onToggleCertificateLibrary,
   onToggleManualRepresentativeForm,
   onToggleObjectDocumentLibrary,
-  onUpdateDraftComplianceOverride,
   onUpdateSelectedDraft,
 }: DemoCurrentActEditorProps): React.JSX.Element {
-  const complianceStatement = getDraftComplianceStatement(selectedDraft, objectDefaults);
-  const isComplianceOverridden = hasDraftComplianceOverride(selectedDraft);
+  const complianceStatement = getDraftComplianceStatement(selectedDraft);
+  const isComplianceFromDefaults = isDraftComplianceFromObjectDefault(
+    selectedDraft,
+    objectDefaults,
+  );
+  const isUnderTitleFromDefaults = isDraftUnderTitleFromObjectDefault(
+    selectedDraft,
+    objectDefaults,
+  );
   const readiness = buildDemoAosrReadiness({
     complianceStatement,
     materialsCount: selectedMaterials.length,
@@ -197,10 +206,32 @@ export function DemoCurrentActEditor({
             <span>Форма акта</span>
             <p>{formVariant.title}</p>
           </div>
-          <div className="print-header-field act-form-grid__wide">
-            <span>Текст под заголовком акта</span>
-            <p>{objectDefaults.defaultUnderTitleText}</p>
-            <small>Задаётся в настройках объекта и используется текущим актом.</small>
+          <div className="document-owned-field act-form-grid__wide">
+            <div className="document-owned-field__heading">
+              <label htmlFor="draftUnderTitleText">Текст под заголовком акта в документе</label>
+              <span className="source-chip">
+                {isUnderTitleFromDefaults ? 'По параметрам по умолчанию' : 'Изменено в документе'}
+              </span>
+            </div>
+            <textarea
+              className="medium-field"
+              id="draftUnderTitleText"
+              name="underTitleText"
+              onChange={(event) => {
+                onUpdateSelectedDraft('underTitleText', event.currentTarget.value);
+              }}
+              rows={3}
+              value={selectedDraft.underTitleText}
+            />
+            {isUnderTitleFromDefaults ? null : (
+              <button
+                className="compact-toggle"
+                onClick={onResetDraftUnderTitleToObjectDefault}
+                type="button"
+              >
+                Вернуть из параметров по умолчанию
+              </button>
+            )}
           </div>
         </div>
       </section>
@@ -272,7 +303,7 @@ export function DemoCurrentActEditor({
       <section className="form-section act-editor-card" aria-labelledby="project-docs-data-title">
         <h3 id="project-docs-data-title">2. Проектная документация</h3>
         <p className="readonly-field">{objectDefaults.defaultProjectDocumentation}</p>
-        <p className="helper-note">Значение берётся из настроек объекта.</p>
+        <p className="helper-note">Значение берётся из параметров по умолчанию.</p>
       </section>
 
       <DemoMaterialsSelector
@@ -334,53 +365,32 @@ export function DemoCurrentActEditor({
           <span>
             <h3 id="compliance-data-title">6. Соответствие работ</h3>
             <span className="source-chip">
-              {isComplianceOverridden
-                ? 'Изменено только для этого акта'
-                : 'Используется значение объекта'}
+              {isComplianceFromDefaults ? 'По параметрам по умолчанию' : 'Изменено в документе'}
             </span>
           </span>
-          {isComplianceOverridden ? (
+          {isComplianceFromDefaults ? null : (
             <button
               className="compact-toggle"
               onClick={onResetDraftComplianceToObjectDefault}
               type="button"
             >
-              Вернуться к значению объекта
-            </button>
-          ) : (
-            <button
-              className="compact-toggle compact-toggle--accent"
-              onClick={onStartDraftComplianceOverride}
-              type="button"
-            >
-              Изменить только для этого акта
+              Вернуть из параметров по умолчанию
             </button>
           )}
         </div>
 
-        {isComplianceOverridden ? (
-          <label className="act-form-grid__wide">
-            Значение только для этого акта
-            <textarea
-              className="large-field"
-              name="complianceStatementOverride"
-              onChange={(event) => {
-                onUpdateDraftComplianceOverride(event.currentTarget.value);
-              }}
-              rows={5}
-              value={selectedDraft.complianceStatementOverride ?? ''}
-            />
-          </label>
-        ) : (
-          <>
-            <p className="readonly-field" aria-label="Соответствие работ из настроек объекта">
-              {complianceStatement}
-            </p>
-            <p className="helper-note">
-              Базовый текст задаётся в настройках объекта и используется актом автоматически.
-            </p>
-          </>
-        )}
+        <label className="act-form-grid__wide">
+          Текст пункта 6 в документе
+          <textarea
+            className="large-field"
+            name="complianceStatement"
+            onChange={(event) => {
+              onUpdateSelectedDraft('complianceStatement', event.currentTarget.value);
+            }}
+            rows={5}
+            value={selectedDraft.complianceStatement}
+          />
+        </label>
       </section>
 
       <section className="form-section act-editor-card" aria-labelledby="subsequent-data-title">

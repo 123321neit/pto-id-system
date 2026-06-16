@@ -65,7 +65,7 @@ const objectSettingsSections: readonly {
   {
     id: 'header',
     label: 'Шапка акта',
-    summary: 'Текст под заголовком и организации',
+    summary: 'Подсказки для новых актов',
   },
   {
     id: 'representatives',
@@ -118,7 +118,7 @@ export function DemoObjectSettingsPanel({
         <div className="object-settings-dialog__header">
           <span>
             <p className="scope-label">Уровень объекта</p>
-            <h2 id="object-settings-title">Настройки объекта</h2>
+            <h2 id="object-settings-title">Параметры по умолчанию</h2>
           </span>
           <button className="compact-toggle" onClick={onCloseObjectSettings} type="button">
             Закрыть
@@ -126,12 +126,12 @@ export function DemoObjectSettingsPanel({
         </div>
 
         <p className="object-settings-dialog__intro">
-          Здесь собраны данные, которые повторяются в печатных документах объекта. Откройте один
-          раздел и спокойно уточните общие сведения, шапку, представителей или тексты акта.
+          Эти значения подставляются в новые документы как предложение. Уже созданные акты меняются
+          только в самом документе или через явное действие возврата к параметрам по умолчанию.
         </p>
 
         <div className="object-settings-layout">
-          <nav className="object-settings-menu" aria-label="Разделы настроек объекта">
+          <nav className="object-settings-menu" aria-label="Разделы параметров по умолчанию">
             {objectSettingsSections.map((section) => (
               <button
                 aria-current={activeSectionId === section.id ? 'page' : undefined}
@@ -183,7 +183,7 @@ export function DemoObjectSettingsPanel({
                 <section className="form-section" aria-labelledby="object-header-text-title">
                   <h3 id="object-header-text-title">Шапка акта</h3>
                   <label className="act-form-grid__wide">
-                    Текст под заголовком акта
+                    Текст под заголовком акта по умолчанию
                     <textarea
                       className="medium-field"
                       name="defaultUnderTitleText"

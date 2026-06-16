@@ -6,9 +6,9 @@
 
 # MASTER CONTEXT / SOURCE OF TRUTH
 
-# VERSION: 2026-06-16-PERIOD-DOCUMENT-UX-CLEANUP
+# VERSION: 2026-06-16-DOCUMENT-DEFAULT-PARAMETERS
 
-# STATUS: FIRST ALLOWED INFRASTRUCTURE BOOTSTRAP SCAFFOLD; CANONICAL ADR BASELINE ACCEPTED; BACKEND MODULE ARCHITECTURE SKELETON INTRODUCED; FIRST TECHNICAL FRONTEND-BACKEND STATUS SLICE INTRODUCED; DATABASE FOUNDATION TECHNICAL SLICE INTRODUCED; OBJECT STORAGE FOUNDATION TECHNICAL SLICE INTRODUCED; AUTH SHARING IMPLEMENTATION PLAN ADDED; USER IDENTITY SKELETON INTRODUCED; GLOBAL SYSTEM ADMIN MARKER INTRODUCED; OWNED WORKSPACE BASELINE INTRODUCED; FIRST MOCK AOSR DEMO UI SLICE INTRODUCED; MOCK AOSR CONFIGURABLE OBJECT HEADER ORGANIZATIONS AND REPRESENTATIVE LIBRARY INTRODUCED; MOCK AOSR DEMO UX/PREVIEW REFINED; MOCK APP SHELL AND OBJECT DASHBOARD INTRODUCED; FRONTEND-ONLY MOCK REPRESENTATIVES/ORGANIZATIONS MANAGEMENT PAGE INTRODUCED; FRONTEND-ONLY MOCK CERTIFICATE LIBRARY PAGE INTRODUCED; STAGE 5 MOCK AOSR WORKSPACE UX STABILIZED; AOSR EDITOR UX CLEANUP INTRODUCED; AOSR WORKSPACE DRAWER UX INTRODUCED; FRONTEND-ONLY MOCK OBJECT DOCUMENT LIBRARY INTRODUCED; AOSR WORKSPACE APPLICATIONS UX CLEANUP INTRODUCED; FRONTEND-ONLY MOCK OBJECT COMPLIANCE DEFAULTS AND ACT OVERRIDES INTRODUCED; FRONTEND-ONLY MOCK OBJECT WORKSPACE VISUAL PASS INTRODUCED; FRONTEND-ONLY MOCK OBJECT WORKSPACE SHELL INTRODUCED; AOSR DOCUMENT PREVIEW DRAWER UX INTRODUCED; AOSR DOCUMENT PREVIEW PAGE VISUALIZATION REFINED; FRONTEND-ONLY OBJECT DOCUMENT WORKSPACE INTRODUCED; FRONTEND-ONLY OBJECT CERTIFICATE WORKSPACE INTRODUCED; FRONTEND-ONLY ID REGISTRY V1 INTRODUCED; FRONTEND-ONLY FINAL ID PACKAGE MOCK INTRODUCED; FRONTEND-ONLY ACT TYPE METADATA PREP INTRODUCED; AOSR READINESS PANEL V1 INTRODUCED; FINAL PACKAGE READINESS V1 INTRODUCED; FRONTEND-ONLY OBJECT WORKSPACE UX HIERARCHY POLISH INTRODUCED; FRONTEND-ONLY OBJECT OVERVIEW AND GLOBAL CERTIFICATE ARCHITECTURE UX CORRECTION INTRODUCED; GLOBAL REUSABLE LIBRARIES AND ACT SNAPSHOTS ADR ACCEPTED; FRONTEND-ONLY PERIOD-FIRST OBJECT WORKSPACE MOCK INTRODUCED; FRONTEND-ONLY PERIOD-SCOPED AOSR CREATION MOCK INTRODUCED; FRONTEND-ONLY AOSR MANUAL NUMBER OVERRIDE MOCK INTRODUCED; FRONTEND-ONLY OBJECT WORKSPACE PREMIUM UX POLISH INTRODUCED; FRONTEND-ONLY GENERATED ID PACKAGE VIEWS UX INTRODUCED; FRONTEND-ONLY PRINT-ORDER AOSR EDITOR UX INTRODUCED; FRONTEND-ONLY UX OVERLOAD CLEANUP INTRODUCED; FRONTEND-ONLY RADICAL UX CLEANUP INTRODUCED; FRONTEND-ONLY PERIOD DOCUMENT UX CLEANUP INTRODUCED
+# STATUS: FIRST ALLOWED INFRASTRUCTURE BOOTSTRAP SCAFFOLD; CANONICAL ADR BASELINE ACCEPTED; BACKEND MODULE ARCHITECTURE SKELETON INTRODUCED; FIRST TECHNICAL FRONTEND-BACKEND STATUS SLICE INTRODUCED; DATABASE FOUNDATION TECHNICAL SLICE INTRODUCED; OBJECT STORAGE FOUNDATION TECHNICAL SLICE INTRODUCED; AUTH SHARING IMPLEMENTATION PLAN ADDED; USER IDENTITY SKELETON INTRODUCED; GLOBAL SYSTEM ADMIN MARKER INTRODUCED; OWNED WORKSPACE BASELINE INTRODUCED; FIRST MOCK AOSR DEMO UI SLICE INTRODUCED; MOCK AOSR CONFIGURABLE OBJECT HEADER ORGANIZATIONS AND REPRESENTATIVE LIBRARY INTRODUCED; MOCK AOSR DEMO UX/PREVIEW REFINED; MOCK APP SHELL AND OBJECT DASHBOARD INTRODUCED; FRONTEND-ONLY MOCK REPRESENTATIVES/ORGANIZATIONS MANAGEMENT PAGE INTRODUCED; FRONTEND-ONLY MOCK CERTIFICATE LIBRARY PAGE INTRODUCED; STAGE 5 MOCK AOSR WORKSPACE UX STABILIZED; AOSR EDITOR UX CLEANUP INTRODUCED; AOSR WORKSPACE DRAWER UX INTRODUCED; FRONTEND-ONLY MOCK OBJECT DOCUMENT LIBRARY INTRODUCED; AOSR WORKSPACE APPLICATIONS UX CLEANUP INTRODUCED; FRONTEND-ONLY MOCK OBJECT COMPLIANCE DEFAULTS AND ACT OVERRIDES INTRODUCED; FRONTEND-ONLY MOCK OBJECT WORKSPACE VISUAL PASS INTRODUCED; FRONTEND-ONLY MOCK OBJECT WORKSPACE SHELL INTRODUCED; AOSR DOCUMENT PREVIEW DRAWER UX INTRODUCED; AOSR DOCUMENT PREVIEW PAGE VISUALIZATION REFINED; FRONTEND-ONLY OBJECT DOCUMENT WORKSPACE INTRODUCED; FRONTEND-ONLY OBJECT CERTIFICATE WORKSPACE INTRODUCED; FRONTEND-ONLY ID REGISTRY V1 INTRODUCED; FRONTEND-ONLY FINAL ID PACKAGE MOCK INTRODUCED; FRONTEND-ONLY ACT TYPE METADATA PREP INTRODUCED; AOSR READINESS PANEL V1 INTRODUCED; FINAL PACKAGE READINESS V1 INTRODUCED; FRONTEND-ONLY OBJECT WORKSPACE UX HIERARCHY POLISH INTRODUCED; FRONTEND-ONLY OBJECT OVERVIEW AND GLOBAL CERTIFICATE ARCHITECTURE UX CORRECTION INTRODUCED; GLOBAL REUSABLE LIBRARIES AND ACT SNAPSHOTS ADR ACCEPTED; FRONTEND-ONLY PERIOD-FIRST OBJECT WORKSPACE MOCK INTRODUCED; FRONTEND-ONLY PERIOD-SCOPED AOSR CREATION MOCK INTRODUCED; FRONTEND-ONLY AOSR MANUAL NUMBER OVERRIDE MOCK INTRODUCED; FRONTEND-ONLY OBJECT WORKSPACE PREMIUM UX POLISH INTRODUCED; FRONTEND-ONLY GENERATED ID PACKAGE VIEWS UX INTRODUCED; FRONTEND-ONLY PRINT-ORDER AOSR EDITOR UX INTRODUCED; FRONTEND-ONLY UX OVERLOAD CLEANUP INTRODUCED; FRONTEND-ONLY RADICAL UX CLEANUP INTRODUCED; FRONTEND-ONLY PERIOD DOCUMENT UX CLEANUP INTRODUCED; FRONTEND-ONLY DOCUMENT DEFAULT PARAMETERS AND DOCUMENT-OWNED AOSR TEXTS INTRODUCED
 
 # LANGUAGE: RU
 
@@ -31,7 +31,7 @@
 Текущая стадия проекта:
 
 ```text
-FIRST ALLOWED INFRASTRUCTURE BOOTSTRAP SCAFFOLD; CANONICAL ADR BASELINE ACCEPTED; BACKEND MODULE ARCHITECTURE SKELETON INTRODUCED; FIRST TECHNICAL FRONTEND-BACKEND STATUS SLICE INTRODUCED; DATABASE FOUNDATION TECHNICAL SLICE INTRODUCED; OBJECT STORAGE FOUNDATION TECHNICAL SLICE INTRODUCED; AUTH SHARING IMPLEMENTATION PLAN ADDED; USER IDENTITY SKELETON INTRODUCED; GLOBAL SYSTEM ADMIN MARKER INTRODUCED; OWNED WORKSPACE BASELINE INTRODUCED; FIRST MOCK AOSR DEMO UI SLICE INTRODUCED; MOCK AOSR CONFIGURABLE OBJECT HEADER ORGANIZATIONS AND REPRESENTATIVE LIBRARY INTRODUCED; MOCK AOSR DEMO UX/PREVIEW REFINED; MOCK APP SHELL AND OBJECT DASHBOARD INTRODUCED; FRONTEND-ONLY MOCK REPRESENTATIVES/ORGANIZATIONS MANAGEMENT PAGE INTRODUCED; FRONTEND-ONLY MOCK CERTIFICATE LIBRARY PAGE INTRODUCED; STAGE 5 MOCK AOSR WORKSPACE UX STABILIZED; AOSR EDITOR UX CLEANUP INTRODUCED; AOSR WORKSPACE DRAWER UX INTRODUCED; FRONTEND-ONLY MOCK OBJECT DOCUMENT LIBRARY INTRODUCED; AOSR WORKSPACE APPLICATIONS UX CLEANUP INTRODUCED; FRONTEND-ONLY MOCK OBJECT COMPLIANCE DEFAULTS AND ACT OVERRIDES INTRODUCED; FRONTEND-ONLY MOCK OBJECT WORKSPACE VISUAL PASS INTRODUCED; FRONTEND-ONLY MOCK OBJECT WORKSPACE SHELL INTRODUCED; AOSR DOCUMENT PREVIEW DRAWER UX INTRODUCED; AOSR DOCUMENT PREVIEW PAGE VISUALIZATION REFINED; FRONTEND-ONLY OBJECT DOCUMENT WORKSPACE INTRODUCED; FRONTEND-ONLY OBJECT CERTIFICATE WORKSPACE INTRODUCED; FRONTEND-ONLY ID REGISTRY V1 INTRODUCED; FRONTEND-ONLY FINAL ID PACKAGE MOCK INTRODUCED; FRONTEND-ONLY ACT TYPE METADATA PREP INTRODUCED; AOSR READINESS PANEL V1 INTRODUCED; FINAL PACKAGE READINESS V1 INTRODUCED; FRONTEND-ONLY OBJECT WORKSPACE UX HIERARCHY POLISH INTRODUCED; FRONTEND-ONLY OBJECT OVERVIEW AND GLOBAL CERTIFICATE ARCHITECTURE UX CORRECTION INTRODUCED; GLOBAL REUSABLE LIBRARIES AND ACT SNAPSHOTS ADR ACCEPTED; FRONTEND-ONLY PERIOD-FIRST OBJECT WORKSPACE MOCK INTRODUCED; FRONTEND-ONLY PERIOD-SCOPED AOSR CREATION MOCK INTRODUCED; FRONTEND-ONLY AOSR MANUAL NUMBER OVERRIDE MOCK INTRODUCED; FRONTEND-ONLY OBJECT WORKSPACE PREMIUM UX POLISH INTRODUCED; FRONTEND-ONLY GENERATED ID PACKAGE VIEWS UX INTRODUCED; FRONTEND-ONLY PRINT-ORDER AOSR EDITOR UX INTRODUCED; FRONTEND-ONLY UX OVERLOAD CLEANUP INTRODUCED; FRONTEND-ONLY RADICAL UX CLEANUP INTRODUCED; FRONTEND-ONLY PERIOD DOCUMENT UX CLEANUP INTRODUCED
+FIRST ALLOWED INFRASTRUCTURE BOOTSTRAP SCAFFOLD; CANONICAL ADR BASELINE ACCEPTED; BACKEND MODULE ARCHITECTURE SKELETON INTRODUCED; FIRST TECHNICAL FRONTEND-BACKEND STATUS SLICE INTRODUCED; DATABASE FOUNDATION TECHNICAL SLICE INTRODUCED; OBJECT STORAGE FOUNDATION TECHNICAL SLICE INTRODUCED; AUTH SHARING IMPLEMENTATION PLAN ADDED; USER IDENTITY SKELETON INTRODUCED; GLOBAL SYSTEM ADMIN MARKER INTRODUCED; OWNED WORKSPACE BASELINE INTRODUCED; FIRST MOCK AOSR DEMO UI SLICE INTRODUCED; MOCK AOSR CONFIGURABLE OBJECT HEADER ORGANIZATIONS AND REPRESENTATIVE LIBRARY INTRODUCED; MOCK AOSR DEMO UX/PREVIEW REFINED; MOCK APP SHELL AND OBJECT DASHBOARD INTRODUCED; FRONTEND-ONLY MOCK REPRESENTATIVES/ORGANIZATIONS MANAGEMENT PAGE INTRODUCED; FRONTEND-ONLY MOCK CERTIFICATE LIBRARY PAGE INTRODUCED; STAGE 5 MOCK AOSR WORKSPACE UX STABILIZED; AOSR EDITOR UX CLEANUP INTRODUCED; AOSR WORKSPACE DRAWER UX INTRODUCED; FRONTEND-ONLY MOCK OBJECT DOCUMENT LIBRARY INTRODUCED; AOSR WORKSPACE APPLICATIONS UX CLEANUP INTRODUCED; FRONTEND-ONLY MOCK OBJECT COMPLIANCE DEFAULTS AND ACT OVERRIDES INTRODUCED; FRONTEND-ONLY MOCK OBJECT WORKSPACE VISUAL PASS INTRODUCED; FRONTEND-ONLY MOCK OBJECT WORKSPACE SHELL INTRODUCED; AOSR DOCUMENT PREVIEW DRAWER UX INTRODUCED; AOSR DOCUMENT PREVIEW PAGE VISUALIZATION REFINED; FRONTEND-ONLY OBJECT DOCUMENT WORKSPACE INTRODUCED; FRONTEND-ONLY OBJECT CERTIFICATE WORKSPACE INTRODUCED; FRONTEND-ONLY ID REGISTRY V1 INTRODUCED; FRONTEND-ONLY FINAL ID PACKAGE MOCK INTRODUCED; FRONTEND-ONLY ACT TYPE METADATA PREP INTRODUCED; AOSR READINESS PANEL V1 INTRODUCED; FINAL PACKAGE READINESS V1 INTRODUCED; FRONTEND-ONLY OBJECT WORKSPACE UX HIERARCHY POLISH INTRODUCED; FRONTEND-ONLY OBJECT OVERVIEW AND GLOBAL CERTIFICATE ARCHITECTURE UX CORRECTION INTRODUCED; GLOBAL REUSABLE LIBRARIES AND ACT SNAPSHOTS ADR ACCEPTED; FRONTEND-ONLY PERIOD-FIRST OBJECT WORKSPACE MOCK INTRODUCED; FRONTEND-ONLY PERIOD-SCOPED AOSR CREATION MOCK INTRODUCED; FRONTEND-ONLY AOSR MANUAL NUMBER OVERRIDE MOCK INTRODUCED; FRONTEND-ONLY OBJECT WORKSPACE PREMIUM UX POLISH INTRODUCED; FRONTEND-ONLY GENERATED ID PACKAGE VIEWS UX INTRODUCED; FRONTEND-ONLY PRINT-ORDER AOSR EDITOR UX INTRODUCED; FRONTEND-ONLY UX OVERLOAD CLEANUP INTRODUCED; FRONTEND-ONLY RADICAL UX CLEANUP INTRODUCED; FRONTEND-ONLY PERIOD DOCUMENT UX CLEANUP INTRODUCED; FRONTEND-ONLY DOCUMENT DEFAULT PARAMETERS AND DOCUMENT-OWNED AOSR TEXTS INTRODUCED
 ```
 
 Проект принял первый явно разрешённый infrastructure/bootstrap scaffold,
@@ -51,6 +51,7 @@ Canonical ADR baseline accepted. Authoritative ADR references:
 - `docs/adr/0004-immutable-revisions-and-package-snapshots.md`
 - `docs/adr/0005-modular-monolith-and-bounded-contexts.md`
 - `docs/adr/0006-global-reusable-libraries-and-act-snapshots.md`
+- `docs/adr/0007-document-defaults-suggestions-and-controlled-updates.md`
 
 Future implementation must comply with these ADRs. They consolidate existing accepted decisions only and do not permit production feature coding.
 
@@ -132,9 +133,9 @@ uploads, no OCR, no backend, no persistence and no real file storage. The
 dashboard certificate, organization and representative pages now share the same
 frontend mock store with the AOSR workspace, so added demo records appear in the
 AOSR material, signatory and object-organization pickers. Stage 5 also clarifies
-the AOSR workspace mental model: object settings stay behind a compact button,
-the middle column is presented as `Рабочая область акта`, and UI copy separates
-`Настройки объекта` from `Текущий акт`. The intended future model remains
+the AOSR workspace mental model: default parameters stay behind a compact
+button, the middle column is presented as `Рабочая область акта`, and UI copy
+separates object-level reusable defaults from `Текущий акт`. The intended future model remains
 `global library -> object binding/snapshot -> act usage`; for demo convenience,
 object representatives may still be prefilled from the global mock library, while
 the real system will require user selection/binding for the object. Exact
@@ -145,7 +146,7 @@ route/controller, auth/session, upload, real DOCX/PDF generation, AI/OCR, share
 code/grant or production business logic.
 
 Stage: AOSR editor UX cleanup. The current frontend-only mock AOSR editor moved
-object settings out of the inline act form into a dedicated button-opened
+default parameters out of the inline act form into a dedicated button-opened
 dialog/panel, while preserving object header organization and representative
 library editing in memory. The visible act editor now follows AOSR field order
 more closely: general act data, hidden works, project documentation, materials
@@ -199,14 +200,11 @@ auth/session, uploads, file storage, OCR/AI, real DOCX/PDF generation, share
 codes/grants or production business logic were introduced.
 
 Stage: frontend-only mock object compliance defaults and act overrides. The
-object settings dialog now has a dedicated `Нормативная и проектная база
-объекта` section with the object-level default text for point 6
-`Соответствие работ предъявляемым требованиям`. Current AOSR drafts no longer
-own the compliance text by default: the act resolves it from object settings,
-shows `Используется значение объекта`, and the preview consumes the same object
-value. For exceptions, the user can choose `Изменить только для этого акта`,
-edit an act-only override, see the preview use that override, and return to the
-object value without mutating object defaults. This remains a frontend-only
+default parameters dialog has a dedicated point 6 default text for
+`Соответствие работ предъявляемым требованиям`. ADR 0007 supersedes the earlier
+live-default behavior: current AOSR drafts own point 6 text after creation,
+show whether it still matches current defaults, and can explicitly restore from
+current default parameters without mutating those defaults. This remains a frontend-only
 in-memory mock and does not add backend, persistence, Prisma/schema/migrations,
 routes/controllers, auth/session, uploads, file storage, OCR/AI, real
 DOCX/PDF generation, share codes/grants or production business logic.
@@ -225,7 +223,7 @@ behavior was introduced.
 Stage: frontend-only mock object workspace shell. The opened object is now the
 central entity of the demo. The object workspace has left navigation for
 `Акты`, `Сертификаты`, `Документы объекта`, `Представители`, `Реестр ИД` and
-`Настройки объекта`, object status and mock quick metrics. Existing AOSR editing
+default parameters, object status and mock quick metrics. Existing AOSR editing
 remains available as `Object -> Акты -> АОСР` without rewriting the AOSR editor.
 `Сертификаты`, `Документы объекта` and `Реестр ИД` are professional placeholders
 for future object sections, while the existing representatives/organizations
@@ -541,7 +539,7 @@ Stage: frontend-only print-order AOSR editor UX. The current AOSR editor now
 follows the real printed act order so the user fills the future printed
 document from top to bottom instead of translating data between an arbitrary UI
 structure and the final АОСР. The editor order is: printed header data
-(`Номер акта`, `Дата акта`, object, form title and object-level under-title
+(`Номер акта`, `Дата акта`, object, form title and under-title
 text), organizations participating in the act with configurable display order,
 current act signatories, numbered points 1-7, additional data and applications.
 Organization order is editable from the act editor and updates the preview.
@@ -549,19 +547,19 @@ Signatories were moved near the top immediately after organizations/header and
 their ordering interaction now has a dedicated drag handle, visible drop target
 and explicit move buttons. A small frontend metadata model records the current
 form variant, with existing demo drafts using `АОСР 1` by default and future
-variants intended to plug into the same model. Under-title text comes from
-object settings and is consumed by acts by default; no per-act under-title
-override is introduced. Empty fields remain allowed so future print generation
-can render blank manual-fill lines. This is frontend-only mock UX/model
+variants intended to plug into the same model. ADR 0007 later supersedes the
+live under-title behavior: under-title text is copied from default parameters
+into a draft at creation and is then document-owned. Empty fields remain
+allowed so future print generation can render blank manual-fill lines. This is frontend-only mock UX/model
 metadata and adds no backend/API, persistence, Prisma/schema/migrations, auth,
 uploads, OCR/AI, DOCX/PDF/ZIP generation or production business logic.
 
 Stage: frontend-only UX overload cleanup. UX cleanup: reduced interface
-overload, simplified object settings, clarified primary actions. Object
+overload, simplified default parameters, clarified primary actions. Object
 Overview keeps document creation as the only prominent primary action,
 secondary package/navigation actions are calmer, AOSR and package readiness
-blocks use `Подсказки`, and object settings are grouped around reusable
-printed-document data instead of summary chips. This is frontend-only UX
+blocks use `Подсказки`, and default parameters are grouped around reusable
+printed-document suggestions instead of summary chips. This is frontend-only UX
 cleanup and adds no new business features, backend/API, persistence,
 Prisma/schema/migrations, OCR/AI or DOCX/PDF/ZIP behavior.
 
@@ -575,12 +573,45 @@ user opens the new document manually from the list. Registry and Periodic ID on
 the period page are compact secondary generated views from period documents, so
 they do not visually compete with the documents list. Object navigation is
 split into `Работа` (`Обзор`, `Периоды`) and `Сервис` (`Документы объекта`,
-`Итоговая ИД`, `Настройки объекта`) so daily work stays primary. Object
-settings keep sectioned layout but use calmer cards, a clearer active section
+`Итоговая ИД`, `Параметры по умолчанию`) so daily work stays primary. Default
+parameters keep sectioned layout but use calmer cards, a clearer active section
 and less AOSR-only wording. Real registry implementation is still coming soon,
 and numbering settings are planned for a later stage. This is frontend-only UX
 cleanup and adds no backend/API, Prisma/schema/migrations, persistence, auth,
 uploads, OCR/AI, DOCX/PDF/ZIP generation or production business logic.
+
+Stage: frontend-only document default parameters and document-owned AOSR texts.
+Object-level reusable values are now called `Параметры по умолчанию` in the UI.
+They are default suggestions for newly created documents, not live settings
+that mutate existing acts. The current mock copies `defaultUnderTitleText` and
+`defaultComplianceStatement` into each new AOSR draft. Existing drafts own their
+under-title text and point 6 text after creation; changing default parameters
+does not update those drafts. In the AOSR editor both fields show compact
+origin text: `По параметрам по умолчанию` when the document value still matches
+the current default and `Изменено в документе` when it differs. Each field can
+be edited directly and can explicitly restore the current default with
+`Вернуть из параметров по умолчанию`. Empty values remain allowed.
+
+ADR 0007 records the project rule `Параметры по умолчанию -> Предложение ->
+Самостоятельный документ`. Future numbering settings follow the same direction:
+automatic numbering is only a suggestion, document numbers may be edited or
+left empty, manual numbers do not mutate the sequence, existing documents are
+not auto-renumbered, and deleted numbers are not reused by default. Future
+package release snapshots may freeze a historical package, but no package
+release implementation is introduced here.
+
+Что не было введено:
+
+- no numbering settings UI;
+- no real registry generation;
+- no package release snapshots;
+- no backend routes/controllers or API;
+- no Prisma/schema/migrations;
+- no persistence or localStorage;
+- no uploads or file storage;
+- no OCR or AI extraction;
+- no DOCX/PDF/ZIP generation;
+- no production AOSR, registry, package or numbering business logic.
 
 ---
 
@@ -849,7 +880,7 @@ Object — главный контейнер строительного прое
 
 Содержит/связывает:
 
-- настройки объекта;
+- параметры по умолчанию объекта;
 - папочную структуру;
 - numbering settings;
 - representatives bindings;
@@ -1186,7 +1217,7 @@ UI должен быть:
 - package builder;
 - certificate library access;
 - scheme upload;
-- object settings.
+- default parameters.
 
 ### 18.3 Folder view
 
@@ -2218,7 +2249,7 @@ only for infrastructure/access foundation confidence. `docs/20` remains the requ
 implementation sequence. It does not permit immediate Prisma models, migrations,
 API routes, login/session implementation, share codes or grants.
 Следующий implementation step должен быть отдельной явной задачей и проверяться
-against `docs/PROJECT_MEMORY.md`, canonical ADR 0001-0005, `docs/19` and
+against `docs/PROJECT_MEMORY.md`, accepted ADRs in `docs/adr/`, `docs/19` and
 `docs/20`.
 
 Pre-schema источники baseline:
@@ -2300,7 +2331,7 @@ docs/18-initial-repository-bootstrap-and-development-rules-v1.md
 - first scaffold is limited to tooling/app shells/shared config and MUST NOT include production features, Prisma schema, migrations, OpenAPI, real auth/uploads/queue/storage/generation, AI/OCR or deployment infrastructure;
 - infrastructure portability/no server lock-in is mandatory: provider is replaceable, config/env drives database/Redis/storage/public URLs/CORS/session/app URLs, provider SDKs stay inside infrastructure adapters, and generated artifact links resolve through storage/download service;
 - docs/16 has implementation precedence over older docs/08 TestAct candidate wording;
-- canonical ADR 0001-0005 physical files now exist in `docs/adr/` and are authoritative references for implementation compliance;
+- canonical ADR 0001-0005 physical files now exist in `docs/adr/`; later accepted ADRs extend this implementation compliance set;
 - Foreman active permissions are blocked without separate approval;
 - exact first AOSR template participant requirements must not be hardcoded before template review;
 - architecture violation criteria and stop/correct process are defined.
@@ -2565,7 +2596,7 @@ Registry = derived projection, never source of truth
 
 | Блок реестра                   | Source data                                        | Что нельзя делать                                                          |
 | ------------------------------ | -------------------------------------------------- | -------------------------------------------------------------------------- |
-| Шапка объекта                  | `Object`, object settings                          | Не хранить единственную копию объекта в тексте реестра.                    |
+| Шапка объекта                  | `Object`, default parameters / object metadata     | Не хранить единственную копию объекта в тексте реестра.                    |
 | Подрядчик/исполнители          | `ObjectCompanySnapshot`, contract/work settings    | Не подтягивать будущие изменения `CompanyProfile` в исторический комплект. |
 | Комплект рабочих чертежей      | `ProjectDrawingSet`                                | Не смешивать с `ExecutiveScheme`.                                          |
 | Сертификаты/документы качества | `Certificate Library`, act refs, package scope     | Не показывать номер без существующего файла library item.                  |
@@ -2808,7 +2839,7 @@ Initial Repository Bootstrap and Development Rules V1:
 - фиксирует PostgreSQL + Prisma, NestJS, React + Vite + TS, Redis/BullMQ and S3-compatible storage abstraction as guarded implementation directions;
 - фиксирует infrastructure portability/no server lock-in: deployment provider replaceable, server/provider-specific assumptions forbidden in domain/application code, environment/config drives database/Redis/object storage/public URLs/CORS/session/base URLs, generated artifact links resolved through storage/download service;
 - фиксирует docs/16 precedence over older docs/08 TestAct candidate wording;
-- requires canonical ADR 0001-0005 physical presence and implementation compliance;
+- requires canonical ADR 0001-0005 physical presence; later accepted ADRs extend the implementation compliance set;
 - блокирует active Foreman permissions and complex RBAC for MVP; access follows `docs/19-sharing-and-access-model-v1.md`;
 - запрещает hardcoding exact first AOSR participant requirements before template review;
 - defines architecture violation and stop/correct process.
@@ -2852,7 +2883,7 @@ Initial Repository Bootstrap and Development Rules V1:
 31. Foreman active permissions must not be implemented without separate approval.
 32. Exact first AOSR participant requirements must not be hardcoded before template review.
 33. Infrastructure provider/server lock-in is forbidden: database, Redis, storage, public/download URLs, CORS, session secrets and app base URLs are config-driven; provider SDKs stay inside narrow infrastructure adapters.
-34. Canonical ADR baseline 0001-0005 in `docs/adr/` is accepted, and ADR 0006 adds the accepted global reusable libraries / act snapshots rule; all must be followed by future implementation work.
+34. Canonical ADR baseline in `docs/adr/` is accepted: ADR 0006 adds the accepted global reusable libraries / act snapshots rule, and ADR 0007 adds the accepted document default parameters / proposal rule; all must be followed by future implementation work.
 35. `docs/19-sharing-and-access-model-v1.md` supersedes `docs/10-auth-workspace-rbac-model.md` for MVP implementation scope.
 36. `docs/20-auth-sharing-implementation-plan-v1.md` fixes auth/sharing implementation sequence; do not skip from docs to share grants, certificate-library sharing, Prisma models, migrations or API routes without separate phase-scoped approval.
 37. Phase 1 user identity skeleton is only `Actor` primitive plus current actor resolver utility/port; identity alone grants no workspace, document, certificate, package or file access.
@@ -2868,6 +2899,7 @@ Initial Repository Bootstrap and Development Rules V1:
     user-level libraries. Objects store assignments/links, and acts store
     printed snapshots so later global library edits do not silently change
     already formed acts.
+41. Object-level "settings" for typed document creation are `Параметры по умолчанию`: proposal defaults copied into new documents. Existing documents change only through document edits or explicit restore/controlled update.
 
 ---
 
@@ -2894,7 +2926,7 @@ Initial Repository Bootstrap and Development Rules V1:
 | Можно ли использовать загруженный проект для AI-assisted ИД и поиска ошибок? | Да, как Workspace/Object-scoped source material с proposals-only workflow.                                                                                                                                                                                                                                                                                                                                                                                  | Structured data остаются source of truth; extracted data/links/findings требуют user confirmation, traceability and audit.                                                                                                                                                                                     |
 | Где хранить данные компании на объекте?                                      | Через `ObjectCompanySnapshot`.                                                                                                                                                                                                                                                                                                                                                                                                                              | Изменение профиля компании не переписывает исторические документы объекта.                                                                                                                                                                                                                                     |
 | Может ли Object владеть всем сразу?                                          | Нет.                                                                                                                                                                                                                                                                                                                                                                                                                                                        | Требуются отдельные aggregates/contexts для documents, certificates, schemes, templates и packages.                                                                                                                                                                                                            |
-| Какая стадия проекта сейчас?                                                 | Infrastructure scaffold accepted; canonical ADR baseline accepted; backend module skeleton, technical status slice, database foundation technical slice, object storage foundation technical slice, auth sharing implementation plan, Phase 1 user identity skeleton, Phase 2 global system admin marker, Phase 3 owned workspace baseline and ADR 0006 global reusable libraries introduced; feature coding still blocked beyond explicitly scoped slices. | Следующий implementation step требует отдельного явного задания и проверки against project memory, ADR 0001-0006 and `docs/20` when auth/sharing is involved.                                                                                                                                                  |
+| Какая стадия проекта сейчас?                                                 | Infrastructure scaffold accepted; canonical ADR baseline accepted; backend module skeleton, technical status slice, database foundation technical slice, object storage foundation technical slice, auth sharing implementation plan, Phase 1 user identity skeleton, Phase 2 global system admin marker, Phase 3 owned workspace baseline, ADR 0006 global reusable libraries and ADR 0007 document default parameters introduced; feature coding still blocked beyond explicitly scoped slices. | Следующий implementation step требует отдельного явного задания и проверки against project memory, accepted ADRs in `docs/adr/` and `docs/20` when auth/sharing is involved.                                                                                                                                                  |
 | Кто является пользователем SaaS?                                             | Физическое лицо с одним аккаунтом и owned working context.                                                                                                                                                                                                                                                                                                                                                                                                  | Пользователь может работать сам и подключаться к чужим resources через share grants.                                                                                                                                                                                                                           |
 | Где живут права доступа в MVP?                                               | В resource-scoped `ShareGrant`, выданном owner через share code / invite code.                                                                                                                                                                                                                                                                                                                                                                              | Capabilities replace roles; default access is view-only and default deny when capability missing.                                                                                                                                                                                                              |
 | Что случилось с RBAC role matrix?                                            | Superseded for MVP by `docs/19-sharing-and-access-model-v1.md`.                                                                                                                                                                                                                                                                                                                                                                                             | `Foreman` и `Owner/Admin/PTO Engineer/Viewer` matrix deferred.                                                                                                                                                                                                                                                 |
@@ -2909,7 +2941,7 @@ Initial Repository Bootstrap and Development Rules V1:
 | Какой first MVP scope принят к review?                                       | `docs/16-mvp-scope-and-first-forms-v1.md`.                                                                                                                                                                                                                                                                                                                                                                                                                  | АОСР mandatory first-class form; certificate library, executive schemes, derived registry, package outputs and onboarding hints входят; `TestAct`/`TechnicalReadinessAct`, AI/OCR dependency and enterprise/platform features deferred.                                                                        |
 | Какой stack/implementation direction выбран для MVP?                         | `docs/17-tech-stack-and-implementation-strategy-v1.md`.                                                                                                                                                                                                                                                                                                                                                                                                     | React/TypeScript/Vite frontend, NestJS modular monolith backend, PostgreSQL, Redis/BullMQ, domain-scoped storage, deterministic DOCX/PDF/ZIP generation, PostgreSQL-first search and optional proposal-only AI/OCR. Feature coding remains blocked without separate explicit task.                             |
 | Какие правила первого scaffold действуют?                                    | `docs/18-initial-repository-bootstrap-and-development-rules-v1.md`.                                                                                                                                                                                                                                                                                                                                                                                         | First scaffold limited to tooling/app shells/placeholders. Database and object storage foundations now have separately authorized technical health boundaries only; no domain models, migrations, OpenAPI, real auth/uploads/file APIs/queue/generation, AI/OCR or deployment infra without separate approval. |
-| Какие ADR являются canonical/accepted?                                       | `docs/adr/0001-structured-data-source-of-truth.md`, `docs/adr/0002-typed-document-domain-model.md`, `docs/adr/0003-file-backed-evidence-and-derived-artifacts.md`, `docs/adr/0004-immutable-revisions-and-package-snapshots.md`, `docs/adr/0005-modular-monolith-and-bounded-contexts.md`, `docs/adr/0006-global-reusable-libraries-and-act-snapshots.md`.                                                                                                  | Future implementation must comply with these files; they consolidate/record accepted decisions only and do not add feature/code permission.                                                                                                                                                                    |
+| Какие ADR являются canonical/accepted?                                       | `docs/adr/0001-structured-data-source-of-truth.md`, `docs/adr/0002-typed-document-domain-model.md`, `docs/adr/0003-file-backed-evidence-and-derived-artifacts.md`, `docs/adr/0004-immutable-revisions-and-package-snapshots.md`, `docs/adr/0005-modular-monolith-and-bounded-contexts.md`, `docs/adr/0006-global-reusable-libraries-and-act-snapshots.md`, `docs/adr/0007-document-defaults-suggestions-and-controlled-updates.md`.                                                                                                  | Future implementation must comply with these files; they consolidate/record accepted decisions only and do not add feature/code permission.                                                                                                                                                                    |
 
 ### 51.1 Accepted ADR register
 
@@ -2921,6 +2953,7 @@ Initial Repository Bootstrap and Development Rules V1:
 | ADR 0004 | `docs/adr/0004-immutable-revisions-and-package-snapshots.md`: final edits create new revisions; released revisions and package snapshots are immutable; no silent mutation/history rewrite.                                          | Принято; canonical. |
 | ADR 0005 | `docs/adr/0005-modular-monolith-and-bounded-contexts.md`: modular monolith first with bounded contexts; no premature microservices/event sourcing/CQRS split; infrastructure adapters isolated.                                      | Принято; canonical. |
 | ADR 0006 | `docs/adr/0006-global-reusable-libraries-and-act-snapshots.md`: certificates, organizations and representatives are global reusable libraries; objects store assignments/links; acts store printed snapshots.                        | Принято.            |
+| ADR 0007 | `docs/adr/0007-document-defaults-suggestions-and-controlled-updates.md`: object-level defaults are proposals for new documents; created documents own copied text/values and change only by document edit or explicit restore/update.  | Принято.            |
 
 ### 51.2 Boundary baseline applied in Conceptual Database Schema V1
 
@@ -3036,7 +3069,7 @@ Implementation sequence is fixed in `docs/20-auth-sharing-implementation-plan-v1
 | Scope corruption controls  | Docs/16 overrides older docs/08 TestAct candidate wording; Foreman active permissions blocked; AOSR participant requirements not hardcoded before template review.     | Template review and later permission policy.                                                  |
 | Architecture invariants    | Structured data source of truth, typed AOSR first, registry derived, immutable snapshots/revisions, AI proposal-only, modular monolith and no cross-workspace leakage. | Concrete implementation details.                                                              |
 | Infrastructure portability | Deployment provider is replaceable; server-specific assumptions, hardcoded hosts/paths and provider SDK leakage outside infrastructure adapters are forbidden.         | Concrete deployment provider/config values.                                                   |
-| ADR handling               | Canonical ADR 0001-0005 physical files exist in `docs/adr/` and are authoritative implementation references.                                                           | Future implementation must comply; changing accepted principles requires explicit ADR review. |
+| ADR handling               | Accepted ADR files in `docs/adr/` are authoritative implementation references.                                                                                         | Future implementation must comply; changing accepted principles requires explicit ADR review. |
 
 Документ подготовлен для review и не разрешает production code/scaffold by itself. После его принятия следующий шаг — отдельное явно ограниченное first scaffold task; feature coding remains blocked until scaffold is accepted.
 
@@ -3659,7 +3692,8 @@ What was not introduced:
 Recommended next step: request a separate, explicitly scoped backend
 application skeleton task for workspace/session isolation foundations. Any
 database/API/storage/queue/package/AOSR/AI work must remain blocked until its
-own task is checked against `docs/PROJECT_MEMORY.md` and canonical ADR 0001-0005.
+own task is checked against `docs/PROJECT_MEMORY.md` and accepted ADRs in
+`docs/adr/`.
 
 ### 2026-05-28 — First technical frontend-backend status slice introduced
 
@@ -4063,9 +4097,9 @@ production domain/API/persistence work remain separate explicit tasks.
 Добавлено/уточнено:
 
 - `DemoAosrWorkspacePage.tsx` split into smaller frontend-only components for
-  document tree, object settings, header organizations, object representatives,
+  document tree, default parameters, header organizations, object representatives,
   current act editor, signatories, materials, derived applications and preview;
-- object/common settings are compact/collapsible and opened by buttons;
+- default/common parameters are compact/collapsible and opened by buttons;
 - mock global organization and representative libraries are represented only as
   reusable in-memory sources, while object-level header blocks and
   representatives remain editable object-specific bindings/snapshots;
@@ -4132,7 +4166,7 @@ production domain/API/persistence work remain separate explicit tasks.
   bindings/snapshots can differ from global library data;
 - representative role labels and header organization labels remain
   user-configurable concepts, not a globally fixed AOSR schema;
-- AOSR workspace opening from object cards, object settings and current-act
+- AOSR workspace opening from object cards, default parameters and current-act
   signatory search/add remain functional.
 
 Что не было введено:
@@ -4176,7 +4210,7 @@ production domain/API/persistence work remain separate explicit tasks.
 - representatives/organizations page now also shows a compact onboarding flow
   from organization to representative to object to act signatory;
 - existing AOSR object opening, certificate material search/selection, derived
-  applications, signatory search/add, object settings, document tree,
+  applications, signatory search/add, default parameters, document tree,
   drag/drop ordering and preview behavior remain functional.
 
 Что не было введено:
@@ -4202,8 +4236,8 @@ production domain/API/persistence work remain separate explicit tasks.
 Добавлено/уточнено:
 
 - middle editor heading changed to `Рабочая область акта`;
-- object-level `Настройки объекта` and act-level `Текущий акт` are visually
-  separated, with object settings still behind a compact button;
+- object-level default parameters and act-level `Текущий акт` are visually
+  separated, with default parameters still behind a compact button;
 - representative copy now explains the target chain:
   `global library -> object binding/snapshot -> act usage`;
 - visible DEMO note states that object representatives are prefilled from the
@@ -4710,7 +4744,7 @@ production domain/API/persistence work remain separate explicit tasks.
 - the editor now follows the real AOSR print order: header, organizations,
   signatories, points 1-7, additional data and applications;
 - the header section shows act number, act date, object, form title and
-  object-level under-title text;
+  under-title text;
 - organizations participating in the act are visible in the editor and have a
   configurable display order that updates the preview;
 - signatories moved near the top immediately after organizations/header;
@@ -4718,14 +4752,14 @@ production domain/API/persistence work remain separate explicit tasks.
   handle with visible drop target feedback;
 - frontend form-variant metadata was introduced and current demo drafts use
   `АОСР 1` by default;
-- under-title text comes from object settings and acts consume the current
-  object default without a per-act override;
+- under-title text is now superseded by ADR 0007: new drafts copy it from
+  default parameters and then own the document value;
 - empty fields remain allowed.
 
 Что не было введено:
 
 - no new AOSR form differences beyond the default metadata for `АОСР 1`;
-- no per-act under-title override;
+- no production under-title persistence or generation behavior;
 - no backend routes/controllers or API;
 - no Prisma/schema/migrations;
 - no persistence or localStorage;
@@ -4750,7 +4784,7 @@ production domain/API/persistence work remain separate explicit tasks.
 - registry and Periodic ID on a period are compact generated views derived from
   period documents;
 - left object navigation is visually split into `Работа` and `Сервис`;
-- object settings keep sectioned layout with calmer cards, clearer active
+- default parameters keep sectioned layout with calmer cards, clearer active
   section and less AOSR-only wording;
 - real registry implementation is still coming soon;
 - numbering settings are planned later and were not implemented.
@@ -4770,10 +4804,51 @@ production domain/API/persistence work remain separate explicit tasks.
 - no DOCX/PDF/ZIP generation;
 - no production AOSR business logic.
 
+### 2026-06-16 — Frontend-only document default parameters and document-owned AOSR texts
+
+- Статус: `Frontend mock default-parameters and document-owned text only`
+- Описание: implemented and documented the principle
+  `Параметры по умолчанию -> Предложение -> Самостоятельный документ`.
+
+Добавлено/уточнено:
+
+- visible UI wording now uses `Параметры по умолчанию` for object-level values
+  copied into new documents;
+- default parameters are suggestions for newly created documents and do not
+  silently mutate existing drafts;
+- AOSR drafts now own under-title text after creation;
+- AOSR drafts now own point 6 compliance text after creation;
+- creating a new AOSR draft copies the current under-title and point 6 defaults
+  into the new draft;
+- existing drafts show `По параметрам по умолчанию` when their document value
+  still equals the current default and `Изменено в документе` when it differs;
+- under-title and point 6 fields can be edited in the document and restored
+  explicitly with `Вернуть из параметров по умолчанию`;
+- empty under-title and point 6 values remain allowed;
+- object-level defaults are held at the object workspace level in the mock so
+  period-scoped creation receives the current default values;
+- ADR 0007 records the future numbering rule: auto-numbering is only a
+  suggestion, manual numbers may be edited or empty, manual numbers do not
+  mutate the sequence, no auto-renumbering, and deleted numbers are not reused
+  by default.
+
+Что не было введено:
+
+- no numbering settings UI;
+- no real registry generation;
+- no package release snapshot implementation;
+- no backend routes/controllers or API;
+- no Prisma/schema/migrations;
+- no persistence or localStorage;
+- no uploads or file storage;
+- no OCR or AI extraction;
+- no DOCX/PDF/ZIP generation;
+- no production AOSR, registry, package or numbering business logic.
+
 ### 2026-06-15 — Frontend-only radical UX cleanup
 
 - Статус: `Frontend mock radical UX cleanup only`
-- Описание: UX cleanup: reduced interface overload, simplified object settings,
+- Описание: UX cleanup: reduced interface overload, simplified default parameters,
   clarified primary actions.
 
 Добавлено/уточнено:
@@ -4782,8 +4857,8 @@ production domain/API/persistence work remain separate explicit tasks.
   `Создать документ` action, a current-period shortcut and recent documents;
 - duplicate object-level entry points were reduced: global representative and
   organization libraries stay in global navigation, while object assignments
-  stay inside Object Settings;
-- object settings were redesigned into calm sections: `Основное`,
+  stay inside default parameters;
+- default parameters were redesigned into calm sections: `Основное`,
   `Шапка акта`, `Представители`, `Тексты акта`;
 - AOSR readiness hints are compact `Подсказки по акту` by default;
 - period, periodic ID and final ID pages keep registries/composition but use
@@ -4808,7 +4883,7 @@ production domain/API/persistence work remain separate explicit tasks.
 ### 2026-06-15 — Frontend-only UX overload cleanup
 
 - Статус: `Frontend mock UX overload cleanup only`
-- Описание: UX cleanup: reduced interface overload, simplified object settings,
+- Описание: UX cleanup: reduced interface overload, simplified default parameters,
   clarified primary actions.
 
 Добавлено/уточнено:
@@ -4820,9 +4895,9 @@ production domain/API/persistence work remain separate explicit tasks.
   `Проверка`/`Диагностика` copy where appropriate;
 - final and periodic package summary counters are visually de-emphasized outside
   Overview;
-- object settings were regrouped into calmer reusable printed-document data:
+- default parameters were regrouped into calmer reusable printed-document data:
   основное, point 6 text, header organizations and representatives for acts;
-- AOSR workspace object settings entry is secondary, while document preview
+- AOSR workspace default parameters entry is secondary, while document preview
   remains the more prominent act-level action.
 
 Что не было введено:

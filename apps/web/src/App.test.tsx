@@ -193,7 +193,7 @@ describe('App shell mock navigation', () => {
       within(objectNavigation).getByRole('button', { name: 'Открыть итоговый комплект ИД' }),
     ).toBeTruthy();
     expect(
-      within(objectNavigation).getByRole('button', { name: 'Открыть настройки объекта' }),
+      within(objectNavigation).getByRole('button', { name: 'Открыть параметры по умолчанию' }),
     ).toBeTruthy();
 
     expect(
@@ -420,6 +420,63 @@ describe('App shell mock navigation', () => {
     await user.click(within(objectNavigation).getByRole('button', { name: 'Сентябрь 2026' }));
     expect(screen.getByRole('button', { name: /ОВ-1/u })).toBeTruthy();
     expect(screen.queryByRole('button', { name: /ОВ-3/u })).toBeNull();
+  });
+
+  it('copies current default parameters into a new AOSR draft without changing existing drafts', async () => {
+    const user = userEvent.setup();
+    const nextUnderTitleText = 'Новый подзаголовок по умолчанию для будущих АОСР.';
+    const nextComplianceText = 'Новый пункт 6 по умолчанию для будущих АОСР.';
+
+    render(<App />);
+    await user.click(getFirstOpenObjectButton());
+
+    const objectNavigation = screen.getByRole('navigation', { name: 'Разделы объекта' });
+    await user.click(
+      within(objectNavigation).getByRole('button', { name: 'Открыть параметры по умолчанию' }),
+    );
+
+    const dialog = screen.getByRole('dialog', { name: 'Параметры по умолчанию' });
+    await user.click(within(dialog).getByRole('button', { name: /Шапка акта/u }));
+    await user.clear(within(dialog).getByLabelText('Текст под заголовком акта по умолчанию'));
+    await user.type(
+      within(dialog).getByLabelText('Текст под заголовком акта по умолчанию'),
+      nextUnderTitleText,
+    );
+    await user.click(within(dialog).getByRole('button', { name: /Тексты акта/u }));
+    await user.clear(
+      within(dialog).getByLabelText(
+        'Текст для пункта 6. Соответствие работ предъявляемым требованиям',
+      ),
+    );
+    await user.type(
+      within(dialog).getByLabelText(
+        'Текст для пункта 6. Соответствие работ предъявляемым требованиям',
+      ),
+      nextComplianceText,
+    );
+    await user.click(within(dialog).getByRole('button', { name: 'Закрыть' }));
+
+    expect(getTextAreaValue(screen.getByLabelText('Текст под заголовком акта в документе'))).toBe(
+      demoAosrWorkspace.objectDefaults.defaultUnderTitleText,
+    );
+    expect(getTextAreaValue(screen.getByLabelText('Текст пункта 6 в документе'))).toBe(
+      demoAosrWorkspace.objectDefaults.defaultComplianceStatement,
+    );
+
+    await user.click(within(objectNavigation).getByRole('button', { name: 'Октябрь 2026' }));
+    await user.click(screen.getByRole('button', { name: 'Создать документ' }));
+
+    const selector = screen.getByRole('dialog', { name: 'Создать документ' });
+    await user.click(within(selector).getByRole('button', { name: 'Создать АОСР' }));
+    await user.click(screen.getByRole('button', { name: /ОВ-3/u }));
+
+    expect(getTextAreaValue(screen.getByLabelText('Текст под заголовком акта в документе'))).toBe(
+      nextUnderTitleText,
+    );
+    expect(getTextAreaValue(screen.getByLabelText('Текст пункта 6 в документе'))).toBe(
+      nextComplianceText,
+    );
+    expect(screen.getAllByText('По параметрам по умолчанию').length).toBeGreaterThan(1);
   });
 
   it('opens the final ID package page with derived summary counts and grouped composition', async () => {
@@ -828,7 +885,7 @@ describe('App shell mock navigation', () => {
     expect(screen.getByRole('region', { name: 'Представители' })).toBeTruthy();
   });
 
-  it('opens current object settings from object workspace navigation', async () => {
+  it('opens current object default parameters from object workspace navigation', async () => {
     const user = userEvent.setup();
 
     render(<App />);
@@ -836,12 +893,12 @@ describe('App shell mock navigation', () => {
 
     const objectNavigation = screen.getByRole('navigation', { name: 'Разделы объекта' });
     await user.click(
-      within(objectNavigation).getByRole('button', { name: 'Открыть настройки объекта' }),
+      within(objectNavigation).getByRole('button', { name: 'Открыть параметры по умолчанию' }),
     );
 
-    const dialog = screen.getByRole('dialog', { name: 'Настройки объекта' });
+    const dialog = screen.getByRole('dialog', { name: 'Параметры по умолчанию' });
     expect(
-      within(dialog).getByRole('navigation', { name: 'Разделы настроек объекта' }),
+      within(dialog).getByRole('navigation', { name: 'Разделы параметров по умолчанию' }),
     ).toBeTruthy();
     expect(within(dialog).getByRole('button', { name: /Основное/u })).toBeTruthy();
     expect(within(dialog).getByRole('button', { name: /Шапка акта/u })).toBeTruthy();
@@ -856,7 +913,7 @@ describe('App shell mock navigation', () => {
 
     await user.click(within(dialog).getByRole('button', { name: 'Закрыть' }));
 
-    expect(screen.queryByRole('dialog', { name: 'Настройки объекта' })).toBeNull();
+    expect(screen.queryByRole('dialog', { name: 'Параметры по умолчанию' })).toBeNull();
     expect(screen.getByRole('heading', { name: 'Рабочая область акта' })).toBeTruthy();
   });
 
@@ -1152,7 +1209,7 @@ describe('App shell mock navigation', () => {
 
     await user.click(screen.getByRole('button', { name: 'Вернуться к объектам' }));
     await user.click(getFirstOpenObjectButton());
-    await user.click(screen.getByRole('button', { name: 'Открыть настройки объекта' }));
+    await user.click(screen.getByRole('button', { name: 'Открыть параметры по умолчанию' }));
     await user.click(screen.getByRole('button', { name: /Шапка акта/u }));
     await user.click(screen.getByRole('button', { name: 'Добавить блок шапки' }));
     await user.type(
@@ -1382,6 +1439,14 @@ function getSectionByHeading(name: string): HTMLElement {
   }
 
   return section;
+}
+
+function getTextAreaValue(element: HTMLElement): string {
+  if (!(element instanceof HTMLTextAreaElement)) {
+    throw new Error('В тесте ожидалось текстовое поле.');
+  }
+
+  return element.value;
 }
 
 async function openRepresentativesManagementPage(

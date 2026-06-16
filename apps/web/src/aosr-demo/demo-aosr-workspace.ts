@@ -78,7 +78,7 @@ export interface DemoAosrDraft {
   readonly actNumber: string;
   readonly additionalInfo: string;
   readonly axes: string;
-  readonly complianceStatementOverride?: string;
+  readonly complianceStatement: string;
   readonly copiesCount: string;
   readonly elevationRange: string;
   readonly excludedApplicationIds: readonly string[];
@@ -90,6 +90,7 @@ export interface DemoAosrDraft {
   readonly representatives: readonly DemoAosrRepresentative[];
   readonly status: 'draft' | 'needs-review';
   readonly subsequentWorksPermitted: string;
+  readonly underTitleText: string;
   readonly workDescription: string;
 }
 
@@ -102,6 +103,7 @@ export interface DemoActApplication {
 export interface CreateDemoAosrDraftInput {
   readonly actNumber: string;
   readonly id: string;
+  readonly objectDefaults: DemoAosrObjectDefaults;
 }
 
 export const demoObjectDocumentTypes: readonly DemoObjectDocumentType[] = [
@@ -118,11 +120,13 @@ export type DemoAosrDraftField =
   | 'actNumber'
   | 'additionalInfo'
   | 'axes'
+  | 'complianceStatement'
   | 'copiesCount'
   | 'elevationRange'
   | 'periodEnd'
   | 'periodStart'
   | 'subsequentWorksPermitted'
+  | 'underTitleText'
   | 'workDescription';
 
 export type DemoAosrObjectDefaultsField =
@@ -168,6 +172,12 @@ const customerRepresentative: DemoAosrRepresentative = {
   position: 'Руководитель проекта',
   roleLabel: 'Представитель заказчика',
 };
+
+const defaultComplianceStatement =
+  'Проектной документацией шифр РД-ОВ-12, рабочей документацией РД-ОВ-14, ППР-ОВ-2026, СП 60.13330.2020, СП 73.13330.2016, ГОСТ 34059-2017 и ТУ производителей применённых материалов.';
+
+const defaultUnderTitleText =
+  'Участники освидетельствования произвели осмотр скрытых работ и составили настоящий акт.';
 
 export const demoAosrWorkspace: DemoAosrWorkspace = {
   demoNotice: 'ДЕМО / демонстрационные данные / не для работы в продуктиве',
@@ -235,6 +245,7 @@ export const demoAosrWorkspace: DemoAosrWorkspace = {
       actNumber: 'ОВ-1',
       additionalInfo: 'Дополнительные сведения для демо-акта не требуются.',
       axes: 'оси 1-4 / А-В',
+      complianceStatement: defaultComplianceStatement,
       copiesCount: '4',
       elevationRange: 'отм. +3.200 - +3.850',
       excludedApplicationIds: [],
@@ -252,6 +263,7 @@ export const demoAosrWorkspace: DemoAosrWorkspace = {
       status: 'draft',
       subsequentWorksPermitted:
         'Разрешается производство последующих работ по устройству теплоизоляции и облицовки.',
+      underTitleText: defaultUnderTitleText,
       workDescription:
         'Монтаж скрытых участков воздуховодов до закрытия теплоизоляцией и облицовкой.',
     },
@@ -260,6 +272,7 @@ export const demoAosrWorkspace: DemoAosrWorkspace = {
       actNumber: 'ОВ-2',
       additionalInfo: 'Дополнительные сведения отсутствуют.',
       axes: 'оси 5-7 / Г-Д',
+      complianceStatement: defaultComplianceStatement,
       copiesCount: '3',
       elevationRange: 'отм. 0.000 - +0.600',
       excludedApplicationIds: [],
@@ -277,18 +290,17 @@ export const demoAosrWorkspace: DemoAosrWorkspace = {
       status: 'needs-review',
       subsequentWorksPermitted:
         'Разрешается производство последующих работ по заделке отверстий в перекрытии.',
+      underTitleText: defaultUnderTitleText,
       workDescription: 'Установка гильз трубопроводов перед заделкой отверстий в перекрытии.',
     },
   ],
   id: 'workspace-demo-aosr',
   name: 'Демо-рабочая область АОСР',
   objectDefaults: {
-    defaultComplianceStatement:
-      'Проектной документацией шифр РД-ОВ-12, рабочей документацией РД-ОВ-14, ППР-ОВ-2026, СП 60.13330.2020, СП 73.13330.2016, ГОСТ 34059-2017 и ТУ производителей применённых материалов.',
+    defaultComplianceStatement,
     defaultProjectDocumentation:
       'Рабочая документация РД-ОВ-12 лист 4; РД-ОВ-14 лист 2; спецификация оборудования и материалов СП-ОВ-02.',
-    defaultUnderTitleText:
-      'Участники освидетельствования произвели осмотр скрытых работ и составили настоящий акт.',
+    defaultUnderTitleText,
     headerOrganizations: [
       {
         caption:
@@ -329,12 +341,14 @@ export const demoAosrWorkspace: DemoAosrWorkspace = {
 export function createEmptyDemoAosrDraft({
   actNumber,
   id,
+  objectDefaults,
 }: CreateDemoAosrDraftInput): DemoAosrDraft {
   return {
     actDate: '',
     actNumber,
     additionalInfo: '',
     axes: '',
+    complianceStatement: objectDefaults.defaultComplianceStatement,
     copiesCount: '',
     elevationRange: '',
     excludedApplicationIds: [],
@@ -347,6 +361,7 @@ export function createEmptyDemoAosrDraft({
     representatives: [],
     status: 'draft',
     subsequentWorksPermitted: '',
+    underTitleText: objectDefaults.defaultUnderTitleText,
     workDescription: '',
   };
 }
@@ -362,46 +377,49 @@ export function updateDemoAosrDraftField(
   };
 }
 
-export function getDraftComplianceStatement(
+export function getDraftComplianceStatement(draft: DemoAosrDraft): string {
+  return draft.complianceStatement;
+}
+
+export function isDraftComplianceFromObjectDefault(
   draft: DemoAosrDraft,
   objectDefaults: DemoAosrObjectDefaults,
-): string {
-  return draft.complianceStatementOverride ?? objectDefaults.defaultComplianceStatement;
+): boolean {
+  return draft.complianceStatement === objectDefaults.defaultComplianceStatement;
 }
 
-export function hasDraftComplianceOverride(draft: DemoAosrDraft): boolean {
-  return draft.complianceStatementOverride !== undefined;
+export function updateDraftComplianceStatement(draft: DemoAosrDraft, value: string): DemoAosrDraft {
+  return {
+    ...draft,
+    complianceStatement: value,
+  };
 }
 
-export function startDraftComplianceOverride(
+export function resetDraftComplianceToObjectDefault(
   draft: DemoAosrDraft,
   objectDefaults: DemoAosrObjectDefaults,
 ): DemoAosrDraft {
-  if (hasDraftComplianceOverride(draft)) {
-    return draft;
-  }
-
   return {
     ...draft,
-    complianceStatementOverride: objectDefaults.defaultComplianceStatement,
+    complianceStatement: objectDefaults.defaultComplianceStatement,
   };
 }
 
-export function updateDraftComplianceOverride(draft: DemoAosrDraft, value: string): DemoAosrDraft {
-  return {
-    ...draft,
-    complianceStatementOverride: value,
-  };
+export function isDraftUnderTitleFromObjectDefault(
+  draft: DemoAosrDraft,
+  objectDefaults: DemoAosrObjectDefaults,
+): boolean {
+  return draft.underTitleText === objectDefaults.defaultUnderTitleText;
 }
 
-export function resetDraftComplianceToObjectDefault(draft: DemoAosrDraft): DemoAosrDraft {
-  const { complianceStatementOverride, ...draftWithoutOverride } = draft;
-
-  if (complianceStatementOverride === undefined) {
-    return draft;
-  }
-
-  return draftWithoutOverride;
+export function resetDraftUnderTitleToObjectDefault(
+  draft: DemoAosrDraft,
+  objectDefaults: DemoAosrObjectDefaults,
+): DemoAosrDraft {
+  return {
+    ...draft,
+    underTitleText: objectDefaults.defaultUnderTitleText,
+  };
 }
 
 export function updateDemoObjectDefaultsField(

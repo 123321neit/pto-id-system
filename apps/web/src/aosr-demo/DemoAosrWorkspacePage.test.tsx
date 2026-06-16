@@ -11,11 +11,13 @@ import {
   createEmptyDemoAosrDraft,
   demoAosrWorkspace,
   getDraftComplianceStatement,
+  isDraftComplianceFromObjectDefault,
+  isDraftUnderTitleFromObjectDefault,
   moveHeaderOrganizationBlock,
   resetDraftComplianceToObjectDefault,
-  startDraftComplianceOverride,
+  resetDraftUnderTitleToObjectDefault,
   updateDemoAosrDraftField,
-  updateDraftComplianceOverride,
+  updateDraftComplianceStatement,
 } from './demo-aosr-workspace.js';
 import { DemoStoreProvider } from '../demo-store/DemoStoreProvider.js';
 
@@ -28,9 +30,9 @@ describe('DemoAosrWorkspacePage', () => {
     renderDemoWorkspace();
 
     expect(screen.getByRole('heading', { name: 'Рабочая область акта' })).toBeTruthy();
-    expect(screen.getByRole('button', { name: 'Настроить объект' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Параметры по умолчанию' })).toBeTruthy();
     expect(screen.getByRole('heading', { name: 'Текущий акт' })).toBeTruthy();
-    expect(screen.queryByRole('dialog', { name: 'Настройки объекта' })).toBeNull();
+    expect(screen.queryByRole('dialog', { name: 'Параметры по умолчанию' })).toBeNull();
     expect(screen.queryByLabelText('Название проекта / объекта')).toBeNull();
   });
 
@@ -100,8 +102,7 @@ describe('DemoAosrWorkspacePage', () => {
     await user.click(screen.getByRole('button', { name: 'Убрать Иванов И.И. из акта' }));
     await user.click(screen.getByRole('button', { name: 'Убрать Петров П.П. из акта' }));
     await user.click(screen.getByRole('button', { name: 'Убрать Смирнова С.С. из акта' }));
-    await user.click(screen.getByRole('button', { name: 'Изменить только для этого акта' }));
-    await user.clear(screen.getByLabelText('Значение только для этого акта'));
+    await user.clear(screen.getByLabelText('Текст пункта 6 в документе'));
 
     const readinessPanel = screen.getByRole('region', { name: 'Подсказки по акту' });
 
@@ -165,11 +166,11 @@ describe('DemoAosrWorkspacePage', () => {
     expect(screen.getByRole('heading', { name: 'Рабочая область акта' })).toBeTruthy();
   });
 
-  it('keeps object settings and libraries compact until opened', () => {
+  it('keeps default parameters and libraries compact until opened', () => {
     renderDemoWorkspace();
 
-    expect(screen.getByRole('button', { name: 'Настроить объект' })).toBeTruthy();
-    expect(screen.queryByRole('dialog', { name: 'Настройки объекта' })).toBeNull();
+    expect(screen.getByRole('button', { name: 'Параметры по умолчанию' })).toBeTruthy();
+    expect(screen.queryByRole('dialog', { name: 'Параметры по умолчанию' })).toBeNull();
     expect(screen.queryByRole('region', { name: 'Представители для актов' })).toBeNull();
     expect(screen.queryByLabelText('Найти организацию в глобальной библиотеке')).toBeNull();
     expect(screen.queryByLabelText('Найти материал в библиотеке сертификатов')).toBeNull();
@@ -180,7 +181,7 @@ describe('DemoAosrWorkspacePage', () => {
     ).toBeTruthy();
   });
 
-  it('opens object settings from the button and keeps existing settings functional', async () => {
+  it('opens default parameters from the button and keeps existing defaults functional', async () => {
     const user = userEvent.setup();
 
     renderDemoWorkspace({ initialDocumentPreviewOpen: true });
@@ -189,7 +190,7 @@ describe('DemoAosrWorkspacePage', () => {
 
     await openObjectSettings(user);
 
-    const dialog = screen.getByRole('dialog', { name: 'Настройки объекта' });
+    const dialog = screen.getByRole('dialog', { name: 'Параметры по умолчанию' });
     const objectNameField = within(dialog).getByLabelText('Объект капитального строительства');
 
     await user.clear(objectNameField);
@@ -199,16 +200,16 @@ describe('DemoAosrWorkspacePage', () => {
 
     await user.click(within(dialog).getByRole('button', { name: 'Закрыть' }));
 
-    expect(screen.queryByRole('dialog', { name: 'Настройки объекта' })).toBeNull();
+    expect(screen.queryByRole('dialog', { name: 'Параметры по умолчанию' })).toBeNull();
   });
 
-  it('shows object-level compliance settings in a dedicated section', async () => {
+  it('shows object-level compliance defaults in a dedicated section', async () => {
     const user = userEvent.setup();
 
     renderDemoWorkspace();
     await openObjectSettings(user);
 
-    const dialog = screen.getByRole('dialog', { name: 'Настройки объекта' });
+    const dialog = screen.getByRole('dialog', { name: 'Параметры по умолчанию' });
 
     await user.click(within(dialog).getByRole('button', { name: /Тексты акта/u }));
 
@@ -226,82 +227,73 @@ describe('DemoAosrWorkspacePage', () => {
     ).toBe(demoAosrWorkspace.objectDefaults.defaultComplianceStatement);
   });
 
-  it('uses object compliance value by default in the act and preview', () => {
+  it('uses copied compliance text by default in the act and preview', () => {
     renderDemoWorkspace({ initialDocumentPreviewOpen: true });
 
     const complianceSection = getSectionByHeading('6. Соответствие работ');
 
-    expect(within(complianceSection).getByText('Используется значение объекта')).toBeTruthy();
+    expect(within(complianceSection).getByText('По параметрам по умолчанию')).toBeTruthy();
     expect(
-      within(complianceSection).getByLabelText('Соответствие работ из настроек объекта')
-        .textContent,
-    ).toContain(demoAosrWorkspace.objectDefaults.defaultComplianceStatement);
-    expect(screen.queryByLabelText('Значение только для этого акта')).toBeNull();
+      getTextAreaValue(within(complianceSection).getByLabelText('Текст пункта 6 в документе')),
+    ).toBe(demoAosrWorkspace.objectDefaults.defaultComplianceStatement);
     expect(getPreviewText()).toContain(demoAosrWorkspace.objectDefaults.defaultComplianceStatement);
   });
 
-  it('allows a per-act compliance override and uses it in preview', async () => {
+  it('allows editing document compliance text and uses it in preview', async () => {
     const user = userEvent.setup();
-    const overrideText =
-      'Индивидуально для акта: работы выполнены по уточнённому листу РД-ОВ-14 и ТУ-ОВ-5.';
+    const documentText = 'В документе: работы выполнены по уточнённому листу РД-ОВ-14 и ТУ-ОВ-5.';
 
     renderDemoWorkspace({ initialDocumentPreviewOpen: true });
 
-    await user.click(screen.getByRole('button', { name: 'Изменить только для этого акта' }));
-
-    expect(screen.getByText('Изменено только для этого акта')).toBeTruthy();
-
-    const overrideField = screen.getByLabelText('Значение только для этого акта');
-    expect(getTextAreaValue(overrideField)).toBe(
+    const complianceField = screen.getByLabelText('Текст пункта 6 в документе');
+    expect(getTextAreaValue(complianceField)).toBe(
       demoAosrWorkspace.objectDefaults.defaultComplianceStatement,
     );
 
-    await user.clear(overrideField);
-    await user.type(overrideField, overrideText);
+    await user.clear(complianceField);
+    await user.type(complianceField, documentText);
 
-    expect(getPreviewText()).toContain(overrideText);
+    expect(screen.getByText('Изменено в документе')).toBeTruthy();
+    expect(getPreviewText()).toContain(documentText);
     expect(getPreviewText()).not.toContain(
       demoAosrWorkspace.objectDefaults.defaultComplianceStatement,
     );
   });
 
-  it('reverts a compliance override back to the object value', async () => {
+  it('reverts document compliance text back to default parameters', async () => {
     const user = userEvent.setup();
 
     renderDemoWorkspace({ initialDocumentPreviewOpen: true });
 
-    await user.click(screen.getByRole('button', { name: 'Изменить только для этого акта' }));
-    await user.clear(screen.getByLabelText('Значение только для этого акта'));
+    await user.clear(screen.getByLabelText('Текст пункта 6 в документе'));
     await user.type(
-      screen.getByLabelText('Значение только для этого акта'),
+      screen.getByLabelText('Текст пункта 6 в документе'),
       'Индивидуальное исключение для проверки возврата.',
     );
 
     expect(getPreviewText()).toContain('Индивидуальное исключение для проверки возврата.');
 
-    await user.click(screen.getByRole('button', { name: 'Вернуться к значению объекта' }));
+    await user.click(screen.getByRole('button', { name: 'Вернуть из параметров по умолчанию' }));
 
-    expect(screen.getByText('Используется значение объекта')).toBeTruthy();
-    expect(screen.queryByLabelText('Значение только для этого акта')).toBeNull();
+    expect(screen.getAllByText('По параметрам по умолчанию').length).toBeGreaterThan(1);
     expect(getPreviewText()).toContain(demoAosrWorkspace.objectDefaults.defaultComplianceStatement);
     expect(getPreviewText()).not.toContain('Индивидуальное исключение для проверки возврата.');
   });
 
-  it('keeps object compliance settings unchanged after an act override', async () => {
+  it('keeps object compliance defaults unchanged after editing document text', async () => {
     const user = userEvent.setup();
 
     renderDemoWorkspace();
 
-    await user.click(screen.getByRole('button', { name: 'Изменить только для этого акта' }));
-    await user.clear(screen.getByLabelText('Значение только для этого акта'));
+    await user.clear(screen.getByLabelText('Текст пункта 6 в документе'));
     await user.type(
-      screen.getByLabelText('Значение только для этого акта'),
+      screen.getByLabelText('Текст пункта 6 в документе'),
       'Только этот акт использует отдельную нормативную ссылку.',
     );
 
     await openObjectSettings(user);
 
-    const dialog = screen.getByRole('dialog', { name: 'Настройки объекта' });
+    const dialog = screen.getByRole('dialog', { name: 'Параметры по умолчанию' });
     await user.click(within(dialog).getByRole('button', { name: /Тексты акта/u }));
 
     expect(
@@ -313,14 +305,14 @@ describe('DemoAosrWorkspacePage', () => {
     ).toBe(demoAosrWorkspace.objectDefaults.defaultComplianceStatement);
   });
 
-  it('shows a calm explanation for object-level settings', async () => {
+  it('shows a calm explanation for object-level default parameters', async () => {
     const user = userEvent.setup();
 
     renderDemoWorkspace();
     await openObjectSettings(user);
 
     expect(
-      screen.getByText(/Здесь собраны данные, которые повторяются в печатных документах объекта/u),
+      screen.getByText(/Эти значения подставляются в новые документы как предложение/u),
     ).toBeTruthy();
   });
 
@@ -460,29 +452,46 @@ describe('DemoAosrWorkspacePage', () => {
     expect(previewText.indexOf('Подрядчик:')).toBeLessThan(previewText.indexOf('Заказчик:'));
   });
 
-  it('uses object settings as the source for under-title text in the editor and preview', async () => {
+  it('keeps under-title text document-owned after changing default parameters', async () => {
     const user = userEvent.setup();
-    const updatedUnderTitleText =
-      'Объектовый текст под заголовком для проверки текущей печатной формы.';
+    const updatedDefaultUnderTitleText = 'Новый текст по умолчанию для следующих документов.';
+    const documentUnderTitleText = 'Индивидуальный текст под заголовком этого акта.';
 
     renderDemoWorkspace({ initialDocumentPreviewOpen: true });
 
-    expect(screen.getByRole('region', { name: 'Текущий акт' }).textContent).toContain(
+    const underTitleField = screen.getByLabelText('Текст под заголовком акта в документе');
+    expect(getTextAreaValue(underTitleField)).toBe(
       demoAosrWorkspace.objectDefaults.defaultUnderTitleText,
     );
+    expect(screen.getAllByText('По параметрам по умолчанию').length).toBeGreaterThan(1);
     expect(getPreviewText()).toContain(demoAosrWorkspace.objectDefaults.defaultUnderTitleText);
 
     await openObjectSettings(user);
     await user.click(screen.getByRole('button', { name: /Шапка акта/u }));
 
-    const underTitleField = screen.getByLabelText('Текст под заголовком акта');
-    await user.clear(underTitleField);
-    await user.type(underTitleField, updatedUnderTitleText);
+    const defaultUnderTitleField = screen.getByLabelText('Текст под заголовком акта по умолчанию');
+    await user.clear(defaultUnderTitleField);
+    await user.type(defaultUnderTitleField, updatedDefaultUnderTitleText);
 
-    expect(screen.getByRole('region', { name: 'Текущий акт' }).textContent).toContain(
-      updatedUnderTitleText,
+    expect(getTextAreaValue(screen.getByLabelText('Текст под заголовком акта в документе'))).toBe(
+      demoAosrWorkspace.objectDefaults.defaultUnderTitleText,
     );
-    expect(getPreviewText()).toContain(updatedUnderTitleText);
+    expect(screen.getAllByText('Изменено в документе').length).toBeGreaterThan(0);
+    expect(getPreviewText()).toContain(demoAosrWorkspace.objectDefaults.defaultUnderTitleText);
+    expect(getPreviewText()).not.toContain(updatedDefaultUnderTitleText);
+
+    const documentUnderTitleField = screen.getByLabelText('Текст под заголовком акта в документе');
+    await user.clear(documentUnderTitleField);
+    await user.type(documentUnderTitleField, documentUnderTitleText);
+
+    expect(getPreviewText()).toContain(documentUnderTitleText);
+
+    await user.click(screen.getByRole('button', { name: 'Вернуть из параметров по умолчанию' }));
+
+    expect(getTextAreaValue(screen.getByLabelText('Текст под заголовком акта в документе'))).toBe(
+      updatedDefaultUnderTitleText,
+    );
+    expect(getPreviewText()).toContain(updatedDefaultUnderTitleText);
   });
 
   it('does not show a separate AOSR place or location field', () => {
@@ -744,7 +753,9 @@ describe('DemoAosrWorkspacePage', () => {
 
     expect(screen.queryByRole('button', { name: 'Добавить подписанта в акт' })).toBeNull();
     expect(
-      screen.queryByRole('checkbox', { name: 'Также оставить назначение в настройках объекта' }),
+      screen.queryByRole('checkbox', {
+        name: 'Также оставить назначение в параметрах по умолчанию',
+      }),
     ).toBeNull();
     expect(screen.queryByLabelText('ФИО для снимка акта')).toBeNull();
     expect(screen.getByLabelText('ФИО глобального представителя')).toBeTruthy();
@@ -962,33 +973,58 @@ describe('DemoAosrWorkspacePage', () => {
     expect(editedDraft).not.toBe(sourceDraft);
   });
 
-  it('keeps object compliance defaults unchanged in pure act override helpers', () => {
+  it('keeps document default text helpers immutable', () => {
     const sourceDraft = demoAosrWorkspace.drafts[0];
 
     if (!sourceDraft) {
       throw new Error('В демо-рабочей области должен быть черновик.');
     }
 
-    const draftWithStartedOverride = startDraftComplianceOverride(
+    const editedComplianceDraft = updateDraftComplianceStatement(
       sourceDraft,
+      'Отдельное значение только для unit-теста.',
+    );
+    const revertedComplianceDraft = resetDraftComplianceToObjectDefault(
+      editedComplianceDraft,
       demoAosrWorkspace.objectDefaults,
     );
-    const editedDraft = updateDraftComplianceOverride(
-      draftWithStartedOverride,
-      'Отдельное значение только для unit-теста.',
+    const editedUnderTitleDraft = updateDemoAosrDraftField(
+      sourceDraft,
+      'underTitleText',
+      'Отдельный подзаголовок только для unit-теста.',
     );
-    const revertedDraft = resetDraftComplianceToObjectDefault(editedDraft);
+    const revertedUnderTitleDraft = resetDraftUnderTitleToObjectDefault(
+      editedUnderTitleDraft,
+      demoAosrWorkspace.objectDefaults,
+    );
 
-    expect(getDraftComplianceStatement(sourceDraft, demoAosrWorkspace.objectDefaults)).toBe(
+    expect(getDraftComplianceStatement(sourceDraft)).toBe(
       demoAosrWorkspace.objectDefaults.defaultComplianceStatement,
     );
-    expect(getDraftComplianceStatement(editedDraft, demoAosrWorkspace.objectDefaults)).toBe(
+    expect(isDraftComplianceFromObjectDefault(sourceDraft, demoAosrWorkspace.objectDefaults)).toBe(
+      true,
+    );
+    expect(getDraftComplianceStatement(editedComplianceDraft)).toBe(
       'Отдельное значение только для unit-теста.',
     );
-    expect(getDraftComplianceStatement(revertedDraft, demoAosrWorkspace.objectDefaults)).toBe(
+    expect(
+      isDraftComplianceFromObjectDefault(editedComplianceDraft, demoAosrWorkspace.objectDefaults),
+    ).toBe(false);
+    expect(getDraftComplianceStatement(revertedComplianceDraft)).toBe(
       demoAosrWorkspace.objectDefaults.defaultComplianceStatement,
     );
-    expect(sourceDraft.complianceStatementOverride).toBeUndefined();
+    expect(isDraftUnderTitleFromObjectDefault(sourceDraft, demoAosrWorkspace.objectDefaults)).toBe(
+      true,
+    );
+    expect(editedUnderTitleDraft.underTitleText).toBe(
+      'Отдельный подзаголовок только для unit-теста.',
+    );
+    expect(
+      isDraftUnderTitleFromObjectDefault(editedUnderTitleDraft, demoAosrWorkspace.objectDefaults),
+    ).toBe(false);
+    expect(revertedUnderTitleDraft.underTitleText).toBe(
+      demoAosrWorkspace.objectDefaults.defaultUnderTitleText,
+    );
     expect(demoAosrWorkspace.objectDefaults.defaultComplianceStatement).toContain('ГОСТ');
     expect(demoAosrWorkspace.objectDefaults.defaultComplianceStatement).toContain('ТУ');
   });
@@ -1053,9 +1089,27 @@ describe('DemoAosrWorkspacePage', () => {
     const draft = createEmptyDemoAosrDraft({
       actNumber: '',
       id: 'aosr-draft-form-variant-test',
+      objectDefaults: demoAosrWorkspace.objectDefaults,
     });
 
     expect(draft.formVariantId).toBe('aosr-1');
+  });
+
+  it('copies current default parameters into new blank AOSR drafts', () => {
+    const objectDefaults = {
+      ...demoAosrWorkspace.objectDefaults,
+      defaultComplianceStatement: 'Новый пункт 6 по умолчанию.',
+      defaultUnderTitleText: 'Новый текст под заголовком по умолчанию.',
+    };
+    const draft = createEmptyDemoAosrDraft({
+      actNumber: 'ОВ-defaults',
+      id: 'aosr-draft-default-copy-test',
+      objectDefaults,
+    });
+
+    expect(draft.underTitleText).toBe(objectDefaults.defaultUnderTitleText);
+    expect(draft.complianceStatement).toBe(objectDefaults.defaultComplianceStatement);
+    expect(draft.actNumber).toBe('ОВ-defaults');
   });
 });
 
@@ -1082,7 +1136,7 @@ interface RepresentativeAssignmentInput {
 }
 
 async function openObjectSettings(user: ReturnType<typeof userEvent.setup>): Promise<void> {
-  const openButton = screen.queryByRole('button', { name: 'Настроить объект' });
+  const openButton = screen.queryByRole('button', { name: 'Параметры по умолчанию' });
 
   if (openButton !== null) {
     await user.click(openButton);

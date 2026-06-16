@@ -14,8 +14,9 @@
 8. `docs/adr/0004-immutable-revisions-and-package-snapshots.md`
 9. `docs/adr/0005-modular-monolith-and-bounded-contexts.md`
 10. `docs/adr/0006-global-reusable-libraries-and-act-snapshots.md`
-11. `docs/samples/registry-ventilation-example.md`
-12. `docs/samples/aosr-example-analysis.md`
+11. `docs/adr/0007-document-defaults-suggestions-and-controlled-updates.md`
+12. `docs/samples/registry-ventilation-example.md`
+13. `docs/samples/aosr-example-analysis.md`
 
 ---
 
@@ -34,12 +35,14 @@
 11. Не делать uploaded project documentation или AI result единственным source of truth.
 12. Не делать AI/OCR обязательным для MVP.
 13. Не раздувать MVP в ERP, ECM, Google Drive, generic builder или enterprise platform.
-14. Не нарушать canonical ADR baseline 0001-0005 in `docs/adr/`.
+14. Не нарушать accepted ADR baseline 0001-0007 in `docs/adr/`.
 15. Не реализовывать сложный RBAC для MVP: access model первого scope описан в `docs/19-sharing-and-access-model-v1.md`.
 16. Не начинать auth/sharing implementation без phased sequence из `docs/20-auth-sharing-implementation-plan-v1.md`.
 17. Не делать object-owned certificate/organization/representative libraries.
 18. Не принимать free-text signatories, organizations or certificates as final act data.
 19. Не позволять изменениям глобальных reusable libraries молча менять уже сформированные акты.
+20. Не позволять изменениям параметров по умолчанию молча менять уже созданные документы.
+21. Не превращать предложенную или автоматическую нумерацию в обязательное ограничение.
 
 ---
 
@@ -127,7 +130,7 @@ GitHub Actions CI добавлен в `.github/workflows/ci.yml`. Он запу�
 Local `ci:check` remains the active quality gate.
 
 Feature coding remains blocked. Future implementation tasks must comply with
-accepted ADR 0001-0006 in `docs/adr/`.
+accepted ADR 0001-0007 in `docs/adr/`.
 
 Запрещено в рамках текущего scaffold:
 
@@ -149,7 +152,7 @@ accepted ADR 0001-0006 in `docs/adr/`.
 Следующий guardrail:
 
 ```text
-Any separate feature/database/API task must comply with accepted ADR 0001-0006
+Any separate feature/database/API task must comply with accepted ADR 0001-0007
 ```
 
 Recommended next step: review Phase 3 owned workspace baseline, then request a
@@ -264,7 +267,7 @@ Privacy/data-processing policy, access to project originals and concrete AI proc
 - architecture invariants include structured data source of truth, typed AOSR first, registry derived, package snapshots immutable, AI proposal-only, modular monolith first and no cross-workspace leakage;
 - infrastructure portability/no server lock-in is mandatory: provider-specific assumptions, absolute server paths, hardcoded hosts and provider SDK leakage outside infrastructure adapters are forbidden;
 - docs/16 has implementation precedence over older docs/08 TestAct candidate wording;
-- canonical ADR baseline is accepted and ADR 0001-0006 in `docs/adr/` are authoritative implementation references;
+- canonical ADR baseline is accepted and ADR 0001-0007 in `docs/adr/` are authoritative implementation references;
 - Foreman active permissions are blocked without separate approval;
 - first AOSR template participant requirements must not be hardcoded before template review.
 
@@ -273,7 +276,7 @@ Privacy/data-processing policy, access to project originals and concrete AI proc
 Следующий отдельный implementation task должен проверяться против:
 
 ```text
-accepted ADR 0001-0006 in docs/adr/ and docs/20-auth-sharing-implementation-plan-v1.md when auth/sharing is involved
+accepted ADR 0001-0007 in docs/adr/ and docs/20-auth-sharing-implementation-plan-v1.md when auth/sharing is involved
 ```
 
 Feature coding остается заблокированным без отдельного явного задания; нельзя писать production features, SQL/migrations/ORM schema, OpenAPI, real auth/uploads/queue/storage/generation, AI/OCR или deployment files без отдельного разрешения.

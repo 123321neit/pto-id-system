@@ -524,7 +524,7 @@ Still forbidden after scaffold:
 Текущий guardrail после scaffold acceptance:
 
 ```text
-Request any separate feature/database/API/storage/generation task explicitly and check it against PROJECT_MEMORY and canonical ADR 0001-0005.
+Request any separate feature/database/API/storage/generation task explicitly and check it against PROJECT_MEMORY and accepted ADRs in docs/adr/.
 ```
 
 ---
@@ -1013,7 +1013,8 @@ A: Выполнен frontend-only in-memory mock.
 - draft назначается в выбранный период;
 - draft появляется в списке документов периода;
 - draft появляется в AOSR document tree;
-- draft сразу открывается в редакторе;
+- draft appears in the selected period and, after the later period document UX
+  cleanup, does not auto-open the editor;
 - empty fields are allowed and do not block edit/preview;
 - overview/final ID counts update where they derive from the in-memory draft
   list;
@@ -1034,3 +1035,48 @@ Initial frontend-only numbering helper accepted:
 
 Статус решения: frontend mock only. No production AOSR creation, numbering
 policy, backend/API behavior, persistence or generation was introduced.
+
+---
+
+## 41. Document default parameters as suggestions
+
+### Q: Как должны работать объектовые значения по умолчанию для новых АОСР и существующих документов?
+
+A: Принято правило:
+
+```text
+Параметры по умолчанию -> Предложение -> Самостоятельный документ
+```
+
+Object-level values are now described in the UI as `Параметры по умолчанию`.
+They are copied into newly created documents as suggestions. They are not live
+settings that silently mutate existing drafts.
+
+Решение для frontend mock:
+
+- `defaultUnderTitleText` belongs to the object default parameters;
+- a new AOSR draft copies current `defaultUnderTitleText` into document-owned
+  `underTitleText`;
+- `defaultComplianceStatement` belongs to object default parameters;
+- a new AOSR draft copies current `defaultComplianceStatement` into
+  document-owned point 6 text;
+- existing drafts keep their document-owned values when defaults change;
+- the AOSR editor shows `По параметрам по умолчанию` when the document value
+  still matches the current default;
+- the editor shows `Изменено в документе` when the document value differs;
+- each field can be edited directly in the document;
+- each field can explicitly restore the current default through
+  `Вернуть из параметров по умолчанию`;
+- empty values remain allowed.
+
+Future numbering follows the same architecture rule: automatic numbering is a
+suggestion, document numbers can be edited or left empty, manual numbers do not
+mutate the sequence, existing documents are not automatically renumbered, and
+deleted numbers are not reused by default. Numbering settings UI is not
+implemented in this sprint.
+
+Статус решения: accepted architecture/UI principle, recorded in
+`docs/adr/0007-document-defaults-suggestions-and-controlled-updates.md` and
+implemented only in the frontend mock. No backend/API, Prisma/schema/migration,
+persistence, real registry generation, package release snapshot implementation,
+uploads, OCR/AI or DOCX/PDF/ZIP generation was introduced.

@@ -34,7 +34,7 @@ export function DemoAosrPreview({
   selectedSignatories,
 }: DemoAosrPreviewProps): React.JSX.Element {
   const executingOrganization = getExecutingOrganization(selectedSignatories, objectDefaults);
-  const complianceStatement = getDraftComplianceStatement(selectedDraft, objectDefaults);
+  const complianceStatement = getDraftComplianceStatement(selectedDraft);
 
   return (
     <section className="preview-panel" aria-labelledby="preview-title">
@@ -84,8 +84,8 @@ export function DemoAosrPreview({
                   <strong>{formatDocumentDate(selectedDraft.actDate)}</strong>
                 </span>
               </div>
-              {objectDefaults.defaultUnderTitleText.trim() === '' ? null : (
-                <p className="act-page__under-title-text">{objectDefaults.defaultUnderTitleText}</p>
+              {selectedDraft.underTitleText.trim() === '' ? null : (
+                <p className="act-page__under-title-text">{selectedDraft.underTitleText}</p>
               )}
             </section>
 
@@ -331,6 +331,6 @@ function getExecutingOrganization(
     contractorHeader?.organizationName ??
     lastSignatory?.organization ??
     lastHeaderOrganization?.organizationName ??
-    'организацией, указанной в настройках объекта'
+    'организацией, указанной в параметрах по умолчанию'
   );
 }

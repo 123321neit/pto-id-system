@@ -6,7 +6,13 @@ import {
   createEmptyDemoAosrDraft,
   demoAosrWorkspace,
   type DemoAosrDraft,
+  type DemoAosrObjectDefaults,
+  type DemoAosrRepresentative,
 } from '../aosr-demo/demo-aosr-workspace.js';
+import {
+  useDemoStore,
+  type DemoRepresentative as DemoStoreRepresentative,
+} from '../demo-store/demo-store.js';
 import { DerivedRegistryTable } from './DerivedRegistryTable.js';
 import { ObjectDocumentsPage } from './ObjectDocumentsPage.js';
 import { ObjectFinalPackagePage, ObjectPeriodicPackagePage } from './ObjectFinalPackagePage.js';
@@ -49,8 +55,13 @@ export function ObjectWorkspacePage({
   object,
   onBackToObjects,
 }: ObjectWorkspacePageProps): React.JSX.Element {
+  const { representatives } = useDemoStore();
   const [activeSection, setActiveSection] = useState<ObjectWorkspaceSection>('overview');
   const [drafts, setDrafts] = useState<readonly DemoAosrDraft[]>(demoAosrWorkspace.drafts);
+  const [objectDefaults, setObjectDefaults] = useState<DemoAosrObjectDefaults>(() => ({
+    ...demoAosrWorkspace.objectDefaults,
+    representativeLibrary: representatives.map(toDemoAosrRepresentative),
+  }));
   const [periods, setPeriods] = useState<DemoObjectPeriods>(demoObjectPeriods);
   const [selectedPeriodId, setSelectedPeriodId] = useState<DemoObjectPeriodId>('period-2026-09');
   const [selectedDraftId, setSelectedDraftId] = useState(demoAosrWorkspace.drafts[0]?.id ?? '');
@@ -110,6 +121,7 @@ export function ObjectWorkspacePage({
     const draft = createEmptyDemoAosrDraft({
       actNumber: documentNumberInput,
       id: `aosr-draft-created-${String(createdAosrDraftCount)}`,
+      objectDefaults,
     });
 
     setDrafts((currentDrafts) => [...currentDrafts, draft]);
@@ -261,7 +273,7 @@ export function ObjectWorkspacePage({
             </button>
             <button
               aria-current={activeSection === 'settings' ? 'page' : undefined}
-              aria-label="Открыть настройки объекта"
+              aria-label="Открыть параметры по умолчанию"
               onClick={openObjectSettings}
               type="button"
             >
@@ -269,8 +281,8 @@ export function ObjectWorkspacePage({
                 ○
               </span>
               <span className="object-workspace-nav__label">
-                <strong>Настройки объекта</strong>
-                <small>Общие данные</small>
+                <strong>Параметры по умолчанию</strong>
+                <small>Для новых документов</small>
               </span>
             </button>
           </div>
@@ -336,7 +348,9 @@ export function ObjectWorkspacePage({
             drafts={drafts}
             initialSelectedDraftId={selectedDraftId}
             isEmbeddedInObjectWorkspace
+            objectDefaults={objectDefaults}
             onDraftsChange={setDrafts}
+            onObjectDefaultsChange={setObjectDefaults}
             periodName={selectedPeriod.name}
             settingsOpenRequest={settingsOpenRequest}
             visibleDraftIds={selectedPeriod.draftIds}
@@ -404,7 +418,7 @@ function getSectionBreadcrumb(section: ObjectWorkspaceSection): string {
     case 'aosr':
       return `Периоды / ${aosrActType.code}`;
     case 'settings':
-      return 'Настройки объекта';
+      return 'Параметры по умолчанию';
     case 'documents':
       return 'Документы объекта';
     case 'final-package':
@@ -639,6 +653,29 @@ function CreateDocumentPanel({
       </button>
     </section>
   );
+}
+
+function toDemoAosrRepresentative(representative: DemoStoreRepresentative): DemoAosrRepresentative {
+  const nrsId = getAosrNrsId(representative.nrsDetails);
+
+  return {
+    authorityBasis: representative.authorityBasis,
+    fullName: representative.fullName,
+    id: representative.id,
+    organization: representative.organization,
+    position: representative.position,
+    roleLabel: representative.roleLabel,
+    ...(representative.details === undefined ? {} : { details: representative.details }),
+    ...(nrsId === undefined ? {} : { nrsId }),
+  };
+}
+
+function getAosrNrsId(nrsDetails: string | undefined): string | undefined {
+  if (nrsDetails === undefined || nrsDetails.trim() === '') {
+    return undefined;
+  }
+
+  return nrsDetails.trim().replace(/^НРС\s+/u, '');
 }
 
 interface ObjectPeriodPageProps {

@@ -28,11 +28,10 @@ import {
   removeRepresentativeFromDraft,
   reorderDraftRepresentatives,
   resetDraftComplianceToObjectDefault,
-  startDraftComplianceOverride,
+  resetDraftUnderTitleToObjectDefault,
   toggleApplicationInclusionInDraft,
   updateDemoAosrDraftField,
   updateDemoObjectDefaultsField,
-  updateDraftComplianceOverride,
   type DemoAosrDraft,
   type DemoAosrDraftField,
   type DemoAosrHeaderOrganization,
@@ -64,7 +63,9 @@ interface DemoAosrWorkspacePageProps {
   readonly initialDocumentPreviewOpen?: boolean;
   readonly initialSelectedDraftId?: string;
   readonly isEmbeddedInObjectWorkspace?: boolean;
+  readonly objectDefaults?: DemoAosrObjectDefaults;
   readonly onDraftsChange?: (drafts: readonly DemoAosrDraft[]) => void;
+  readonly onObjectDefaultsChange?: (objectDefaults: DemoAosrObjectDefaults) => void;
   readonly onBackToObjects?: () => void;
   readonly onObjectSettingsClosed?: () => void;
   readonly periodName?: string;
@@ -77,7 +78,9 @@ export function DemoAosrWorkspacePage({
   initialDocumentPreviewOpen = false,
   initialSelectedDraftId,
   isEmbeddedInObjectWorkspace = false,
+  objectDefaults: controlledObjectDefaults,
   onDraftsChange,
+  onObjectDefaultsChange,
   onBackToObjects,
   onObjectSettingsClosed,
   periodName,
@@ -88,10 +91,11 @@ export function DemoAosrWorkspacePage({
   const globalOrganizations = organizations.map(toDemoGlobalOrganization);
   const globalRepresentatives = representatives.map(toDemoAosrRepresentative);
   const certificateLibrary = certificates.flatMap(toDemoMaterialCertificates);
-  const [objectDefaults, setObjectDefaults] = useState<DemoAosrObjectDefaults>(() => ({
+  const [localObjectDefaults, setLocalObjectDefaults] = useState<DemoAosrObjectDefaults>(() => ({
     ...demoAosrWorkspace.objectDefaults,
     representativeLibrary: globalRepresentatives,
   }));
+  const objectDefaults = controlledObjectDefaults ?? localObjectDefaults;
   const [localDrafts, setLocalDrafts] = useState<readonly DemoAosrDraft[]>(
     demoAosrWorkspace.drafts,
   );
@@ -157,7 +161,7 @@ export function DemoAosrWorkspacePage({
   );
 
   const updateObjectDefaults = (field: DemoAosrObjectDefaultsField, value: string): void => {
-    setObjectDefaults((currentDefaults) =>
+    commitObjectDefaults((currentDefaults) =>
       updateDemoObjectDefaultsField(currentDefaults, field, value),
     );
   };
@@ -182,6 +186,22 @@ export function DemoAosrWorkspacePage({
       typeof draftsAction === 'function' ? draftsAction(controlledDrafts) : draftsAction;
 
     onDraftsChange?.(nextDrafts);
+  };
+
+  const commitObjectDefaults = (
+    objectDefaultsAction: SetStateAction<DemoAosrObjectDefaults>,
+  ): void => {
+    if (controlledObjectDefaults === undefined) {
+      setLocalObjectDefaults(objectDefaultsAction);
+      return;
+    }
+
+    const nextObjectDefaults =
+      typeof objectDefaultsAction === 'function'
+        ? objectDefaultsAction(controlledObjectDefaults)
+        : objectDefaultsAction;
+
+    onObjectDefaultsChange?.(nextObjectDefaults);
   };
 
   const updateHeaderOrganizationForm = (
@@ -219,7 +239,7 @@ export function DemoAosrWorkspacePage({
       ...(globalOrganizationId === '' ? {} : { globalOrganizationId }),
     };
 
-    setObjectDefaults((currentDefaults) =>
+    commitObjectDefaults((currentDefaults) =>
       addHeaderOrganizationBlock(currentDefaults, headerOrganization),
     );
     setCreatedHeaderOrganizationCount((currentCount) => currentCount + 1);
@@ -236,7 +256,7 @@ export function DemoAosrWorkspacePage({
       libraryRepresentativeForm,
     );
 
-    setObjectDefaults((currentDefaults) =>
+    commitObjectDefaults((currentDefaults) =>
       addRepresentativeToLibrary(currentDefaults, representative),
     );
     setCreatedRepresentativeCount((currentCount) => currentCount + 1);
@@ -254,7 +274,7 @@ export function DemoAosrWorkspacePage({
       manualRepresentativeForm,
     );
 
-    setObjectDefaults((currentDefaults) =>
+    commitObjectDefaults((currentDefaults) =>
       addRepresentativeToLibrary(currentDefaults, representative),
     );
 
@@ -359,7 +379,7 @@ export function DemoAosrWorkspacePage({
                 }}
                 type="button"
               >
-                Настроить объект
+                Параметры по умолчанию
               </button>
             )}
             <button
@@ -443,7 +463,7 @@ export function DemoAosrWorkspacePage({
               onDragRepresentativeStart={setDraggedRepresentativeId}
               onDragRepresentativeTarget={setRepresentativeDropTargetId}
               onMoveHeaderOrganization={(headerOrganizationId, direction) => {
-                setObjectDefaults((currentDefaults) =>
+                commitObjectDefaults((currentDefaults) =>
                   moveHeaderOrganizationBlock(currentDefaults, headerOrganizationId, direction),
                 );
               }}
@@ -465,11 +485,13 @@ export function DemoAosrWorkspacePage({
               }}
               onReorderSelectedSignatory={reorderSelectedSignatory}
               onResetDraftComplianceToObjectDefault={() => {
-                updateSelectedDraftWith(resetDraftComplianceToObjectDefault);
-              }}
-              onStartDraftComplianceOverride={() => {
                 updateSelectedDraftWith((draft) =>
-                  startDraftComplianceOverride(draft, objectDefaults),
+                  resetDraftComplianceToObjectDefault(draft, objectDefaults),
+                );
+              }}
+              onResetDraftUnderTitleToObjectDefault={() => {
+                updateSelectedDraftWith((draft) =>
+                  resetDraftUnderTitleToObjectDefault(draft, objectDefaults),
                 );
               }}
               onToggleApplication={(applicationId) => {
@@ -485,9 +507,6 @@ export function DemoAosrWorkspacePage({
               }}
               onToggleObjectDocumentLibrary={() => {
                 setObjectDocumentLibraryOpen((isOpen) => !isOpen);
-              }}
-              onUpdateDraftComplianceOverride={(value) => {
-                updateSelectedDraftWith((draft) => updateDraftComplianceOverride(draft, value));
               }}
               onUpdateSelectedDraft={updateSelectedDraft}
             />
@@ -545,7 +564,7 @@ export function DemoAosrWorkspacePage({
           onChangeRepresentativeSearch={setRepresentativeSearch}
           onCloseObjectSettings={closeObjectSettings}
           onMoveHeaderOrganization={(headerOrganizationId, direction) => {
-            setObjectDefaults((currentDefaults) =>
+            commitObjectDefaults((currentDefaults) =>
               moveHeaderOrganizationBlock(currentDefaults, headerOrganizationId, direction),
             );
           }}
