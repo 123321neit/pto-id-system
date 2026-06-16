@@ -320,7 +320,7 @@ describe('DemoAosrWorkspacePage', () => {
     await openObjectSettings(user);
 
     expect(
-      screen.getByText(/Здесь собраны данные, которые повторяются в печатных АОСР/u),
+      screen.getByText(/Здесь собраны данные, которые повторяются в печатных документах объекта/u),
     ).toBeTruthy();
   });
 

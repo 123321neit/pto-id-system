@@ -191,7 +191,27 @@ button {
 .object-workspace-nav__sections {
   display: grid;
   align-content: start;
+  gap: 16px;
+}
+
+.object-workspace-nav__group {
+  display: grid;
   gap: 8px;
+}
+
+.object-workspace-nav__group--service {
+  margin-top: 2px;
+  border-top: 1px solid rgba(216, 231, 245, 0.18);
+  padding-top: 14px;
+}
+
+.object-workspace-nav__group-label {
+  margin: 0 0 2px;
+  color: #9eb1c2;
+  font-size: 0.66rem;
+  font-weight: 900;
+  letter-spacing: 0;
+  text-transform: uppercase;
 }
 
 .object-workspace-nav__sections button {
@@ -274,6 +294,16 @@ button {
 
 .object-workspace-nav__sections button[aria-current='page'] .object-workspace-nav__label small {
   color: #d8e7f5;
+}
+
+.object-workspace-nav__group--service button:not([aria-current='page']) {
+  color: #c4d0dc;
+}
+
+.object-workspace-nav__group--service
+  button:not([aria-current='page'])
+  .object-workspace-nav__icon {
+  background: rgba(255, 255, 255, 0.06);
 }
 
 .object-workspace-nav__subitem {
@@ -974,7 +1004,7 @@ button {
 .object-period-grid {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  gap: 16px;
+  gap: 14px;
   align-items: start;
 }
 
@@ -984,6 +1014,41 @@ button {
 
 .object-period-panel--documents {
   min-height: 220px;
+}
+
+.object-period-panel--primary {
+  border-color: #c5d6e6;
+  box-shadow: 0 18px 46px rgb(21 37 56 / 7%);
+}
+
+.object-period-generated-views {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(260px, 0.42fr);
+  gap: 12px;
+  align-items: start;
+}
+
+.object-period-panel--secondary {
+  border-color: #e0e8f0;
+  background: #fbfdff;
+  padding: 14px;
+  box-shadow: none;
+}
+
+.object-period-panel--secondary .object-overview__panel-heading {
+  gap: 2px;
+}
+
+.object-period-panel--secondary .object-overview__panel-heading h3 {
+  font-size: 0.98rem;
+}
+
+.object-period-panel__note {
+  margin: 0;
+  color: #687680;
+  font-size: 0.8rem;
+  font-weight: 730;
+  line-height: 1.4;
 }
 
 .object-period-support-grid {
@@ -996,7 +1061,7 @@ button {
   grid-template-columns: 44px minmax(0, 1fr);
   align-items: start;
   border-left: 0;
-  background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+  background: #fbfdff;
 }
 
 .object-period-placeholder__icon {
@@ -3252,7 +3317,7 @@ h3 {
 
 .object-settings-dialog {
   display: grid;
-  gap: 16px;
+  gap: 14px;
   width: min(100%, 960px);
   max-height: min(880px, calc(100vh - 48px));
   overflow: auto;
@@ -3260,7 +3325,7 @@ h3 {
   border-radius: 8px;
   background: #ffffff;
   box-shadow: 0 24px 70px rgb(37 48 54 / 18%);
-  padding: 20px;
+  padding: 22px;
 }
 
 .object-settings-dialog__header {
@@ -3284,7 +3349,7 @@ h3 {
 
 .object-settings-dialog__intro {
   margin: 0;
-  max-width: 760px;
+  max-width: 720px;
   color: #516064;
   font-size: 0.9rem;
   line-height: 1.55;
@@ -3292,7 +3357,8 @@ h3 {
 
 .object-settings-dialog .form-section {
   gap: 14px;
-  background: #fbfdff;
+  border-color: #dce6ef;
+  background: #ffffff;
   box-shadow: none;
 }
 
@@ -3307,6 +3373,10 @@ h3 {
   display: grid;
   gap: 8px;
   align-content: start;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: #f8fbff;
+  padding: 8px;
 }
 
 .object-settings-menu button {
@@ -3315,15 +3385,17 @@ h3 {
   width: 100%;
   border: 1px solid #d6e1ec;
   border-radius: 8px;
-  background: #ffffff;
+  background: transparent;
   padding: 11px 12px;
   color: #172033;
   text-align: left;
+  box-shadow: none;
 }
 
 .object-settings-menu button[aria-current='page'] {
-  border-color: #8cc7bd;
-  background: #f0fdfa;
+  border-color: #aac2d8;
+  background: #ffffff;
+  box-shadow: inset 3px 0 0 #4d7fae;
 }
 
 .object-settings-menu strong {
@@ -4409,6 +4481,7 @@ h3 {
   .object-overview__grid,
   .object-overview__package-grid,
   .object-overview__create-panel,
+  .object-period-generated-views,
   .periodic-package-overview__heading,
   .object-settings-layout {
     grid-template-columns: 1fr;
@@ -4478,6 +4551,7 @@ h3 {
   }
 
   .object-workspace-nav__sections,
+  .object-workspace-nav__group,
   .object-workspace-metrics,
   .object-placeholder,
   .object-overview__metrics,

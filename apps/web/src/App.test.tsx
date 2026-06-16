@@ -107,8 +107,13 @@ describe('App shell mock navigation', () => {
 
     await user.click(within(selector).getByRole('button', { name: 'Создать АОСР' }));
 
+    expect(screen.getByRole('heading', { name: 'Сентябрь 2026' })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: 'Документы' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: /12-3-ОВ/u })).toBeTruthy();
+    expect(screen.queryByLabelText('Текущий документ: 12-3-ОВ')).toBeNull();
+    await user.click(screen.getByRole('button', { name: /12-3-ОВ/u }));
+
     expect(screen.getAllByText(/Периоды \/ АОСР/u).length).toBeGreaterThan(0);
-    expect(screen.getByRole('heading', { name: 'Документы периода' })).toBeTruthy();
     expect(screen.getByLabelText('Текущий документ: 12-3-ОВ')).toBeTruthy();
     expect(screen.getByDisplayValue('12-3-ОВ')).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Предпросмотр документа' })).toBeTruthy();
@@ -149,8 +154,10 @@ describe('App shell mock navigation', () => {
     expect(documentNumberInput.value).toBe('');
     await user.click(within(selector).getByRole('button', { name: 'Создать АОСР' }));
 
+    expect(screen.getByRole('heading', { name: 'Сентябрь 2026' })).toBeTruthy();
+    await user.click(screen.getByRole('button', { name: /Без номера/u }));
+
     expect(screen.getAllByText(/Периоды \/ АОСР/u).length).toBeGreaterThan(0);
-    expect(screen.getByRole('heading', { name: 'Документы периода' })).toBeTruthy();
     expect(screen.getByLabelText<HTMLInputElement>('Номер акта').value).toBe('');
     expect(screen.getByRole('button', { name: 'Предпросмотр документа' })).toBeTruthy();
   });
@@ -163,6 +170,8 @@ describe('App shell mock navigation', () => {
     await user.click(getFirstOpenObjectButton());
 
     const objectNavigation = screen.getByRole('navigation', { name: 'Разделы объекта' });
+    expect(within(objectNavigation).getByText('Работа')).toBeTruthy();
+    expect(within(objectNavigation).getByText('Сервис')).toBeTruthy();
     expect(within(objectNavigation).getByRole('button', { name: 'Обзор' })).toBeTruthy();
     expect(within(objectNavigation).getByRole('button', { name: 'Периоды' })).toBeTruthy();
     expect(within(objectNavigation).getByRole('button', { name: 'Сентябрь 2026' })).toBeTruthy();
@@ -376,7 +385,10 @@ describe('App shell mock navigation', () => {
     const objectNavigation = screen.getByRole('navigation', { name: 'Разделы объекта' });
     await user.click(within(objectNavigation).getByRole('button', { name: 'Октябрь 2026' }));
 
-    await user.click(screen.getByRole('button', { name: 'Создать АОСР' }));
+    expect(screen.getByRole('button', { name: 'Создать документ' })).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'Создать АОСР' })).toBeNull();
+
+    await user.click(screen.getByRole('button', { name: 'Создать документ' }));
 
     const selector = screen.getByRole('dialog', { name: 'Создать документ' });
     expect(selector.textContent).toContain('Октябрь 2026');
@@ -384,6 +396,17 @@ describe('App shell mock navigation', () => {
     expect(within(selector).getByLabelText<HTMLInputElement>('Номер документа').value).toBe('ОВ-3');
 
     await user.click(within(selector).getByRole('button', { name: 'Создать АОСР' }));
+
+    expect(screen.getByRole('heading', { name: 'Октябрь 2026' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: /ОВ-3/u })).toBeTruthy();
+    expect(screen.queryByLabelText('Текущий документ: ОВ-3')).toBeNull();
+
+    const updatedOctoberRegistry = within(getSectionByHeading('Реестр периода за Октябрь 2026'));
+    expect(updatedOctoberRegistry.getByText('ОВ-3')).toBeTruthy();
+    expect(updatedOctoberRegistry.getAllByText('Октябрь 2026').length).toBeGreaterThan(1);
+    expect(updatedOctoberRegistry.getAllByText('АОСР').length).toBeGreaterThan(1);
+
+    await user.click(screen.getByRole('button', { name: /ОВ-3/u }));
 
     expect(screen.getByLabelText('Текущий документ: ОВ-3')).toBeTruthy();
     expect(screen.getAllByText('Октябрь 2026').length).toBeGreaterThan(0);
@@ -393,10 +416,6 @@ describe('App shell mock navigation', () => {
     await user.click(within(objectNavigation).getByRole('button', { name: 'Октябрь 2026' }));
     expect(screen.getByRole('button', { name: /ОВ-2/u })).toBeTruthy();
     expect(screen.getByRole('button', { name: /ОВ-3/u })).toBeTruthy();
-    const updatedOctoberRegistry = within(getSectionByHeading('Реестр периода за Октябрь 2026'));
-    expect(updatedOctoberRegistry.getByText('ОВ-3')).toBeTruthy();
-    expect(updatedOctoberRegistry.getAllByText('Октябрь 2026').length).toBeGreaterThan(1);
-    expect(updatedOctoberRegistry.getAllByText('АОСР').length).toBeGreaterThan(1);
 
     await user.click(within(objectNavigation).getByRole('button', { name: 'Сентябрь 2026' }));
     expect(screen.getByRole('button', { name: /ОВ-1/u })).toBeTruthy();
