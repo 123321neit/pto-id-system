@@ -21,6 +21,7 @@ import {
   getIncludedDraftApplications,
   getDraftMaterialCertificates,
   getDraftRepresentatives,
+  moveHeaderOrganizationInDraft,
   moveHeaderOrganizationBlock,
   moveRepresentativeInDraft,
   removeMaterialCertificateFromDraft,
@@ -28,6 +29,9 @@ import {
   removeRepresentativeFromDraft,
   reorderDraftRepresentatives,
   resetDraftComplianceToObjectDefault,
+  resetDraftHeaderOrganizationsToObjectDefault,
+  resetDraftObjectNameToObjectDefault,
+  resetDraftProjectDocumentationToObjectDefault,
   resetDraftUnderTitleToObjectDefault,
   toggleApplicationInclusionInDraft,
   updateDemoAosrDraftField,
@@ -149,7 +153,11 @@ export function DemoAosrWorkspacePage({
   }, [initialSelectedDraftId]);
 
   const selectedDraft = getSelectedDraft(visibleDrafts, selectedDraftId);
-  const selectedFormVariant = getDemoAosrFormVariantById(selectedDraft.formVariantId);
+  const selectedFormVariant = {
+    ...getDemoAosrFormVariantById(selectedDraft.formVariantId),
+    printTitle: selectedDraft.formVariantPrintTitle,
+    title: selectedDraft.formVariantTitle,
+  };
   const selectedSignatories = getDraftRepresentatives(selectedDraft);
   const selectedMaterials = getDraftMaterialCertificates(selectedDraft, certificateLibrary);
   const selectedObjectDocuments = getDraftObjectDocuments(selectedDraft, objectDocuments);
@@ -440,12 +448,24 @@ export function DemoAosrWorkspacePage({
               selectedSignatories={selectedSignatories}
               onAddManualRepresentative={addManualRepresentative}
               onAddMaterialToAct={(certificateId) => {
+                const certificate = certificateLibrary.find(({ id }) => id === certificateId);
+
+                if (certificate === undefined) {
+                  return;
+                }
+
                 updateSelectedDraftWith((draft) =>
-                  addMaterialCertificateToDraft(draft, certificateId),
+                  addMaterialCertificateToDraft(draft, certificate),
                 );
               }}
               onAddObjectDocumentToAct={(documentId) => {
-                updateSelectedDraftWith((draft) => addObjectDocumentToDraft(draft, documentId));
+                const document = objectDocuments.find(({ id }) => id === documentId);
+
+                if (document === undefined) {
+                  return;
+                }
+
+                updateSelectedDraftWith((draft) => addObjectDocumentToDraft(draft, document));
               }}
               onAddRepresentativeToAct={(representative) => {
                 updateSelectedDraftWith((draft) => addRepresentativeToDraft(draft, representative));
@@ -463,8 +483,8 @@ export function DemoAosrWorkspacePage({
               onDragRepresentativeStart={setDraggedRepresentativeId}
               onDragRepresentativeTarget={setRepresentativeDropTargetId}
               onMoveHeaderOrganization={(headerOrganizationId, direction) => {
-                commitObjectDefaults((currentDefaults) =>
-                  moveHeaderOrganizationBlock(currentDefaults, headerOrganizationId, direction),
+                updateSelectedDraftWith((draft) =>
+                  moveHeaderOrganizationInDraft(draft, headerOrganizationId, direction),
                 );
               }}
               onMoveSelectedSignatory={moveSelectedSignatory}
@@ -487,6 +507,21 @@ export function DemoAosrWorkspacePage({
               onResetDraftComplianceToObjectDefault={() => {
                 updateSelectedDraftWith((draft) =>
                   resetDraftComplianceToObjectDefault(draft, objectDefaults),
+                );
+              }}
+              onResetDraftHeaderOrganizationsToObjectDefault={() => {
+                updateSelectedDraftWith((draft) =>
+                  resetDraftHeaderOrganizationsToObjectDefault(draft, objectDefaults),
+                );
+              }}
+              onResetDraftObjectNameToObjectDefault={() => {
+                updateSelectedDraftWith((draft) =>
+                  resetDraftObjectNameToObjectDefault(draft, objectDefaults),
+                );
+              }}
+              onResetDraftProjectDocumentationToObjectDefault={() => {
+                updateSelectedDraftWith((draft) =>
+                  resetDraftProjectDocumentationToObjectDefault(draft, objectDefaults),
                 );
               }}
               onResetDraftUnderTitleToObjectDefault={() => {
@@ -536,7 +571,6 @@ export function DemoAosrWorkspacePage({
         <DemoAosrPreview
           finalApplications={finalApplications}
           formVariant={selectedFormVariant}
-          objectDefaults={objectDefaults}
           selectedDraft={selectedDraft}
           selectedMaterials={selectedMaterials}
           selectedObjectDocuments={selectedObjectDocuments}

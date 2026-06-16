@@ -14,6 +14,9 @@ import type {
 import {
   getDraftComplianceStatement,
   isDraftComplianceFromObjectDefault,
+  isDraftHeaderOrganizationsFromObjectDefault,
+  isDraftObjectNameFromObjectDefault,
+  isDraftProjectDocumentationFromObjectDefault,
   isDraftUnderTitleFromObjectDefault,
 } from './demo-aosr-workspace.js';
 import {
@@ -74,6 +77,9 @@ interface DemoCurrentActEditorProps {
   readonly onRemoveRepresentativeFromAct: (representativeId: string) => void;
   readonly onReorderSelectedSignatory: (targetRepresentativeId: string) => void;
   readonly onResetDraftComplianceToObjectDefault: () => void;
+  readonly onResetDraftHeaderOrganizationsToObjectDefault: () => void;
+  readonly onResetDraftObjectNameToObjectDefault: () => void;
+  readonly onResetDraftProjectDocumentationToObjectDefault: () => void;
   readonly onResetDraftUnderTitleToObjectDefault: () => void;
   readonly onToggleApplication: (applicationId: string) => void;
   readonly onToggleCertificateLibrary: () => void;
@@ -121,6 +127,9 @@ export function DemoCurrentActEditor({
   onRemoveRepresentativeFromAct,
   onReorderSelectedSignatory,
   onResetDraftComplianceToObjectDefault,
+  onResetDraftHeaderOrganizationsToObjectDefault,
+  onResetDraftObjectNameToObjectDefault,
+  onResetDraftProjectDocumentationToObjectDefault,
   onResetDraftUnderTitleToObjectDefault,
   onToggleApplication,
   onToggleCertificateLibrary,
@@ -134,6 +143,18 @@ export function DemoCurrentActEditor({
     objectDefaults,
   );
   const isUnderTitleFromDefaults = isDraftUnderTitleFromObjectDefault(
+    selectedDraft,
+    objectDefaults,
+  );
+  const isObjectNameFromDefaults = isDraftObjectNameFromObjectDefault(
+    selectedDraft,
+    objectDefaults,
+  );
+  const isProjectDocumentationFromDefaults = isDraftProjectDocumentationFromObjectDefault(
+    selectedDraft,
+    objectDefaults,
+  );
+  const isHeaderOrganizationsFromDefaults = isDraftHeaderOrganizationsFromObjectDefault(
     selectedDraft,
     objectDefaults,
   );
@@ -198,9 +219,32 @@ export function DemoCurrentActEditor({
               value={selectedDraft.actDate}
             />
           </label>
-          <div className="print-header-field act-form-grid__wide">
-            <span>Объект капитального строительства</span>
-            <p>{objectDefaults.objectName}</p>
+          <div className="document-owned-field act-form-grid__wide">
+            <div className="document-owned-field__heading">
+              <label htmlFor="draftObjectName">Объект капитального строительства в документе</label>
+              <span className="source-chip">
+                {isObjectNameFromDefaults ? 'По параметрам по умолчанию' : 'Изменено в документе'}
+              </span>
+            </div>
+            <textarea
+              className="medium-field"
+              id="draftObjectName"
+              name="objectName"
+              onChange={(event) => {
+                onUpdateSelectedDraft('objectName', event.currentTarget.value);
+              }}
+              rows={3}
+              value={selectedDraft.objectName}
+            />
+            {isObjectNameFromDefaults ? null : (
+              <button
+                className="compact-toggle"
+                onClick={onResetDraftObjectNameToObjectDefault}
+                type="button"
+              >
+                Вернуть из параметров по умолчанию
+              </button>
+            )}
           </div>
           <div className="print-header-field">
             <span>Форма акта</span>
@@ -237,8 +281,10 @@ export function DemoCurrentActEditor({
       </section>
 
       <DemoHeaderOrganizationsOrderEditor
-        headerOrganizations={objectDefaults.headerOrganizations}
+        headerOrganizations={selectedDraft.headerOrganizations}
+        isFromDefaults={isHeaderOrganizationsFromDefaults}
         onMoveHeaderOrganization={onMoveHeaderOrganization}
+        onResetHeaderOrganizationsToObjectDefault={onResetDraftHeaderOrganizationsToObjectDefault}
       />
 
       <DemoSignatoriesEditor
@@ -301,9 +347,37 @@ export function DemoCurrentActEditor({
       </section>
 
       <section className="form-section act-editor-card" aria-labelledby="project-docs-data-title">
-        <h3 id="project-docs-data-title">2. Проектная документация</h3>
-        <p className="readonly-field">{objectDefaults.defaultProjectDocumentation}</p>
-        <p className="helper-note">Значение берётся из параметров по умолчанию.</p>
+        <div className="scope-heading scope-heading--with-action">
+          <span>
+            <h3 id="project-docs-data-title">2. Проектная документация</h3>
+            <span className="source-chip">
+              {isProjectDocumentationFromDefaults
+                ? 'По параметрам по умолчанию'
+                : 'Изменено в документе'}
+            </span>
+          </span>
+          {isProjectDocumentationFromDefaults ? null : (
+            <button
+              className="compact-toggle"
+              onClick={onResetDraftProjectDocumentationToObjectDefault}
+              type="button"
+            >
+              Вернуть из параметров по умолчанию
+            </button>
+          )}
+        </div>
+        <label className="act-form-grid__wide">
+          Проектная документация в документе
+          <textarea
+            className="large-field"
+            name="projectDocumentation"
+            onChange={(event) => {
+              onUpdateSelectedDraft('projectDocumentation', event.currentTarget.value);
+            }}
+            rows={5}
+            value={selectedDraft.projectDocumentation}
+          />
+        </label>
       </section>
 
       <DemoMaterialsSelector

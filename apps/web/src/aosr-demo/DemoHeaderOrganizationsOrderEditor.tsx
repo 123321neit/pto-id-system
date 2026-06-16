@@ -3,15 +3,19 @@ import type { MoveDirection } from './demo-aosr-ui.js';
 
 interface DemoHeaderOrganizationsOrderEditorProps {
   readonly headerOrganizations: readonly DemoAosrHeaderOrganization[];
+  readonly isFromDefaults: boolean;
   readonly onMoveHeaderOrganization: (
     headerOrganizationId: string,
     direction: MoveDirection,
   ) => void;
+  readonly onResetHeaderOrganizationsToObjectDefault: () => void;
 }
 
 export function DemoHeaderOrganizationsOrderEditor({
   headerOrganizations,
+  isFromDefaults,
   onMoveHeaderOrganization,
+  onResetHeaderOrganizationsToObjectDefault,
 }: DemoHeaderOrganizationsOrderEditorProps): React.JSX.Element {
   return (
     <section
@@ -24,7 +28,19 @@ export function DemoHeaderOrganizationsOrderEditor({
           <p className="helper-note">
             Порядок этих блоков используется в верхней части печатного АОСР.
           </p>
+          <span className="source-chip">
+            {isFromDefaults ? 'По параметрам по умолчанию' : 'Изменено в документе'}
+          </span>
         </span>
+        {isFromDefaults ? null : (
+          <button
+            className="compact-toggle"
+            onClick={onResetHeaderOrganizationsToObjectDefault}
+            type="button"
+          >
+            Вернуть из параметров по умолчанию
+          </button>
+        )}
       </div>
 
       <ol className="print-order-list" aria-label="Порядок организаций в акте">

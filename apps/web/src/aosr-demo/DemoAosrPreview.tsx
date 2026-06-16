@@ -2,7 +2,7 @@ import type { DemoAosrFormVariantMetadata } from '../act-types/act-types.js';
 import type {
   DemoActApplication,
   DemoAosrDraft,
-  DemoAosrObjectDefaults,
+  DemoAosrHeaderOrganization,
   DemoAosrRepresentative,
   DemoMaterialCertificate,
   DemoObjectDocument,
@@ -17,7 +17,6 @@ import {
 interface DemoAosrPreviewProps {
   readonly finalApplications: readonly DemoActApplication[];
   readonly formVariant: DemoAosrFormVariantMetadata;
-  readonly objectDefaults: DemoAosrObjectDefaults;
   readonly selectedDraft: DemoAosrDraft;
   readonly selectedMaterials: readonly DemoMaterialCertificate[];
   readonly selectedObjectDocuments: readonly DemoObjectDocument[];
@@ -27,13 +26,15 @@ interface DemoAosrPreviewProps {
 export function DemoAosrPreview({
   finalApplications,
   formVariant,
-  objectDefaults,
   selectedDraft,
   selectedMaterials,
   selectedObjectDocuments,
   selectedSignatories,
 }: DemoAosrPreviewProps): React.JSX.Element {
-  const executingOrganization = getExecutingOrganization(selectedSignatories, objectDefaults);
+  const executingOrganization = getExecutingOrganization(
+    selectedSignatories,
+    selectedDraft.headerOrganizations,
+  );
   const complianceStatement = getDraftComplianceStatement(selectedDraft);
 
   return (
@@ -51,7 +52,7 @@ export function DemoAosrPreview({
               <div className="act-page__header-block">
                 <p className="act-page__block-label">Объект капитального строительства:</p>
                 <p className="act-page__field-line act-page__object-line">
-                  {objectDefaults.objectName}
+                  {selectedDraft.objectName}
                 </p>
                 <p className="act-page__caption">
                   (наименование объекта капитального строительства в соответствии с проектной
@@ -59,7 +60,7 @@ export function DemoAosrPreview({
                 </p>
               </div>
 
-              {objectDefaults.headerOrganizations.map((headerOrganization) => (
+              {selectedDraft.headerOrganizations.map((headerOrganization) => (
                 <div className="act-page__header-block" key={headerOrganization.id}>
                   <p className="act-page__block-label">{headerOrganization.label}:</p>
                   <p className="act-page__field-line">{headerOrganization.organizationName}</p>
@@ -132,9 +133,7 @@ export function DemoAosrPreview({
                 <span className="act-page__item-label">
                   2. Работы выполнены по проектной документации:
                 </span>{' '}
-                <span className="act-page__print-value">
-                  {objectDefaults.defaultProjectDocumentation}
-                </span>
+                <span className="act-page__print-value">{selectedDraft.projectDocumentation}</span>
               </p>
               <p className="act-page__caption">
                 (номер, другие реквизиты чертежа, наименование проектной и рабочей документации)
@@ -318,14 +317,13 @@ function getHiddenWorksPreviewLine(selectedDraft: DemoAosrDraft): string {
 
 function getExecutingOrganization(
   selectedSignatories: readonly DemoAosrRepresentative[],
-  objectDefaults: DemoAosrObjectDefaults,
+  headerOrganizations: readonly DemoAosrHeaderOrganization[],
 ): string {
   const lastSignatory = selectedSignatories[selectedSignatories.length - 1];
-  const contractorHeader = objectDefaults.headerOrganizations.find(({ label }) =>
+  const contractorHeader = headerOrganizations.find(({ label }) =>
     label.toLocaleLowerCase('ru-RU').includes('подряд'),
   );
-  const lastHeaderOrganization =
-    objectDefaults.headerOrganizations[objectDefaults.headerOrganizations.length - 1];
+  const lastHeaderOrganization = headerOrganizations[headerOrganizations.length - 1];
 
   return (
     contractorHeader?.organizationName ??

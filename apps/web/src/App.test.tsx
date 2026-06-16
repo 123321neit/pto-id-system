@@ -424,6 +424,8 @@ describe('App shell mock navigation', () => {
 
   it('copies current default parameters into a new AOSR draft without changing existing drafts', async () => {
     const user = userEvent.setup();
+    const nextObjectName = 'Новый объект для будущих АОСР.';
+    const nextProjectDocumentation = 'Новая проектная документация для будущих АОСР.';
     const nextUnderTitleText = 'Новый подзаголовок по умолчанию для будущих АОСР.';
     const nextComplianceText = 'Новый пункт 6 по умолчанию для будущих АОСР.';
 
@@ -436,13 +438,24 @@ describe('App shell mock navigation', () => {
     );
 
     const dialog = screen.getByRole('dialog', { name: 'Параметры по умолчанию' });
+    await user.clear(within(dialog).getByLabelText('Объект капитального строительства'));
+    await user.type(
+      within(dialog).getByLabelText('Объект капитального строительства'),
+      nextObjectName,
+    );
     await user.click(within(dialog).getByRole('button', { name: /Шапка акта/u }));
+    await user.click(within(dialog).getByRole('button', { name: 'Переместить Подрядчик вверх' }));
     await user.clear(within(dialog).getByLabelText('Текст под заголовком акта по умолчанию'));
     await user.type(
       within(dialog).getByLabelText('Текст под заголовком акта по умолчанию'),
       nextUnderTitleText,
     );
     await user.click(within(dialog).getByRole('button', { name: /Тексты акта/u }));
+    await user.clear(within(dialog).getByLabelText('Проектная документация по умолчанию'));
+    await user.type(
+      within(dialog).getByLabelText('Проектная документация по умолчанию'),
+      nextProjectDocumentation,
+    );
     await user.clear(
       within(dialog).getByLabelText(
         'Текст для пункта 6. Соответствие работ предъявляемым требованиям',
@@ -459,8 +472,20 @@ describe('App shell mock navigation', () => {
     expect(getTextAreaValue(screen.getByLabelText('Текст под заголовком акта в документе'))).toBe(
       demoAosrWorkspace.objectDefaults.defaultUnderTitleText,
     );
+    expect(
+      getTextAreaValue(screen.getByLabelText('Объект капитального строительства в документе')),
+    ).toBe(demoAosrWorkspace.objectDefaults.objectName);
+    expect(getTextAreaValue(screen.getByLabelText('Проектная документация в документе'))).toBe(
+      demoAosrWorkspace.objectDefaults.defaultProjectDocumentation,
+    );
     expect(getTextAreaValue(screen.getByLabelText('Текст пункта 6 в документе'))).toBe(
       demoAosrWorkspace.objectDefaults.defaultComplianceStatement,
+    );
+    const oldOrganizationOrderText = screen.getByRole('list', {
+      name: 'Порядок организаций в акте',
+    }).textContent;
+    expect(oldOrganizationOrderText.indexOf('Заказчик')).toBeLessThan(
+      oldOrganizationOrderText.indexOf('Подрядчик'),
     );
 
     await user.click(within(objectNavigation).getByRole('button', { name: 'Октябрь 2026' }));
@@ -473,8 +498,20 @@ describe('App shell mock navigation', () => {
     expect(getTextAreaValue(screen.getByLabelText('Текст под заголовком акта в документе'))).toBe(
       nextUnderTitleText,
     );
+    expect(
+      getTextAreaValue(screen.getByLabelText('Объект капитального строительства в документе')),
+    ).toBe(nextObjectName);
+    expect(getTextAreaValue(screen.getByLabelText('Проектная документация в документе'))).toBe(
+      nextProjectDocumentation,
+    );
     expect(getTextAreaValue(screen.getByLabelText('Текст пункта 6 в документе'))).toBe(
       nextComplianceText,
+    );
+    const newOrganizationOrderText = screen.getByRole('list', {
+      name: 'Порядок организаций в акте',
+    }).textContent;
+    expect(newOrganizationOrderText.indexOf('Подрядчик')).toBeLessThan(
+      newOrganizationOrderText.indexOf('Заказчик'),
     );
     expect(screen.getAllByText('По параметрам по умолчанию').length).toBeGreaterThan(1);
   });
@@ -1237,7 +1274,26 @@ describe('App shell mock navigation', () => {
     await user.click(screen.getByRole('button', { name: 'Закрыть' }));
     await openDocumentPreview(user);
 
-    const previewText = getDocumentPreview().textContent;
+    let previewText = getDocumentPreview().textContent;
+    expect(previewText).not.toContain('Авторский контроль:');
+    expect(previewText).not.toContain('ООО "Авторский контроль"');
+
+    await user.click(
+      within(screen.getByRole('dialog', { name: 'Предпросмотр документа' })).getByRole('button', {
+        name: 'Закрыть предпросмотр документа',
+      }),
+    );
+
+    const organizationSection = getSectionByHeading('Организации, участвующие в акте');
+    await user.click(
+      within(organizationSection).getByRole('button', {
+        name: 'Вернуть из параметров по умолчанию',
+      }),
+    );
+
+    await openDocumentPreview(user);
+
+    previewText = getDocumentPreview().textContent;
     expect(previewText).toContain('Авторский контроль:');
     expect(previewText).toContain('ООО "Авторский контроль"');
     expect(previewText).toContain('ИНН 6600000002; ОГРН 1266600000002.');

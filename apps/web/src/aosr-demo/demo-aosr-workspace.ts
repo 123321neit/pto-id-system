@@ -1,4 +1,8 @@
-import { demoAosrActType, type DemoAosrFormVariantId } from '../act-types/act-types.js';
+import {
+  demoAosrActType,
+  demoAosrFormVariant1,
+  type DemoAosrFormVariantId,
+} from '../act-types/act-types.js';
 
 export interface DemoAosrWorkspace {
   readonly id: string;
@@ -83,10 +87,17 @@ export interface DemoAosrDraft {
   readonly elevationRange: string;
   readonly excludedApplicationIds: readonly string[];
   readonly formVariantId: DemoAosrFormVariantId;
+  readonly formVariantPrintTitle: string;
+  readonly formVariantTitle: string;
+  readonly headerOrganizations: readonly DemoAosrHeaderOrganization[];
   readonly materialCertificateIds: readonly string[];
+  readonly materialCertificateSnapshots: readonly DemoMaterialCertificate[];
+  readonly objectName: string;
   readonly objectDocumentIds: readonly string[];
+  readonly objectDocumentSnapshots: readonly DemoObjectDocument[];
   readonly periodEnd: string;
   readonly periodStart: string;
+  readonly projectDocumentation: string;
   readonly representatives: readonly DemoAosrRepresentative[];
   readonly status: 'draft' | 'needs-review';
   readonly subsequentWorksPermitted: string;
@@ -123,8 +134,10 @@ export type DemoAosrDraftField =
   | 'complianceStatement'
   | 'copiesCount'
   | 'elevationRange'
+  | 'objectName'
   | 'periodEnd'
   | 'periodStart'
+  | 'projectDocumentation'
   | 'subsequentWorksPermitted'
   | 'underTitleText'
   | 'workDescription';
@@ -179,66 +192,146 @@ const defaultComplianceStatement =
 const defaultUnderTitleText =
   'Участники освидетельствования произвели осмотр скрытых работ и составили настоящий акт.';
 
+const defaultProjectDocumentation =
+  'Рабочая документация РД-ОВ-12 лист 4; РД-ОВ-14 лист 2; спецификация оборудования и материалов СП-ОВ-02.';
+
+const defaultObjectName = 'Реконструкция поликлиники, корпус Б';
+
+const defaultHeaderOrganizations: readonly DemoAosrHeaderOrganization[] = [
+  {
+    caption: 'Наименование, ОГРН, ИНН, место нахождения, телефон/факс и иные объектовые реквизиты.',
+    details:
+      'ОГРН 1026600000000; ИНН 6670000000; 620000, г. Екатеринбург, ул. Демонстрационная, 10.',
+    globalOrganizationId: 'global-organization-customer',
+    id: 'header-organization-customer',
+    label: 'Заказчик',
+    organizationName: 'ГАУЗ СО "Демо-заказчик"',
+  },
+  {
+    caption: 'Реквизиты лица, осуществляющего строительство, включая СРО при наличии.',
+    details: 'ОГРН 1206600007877; ИНН 6670490954; АСРО "Гильдия строителей демо-объекта".',
+    globalOrganizationId: 'global-organization-contractor',
+    id: 'header-organization-contractor',
+    label: 'Подрядчик',
+    organizationName: 'ООО "ПТО Монтаж"',
+  },
+  {
+    caption: 'Блок можно переименовать или заменить под конкретный объект.',
+    details: 'Договор строительного контроля N СК-7; 620100, г. Екатеринбург, ул. Контрольная, 4.',
+    globalOrganizationId: 'global-organization-control',
+    id: 'header-organization-control',
+    label: 'Технический заказчик',
+    organizationName: 'ООО "СтройКонтроль"',
+  },
+];
+
+const demoObjectDocumentLibrary: readonly DemoObjectDocument[] = [
+  {
+    documentDate: '2026-06-01',
+    id: 'object-document-scheme-ov-04',
+    reference: 'ИС-ОВ-04',
+    title: 'Исполнительная схема скрытых участков вентиляции',
+    type: 'Исполнительная схема',
+  },
+  {
+    documentDate: '2026-06-01',
+    id: 'object-document-drawing-node-02',
+    reference: 'ИЧ-ОВ-02',
+    title: 'Исполнительный чертеж. Узел прохода воздуховодов через перекрытие',
+    type: 'Исполнительный чертеж',
+  },
+  {
+    documentDate: '2026-05-28',
+    id: 'object-document-ppr-ventilation',
+    reference: 'ППР-ОВ-2026',
+    title: 'ППР на монтаж систем вентиляции и кондиционирования',
+    type: 'Другое',
+  },
+  {
+    documentDate: '2026-05-20',
+    id: 'object-document-project-ov-set',
+    reference: 'РД-ОВ-12',
+    title: 'Рабочая документация раздела ОВ, листы 4 и 14',
+    type: 'Другое',
+  },
+  {
+    documentDate: '2026-05-31',
+    id: 'object-document-journal-input-control',
+    reference: 'ЖВК-2026-05',
+    title: 'Запись журнала входного контроля материалов',
+    type: 'Журнал',
+  },
+  {
+    documentDate: '2026-06-02',
+    id: 'object-document-protocol-duct-tightness',
+    reference: 'ПР-ОВ-07',
+    title: 'Протокол проверки герметичности воздуховодов',
+    type: 'Протокол',
+  },
+  {
+    documentDate: '2026-06-02',
+    id: 'object-document-test-airflow-balancing',
+    reference: 'ИСП-ОВ-03',
+    title: 'Отчет испытаний и регулировки расхода воздуха',
+    type: 'Испытание',
+  },
+  {
+    documentDate: '2026-05-30',
+    id: 'object-document-photo-vk-1',
+    reference: 'ФФ-ОВ-11',
+    title: 'Фотофиксация скрытых участков до закрытия',
+    type: 'Другое',
+  },
+];
+
+const demoMaterialCertificateSnapshots: Readonly<Record<string, DemoMaterialCertificate>> = {
+  'certificate-ducts-001': {
+    certificateNumber: 'СТ-ОВ-2026-017',
+    documentName: 'Сертификат соответствия N СТ-ОВ-2026-017 от 12.05.2026',
+    id: 'certificate-ducts-001',
+    materialName: 'Воздуховоды оцинкованные 0,7 мм',
+  },
+  'certificate-fasteners-001': {
+    certificateNumber: 'ПС-КМ-48',
+    documentName: 'Паспорт качества N ПС-КМ-48 от 18.05.2026',
+    id: 'certificate-fasteners-001',
+    materialName: 'Крепежные элементы КМ-12',
+  },
+  'certificate-firestop-001': {
+    certificateNumber: 'ПП-ОГН-22',
+    documentName: 'Паспорт партии N ПП-ОГН-22 от 21.05.2026',
+    id: 'certificate-firestop-001',
+    materialName: 'Противопожарный состав для проходок',
+  },
+};
+
+function copyHeaderOrganizations(
+  headerOrganizations: readonly DemoAosrHeaderOrganization[],
+): readonly DemoAosrHeaderOrganization[] {
+  return headerOrganizations.map((headerOrganization) => ({ ...headerOrganization }));
+}
+
+function getObjectDocumentSnapshots(documentIds: readonly string[]): readonly DemoObjectDocument[] {
+  return documentIds.flatMap((documentId) => {
+    const document = demoObjectDocumentLibrary.find(({ id }) => id === documentId);
+
+    return document === undefined ? [] : [{ ...document }];
+  });
+}
+
+function getMaterialCertificateSnapshots(
+  certificateIds: readonly string[],
+): readonly DemoMaterialCertificate[] {
+  return certificateIds.flatMap((certificateId) => {
+    const certificate = demoMaterialCertificateSnapshots[certificateId];
+
+    return certificate === undefined ? [] : [{ ...certificate }];
+  });
+}
+
 export const demoAosrWorkspace: DemoAosrWorkspace = {
   demoNotice: 'ДЕМО / демонстрационные данные / не для работы в продуктиве',
-  objectDocumentLibrary: [
-    {
-      documentDate: '2026-06-01',
-      id: 'object-document-scheme-ov-04',
-      reference: 'ИС-ОВ-04',
-      title: 'Исполнительная схема скрытых участков вентиляции',
-      type: 'Исполнительная схема',
-    },
-    {
-      documentDate: '2026-06-01',
-      id: 'object-document-drawing-node-02',
-      reference: 'ИЧ-ОВ-02',
-      title: 'Исполнительный чертеж. Узел прохода воздуховодов через перекрытие',
-      type: 'Исполнительный чертеж',
-    },
-    {
-      documentDate: '2026-05-28',
-      id: 'object-document-ppr-ventilation',
-      reference: 'ППР-ОВ-2026',
-      title: 'ППР на монтаж систем вентиляции и кондиционирования',
-      type: 'Другое',
-    },
-    {
-      documentDate: '2026-05-20',
-      id: 'object-document-project-ov-set',
-      reference: 'РД-ОВ-12',
-      title: 'Рабочая документация раздела ОВ, листы 4 и 14',
-      type: 'Другое',
-    },
-    {
-      documentDate: '2026-05-31',
-      id: 'object-document-journal-input-control',
-      reference: 'ЖВК-2026-05',
-      title: 'Запись журнала входного контроля материалов',
-      type: 'Журнал',
-    },
-    {
-      documentDate: '2026-06-02',
-      id: 'object-document-protocol-duct-tightness',
-      reference: 'ПР-ОВ-07',
-      title: 'Протокол проверки герметичности воздуховодов',
-      type: 'Протокол',
-    },
-    {
-      documentDate: '2026-06-02',
-      id: 'object-document-test-airflow-balancing',
-      reference: 'ИСП-ОВ-03',
-      title: 'Отчет испытаний и регулировки расхода воздуха',
-      type: 'Испытание',
-    },
-    {
-      documentDate: '2026-05-30',
-      id: 'object-document-photo-vk-1',
-      reference: 'ФФ-ОВ-11',
-      title: 'Фотофиксация скрытых участков до закрытия',
-      type: 'Другое',
-    },
-  ],
+  objectDocumentLibrary: demoObjectDocumentLibrary,
   drafts: [
     {
       actDate: '2026-09-04',
@@ -250,11 +343,24 @@ export const demoAosrWorkspace: DemoAosrWorkspace = {
       elevationRange: 'отм. +3.200 - +3.850',
       excludedApplicationIds: [],
       formVariantId: demoAosrActType.defaultFormVariantId,
+      formVariantPrintTitle: demoAosrFormVariant1.printTitle,
+      formVariantTitle: demoAosrFormVariant1.title,
+      headerOrganizations: copyHeaderOrganizations(defaultHeaderOrganizations),
       id: 'aosr-draft-001',
       materialCertificateIds: ['certificate-ducts-001', 'certificate-fasteners-001'],
+      materialCertificateSnapshots: getMaterialCertificateSnapshots([
+        'certificate-ducts-001',
+        'certificate-fasteners-001',
+      ]),
+      objectName: defaultObjectName,
       objectDocumentIds: ['object-document-scheme-ov-04', 'object-document-journal-input-control'],
+      objectDocumentSnapshots: getObjectDocumentSnapshots([
+        'object-document-scheme-ov-04',
+        'object-document-journal-input-control',
+      ]),
       periodEnd: '2026-09-03',
       periodStart: '2026-09-01',
+      projectDocumentation: defaultProjectDocumentation,
       representatives: [
         contractorRepresentative,
         buildingControlRepresentative,
@@ -277,11 +383,18 @@ export const demoAosrWorkspace: DemoAosrWorkspace = {
       elevationRange: 'отм. 0.000 - +0.600',
       excludedApplicationIds: [],
       formVariantId: demoAosrActType.defaultFormVariantId,
+      formVariantPrintTitle: demoAosrFormVariant1.printTitle,
+      formVariantTitle: demoAosrFormVariant1.title,
+      headerOrganizations: copyHeaderOrganizations(defaultHeaderOrganizations),
       id: 'aosr-draft-002',
       materialCertificateIds: ['certificate-firestop-001'],
+      materialCertificateSnapshots: getMaterialCertificateSnapshots(['certificate-firestop-001']),
+      objectName: defaultObjectName,
       objectDocumentIds: ['object-document-project-ov-set'],
+      objectDocumentSnapshots: getObjectDocumentSnapshots(['object-document-project-ov-set']),
       periodEnd: '2026-10-05',
       periodStart: '2026-10-01',
+      projectDocumentation: defaultProjectDocumentation,
       representatives: [
         contractorRepresentative,
         customerRepresentative,
@@ -298,39 +411,10 @@ export const demoAosrWorkspace: DemoAosrWorkspace = {
   name: 'Демо-рабочая область АОСР',
   objectDefaults: {
     defaultComplianceStatement,
-    defaultProjectDocumentation:
-      'Рабочая документация РД-ОВ-12 лист 4; РД-ОВ-14 лист 2; спецификация оборудования и материалов СП-ОВ-02.',
+    defaultProjectDocumentation,
     defaultUnderTitleText,
-    headerOrganizations: [
-      {
-        caption:
-          'Наименование, ОГРН, ИНН, место нахождения, телефон/факс и иные объектовые реквизиты.',
-        details:
-          'ОГРН 1026600000000; ИНН 6670000000; 620000, г. Екатеринбург, ул. Демонстрационная, 10.',
-        globalOrganizationId: 'global-organization-customer',
-        id: 'header-organization-customer',
-        label: 'Заказчик',
-        organizationName: 'ГАУЗ СО "Демо-заказчик"',
-      },
-      {
-        caption: 'Реквизиты лица, осуществляющего строительство, включая СРО при наличии.',
-        details: 'ОГРН 1206600007877; ИНН 6670490954; АСРО "Гильдия строителей демо-объекта".',
-        globalOrganizationId: 'global-organization-contractor',
-        id: 'header-organization-contractor',
-        label: 'Подрядчик',
-        organizationName: 'ООО "ПТО Монтаж"',
-      },
-      {
-        caption: 'Блок можно переименовать или заменить под конкретный объект.',
-        details:
-          'Договор строительного контроля N СК-7; 620100, г. Екатеринбург, ул. Контрольная, 4.',
-        globalOrganizationId: 'global-organization-control',
-        id: 'header-organization-control',
-        label: 'Технический заказчик',
-        organizationName: 'ООО "СтройКонтроль"',
-      },
-    ],
-    objectName: 'Реконструкция поликлиники, корпус Б',
+    headerOrganizations: copyHeaderOrganizations(defaultHeaderOrganizations),
+    objectName: defaultObjectName,
     projectName: 'Реконструкция поликлиники, демонстрационный проект',
     representativeLibrary: [],
   },
@@ -353,11 +437,18 @@ export function createEmptyDemoAosrDraft({
     elevationRange: '',
     excludedApplicationIds: [],
     formVariantId: demoAosrActType.defaultFormVariantId,
+    formVariantPrintTitle: demoAosrFormVariant1.printTitle,
+    formVariantTitle: demoAosrFormVariant1.title,
+    headerOrganizations: copyHeaderOrganizations(objectDefaults.headerOrganizations),
     id,
     materialCertificateIds: [],
+    materialCertificateSnapshots: [],
+    objectName: objectDefaults.objectName,
     objectDocumentIds: [],
+    objectDocumentSnapshots: [],
     periodEnd: '',
     periodStart: '',
+    projectDocumentation: objectDefaults.defaultProjectDocumentation,
     representatives: [],
     status: 'draft',
     subsequentWorksPermitted: '',
@@ -419,6 +510,68 @@ export function resetDraftUnderTitleToObjectDefault(
   return {
     ...draft,
     underTitleText: objectDefaults.defaultUnderTitleText,
+  };
+}
+
+export function isDraftObjectNameFromObjectDefault(
+  draft: DemoAosrDraft,
+  objectDefaults: DemoAosrObjectDefaults,
+): boolean {
+  return draft.objectName === objectDefaults.objectName;
+}
+
+export function resetDraftObjectNameToObjectDefault(
+  draft: DemoAosrDraft,
+  objectDefaults: DemoAosrObjectDefaults,
+): DemoAosrDraft {
+  return {
+    ...draft,
+    objectName: objectDefaults.objectName,
+  };
+}
+
+export function isDraftProjectDocumentationFromObjectDefault(
+  draft: DemoAosrDraft,
+  objectDefaults: DemoAosrObjectDefaults,
+): boolean {
+  return draft.projectDocumentation === objectDefaults.defaultProjectDocumentation;
+}
+
+export function resetDraftProjectDocumentationToObjectDefault(
+  draft: DemoAosrDraft,
+  objectDefaults: DemoAosrObjectDefaults,
+): DemoAosrDraft {
+  return {
+    ...draft,
+    projectDocumentation: objectDefaults.defaultProjectDocumentation,
+  };
+}
+
+export function isDraftHeaderOrganizationsFromObjectDefault(
+  draft: DemoAosrDraft,
+  objectDefaults: DemoAosrObjectDefaults,
+): boolean {
+  return areHeaderOrganizationsEqual(draft.headerOrganizations, objectDefaults.headerOrganizations);
+}
+
+export function resetDraftHeaderOrganizationsToObjectDefault(
+  draft: DemoAosrDraft,
+  objectDefaults: DemoAosrObjectDefaults,
+): DemoAosrDraft {
+  return {
+    ...draft,
+    headerOrganizations: copyHeaderOrganizations(objectDefaults.headerOrganizations),
+  };
+}
+
+export function moveHeaderOrganizationInDraft(
+  draft: DemoAosrDraft,
+  headerOrganizationId: string,
+  direction: 'up' | 'down',
+): DemoAosrDraft {
+  return {
+    ...draft,
+    headerOrganizations: moveItemById(draft.headerOrganizations, headerOrganizationId, direction),
   };
 }
 
@@ -533,8 +686,10 @@ export function reorderDraftRepresentatives(
 
 export function addMaterialCertificateToDraft(
   draft: DemoAosrDraft,
-  certificateId: string,
+  certificate: DemoMaterialCertificate,
 ): DemoAosrDraft {
+  const certificateId = certificate.id;
+
   if (draft.materialCertificateIds.includes(certificateId)) {
     return draft;
   }
@@ -542,6 +697,7 @@ export function addMaterialCertificateToDraft(
   return {
     ...draft,
     materialCertificateIds: [...draft.materialCertificateIds, certificateId],
+    materialCertificateSnapshots: [...draft.materialCertificateSnapshots, { ...certificate }],
   };
 }
 
@@ -555,10 +711,18 @@ export function removeMaterialCertificateFromDraft(
     ...draft,
     excludedApplicationIds: draft.excludedApplicationIds.filter((id) => id !== applicationId),
     materialCertificateIds: draft.materialCertificateIds.filter((id) => id !== certificateId),
+    materialCertificateSnapshots: draft.materialCertificateSnapshots.filter(
+      ({ id }) => id !== certificateId,
+    ),
   };
 }
 
-export function addObjectDocumentToDraft(draft: DemoAosrDraft, documentId: string): DemoAosrDraft {
+export function addObjectDocumentToDraft(
+  draft: DemoAosrDraft,
+  document: DemoObjectDocument,
+): DemoAosrDraft {
+  const documentId = document.id;
+
   if (draft.objectDocumentIds.includes(documentId)) {
     return draft;
   }
@@ -566,6 +730,7 @@ export function addObjectDocumentToDraft(draft: DemoAosrDraft, documentId: strin
   return {
     ...draft,
     objectDocumentIds: [...draft.objectDocumentIds, documentId],
+    objectDocumentSnapshots: [...draft.objectDocumentSnapshots, { ...document }],
   };
 }
 
@@ -579,6 +744,7 @@ export function removeObjectDocumentFromDraft(
     ...draft,
     excludedApplicationIds: draft.excludedApplicationIds.filter((id) => id !== applicationId),
     objectDocumentIds: draft.objectDocumentIds.filter((id) => id !== documentId),
+    objectDocumentSnapshots: draft.objectDocumentSnapshots.filter(({ id }) => id !== documentId),
   };
 }
 
@@ -608,7 +774,9 @@ export function getDraftMaterialCertificates(
   certificateLibrary: readonly DemoMaterialCertificate[],
 ): readonly DemoMaterialCertificate[] {
   return draft.materialCertificateIds.flatMap((certificateId) => {
-    const certificate = certificateLibrary.find(({ id }) => id === certificateId);
+    const certificate =
+      draft.materialCertificateSnapshots.find(({ id }) => id === certificateId) ??
+      certificateLibrary.find(({ id }) => id === certificateId);
 
     return certificate === undefined ? [] : [certificate];
   });
@@ -619,7 +787,9 @@ export function getDraftObjectDocuments(
   objectDocumentLibrary: readonly DemoObjectDocument[],
 ): readonly DemoObjectDocument[] {
   return draft.objectDocumentIds.flatMap((documentId) => {
-    const document = objectDocumentLibrary.find(({ id }) => id === documentId);
+    const document =
+      draft.objectDocumentSnapshots.find(({ id }) => id === documentId) ??
+      objectDocumentLibrary.find(({ id }) => id === documentId);
 
     return document === undefined ? [] : [document];
   });
@@ -696,6 +866,28 @@ function moveItemById<TItem extends { readonly id: string }>(
   nextItems[targetIndex] = currentItem;
 
   return nextItems;
+}
+
+function areHeaderOrganizationsEqual(
+  left: readonly DemoAosrHeaderOrganization[],
+  right: readonly DemoAosrHeaderOrganization[],
+): boolean {
+  if (left.length !== right.length) {
+    return false;
+  }
+
+  return left.every((leftOrganization, index) => {
+    const rightOrganization = right[index];
+
+    return (
+      leftOrganization.id === rightOrganization?.id &&
+      leftOrganization.globalOrganizationId === rightOrganization.globalOrganizationId &&
+      leftOrganization.label === rightOrganization.label &&
+      leftOrganization.organizationName === rightOrganization.organizationName &&
+      leftOrganization.details === rightOrganization.details &&
+      leftOrganization.caption === rightOrganization.caption
+    );
+  });
 }
 
 function moveItemBefore<TItem extends { readonly id: string }>(

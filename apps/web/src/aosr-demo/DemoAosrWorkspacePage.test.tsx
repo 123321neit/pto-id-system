@@ -11,11 +11,21 @@ import {
   createEmptyDemoAosrDraft,
   demoAosrWorkspace,
   getDraftComplianceStatement,
+  getDraftMaterialCertificates,
+  getDraftObjectDocuments,
   isDraftComplianceFromObjectDefault,
+  isDraftHeaderOrganizationsFromObjectDefault,
+  isDraftObjectNameFromObjectDefault,
+  isDraftProjectDocumentationFromObjectDefault,
   isDraftUnderTitleFromObjectDefault,
+  moveHeaderOrganizationInDraft,
   moveHeaderOrganizationBlock,
   resetDraftComplianceToObjectDefault,
+  resetDraftHeaderOrganizationsToObjectDefault,
+  resetDraftObjectNameToObjectDefault,
+  resetDraftProjectDocumentationToObjectDefault,
   resetDraftUnderTitleToObjectDefault,
+  type DemoAosrDraft,
   updateDemoAosrDraftField,
   updateDraftComplianceStatement,
 } from './demo-aosr-workspace.js';
@@ -181,12 +191,16 @@ describe('DemoAosrWorkspacePage', () => {
     ).toBeTruthy();
   });
 
-  it('opens default parameters from the button and keeps existing defaults functional', async () => {
+  it('keeps object name document-owned after changing default parameters', async () => {
     const user = userEvent.setup();
+    const updatedDefaultObjectName = 'Новый демо-объект АОСР';
 
     renderDemoWorkspace({ initialDocumentPreviewOpen: true });
 
     expect(screen.queryByLabelText('Объект капитального строительства')).toBeNull();
+    expect(
+      getTextAreaValue(screen.getByLabelText('Объект капитального строительства в документе')),
+    ).toBe(demoAosrWorkspace.objectDefaults.objectName);
 
     await openObjectSettings(user);
 
@@ -194,13 +208,27 @@ describe('DemoAosrWorkspacePage', () => {
     const objectNameField = within(dialog).getByLabelText('Объект капитального строительства');
 
     await user.clear(objectNameField);
-    await user.type(objectNameField, 'Новый демо-объект АОСР');
+    await user.type(objectNameField, updatedDefaultObjectName);
 
-    expect(getPreviewText()).toContain('Новый демо-объект АОСР');
+    expect(
+      getTextAreaValue(screen.getByLabelText('Объект капитального строительства в документе')),
+    ).toBe(demoAosrWorkspace.objectDefaults.objectName);
+    expect(getPreviewText()).toContain(demoAosrWorkspace.objectDefaults.objectName);
+    expect(getPreviewText()).not.toContain(updatedDefaultObjectName);
 
     await user.click(within(dialog).getByRole('button', { name: 'Закрыть' }));
 
     expect(screen.queryByRole('dialog', { name: 'Параметры по умолчанию' })).toBeNull();
+
+    const headerSection = getSectionByHeading('Шапка печатного документа');
+    await user.click(
+      within(headerSection).getByRole('button', { name: 'Вернуть из параметров по умолчанию' }),
+    );
+
+    expect(
+      getTextAreaValue(screen.getByLabelText('Объект капитального строительства в документе')),
+    ).toBe(updatedDefaultObjectName);
+    expect(getPreviewText()).toContain(updatedDefaultObjectName);
   });
 
   it('shows object-level compliance defaults in a dedicated section', async () => {
@@ -225,6 +253,65 @@ describe('DemoAosrWorkspacePage', () => {
         ),
       ),
     ).toBe(demoAosrWorkspace.objectDefaults.defaultComplianceStatement);
+  });
+
+  it('keeps project documentation document-owned after changing default parameters', async () => {
+    const user = userEvent.setup();
+    const updatedDefaultProjectDocumentation =
+      'Новая проектная документация по умолчанию для следующих актов.';
+    const documentProjectDocumentation =
+      'Документальный список проектной документации только для этого акта.';
+
+    renderDemoWorkspace({ initialDocumentPreviewOpen: true });
+
+    const projectDocumentationField = screen.getByLabelText('Проектная документация в документе');
+    expect(getTextAreaValue(projectDocumentationField)).toBe(
+      demoAosrWorkspace.objectDefaults.defaultProjectDocumentation,
+    );
+    expect(getPreviewText()).toContain(
+      demoAosrWorkspace.objectDefaults.defaultProjectDocumentation,
+    );
+
+    await openObjectSettings(user);
+    const dialog = screen.getByRole('dialog', { name: 'Параметры по умолчанию' });
+    await user.click(within(dialog).getByRole('button', { name: /Тексты акта/u }));
+
+    const defaultProjectDocumentationField = within(dialog).getByLabelText(
+      'Проектная документация по умолчанию',
+    );
+    await user.clear(defaultProjectDocumentationField);
+    await user.type(defaultProjectDocumentationField, updatedDefaultProjectDocumentation);
+
+    expect(getTextAreaValue(screen.getByLabelText('Проектная документация в документе'))).toBe(
+      demoAosrWorkspace.objectDefaults.defaultProjectDocumentation,
+    );
+    expect(getPreviewText()).toContain(
+      demoAosrWorkspace.objectDefaults.defaultProjectDocumentation,
+    );
+    expect(getPreviewText()).not.toContain(updatedDefaultProjectDocumentation);
+
+    await user.click(within(dialog).getByRole('button', { name: 'Закрыть' }));
+
+    const projectDocsSection = getSectionByHeading('2. Проектная документация');
+    await user.clear(screen.getByLabelText('Проектная документация в документе'));
+    await user.type(
+      screen.getByLabelText('Проектная документация в документе'),
+      documentProjectDocumentation,
+    );
+
+    expect(within(projectDocsSection).getByText('Изменено в документе')).toBeTruthy();
+    expect(getPreviewText()).toContain(documentProjectDocumentation);
+
+    await user.click(
+      within(projectDocsSection).getByRole('button', {
+        name: 'Вернуть из параметров по умолчанию',
+      }),
+    );
+
+    expect(getTextAreaValue(screen.getByLabelText('Проектная документация в документе'))).toBe(
+      updatedDefaultProjectDocumentation,
+    );
+    expect(getPreviewText()).toContain(updatedDefaultProjectDocumentation);
   });
 
   it('uses copied compliance text by default in the act and preview', () => {
@@ -452,6 +539,48 @@ describe('DemoAosrWorkspacePage', () => {
     expect(previewText.indexOf('Подрядчик:')).toBeLessThan(previewText.indexOf('Заказчик:'));
   });
 
+  it('keeps organization order document-owned and restores it from default parameters', async () => {
+    const user = userEvent.setup();
+
+    renderDemoWorkspace({ initialDocumentPreviewOpen: true });
+
+    const organizationOrder = screen.getByRole('list', { name: 'Порядок организаций в акте' });
+    const getOrganizationOrderText = (): string => organizationOrder.textContent;
+
+    expect(getOrganizationOrderText().indexOf('Заказчик')).toBeLessThan(
+      getOrganizationOrderText().indexOf('Подрядчик'),
+    );
+
+    await openObjectSettings(user);
+    const dialog = screen.getByRole('dialog', { name: 'Параметры по умолчанию' });
+    await user.click(within(dialog).getByRole('button', { name: /Шапка акта/u }));
+    await user.click(within(dialog).getByRole('button', { name: 'Переместить Подрядчик вверх' }));
+
+    expect(getOrganizationOrderText().indexOf('Заказчик')).toBeLessThan(
+      getOrganizationOrderText().indexOf('Подрядчик'),
+    );
+    expect(getPreviewText().indexOf('Заказчик:')).toBeLessThan(
+      getPreviewText().indexOf('Подрядчик:'),
+    );
+    expect(screen.getAllByText('Изменено в документе').length).toBeGreaterThan(0);
+
+    await user.click(within(dialog).getByRole('button', { name: 'Закрыть' }));
+
+    const organizationSection = getSectionByHeading('Организации, участвующие в акте');
+    await user.click(
+      within(organizationSection).getByRole('button', {
+        name: 'Вернуть из параметров по умолчанию',
+      }),
+    );
+
+    expect(getOrganizationOrderText().indexOf('Подрядчик')).toBeLessThan(
+      getOrganizationOrderText().indexOf('Заказчик'),
+    );
+    expect(getPreviewText().indexOf('Подрядчик:')).toBeLessThan(
+      getPreviewText().indexOf('Заказчик:'),
+    );
+  });
+
   it('keeps under-title text document-owned after changing default parameters', async () => {
     const user = userEvent.setup();
     const updatedDefaultUnderTitleText = 'Новый текст по умолчанию для следующих документов.';
@@ -652,6 +781,18 @@ describe('DemoAosrWorkspacePage', () => {
       'ОГРН 1096600000001; ИНН 6671000001; объектовый договор N ГП-1.',
     );
     await user.click(screen.getByRole('button', { name: 'Сохранить организацию в шапке' }));
+
+    expect(getPreviewText()).not.toContain('Генподрядчик:');
+    expect(getPreviewText()).not.toContain('ООО "Демо-генподряд"');
+
+    await user.click(screen.getByRole('button', { name: 'Закрыть' }));
+
+    const organizationSection = getSectionByHeading('Организации, участвующие в акте');
+    await user.click(
+      within(organizationSection).getByRole('button', {
+        name: 'Вернуть из параметров по умолчанию',
+      }),
+    );
 
     const previewText = getPreviewText();
     expect(previewText).toContain('Генподрядчик:');
@@ -997,6 +1138,33 @@ describe('DemoAosrWorkspacePage', () => {
       editedUnderTitleDraft,
       demoAosrWorkspace.objectDefaults,
     );
+    const editedObjectNameDraft = updateDemoAosrDraftField(
+      sourceDraft,
+      'objectName',
+      'Объект только для unit-теста.',
+    );
+    const revertedObjectNameDraft = resetDraftObjectNameToObjectDefault(
+      editedObjectNameDraft,
+      demoAosrWorkspace.objectDefaults,
+    );
+    const editedProjectDocumentationDraft = updateDemoAosrDraftField(
+      sourceDraft,
+      'projectDocumentation',
+      'Проектная документация только для unit-теста.',
+    );
+    const revertedProjectDocumentationDraft = resetDraftProjectDocumentationToObjectDefault(
+      editedProjectDocumentationDraft,
+      demoAosrWorkspace.objectDefaults,
+    );
+    const editedHeaderOrganizationsDraft = moveHeaderOrganizationInDraft(
+      sourceDraft,
+      'header-organization-contractor',
+      'up',
+    );
+    const revertedHeaderOrganizationsDraft = resetDraftHeaderOrganizationsToObjectDefault(
+      editedHeaderOrganizationsDraft,
+      demoAosrWorkspace.objectDefaults,
+    );
 
     expect(getDraftComplianceStatement(sourceDraft)).toBe(
       demoAosrWorkspace.objectDefaults.defaultComplianceStatement,
@@ -1025,6 +1193,40 @@ describe('DemoAosrWorkspacePage', () => {
     expect(revertedUnderTitleDraft.underTitleText).toBe(
       demoAosrWorkspace.objectDefaults.defaultUnderTitleText,
     );
+    expect(isDraftObjectNameFromObjectDefault(sourceDraft, demoAosrWorkspace.objectDefaults)).toBe(
+      true,
+    );
+    expect(editedObjectNameDraft.objectName).toBe('Объект только для unit-теста.');
+    expect(
+      isDraftObjectNameFromObjectDefault(editedObjectNameDraft, demoAosrWorkspace.objectDefaults),
+    ).toBe(false);
+    expect(revertedObjectNameDraft.objectName).toBe(demoAosrWorkspace.objectDefaults.objectName);
+    expect(
+      isDraftProjectDocumentationFromObjectDefault(sourceDraft, demoAosrWorkspace.objectDefaults),
+    ).toBe(true);
+    expect(editedProjectDocumentationDraft.projectDocumentation).toBe(
+      'Проектная документация только для unit-теста.',
+    );
+    expect(
+      isDraftProjectDocumentationFromObjectDefault(
+        editedProjectDocumentationDraft,
+        demoAosrWorkspace.objectDefaults,
+      ),
+    ).toBe(false);
+    expect(revertedProjectDocumentationDraft.projectDocumentation).toBe(
+      demoAosrWorkspace.objectDefaults.defaultProjectDocumentation,
+    );
+    expect(
+      isDraftHeaderOrganizationsFromObjectDefault(sourceDraft, demoAosrWorkspace.objectDefaults),
+    ).toBe(true);
+    expect(editedHeaderOrganizationsDraft.headerOrganizations[0]?.label).toBe('Подрядчик');
+    expect(
+      isDraftHeaderOrganizationsFromObjectDefault(
+        editedHeaderOrganizationsDraft,
+        demoAosrWorkspace.objectDefaults,
+      ),
+    ).toBe(false);
+    expect(revertedHeaderOrganizationsDraft.headerOrganizations[0]?.label).toBe('Заказчик');
     expect(demoAosrWorkspace.objectDefaults.defaultComplianceStatement).toContain('ГОСТ');
     expect(demoAosrWorkspace.objectDefaults.defaultComplianceStatement).toContain('ТУ');
   });
@@ -1036,10 +1238,24 @@ describe('DemoAosrWorkspacePage', () => {
       throw new Error('В демо-рабочей области должен быть второй черновик.');
     }
 
-    const editedDraft = addMaterialCertificateToDraft(sourceDraft, 'certificate-insulation-001');
+    const editedDraft = addMaterialCertificateToDraft(sourceDraft, {
+      certificateNumber: 'ДС-ИЗ-2026-04',
+      documentName: 'Декларация о соответствии N ДС-ИЗ-2026-04 от 20.05.2026',
+      id: 'certificate-insulation-001',
+      materialName: 'Теплоизоляционные маты ИЗ-50',
+    });
 
     expect(editedDraft.materialCertificateIds).toContain('certificate-insulation-001');
+    expect(editedDraft.materialCertificateSnapshots).toContainEqual(
+      expect.objectContaining({
+        id: 'certificate-insulation-001',
+        materialName: 'Теплоизоляционные маты ИЗ-50',
+      }),
+    );
     expect(sourceDraft.materialCertificateIds).not.toContain('certificate-insulation-001');
+    expect(sourceDraft.materialCertificateSnapshots).not.toContainEqual(
+      expect.objectContaining({ id: 'certificate-insulation-001' }),
+    );
     expect(editedDraft).not.toBe(sourceDraft);
   });
 
@@ -1050,11 +1266,79 @@ describe('DemoAosrWorkspacePage', () => {
       throw new Error('В демо-рабочей области должен быть второй черновик.');
     }
 
-    const editedDraft = addObjectDocumentToDraft(sourceDraft, 'object-document-drawing-node-02');
+    const editedDraft = addObjectDocumentToDraft(sourceDraft, {
+      documentDate: '2026-06-01',
+      id: 'object-document-drawing-node-02',
+      reference: 'ИЧ-ОВ-02',
+      title: 'Исполнительный чертеж. Узел прохода воздуховодов через перекрытие',
+      type: 'Исполнительный чертеж',
+    });
 
     expect(editedDraft.objectDocumentIds).toContain('object-document-drawing-node-02');
+    expect(editedDraft.objectDocumentSnapshots).toContainEqual(
+      expect.objectContaining({
+        id: 'object-document-drawing-node-02',
+        reference: 'ИЧ-ОВ-02',
+      }),
+    );
     expect(sourceDraft.objectDocumentIds).not.toContain('object-document-drawing-node-02');
+    expect(sourceDraft.objectDocumentSnapshots).not.toContainEqual(
+      expect.objectContaining({ id: 'object-document-drawing-node-02' }),
+    );
     expect(editedDraft).not.toBe(sourceDraft);
+  });
+
+  it('uses snapshots per selected material and document while falling back for legacy ids', () => {
+    const sourceDraft = demoAosrWorkspace.drafts[0];
+
+    if (!sourceDraft) {
+      throw new Error('В демо-рабочей области должен быть первый черновик.');
+    }
+
+    const legacyAwareDraft: DemoAosrDraft = {
+      ...sourceDraft,
+      materialCertificateIds: ['certificate-legacy-001', 'certificate-current-001'],
+      materialCertificateSnapshots: [
+        {
+          certificateNumber: 'СТ-ТЕКУЩИЙ-1',
+          documentName: 'Snapshot certificate document',
+          id: 'certificate-current-001',
+          materialName: 'Snapshot material',
+        },
+      ],
+      objectDocumentIds: ['object-document-legacy-001', 'object-document-current-001'],
+      objectDocumentSnapshots: [
+        {
+          documentDate: '2026-06-16',
+          id: 'object-document-current-001',
+          reference: 'SNAP-1',
+          title: 'Snapshot object document',
+          type: 'Другое',
+        },
+      ],
+    };
+
+    expect(
+      getDraftMaterialCertificates(legacyAwareDraft, [
+        {
+          certificateNumber: 'СТ-СТАРЫЙ-1',
+          documentName: 'Legacy fallback certificate document',
+          id: 'certificate-legacy-001',
+          materialName: 'Legacy fallback material',
+        },
+      ]).map(({ materialName }) => materialName),
+    ).toEqual(['Legacy fallback material', 'Snapshot material']);
+    expect(
+      getDraftObjectDocuments(legacyAwareDraft, [
+        {
+          documentDate: '2026-06-15',
+          id: 'object-document-legacy-001',
+          reference: 'LEG-1',
+          title: 'Legacy fallback object document',
+          type: 'Другое',
+        },
+      ]).map(({ title }) => title),
+    ).toEqual(['Legacy fallback object document', 'Snapshot object document']);
   });
 
   it('adds configurable header blocks without mutating object defaults', () => {
@@ -1099,7 +1383,13 @@ describe('DemoAosrWorkspacePage', () => {
     const objectDefaults = {
       ...demoAosrWorkspace.objectDefaults,
       defaultComplianceStatement: 'Новый пункт 6 по умолчанию.',
+      defaultProjectDocumentation: 'Новая проектная документация по умолчанию.',
       defaultUnderTitleText: 'Новый текст под заголовком по умолчанию.',
+      headerOrganizations: [
+        ...demoAosrWorkspace.objectDefaults.headerOrganizations.slice(1),
+        getRequiredElement(demoAosrWorkspace.objectDefaults.headerOrganizations, 0),
+      ],
+      objectName: 'Новый объект по умолчанию.',
     };
     const draft = createEmptyDemoAosrDraft({
       actNumber: 'ОВ-defaults',
@@ -1109,6 +1399,14 @@ describe('DemoAosrWorkspacePage', () => {
 
     expect(draft.underTitleText).toBe(objectDefaults.defaultUnderTitleText);
     expect(draft.complianceStatement).toBe(objectDefaults.defaultComplianceStatement);
+    expect(draft.projectDocumentation).toBe(objectDefaults.defaultProjectDocumentation);
+    expect(draft.objectName).toBe(objectDefaults.objectName);
+    expect(draft.headerOrganizations.map(({ id }) => id)).toEqual(
+      objectDefaults.headerOrganizations.map(({ id }) => id),
+    );
+    expect(draft.headerOrganizations).not.toBe(objectDefaults.headerOrganizations);
+    expect(draft.formVariantTitle).toBe('АОСР 1');
+    expect(draft.formVariantPrintTitle).toBe('ОСВИДЕТЕЛЬСТВОВАНИЯ СКРЫТЫХ РАБОТ');
     expect(draft.actNumber).toBe('ОВ-defaults');
   });
 });

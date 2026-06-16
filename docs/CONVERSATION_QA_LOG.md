@@ -1080,3 +1080,30 @@ implemented in this sprint.
 implemented only in the frontend mock. No backend/API, Prisma/schema/migration,
 persistence, real registry generation, package release snapshot implementation,
 uploads, OCR/AI or DOCX/PDF/ZIP generation was introduced.
+
+---
+
+## 42. AOSR printable values must be document-owned by default
+
+### Q: Должен ли Codex ограничиться проектной документацией и порядком организаций, или нужно проверить весь редактор АОСР на live-связи с объектом?
+
+A: Нужно проверять весь редактор и preview. Принцип `Параметры по умолчанию -> Предложение -> Самостоятельный документ` относится не к отдельным полям, а ко всем значениям, которые попадают в печатный документ.
+
+Решение для frontend mock:
+
+- printed object name is stored in the AOSR draft;
+- project documentation is stored in the AOSR draft;
+- header organization blocks and order are stored in the AOSR draft;
+- under-title text and point 6 text remain document-owned;
+- printed form title metadata is snapshotted into the draft;
+- selected material certificates store printable snapshots in the draft;
+- selected object documents store printable snapshots in the draft;
+- preview reads these printable values from the selected draft, not from live
+  object defaults;
+- object defaults remain live only for settings, comparison/status hints,
+  explicit restore actions and proposal/search sources.
+
+Статус решения: frontend mock architecture refinement only. No backend/API,
+Prisma/schema/migration, persistence, numbering settings, real registry
+generation, package release snapshot implementation, uploads, OCR/AI or
+DOCX/PDF/ZIP generation was introduced.
