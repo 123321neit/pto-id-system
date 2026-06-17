@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { cleanup, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { DemoAosrWorkspacePage } from './DemoAosrWorkspacePage.js';
 import {
@@ -32,6 +32,7 @@ import {
 import { DemoStoreProvider } from '../demo-store/DemoStoreProvider.js';
 
 afterEach(() => {
+  vi.restoreAllMocks();
   cleanup();
 });
 
@@ -109,6 +110,7 @@ describe('DemoAosrWorkspacePage', () => {
         name: 'Убрать документ Запись журнала входного контроля материалов',
       }),
     );
+    await switchCurrentActToManualTemplate(user);
     await user.click(screen.getByRole('button', { name: 'Убрать Иванов И.И. из акта' }));
     await user.click(screen.getByRole('button', { name: 'Убрать Петров П.П. из акта' }));
     await user.click(screen.getByRole('button', { name: 'Убрать Смирнова С.С. из акта' }));
@@ -191,7 +193,7 @@ describe('DemoAosrWorkspacePage', () => {
     ).toBeTruthy();
   });
 
-  it('keeps object name document-owned after changing default parameters', async () => {
+  it('updates linked object name after changing object template parameters', async () => {
     const user = userEvent.setup();
     const updatedDefaultObjectName = 'Новый демо-объект АОСР';
 
@@ -212,23 +214,12 @@ describe('DemoAosrWorkspacePage', () => {
 
     expect(
       getTextAreaValue(screen.getByLabelText('Объект капитального строительства в документе')),
-    ).toBe(demoAosrWorkspace.objectDefaults.objectName);
-    expect(getPreviewText()).toContain(demoAosrWorkspace.objectDefaults.objectName);
-    expect(getPreviewText()).not.toContain(updatedDefaultObjectName);
+    ).toBe(updatedDefaultObjectName);
+    expect(getPreviewText()).toContain(updatedDefaultObjectName);
 
     await user.click(within(dialog).getByRole('button', { name: 'Закрыть' }));
 
     expect(screen.queryByRole('dialog', { name: 'Параметры по умолчанию' })).toBeNull();
-
-    const headerSection = getSectionByHeading('Шапка печатного документа');
-    await user.click(
-      within(headerSection).getByRole('button', { name: 'Вернуть из параметров по умолчанию' }),
-    );
-
-    expect(
-      getTextAreaValue(screen.getByLabelText('Объект капитального строительства в документе')),
-    ).toBe(updatedDefaultObjectName);
-    expect(getPreviewText()).toContain(updatedDefaultObjectName);
   });
 
   it('shows object-level compliance defaults in a dedicated section', async () => {
@@ -255,12 +246,10 @@ describe('DemoAosrWorkspacePage', () => {
     ).toBe(demoAosrWorkspace.objectDefaults.defaultComplianceStatement);
   });
 
-  it('keeps project documentation document-owned after changing default parameters', async () => {
+  it('updates linked project documentation after changing object template parameters', async () => {
     const user = userEvent.setup();
     const updatedDefaultProjectDocumentation =
       'Новая проектная документация по умолчанию для следующих актов.';
-    const documentProjectDocumentation =
-      'Документальный список проектной документации только для этого акта.';
 
     renderDemoWorkspace({ initialDocumentPreviewOpen: true });
 
@@ -283,43 +272,19 @@ describe('DemoAosrWorkspacePage', () => {
     await user.type(defaultProjectDocumentationField, updatedDefaultProjectDocumentation);
 
     expect(getTextAreaValue(screen.getByLabelText('Проектная документация в документе'))).toBe(
-      demoAosrWorkspace.objectDefaults.defaultProjectDocumentation,
-    );
-    expect(getPreviewText()).toContain(
-      demoAosrWorkspace.objectDefaults.defaultProjectDocumentation,
-    );
-    expect(getPreviewText()).not.toContain(updatedDefaultProjectDocumentation);
-
-    await user.click(within(dialog).getByRole('button', { name: 'Закрыть' }));
-
-    const projectDocsSection = getSectionByHeading('2. Проектная документация');
-    await user.clear(screen.getByLabelText('Проектная документация в документе'));
-    await user.type(
-      screen.getByLabelText('Проектная документация в документе'),
-      documentProjectDocumentation,
-    );
-
-    expect(within(projectDocsSection).getByText('Изменено в документе')).toBeTruthy();
-    expect(getPreviewText()).toContain(documentProjectDocumentation);
-
-    await user.click(
-      within(projectDocsSection).getByRole('button', {
-        name: 'Вернуть из параметров по умолчанию',
-      }),
-    );
-
-    expect(getTextAreaValue(screen.getByLabelText('Проектная документация в документе'))).toBe(
       updatedDefaultProjectDocumentation,
     );
     expect(getPreviewText()).toContain(updatedDefaultProjectDocumentation);
+
+    await user.click(within(dialog).getByRole('button', { name: 'Закрыть' }));
   });
 
-  it('uses copied compliance text by default in the act and preview', () => {
+  it('uses linked object template compliance text in the act and preview', () => {
     renderDemoWorkspace({ initialDocumentPreviewOpen: true });
 
     const complianceSection = getSectionByHeading('6. Соответствие работ');
 
-    expect(within(complianceSection).getByText('По параметрам по умолчанию')).toBeTruthy();
+    expect(within(complianceSection).getByText('По шаблону объекта')).toBeTruthy();
     expect(
       getTextAreaValue(within(complianceSection).getByLabelText('Текст пункта 6 в документе')),
     ).toBe(demoAosrWorkspace.objectDefaults.defaultComplianceStatement);
@@ -331,6 +296,7 @@ describe('DemoAosrWorkspacePage', () => {
     const documentText = 'В документе: работы выполнены по уточнённому листу РД-ОВ-14 и ТУ-ОВ-5.';
 
     renderDemoWorkspace({ initialDocumentPreviewOpen: true });
+    await switchCurrentActToManualTemplate(user);
 
     const complianceField = screen.getByLabelText('Текст пункта 6 в документе');
     expect(getTextAreaValue(complianceField)).toBe(
@@ -340,7 +306,7 @@ describe('DemoAosrWorkspacePage', () => {
     await user.clear(complianceField);
     await user.type(complianceField, documentText);
 
-    expect(screen.getByText('Изменено в документе')).toBeTruthy();
+    expect(screen.getByText('Отличается от шаблона объекта')).toBeTruthy();
     expect(getPreviewText()).toContain(documentText);
     expect(getPreviewText()).not.toContain(
       demoAosrWorkspace.objectDefaults.defaultComplianceStatement,
@@ -351,6 +317,7 @@ describe('DemoAosrWorkspacePage', () => {
     const user = userEvent.setup();
 
     renderDemoWorkspace({ initialDocumentPreviewOpen: true });
+    await switchCurrentActToManualTemplate(user);
 
     await user.clear(screen.getByLabelText('Текст пункта 6 в документе'));
     await user.type(
@@ -360,9 +327,9 @@ describe('DemoAosrWorkspacePage', () => {
 
     expect(getPreviewText()).toContain('Индивидуальное исключение для проверки возврата.');
 
-    await user.click(screen.getByRole('button', { name: 'Вернуть из параметров по умолчанию' }));
+    await user.click(screen.getByRole('button', { name: 'Вернуть к шаблону объекта' }));
 
-    expect(screen.getAllByText('По параметрам по умолчанию').length).toBeGreaterThan(1);
+    expect(screen.getAllByText('По шаблону объекта').length).toBeGreaterThan(1);
     expect(getPreviewText()).toContain(demoAosrWorkspace.objectDefaults.defaultComplianceStatement);
     expect(getPreviewText()).not.toContain('Индивидуальное исключение для проверки возврата.');
   });
@@ -371,6 +338,7 @@ describe('DemoAosrWorkspacePage', () => {
     const user = userEvent.setup();
 
     renderDemoWorkspace();
+    await switchCurrentActToManualTemplate(user);
 
     await user.clear(screen.getByLabelText('Текст пункта 6 в документе'));
     await user.type(
@@ -403,13 +371,11 @@ describe('DemoAosrWorkspacePage', () => {
     ).toBeTruthy();
   });
 
-  it('explains the act signatory search source and fallback', () => {
+  it('explains that linked act signatories come from the object template', () => {
     renderDemoWorkspace();
 
-    expect(screen.getByLabelText('Добавить назначение представителя в акт')).toBeTruthy();
-    expect(
-      screen.getByText('Акт выбирает назначение объекта и сохраняет печатный снимок подписанта.'),
-    ).toBeTruthy();
+    expect(screen.queryByLabelText('Добавить назначение представителя в акт')).toBeNull();
+    expect(screen.getByText('Состав подписантов берётся из шаблона объекта.')).toBeTruthy();
   });
 
   it('explains that act materials must be selected from the certificate library', () => {
@@ -524,6 +490,7 @@ describe('DemoAosrWorkspacePage', () => {
     const user = userEvent.setup();
 
     renderDemoWorkspace({ initialDocumentPreviewOpen: true });
+    await switchCurrentActToManualTemplate(user);
 
     await user.click(
       screen.getByRole('button', { name: 'Переместить организацию Подрядчик вверх' }),
@@ -539,10 +506,11 @@ describe('DemoAosrWorkspacePage', () => {
     expect(previewText.indexOf('Подрядчик:')).toBeLessThan(previewText.indexOf('Заказчик:'));
   });
 
-  it('keeps organization order document-owned and restores it from default parameters', async () => {
+  it('keeps manual organization order detached and restores live template order', async () => {
     const user = userEvent.setup();
 
     renderDemoWorkspace({ initialDocumentPreviewOpen: true });
+    await switchCurrentActToManualTemplate(user);
 
     const organizationOrder = screen.getByRole('list', { name: 'Порядок организаций в акте' });
     const getOrganizationOrderText = (): string => organizationOrder.textContent;
@@ -562,16 +530,11 @@ describe('DemoAosrWorkspacePage', () => {
     expect(getPreviewText().indexOf('Заказчик:')).toBeLessThan(
       getPreviewText().indexOf('Подрядчик:'),
     );
-    expect(screen.getAllByText('Изменено в документе').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Ручная версия').length).toBeGreaterThan(0);
 
     await user.click(within(dialog).getByRole('button', { name: 'Закрыть' }));
 
-    const organizationSection = getSectionByHeading('Организации, участвующие в акте');
-    await user.click(
-      within(organizationSection).getByRole('button', {
-        name: 'Вернуть из параметров по умолчанию',
-      }),
-    );
+    await user.click(screen.getByRole('button', { name: 'Вернуть к шаблону объекта' }));
 
     expect(getOrganizationOrderText().indexOf('Подрядчик')).toBeLessThan(
       getOrganizationOrderText().indexOf('Заказчик'),
@@ -581,7 +544,7 @@ describe('DemoAosrWorkspacePage', () => {
     );
   });
 
-  it('keeps under-title text document-owned after changing default parameters', async () => {
+  it('keeps manual under-title text detached after changing object template parameters', async () => {
     const user = userEvent.setup();
     const updatedDefaultUnderTitleText = 'Новый текст по умолчанию для следующих документов.';
     const documentUnderTitleText = 'Индивидуальный текст под заголовком этого акта.';
@@ -592,8 +555,14 @@ describe('DemoAosrWorkspacePage', () => {
     expect(getTextAreaValue(underTitleField)).toBe(
       demoAosrWorkspace.objectDefaults.defaultUnderTitleText,
     );
-    expect(screen.getAllByText('По параметрам по умолчанию').length).toBeGreaterThan(1);
+    expect(screen.getAllByText('По шаблону объекта').length).toBeGreaterThan(1);
     expect(getPreviewText()).toContain(demoAosrWorkspace.objectDefaults.defaultUnderTitleText);
+
+    await switchCurrentActToManualTemplate(user);
+    const documentUnderTitleField = screen.getByLabelText('Текст под заголовком акта в документе');
+    await user.clear(documentUnderTitleField);
+    await user.type(documentUnderTitleField, documentUnderTitleText);
+    expect(getPreviewText()).toContain(documentUnderTitleText);
 
     await openObjectSettings(user);
     await user.click(screen.getByRole('button', { name: /Шапка акта/u }));
@@ -603,19 +572,13 @@ describe('DemoAosrWorkspacePage', () => {
     await user.type(defaultUnderTitleField, updatedDefaultUnderTitleText);
 
     expect(getTextAreaValue(screen.getByLabelText('Текст под заголовком акта в документе'))).toBe(
-      demoAosrWorkspace.objectDefaults.defaultUnderTitleText,
+      documentUnderTitleText,
     );
-    expect(screen.getAllByText('Изменено в документе').length).toBeGreaterThan(0);
-    expect(getPreviewText()).toContain(demoAosrWorkspace.objectDefaults.defaultUnderTitleText);
+    expect(getPreviewText()).toContain(documentUnderTitleText);
     expect(getPreviewText()).not.toContain(updatedDefaultUnderTitleText);
 
-    const documentUnderTitleField = screen.getByLabelText('Текст под заголовком акта в документе');
-    await user.clear(documentUnderTitleField);
-    await user.type(documentUnderTitleField, documentUnderTitleText);
-
-    expect(getPreviewText()).toContain(documentUnderTitleText);
-
-    await user.click(screen.getByRole('button', { name: 'Вернуть из параметров по умолчанию' }));
+    await user.click(screen.getByRole('button', { name: 'Закрыть' }));
+    await user.click(screen.getByRole('button', { name: 'Вернуть к шаблону объекта' }));
 
     expect(getTextAreaValue(screen.getByLabelText('Текст под заголовком акта в документе'))).toBe(
       updatedDefaultUnderTitleText,
@@ -782,22 +745,16 @@ describe('DemoAosrWorkspacePage', () => {
     );
     await user.click(screen.getByRole('button', { name: 'Сохранить организацию в шапке' }));
 
-    expect(getPreviewText()).not.toContain('Генподрядчик:');
-    expect(getPreviewText()).not.toContain('ООО "Демо-генподряд"');
+    expect(getPreviewText()).toContain('Генподрядчик:');
+    expect(getPreviewText()).toContain('ООО "Демо-генподряд"');
 
     await user.click(screen.getByRole('button', { name: 'Закрыть' }));
-
-    const organizationSection = getSectionByHeading('Организации, участвующие в акте');
-    await user.click(
-      within(organizationSection).getByRole('button', {
-        name: 'Вернуть из параметров по умолчанию',
-      }),
-    );
 
     const previewText = getPreviewText();
     expect(previewText).toContain('Генподрядчик:');
     expect(previewText).toContain('ООО "Демо-генподряд"');
-    expect(previewText).toContain('объектовый договор N ГП-1');
+    expect(previewText).toContain('620075, г. Екатеринбург, ул. Генподрядная, 8');
+    expect(previewText).not.toContain('объектовый договор N ГП-1');
   });
 
   it('adds a representative assignment from the mock global representative library search', async () => {
@@ -835,27 +792,32 @@ describe('DemoAosrWorkspacePage', () => {
     expect(within(objectLibrary).getByText('Николаев Н.Н.')).toBeTruthy();
   });
 
-  it('searches object-level representatives and adds one to the current act', async () => {
+  it('updates linked act when a representative assignment is added to the object template', async () => {
     const user = userEvent.setup();
 
     renderDemoWorkspace({ initialDocumentPreviewOpen: true });
 
     expect(getPreviewText()).not.toContain('Кузнецова А.А.');
 
-    await user.type(screen.getByLabelText('Добавить назначение представителя в акт'), 'заказчика');
+    await openObjectSettings(user);
+    await user.click(screen.getByRole('button', { name: /Представители/u }));
+    await user.click(screen.getByRole('button', { name: 'Добавить представителя' }));
+    await user.type(
+      screen.getByLabelText('Найти представителя в глобальной библиотеке'),
+      'заказчика',
+    );
 
-    const objectPicker = screen.getByRole('list', {
-      name: 'Назначения представителей для текущего акта',
+    const globalLibrary = screen.getByRole('list', {
+      name: 'Глобальная библиотека представителей',
     });
-    const customerRow = within(objectPicker).getByText('Кузнецова А.А.').closest('.library-row');
+    const customerRow = within(globalLibrary).getByText('Кузнецова А.А.').closest('.library-row');
 
     if (customerRow === null) {
-      throw new Error('В тесте ожидается строка назначения представителя.');
+      throw new Error('В тесте ожидается строка глобального представителя.');
     }
 
-    await user.click(
-      within(customerRow as HTMLElement).getByRole('button', { name: 'Добавить назначение' }),
-    );
+    await user.click(within(customerRow as HTMLElement).getByRole('button', { name: 'Выбрать' }));
+    await user.click(screen.getByRole('button', { name: 'Сохранить назначение представителя' }));
 
     const previewText = getPreviewText();
     expect(previewText).toContain('Кузнецова А.А.');
@@ -866,6 +828,7 @@ describe('DemoAosrWorkspacePage', () => {
     const user = userEvent.setup();
 
     renderDemoWorkspace({ initialDocumentPreviewOpen: true });
+    await switchCurrentActToManualTemplate(user);
 
     await addRepresentativeAssignmentFromAct(user, {
       authorityBasis: 'Доверенность N Т-1',
@@ -889,6 +852,7 @@ describe('DemoAosrWorkspacePage', () => {
     const user = userEvent.setup();
 
     renderDemoWorkspace();
+    await switchCurrentActToManualTemplate(user);
 
     await user.click(screen.getByRole('button', { name: 'Создать представителя и назначение' }));
 
@@ -912,6 +876,7 @@ describe('DemoAosrWorkspacePage', () => {
     const user = userEvent.setup();
 
     renderDemoWorkspace({ initialDocumentPreviewOpen: true });
+    await switchCurrentActToManualTemplate(user);
 
     await user.click(screen.getByRole('button', { name: 'Переместить Петров П.П. вверх' }));
 
@@ -1439,6 +1404,18 @@ async function openObjectSettings(user: ReturnType<typeof userEvent.setup>): Pro
   if (openButton !== null) {
     await user.click(openButton);
   }
+}
+
+async function switchCurrentActToManualTemplate(
+  user: ReturnType<typeof userEvent.setup>,
+): Promise<void> {
+  const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true);
+
+  await user.click(screen.getByRole('button', { name: 'Редактировать шаблонные данные вручную' }));
+
+  expect(confirmSpy).toHaveBeenCalledWith(
+    'Акт станет ручной версией. Изменения шаблона объекта и библиотек больше не будут применяться к этому акту.',
+  );
 }
 
 async function addRepresentativeAssignmentFromAct(

@@ -1,42 +1,16 @@
 import type { DemoAosrFormVariantMetadata } from '../act-types/act-types.js';
-import type {
-  DemoActApplication,
-  DemoAosrDraft,
-  DemoAosrHeaderOrganization,
-  DemoAosrRepresentative,
-  DemoMaterialCertificate,
-  DemoObjectDocument,
-} from './demo-aosr-workspace.js';
-import { getDraftComplianceStatement } from './demo-aosr-workspace.js';
-import {
-  formatDocumentDate,
-  getRepresentativeAuthorityLine,
-  getRepresentativePreviewLine,
-} from './demo-aosr-ui.js';
+import type { AosrPrintState } from './demo-aosr-workspace.js';
+import { formatDocumentDate } from './demo-aosr-ui.js';
 
 interface DemoAosrPreviewProps {
-  readonly finalApplications: readonly DemoActApplication[];
   readonly formVariant: DemoAosrFormVariantMetadata;
-  readonly selectedDraft: DemoAosrDraft;
-  readonly selectedMaterials: readonly DemoMaterialCertificate[];
-  readonly selectedObjectDocuments: readonly DemoObjectDocument[];
-  readonly selectedSignatories: readonly DemoAosrRepresentative[];
+  readonly printState: AosrPrintState;
 }
 
 export function DemoAosrPreview({
-  finalApplications,
   formVariant,
-  selectedDraft,
-  selectedMaterials,
-  selectedObjectDocuments,
-  selectedSignatories,
+  printState,
 }: DemoAosrPreviewProps): React.JSX.Element {
-  const executingOrganization = getExecutingOrganization(
-    selectedSignatories,
-    selectedDraft.headerOrganizations,
-  );
-  const complianceStatement = getDraftComplianceStatement(selectedDraft);
-
   return (
     <section className="preview-panel" aria-labelledby="preview-title">
       <div className="panel-heading">
@@ -52,23 +26,22 @@ export function DemoAosrPreview({
               <div className="act-page__header-block">
                 <p className="act-page__block-label">Объект капитального строительства:</p>
                 <p className="act-page__field-line act-page__object-line">
-                  {selectedDraft.objectName}
+                  {printState.object.name}
                 </p>
-                <p className="act-page__caption">
-                  (наименование объекта капитального строительства в соответствии с проектной
-                  документацией, адрес объекта)
-                </p>
+                <p className="act-page__caption">({printState.object.nameSubscript})</p>
               </div>
 
-              {selectedDraft.headerOrganizations.map((headerOrganization) => (
-                <div className="act-page__header-block" key={headerOrganization.id}>
-                  <p className="act-page__block-label">{headerOrganization.label}:</p>
-                  <p className="act-page__field-line">{headerOrganization.organizationName}</p>
+              {printState.counterparties.map((counterparty, index) => (
+                <div
+                  className="act-page__header-block"
+                  key={`${counterparty.title}-${String(index)}`}
+                >
+                  <p className="act-page__block-label">{counterparty.title}:</p>
                   <p className="act-page__field-line act-page__details-line">
-                    {headerOrganization.details}
+                    {counterparty.displayText}
                   </p>
-                  {headerOrganization.caption ? (
-                    <p className="act-page__caption">({headerOrganization.caption})</p>
+                  {counterparty.subscript ? (
+                    <p className="act-page__caption">({counterparty.subscript})</p>
                   ) : null}
                 </div>
               ))}
@@ -79,36 +52,39 @@ export function DemoAosrPreview({
               <h3>{formVariant.printTitle}</h3>
               <div className="act-page__number-date-row">
                 <span>
-                  <strong>№ {selectedDraft.actNumber}</strong>
+                  <strong>№ {printState.document.numberLine}</strong>
                 </span>
                 <span>
-                  <strong>{formatDocumentDate(selectedDraft.actDate)}</strong>
+                  <strong>{formatDocumentDate(printState.document.dateLine)}</strong>
                 </span>
               </div>
-              {selectedDraft.underTitleText.trim() === '' ? null : (
-                <p className="act-page__under-title-text">{selectedDraft.underTitleText}</p>
+              {printState.document.underTitleText.trim() === '' ? null : (
+                <p className="act-page__under-title-text">{printState.document.underTitleText}</p>
               )}
             </section>
 
             <section className="act-page__representative-blocks" aria-label="Представители">
-              {selectedSignatories.map((representative) => (
-                <div className="act-page__representative-block" key={representative.id}>
-                  <p className="act-page__block-label">{representative.roleLabel}:</p>
-                  <p className="act-page__field-line">
-                    {getRepresentativePreviewLine(representative)}
-                  </p>
-                  <p className="act-page__field-line act-page__details-line">
-                    {getRepresentativeAuthorityLine(representative)}
-                  </p>
-                  <p className="act-page__caption">
-                    (должность, фамилия, инициалы, идентификационный номер в НРС, реквизиты
-                    документа, подтверждающего полномочия)
-                  </p>
-                </div>
-              ))}
+              {printState.representatives.groups.map((group, groupIndex) =>
+                group.members.map((member, memberIndex) => (
+                  <div
+                    className="act-page__representative-block"
+                    key={`${group.title}-${String(groupIndex)}-${String(memberIndex)}`}
+                  >
+                    <p className="act-page__block-label">{group.title}:</p>
+                    <p className="act-page__field-line">{member.introDisplayText}</p>
+                    <p className="act-page__field-line act-page__details-line">
+                      {member.subscript}
+                    </p>
+                    <p className="act-page__caption">
+                      (должность, фамилия, инициалы, идентификационный номер в НРС, реквизиты
+                      документа, подтверждающего полномочия)
+                    </p>
+                  </div>
+                )),
+              )}
               <p>
                 произвели осмотр работ, выполненных{' '}
-                <span className="act-page__print-value">{executingOrganization}</span>
+                <span className="act-page__print-value">{printState.work.contractorName}</span>
               </p>
               <p className="act-page__caption">
                 (наименование лица, выполнившего работы, подлежащие освидетельствованию)
@@ -121,9 +97,7 @@ export function DemoAosrPreview({
                 <span className="act-page__item-label">
                   1. К освидетельствованию предъявлены следующие работы:
                 </span>{' '}
-                <span className="act-page__print-value">
-                  {getHiddenWorksPreviewLine(selectedDraft)}
-                </span>
+                <span className="act-page__print-value">{printState.work.description}</span>
               </p>
               <p className="act-page__caption">(наименование скрытых работ)</p>
             </section>
@@ -133,7 +107,7 @@ export function DemoAosrPreview({
                 <span className="act-page__item-label">
                   2. Работы выполнены по проектной документации:
                 </span>{' '}
-                <span className="act-page__print-value">{selectedDraft.projectDocumentation}</span>
+                <span className="act-page__print-value">{printState.project.documentation}</span>
               </p>
               <p className="act-page__caption">
                 (номер, другие реквизиты чертежа, наименование проектной и рабочей документации)
@@ -144,14 +118,11 @@ export function DemoAosrPreview({
               <p>
                 <span className="act-page__item-label">3. При выполнении работ применены:</span>
               </p>
-              {selectedMaterials.length > 0 ? (
+              {printState.materials.items.length > 0 ? (
                 <div className="act-page__inline-list">
-                  {selectedMaterials.map((certificate) => (
-                    <p key={certificate.id}>
-                      <span className="act-page__print-value">
-                        {certificate.materialName} ({certificate.documentName},{' '}
-                        {certificate.certificateNumber})
-                      </span>
+                  {printState.materials.items.map((material, index) => (
+                    <p key={`${material.displayText}-${String(index)}`}>
+                      <span className="act-page__print-value">{material.displayText}</span>
                     </p>
                   ))}
                 </div>
@@ -170,13 +141,11 @@ export function DemoAosrPreview({
                   требованиям:
                 </span>
               </p>
-              {selectedObjectDocuments.length > 0 ? (
+              {printState.confirmationDocuments.items.length > 0 ? (
                 <div className="act-page__inline-list">
-                  {selectedObjectDocuments.map((document) => (
-                    <p key={document.id}>
-                      <span className="act-page__print-value">
-                        {document.title} {document.reference}
-                      </span>
+                  {printState.confirmationDocuments.items.map((document, index) => (
+                    <p key={`${document.displayText}-${String(index)}`}>
+                      <span className="act-page__print-value">{document.displayText}</span>
                     </p>
                   ))}
                 </div>
@@ -195,13 +164,13 @@ export function DemoAosrPreview({
               <p>
                 начала работ{' '}
                 <span className="act-page__print-value">
-                  {formatDocumentDate(selectedDraft.periodStart)}
+                  {formatDocumentDate(printState.work.startDateLine)}
                 </span>
               </p>
               <p>
                 окончания работ{' '}
                 <span className="act-page__print-value">
-                  {formatDocumentDate(selectedDraft.periodEnd)}
+                  {formatDocumentDate(printState.work.endDateLine)}
                 </span>
               </p>
             </section>
@@ -218,7 +187,7 @@ export function DemoAosrPreview({
             <section className="act-page__official-section" aria-label="Соответствие работ">
               <p>
                 <span className="act-page__item-label">6. Работы выполнены в соответствии с:</span>{' '}
-                <span className="act-page__print-value">{complianceStatement}</span>
+                <span className="act-page__print-value">{printState.project.compliance}</span>
               </p>
               <p className="act-page__caption">
                 (наименования технических регламентов, норм и разделов проектной документации)
@@ -230,9 +199,7 @@ export function DemoAosrPreview({
                 <span className="act-page__item-label">
                   7. Разрешается производство последующих работ по:
                 </span>{' '}
-                <span className="act-page__print-value">
-                  {selectedDraft.subsequentWorksPermitted}
-                </span>
+                <span className="act-page__print-value">{printState.work.nextWorks}</span>
               </p>
               <p className="act-page__caption">
                 (наименование работ, конструкций и участков сетей)
@@ -242,26 +209,21 @@ export function DemoAosrPreview({
             <section className="act-page__after-body" aria-label="Сведения и приложения">
               <p>
                 <span className="act-page__item-label">Дополнительные сведения:</span>{' '}
-                <span className="act-page__print-value">{selectedDraft.additionalInfo}</span>
+                <span className="act-page__print-value">{printState.document.additionalInfo}</span>
               </p>
               <p>
                 Акт составлен в{' '}
-                <span className="act-page__print-value">{selectedDraft.copiesCount}</span>{' '}
+                <span className="act-page__print-value">{printState.document.copiesLine}</span>{' '}
                 экземплярах.
               </p>
               <div className="act-page__applications">
                 <h4>Приложения:</h4>
                 <div className="act-page__application-lines">
-                  {finalApplications.length > 0 ? (
-                    finalApplications.map((application) => {
-                      const sourceLabel = getApplicationPrintSourceLabel(application);
-
+                  {printState.applications.items.length > 0 ? (
+                    printState.applications.items.map((application, index) => {
                       return (
-                        <p key={application.id}>
-                          <span className="act-page__print-value">
-                            {application.title}
-                            {sourceLabel}
-                          </span>
+                        <p key={`${application.displayText}-${String(index)}`}>
+                          <span className="act-page__print-value">{application.displayText}</span>
                         </p>
                       );
                     })
@@ -279,56 +241,31 @@ export function DemoAosrPreview({
               aria-label="Подписи представителей"
             >
               <div className="act-page__signature-table">
-                {selectedSignatories.map((representative) => (
-                  <div className="act-page__signature-block" key={representative.id}>
-                    <p className="act-page__block-label">{representative.roleLabel}:</p>
-                    <div className="act-page__signature-person-row">
-                      <span className="act-page__signature-person">
-                        {representative.position} {representative.organization}{' '}
-                        {representative.fullName}
-                      </span>
-                      <span className="act-page__signature-line" aria-hidden="true" />
+                {printState.representatives.groups.map((group, groupIndex) =>
+                  group.members.map((member, memberIndex) => (
+                    <div
+                      className="act-page__signature-block"
+                      key={`${group.title}-signature-${String(groupIndex)}-${String(memberIndex)}`}
+                    >
+                      <p className="act-page__block-label">{group.title}:</p>
+                      <div className="act-page__signature-person-row">
+                        <span className="act-page__signature-person">
+                          {member.signatureText} {member.signatureName}
+                        </span>
+                        <span className="act-page__signature-line" aria-hidden="true" />
+                      </div>
+                      <div className="act-page__signature-caption-row">
+                        <span>(фамилия, инициалы)</span>
+                        <span>(подпись)</span>
+                      </div>
                     </div>
-                    <div className="act-page__signature-caption-row">
-                      <span>(фамилия, инициалы)</span>
-                      <span>(подпись)</span>
-                    </div>
-                  </div>
-                ))}
+                  )),
+                )}
               </div>
             </section>
           </div>
         </section>
       </article>
     </section>
-  );
-}
-
-function getApplicationPrintSourceLabel(application: DemoActApplication): string {
-  return application.source === 'Сертификат / материал' ? '' : ` ${application.source}`;
-}
-
-function getHiddenWorksPreviewLine(selectedDraft: DemoAosrDraft): string {
-  return [selectedDraft.workDescription, selectedDraft.axes, selectedDraft.elevationRange]
-    .map((value) => value.trim())
-    .filter(Boolean)
-    .join('; ');
-}
-
-function getExecutingOrganization(
-  selectedSignatories: readonly DemoAosrRepresentative[],
-  headerOrganizations: readonly DemoAosrHeaderOrganization[],
-): string {
-  const lastSignatory = selectedSignatories[selectedSignatories.length - 1];
-  const contractorHeader = headerOrganizations.find(({ label }) =>
-    label.toLocaleLowerCase('ru-RU').includes('подряд'),
-  );
-  const lastHeaderOrganization = headerOrganizations[headerOrganizations.length - 1];
-
-  return (
-    contractorHeader?.organizationName ??
-    lastSignatory?.organization ??
-    lastHeaderOrganization?.organizationName ??
-    'организацией, указанной в параметрах по умолчанию'
   );
 }

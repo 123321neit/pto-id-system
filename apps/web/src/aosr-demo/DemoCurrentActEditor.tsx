@@ -2,23 +2,18 @@ import type { SyntheticEvent } from 'react';
 
 import type { DemoAosrFormVariantMetadata } from '../act-types/act-types.js';
 import type {
+  AosrPrintState,
   DemoActApplication,
   DemoAosrDraft,
   DemoAosrDraftField,
   DemoAosrObjectDefaults,
   DemoAosrRepresentative,
+  DemoAosrTemplateFields,
   DemoMaterialCertificate,
   DemoObjectDocument,
   DemoObjectDocumentType,
 } from './demo-aosr-workspace.js';
-import {
-  getDraftComplianceStatement,
-  isDraftComplianceFromObjectDefault,
-  isDraftHeaderOrganizationsFromObjectDefault,
-  isDraftObjectNameFromObjectDefault,
-  isDraftProjectDocumentationFromObjectDefault,
-  isDraftUnderTitleFromObjectDefault,
-} from './demo-aosr-workspace.js';
+import { isManualDraftFieldDifferentFromObjectTemplate } from './demo-aosr-workspace.js';
 import {
   formatDocumentDate,
   type MoveDirection,
@@ -48,10 +43,12 @@ interface DemoCurrentActEditorProps {
   readonly materialSearch: string;
   readonly objectDefaults: DemoAosrObjectDefaults;
   readonly objectDocumentLibrary: readonly DemoObjectDocument[];
+  readonly printState: AosrPrintState;
   readonly selectedDraft: DemoAosrDraft;
   readonly selectedMaterials: readonly DemoMaterialCertificate[];
   readonly selectedObjectDocuments: readonly DemoObjectDocument[];
   readonly selectedSignatories: readonly DemoAosrRepresentative[];
+  readonly templateFields: DemoAosrTemplateFields;
   readonly onAddManualRepresentative: (event: SyntheticEvent<HTMLFormElement>) => void;
   readonly onAddMaterialToAct: (certificateId: string) => void;
   readonly onAddObjectDocumentToAct: (documentId: string) => void;
@@ -76,15 +73,12 @@ interface DemoCurrentActEditorProps {
   readonly onRemoveObjectDocumentFromAct: (documentId: string) => void;
   readonly onRemoveRepresentativeFromAct: (representativeId: string) => void;
   readonly onReorderSelectedSignatory: (targetRepresentativeId: string) => void;
-  readonly onResetDraftComplianceToObjectDefault: () => void;
-  readonly onResetDraftHeaderOrganizationsToObjectDefault: () => void;
-  readonly onResetDraftObjectNameToObjectDefault: () => void;
-  readonly onResetDraftProjectDocumentationToObjectDefault: () => void;
-  readonly onResetDraftUnderTitleToObjectDefault: () => void;
   readonly onToggleApplication: (applicationId: string) => void;
   readonly onToggleCertificateLibrary: () => void;
   readonly onToggleManualRepresentativeForm: () => void;
   readonly onToggleObjectDocumentLibrary: () => void;
+  readonly onReturnDraftToLinkedTemplate: () => void;
+  readonly onSwitchDraftToManualTemplate: () => void;
   readonly onUpdateSelectedDraft: (field: DemoAosrDraftField, value: string) => void;
 }
 
@@ -104,10 +98,12 @@ export function DemoCurrentActEditor({
   materialSearch,
   objectDefaults,
   objectDocumentLibrary,
+  printState,
   selectedDraft,
   selectedMaterials,
   selectedObjectDocuments,
   selectedSignatories,
+  templateFields,
   onAddManualRepresentative,
   onAddMaterialToAct,
   onAddObjectDocumentToAct,
@@ -126,40 +122,42 @@ export function DemoCurrentActEditor({
   onRemoveObjectDocumentFromAct,
   onRemoveRepresentativeFromAct,
   onReorderSelectedSignatory,
-  onResetDraftComplianceToObjectDefault,
-  onResetDraftHeaderOrganizationsToObjectDefault,
-  onResetDraftObjectNameToObjectDefault,
-  onResetDraftProjectDocumentationToObjectDefault,
-  onResetDraftUnderTitleToObjectDefault,
   onToggleApplication,
   onToggleCertificateLibrary,
   onToggleManualRepresentativeForm,
   onToggleObjectDocumentLibrary,
+  onReturnDraftToLinkedTemplate,
+  onSwitchDraftToManualTemplate,
   onUpdateSelectedDraft,
 }: DemoCurrentActEditorProps): React.JSX.Element {
-  const complianceStatement = getDraftComplianceStatement(selectedDraft);
-  const isComplianceFromDefaults = isDraftComplianceFromObjectDefault(
-    selectedDraft,
-    objectDefaults,
+  const isManualTemplate = selectedDraft.templateMode === 'manual';
+  const templateSourceLabel = isManualTemplate ? 'Ручная версия' : 'По шаблону объекта';
+  const objectNameSourceLabel = getTemplateFieldSourceLabel(
+    isManualTemplate,
+    isManualDraftFieldDifferentFromObjectTemplate(selectedDraft, objectDefaults, 'objectName'),
   );
-  const isUnderTitleFromDefaults = isDraftUnderTitleFromObjectDefault(
-    selectedDraft,
-    objectDefaults,
+  const underTitleSourceLabel = getTemplateFieldSourceLabel(
+    isManualTemplate,
+    isManualDraftFieldDifferentFromObjectTemplate(selectedDraft, objectDefaults, 'underTitleText'),
   );
-  const isObjectNameFromDefaults = isDraftObjectNameFromObjectDefault(
-    selectedDraft,
-    objectDefaults,
+  const projectDocumentationSourceLabel = getTemplateFieldSourceLabel(
+    isManualTemplate,
+    isManualDraftFieldDifferentFromObjectTemplate(
+      selectedDraft,
+      objectDefaults,
+      'projectDocumentation',
+    ),
   );
-  const isProjectDocumentationFromDefaults = isDraftProjectDocumentationFromObjectDefault(
-    selectedDraft,
-    objectDefaults,
-  );
-  const isHeaderOrganizationsFromDefaults = isDraftHeaderOrganizationsFromObjectDefault(
-    selectedDraft,
-    objectDefaults,
+  const complianceSourceLabel = getTemplateFieldSourceLabel(
+    isManualTemplate,
+    isManualDraftFieldDifferentFromObjectTemplate(
+      selectedDraft,
+      objectDefaults,
+      'complianceStatement',
+    ),
   );
   const readiness = buildDemoAosrReadiness({
-    complianceStatement,
+    complianceStatement: templateFields.complianceStatement,
     materialsCount: selectedMaterials.length,
     objectDocumentsCount: selectedObjectDocuments.length,
     signatoriesCount: selectedSignatories.length,
@@ -187,7 +185,38 @@ export function DemoCurrentActEditor({
             <dt>Последнее изменение</dt>
             <dd>{formatDocumentDate(selectedDraft.actDate)}</dd>
           </div>
+          <div>
+            <dt>Шаблонные данные</dt>
+            <dd>{isManualTemplate ? 'Ручная версия' : 'По шаблону'}</dd>
+          </div>
         </dl>
+        <div className="template-mode-actions" aria-label="Режим шаблонных данных">
+          {isManualTemplate ? (
+            <>
+              <p className="helper-note">
+                Ручная версия: изменения шаблона объекта и библиотек не применяются.
+              </p>
+              <button
+                className="compact-toggle compact-toggle--accent"
+                onClick={onReturnDraftToLinkedTemplate}
+                type="button"
+              >
+                Вернуть к шаблону объекта
+              </button>
+            </>
+          ) : (
+            <>
+              <p className="helper-note">Шаблонные данные берутся из шаблона объекта.</p>
+              <button
+                className="compact-toggle"
+                onClick={onSwitchDraftToManualTemplate}
+                type="button"
+              >
+                Редактировать шаблонные данные вручную
+              </button>
+            </>
+          )}
+        </div>
       </div>
 
       <DemoAosrReadinessPanel readiness={readiness} />
@@ -222,29 +251,21 @@ export function DemoCurrentActEditor({
           <div className="document-owned-field act-form-grid__wide">
             <div className="document-owned-field__heading">
               <label htmlFor="draftObjectName">Объект капитального строительства в документе</label>
-              <span className="source-chip">
-                {isObjectNameFromDefaults ? 'По параметрам по умолчанию' : 'Изменено в документе'}
-              </span>
+              <span className="source-chip">{objectNameSourceLabel}</span>
             </div>
             <textarea
               className="medium-field"
               id="draftObjectName"
               name="objectName"
               onChange={(event) => {
-                onUpdateSelectedDraft('objectName', event.currentTarget.value);
+                if (isManualTemplate) {
+                  onUpdateSelectedDraft('objectName', event.currentTarget.value);
+                }
               }}
+              readOnly={!isManualTemplate}
               rows={3}
-              value={selectedDraft.objectName}
+              value={templateFields.objectName}
             />
-            {isObjectNameFromDefaults ? null : (
-              <button
-                className="compact-toggle"
-                onClick={onResetDraftObjectNameToObjectDefault}
-                type="button"
-              >
-                Вернуть из параметров по умолчанию
-              </button>
-            )}
           </div>
           <div className="print-header-field">
             <span>Форма акта</span>
@@ -253,38 +274,30 @@ export function DemoCurrentActEditor({
           <div className="document-owned-field act-form-grid__wide">
             <div className="document-owned-field__heading">
               <label htmlFor="draftUnderTitleText">Текст под заголовком акта в документе</label>
-              <span className="source-chip">
-                {isUnderTitleFromDefaults ? 'По параметрам по умолчанию' : 'Изменено в документе'}
-              </span>
+              <span className="source-chip">{underTitleSourceLabel}</span>
             </div>
             <textarea
               className="medium-field"
               id="draftUnderTitleText"
               name="underTitleText"
               onChange={(event) => {
-                onUpdateSelectedDraft('underTitleText', event.currentTarget.value);
+                if (isManualTemplate) {
+                  onUpdateSelectedDraft('underTitleText', event.currentTarget.value);
+                }
               }}
+              readOnly={!isManualTemplate}
               rows={3}
-              value={selectedDraft.underTitleText}
+              value={templateFields.underTitleText}
             />
-            {isUnderTitleFromDefaults ? null : (
-              <button
-                className="compact-toggle"
-                onClick={onResetDraftUnderTitleToObjectDefault}
-                type="button"
-              >
-                Вернуть из параметров по умолчанию
-              </button>
-            )}
           </div>
         </div>
       </section>
 
       <DemoHeaderOrganizationsOrderEditor
-        headerOrganizations={selectedDraft.headerOrganizations}
-        isFromDefaults={isHeaderOrganizationsFromDefaults}
+        headerOrganizations={templateFields.headerOrganizations}
+        isTemplateEditable={isManualTemplate}
         onMoveHeaderOrganization={onMoveHeaderOrganization}
-        onResetHeaderOrganizationsToObjectDefault={onResetDraftHeaderOrganizationsToObjectDefault}
+        sourceLabel={templateSourceLabel}
       />
 
       <DemoSignatoriesEditor
@@ -292,9 +305,11 @@ export function DemoCurrentActEditor({
         draggedRepresentativeId={draggedRepresentativeId}
         dropTargetRepresentativeId={dropTargetRepresentativeId}
         isManualRepresentativeFormOpen={isManualRepresentativeFormOpen}
+        isTemplateEditable={isManualTemplate}
         manualRepresentativeForm={manualRepresentativeForm}
         objectRepresentatives={objectDefaults.representativeLibrary}
         selectedSignatories={selectedSignatories}
+        sourceLabel={templateSourceLabel}
         onAddManualRepresentative={onAddManualRepresentative}
         onAddRepresentativeToAct={onAddRepresentativeToAct}
         onChangeActRepresentativeSearch={onChangeActRepresentativeSearch}
@@ -350,19 +365,15 @@ export function DemoCurrentActEditor({
         <div className="scope-heading scope-heading--with-action">
           <span>
             <h3 id="project-docs-data-title">2. Проектная документация</h3>
-            <span className="source-chip">
-              {isProjectDocumentationFromDefaults
-                ? 'По параметрам по умолчанию'
-                : 'Изменено в документе'}
-            </span>
+            <span className="source-chip">{projectDocumentationSourceLabel}</span>
           </span>
-          {isProjectDocumentationFromDefaults ? null : (
+          {isManualTemplate ? null : (
             <button
               className="compact-toggle"
-              onClick={onResetDraftProjectDocumentationToObjectDefault}
+              onClick={onSwitchDraftToManualTemplate}
               type="button"
             >
-              Вернуть из параметров по умолчанию
+              Редактировать вручную
             </button>
           )}
         </div>
@@ -372,10 +383,13 @@ export function DemoCurrentActEditor({
             className="large-field"
             name="projectDocumentation"
             onChange={(event) => {
-              onUpdateSelectedDraft('projectDocumentation', event.currentTarget.value);
+              if (isManualTemplate) {
+                onUpdateSelectedDraft('projectDocumentation', event.currentTarget.value);
+              }
             }}
+            readOnly={!isManualTemplate}
             rows={5}
-            value={selectedDraft.projectDocumentation}
+            value={templateFields.projectDocumentation}
           />
         </label>
       </section>
@@ -438,17 +452,15 @@ export function DemoCurrentActEditor({
         <div className="scope-heading scope-heading--with-action">
           <span>
             <h3 id="compliance-data-title">6. Соответствие работ</h3>
-            <span className="source-chip">
-              {isComplianceFromDefaults ? 'По параметрам по умолчанию' : 'Изменено в документе'}
-            </span>
+            <span className="source-chip">{complianceSourceLabel}</span>
           </span>
-          {isComplianceFromDefaults ? null : (
+          {isManualTemplate ? null : (
             <button
               className="compact-toggle"
-              onClick={onResetDraftComplianceToObjectDefault}
+              onClick={onSwitchDraftToManualTemplate}
               type="button"
             >
-              Вернуть из параметров по умолчанию
+              Редактировать вручную
             </button>
           )}
         </div>
@@ -459,10 +471,13 @@ export function DemoCurrentActEditor({
             className="large-field"
             name="complianceStatement"
             onChange={(event) => {
-              onUpdateSelectedDraft('complianceStatement', event.currentTarget.value);
+              if (isManualTemplate) {
+                onUpdateSelectedDraft('complianceStatement', event.currentTarget.value);
+              }
             }}
+            readOnly={!isManualTemplate}
             rows={5}
-            value={selectedDraft.complianceStatement}
+            value={templateFields.complianceStatement}
           />
         </label>
       </section>
@@ -503,9 +518,12 @@ export function DemoCurrentActEditor({
             <input
               name="copiesCount"
               onChange={(event) => {
-                onUpdateSelectedDraft('copiesCount', event.currentTarget.value);
+                if (isManualTemplate) {
+                  onUpdateSelectedDraft('copiesCount', event.currentTarget.value);
+                }
               }}
-              value={selectedDraft.copiesCount}
+              readOnly={!isManualTemplate}
+              value={printState.document.copiesLine}
             />
           </label>
         </div>
@@ -518,4 +536,12 @@ export function DemoCurrentActEditor({
       />
     </section>
   );
+}
+
+function getTemplateFieldSourceLabel(isManualTemplate: boolean, isDifferent: boolean): string {
+  if (!isManualTemplate) {
+    return 'По шаблону объекта';
+  }
+
+  return isDifferent ? 'Отличается от шаблона объекта' : 'Ручная версия';
 }

@@ -9,9 +9,11 @@ interface DemoSignatoriesEditorProps {
   readonly draggedRepresentativeId: string | null;
   readonly dropTargetRepresentativeId: string | null;
   readonly isManualRepresentativeFormOpen: boolean;
+  readonly isTemplateEditable: boolean;
   readonly manualRepresentativeForm: RepresentativeFormState;
   readonly objectRepresentatives: readonly DemoAosrRepresentative[];
   readonly selectedSignatories: readonly DemoAosrRepresentative[];
+  readonly sourceLabel: string;
   readonly onAddManualRepresentative: (event: SyntheticEvent<HTMLFormElement>) => void;
   readonly onAddRepresentativeToAct: (representative: DemoAosrRepresentative) => void;
   readonly onChangeActRepresentativeSearch: (value: string) => void;
@@ -33,9 +35,11 @@ export function DemoSignatoriesEditor({
   draggedRepresentativeId,
   dropTargetRepresentativeId,
   isManualRepresentativeFormOpen,
+  isTemplateEditable,
   manualRepresentativeForm,
   objectRepresentatives,
   selectedSignatories,
+  sourceLabel,
   onAddManualRepresentative,
   onAddRepresentativeToAct,
   onChangeActRepresentativeSearch,
@@ -61,31 +65,38 @@ export function DemoSignatoriesEditor({
       <div className="scope-heading scope-heading--with-action">
         <span>
           <h3 id="commission-data-title">Подписанты текущего акта</h3>
+          <span className="source-chip">{sourceLabel}</span>
         </span>
-        <button
-          className="compact-toggle compact-toggle--accent"
-          onClick={onToggleManualRepresentativeForm}
-          type="button"
-        >
-          Создать представителя и назначение
-        </button>
+        {isTemplateEditable ? (
+          <button
+            className="compact-toggle compact-toggle--accent"
+            onClick={onToggleManualRepresentativeForm}
+            type="button"
+          >
+            Создать представителя и назначение
+          </button>
+        ) : null}
       </div>
 
-      <label className="search-field">
-        Добавить назначение представителя в акт
-        <input
-          onChange={(event) => {
-            onChangeActRepresentativeSearch(event.currentTarget.value);
-          }}
-          placeholder="ФИО, роль или организация из назначения"
-          value={actRepresentativeSearch}
-        />
-      </label>
-      <p className="helper-note">
-        Акт выбирает назначение объекта и сохраняет печатный снимок подписанта.
-      </p>
+      {isTemplateEditable ? (
+        <>
+          <label className="search-field">
+            Добавить назначение представителя в акт
+            <input
+              onChange={(event) => {
+                onChangeActRepresentativeSearch(event.currentTarget.value);
+              }}
+              placeholder="ФИО, роль или организация из назначения"
+              value={actRepresentativeSearch}
+            />
+          </label>
+          <p className="helper-note">Ручная версия хранит собственный снимок подписантов.</p>
+        </>
+      ) : (
+        <p className="helper-note">Состав подписантов берётся из шаблона объекта.</p>
+      )}
 
-      {actRepresentativeSearch.trim() !== '' ? (
+      {isTemplateEditable && actRepresentativeSearch.trim() !== '' ? (
         <div
           className="library-list library-list--compact"
           role="list"
@@ -118,7 +129,7 @@ export function DemoSignatoriesEditor({
         </div>
       ) : null}
 
-      {isManualRepresentativeFormOpen ? (
+      {isTemplateEditable && isManualRepresentativeFormOpen ? (
         <DemoRepresentativeForm
           afterFields={
             <p className="helper-note act-form-grid__wide">
@@ -155,31 +166,42 @@ export function DemoSignatoriesEditor({
             }
             key={representative.id}
             onDragEnter={(event) => {
+              if (!isTemplateEditable) {
+                return;
+              }
               event.preventDefault();
               onDragRepresentativeTarget(representative.id);
             }}
             onDragOver={(event) => {
+              if (!isTemplateEditable) {
+                return;
+              }
               event.preventDefault();
               event.dataTransfer.dropEffect = 'move';
             }}
             onDrop={(event) => {
+              if (!isTemplateEditable) {
+                return;
+              }
               event.preventDefault();
               onReorderSelectedSignatory(representative.id);
             }}
           >
-            <button
-              aria-label={`Перетащить ${representative.fullName}`}
-              className="signatory-order-item__drag"
-              draggable
-              onDragEnd={onDragRepresentativeEnd}
-              onDragStart={(event: DragEvent<HTMLButtonElement>) => {
-                event.dataTransfer.effectAllowed = 'move';
-                onDragRepresentativeStart(representative.id);
-              }}
-              type="button"
-            >
-              <span aria-hidden="true">↕</span>
-            </button>
+            {isTemplateEditable ? (
+              <button
+                aria-label={`Перетащить ${representative.fullName}`}
+                className="signatory-order-item__drag"
+                draggable
+                onDragEnd={onDragRepresentativeEnd}
+                onDragStart={(event: DragEvent<HTMLButtonElement>) => {
+                  event.dataTransfer.effectAllowed = 'move';
+                  onDragRepresentativeStart(representative.id);
+                }}
+                type="button"
+              >
+                <span aria-hidden="true">↕</span>
+              </button>
+            ) : null}
             <span className="signatory-order-item__position">{index + 1}</span>
             <span>
               <strong>{representative.roleLabel}</strong>
@@ -187,37 +209,39 @@ export function DemoSignatoriesEditor({
                 {representative.fullName} / {representative.organization}
               </small>
             </span>
-            <span className="signatory-order-item__actions">
-              <button
-                aria-label={`Переместить ${representative.fullName} вверх`}
-                disabled={index === 0}
-                onClick={() => {
-                  onMoveSelectedSignatory(representative.id, 'up');
-                }}
-                type="button"
-              >
-                Вверх
-              </button>
-              <button
-                aria-label={`Переместить ${representative.fullName} вниз`}
-                disabled={index === selectedSignatories.length - 1}
-                onClick={() => {
-                  onMoveSelectedSignatory(representative.id, 'down');
-                }}
-                type="button"
-              >
-                Вниз
-              </button>
-              <button
-                aria-label={`Убрать ${representative.fullName} из акта`}
-                onClick={() => {
-                  onRemoveRepresentativeFromAct(representative.id);
-                }}
-                type="button"
-              >
-                Убрать
-              </button>
-            </span>
+            {isTemplateEditable ? (
+              <span className="signatory-order-item__actions">
+                <button
+                  aria-label={`Переместить ${representative.fullName} вверх`}
+                  disabled={index === 0}
+                  onClick={() => {
+                    onMoveSelectedSignatory(representative.id, 'up');
+                  }}
+                  type="button"
+                >
+                  Вверх
+                </button>
+                <button
+                  aria-label={`Переместить ${representative.fullName} вниз`}
+                  disabled={index === selectedSignatories.length - 1}
+                  onClick={() => {
+                    onMoveSelectedSignatory(representative.id, 'down');
+                  }}
+                  type="button"
+                >
+                  Вниз
+                </button>
+                <button
+                  aria-label={`Убрать ${representative.fullName} из акта`}
+                  onClick={() => {
+                    onRemoveRepresentativeFromAct(representative.id);
+                  }}
+                  type="button"
+                >
+                  Убрать
+                </button>
+              </span>
+            ) : null}
           </li>
         ))}
       </ol>

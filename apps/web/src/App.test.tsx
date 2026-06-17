@@ -422,7 +422,7 @@ describe('App shell mock navigation', () => {
     expect(screen.queryByRole('button', { name: /ОВ-3/u })).toBeNull();
   });
 
-  it('copies current default parameters into a new AOSR draft without changing existing drafts', async () => {
+  it('uses current object template parameters for linked AOSR drafts', async () => {
     const user = userEvent.setup();
     const nextObjectName = 'Новый объект для будущих АОСР.';
     const nextProjectDocumentation = 'Новая проектная документация для будущих АОСР.';
@@ -470,22 +470,22 @@ describe('App shell mock navigation', () => {
     await user.click(within(dialog).getByRole('button', { name: 'Закрыть' }));
 
     expect(getTextAreaValue(screen.getByLabelText('Текст под заголовком акта в документе'))).toBe(
-      demoAosrWorkspace.objectDefaults.defaultUnderTitleText,
+      nextUnderTitleText,
     );
     expect(
       getTextAreaValue(screen.getByLabelText('Объект капитального строительства в документе')),
-    ).toBe(demoAosrWorkspace.objectDefaults.objectName);
+    ).toBe(nextObjectName);
     expect(getTextAreaValue(screen.getByLabelText('Проектная документация в документе'))).toBe(
-      demoAosrWorkspace.objectDefaults.defaultProjectDocumentation,
+      nextProjectDocumentation,
     );
     expect(getTextAreaValue(screen.getByLabelText('Текст пункта 6 в документе'))).toBe(
-      demoAosrWorkspace.objectDefaults.defaultComplianceStatement,
+      nextComplianceText,
     );
     const oldOrganizationOrderText = screen.getByRole('list', {
       name: 'Порядок организаций в акте',
     }).textContent;
-    expect(oldOrganizationOrderText.indexOf('Заказчик')).toBeLessThan(
-      oldOrganizationOrderText.indexOf('Подрядчик'),
+    expect(oldOrganizationOrderText.indexOf('Подрядчик')).toBeLessThan(
+      oldOrganizationOrderText.indexOf('Заказчик'),
     );
 
     await user.click(within(objectNavigation).getByRole('button', { name: 'Октябрь 2026' }));
@@ -513,7 +513,7 @@ describe('App shell mock navigation', () => {
     expect(newOrganizationOrderText.indexOf('Подрядчик')).toBeLessThan(
       newOrganizationOrderText.indexOf('Заказчик'),
     );
-    expect(screen.getAllByText('По параметрам по умолчанию').length).toBeGreaterThan(1);
+    expect(screen.getAllByText('По шаблону объекта').length).toBeGreaterThan(1);
   });
 
   it('opens the final ID package page with derived summary counts and grouped composition', async () => {
@@ -1274,26 +1274,7 @@ describe('App shell mock navigation', () => {
     await user.click(screen.getByRole('button', { name: 'Закрыть' }));
     await openDocumentPreview(user);
 
-    let previewText = getDocumentPreview().textContent;
-    expect(previewText).not.toContain('Авторский контроль:');
-    expect(previewText).not.toContain('ООО "Авторский контроль"');
-
-    await user.click(
-      within(screen.getByRole('dialog', { name: 'Предпросмотр документа' })).getByRole('button', {
-        name: 'Закрыть предпросмотр документа',
-      }),
-    );
-
-    const organizationSection = getSectionByHeading('Организации, участвующие в акте');
-    await user.click(
-      within(organizationSection).getByRole('button', {
-        name: 'Вернуть из параметров по умолчанию',
-      }),
-    );
-
-    await openDocumentPreview(user);
-
-    previewText = getDocumentPreview().textContent;
+    const previewText = getDocumentPreview().textContent;
     expect(previewText).toContain('Авторский контроль:');
     expect(previewText).toContain('ООО "Авторский контроль"');
     expect(previewText).toContain('ИНН 6600000002; ОГРН 1266600000002.');
@@ -1359,10 +1340,16 @@ describe('App shell mock navigation', () => {
     await user.click(screen.getByRole('button', { name: 'Вернуться к объектам' }));
     await user.click(getFirstOpenObjectButton());
     await openSeptemberAosrDocument(user);
-    await user.type(screen.getByLabelText('Добавить назначение представителя в акт'), 'яковлев');
+    await openObjectSettingsFromWorkspace(user);
+    await user.click(screen.getByRole('button', { name: /Представители/u }));
+    await user.click(screen.getByRole('button', { name: 'Добавить представителя' }));
+    await user.type(
+      screen.getByLabelText('Найти представителя в глобальной библиотеке'),
+      'яковлев',
+    );
 
     const signatoryPicker = screen.getByRole('list', {
-      name: 'Назначения представителей для текущего акта',
+      name: 'Глобальная библиотека представителей',
     });
     const representativeRow = within(signatoryPicker)
       .getByText('Яковлев Я.Я.')
@@ -1374,9 +1361,11 @@ describe('App shell mock navigation', () => {
 
     await user.click(
       within(representativeRow as HTMLElement).getByRole('button', {
-        name: 'Добавить назначение',
+        name: 'Выбрать',
       }),
     );
+    await user.click(screen.getByRole('button', { name: 'Сохранить назначение представителя' }));
+    await user.click(screen.getByRole('button', { name: 'Закрыть' }));
 
     await openDocumentPreview(user);
 
@@ -1421,10 +1410,16 @@ describe('App shell mock navigation', () => {
     );
     await user.click(screen.getByRole('button', { name: 'Закрыть библиотеку' }));
 
-    await user.type(screen.getByLabelText('Добавить назначение представителя в акт'), 'заказчика');
+    await openObjectSettingsFromWorkspace(user);
+    await user.click(screen.getByRole('button', { name: /Представители/u }));
+    await user.click(screen.getByRole('button', { name: 'Добавить представителя' }));
+    await user.type(
+      screen.getByLabelText('Найти представителя в глобальной библиотеке'),
+      'заказчика',
+    );
 
     const objectPicker = screen.getByRole('list', {
-      name: 'Назначения представителей для текущего акта',
+      name: 'Глобальная библиотека представителей',
     });
     const customerRow = within(objectPicker).getByText('Кузнецова А.А.').closest('.library-row');
 
@@ -1432,9 +1427,9 @@ describe('App shell mock navigation', () => {
       throw new Error('В тесте ожидается строка представителя объекта.');
     }
 
-    await user.click(
-      within(customerRow as HTMLElement).getByRole('button', { name: 'Добавить назначение' }),
-    );
+    await user.click(within(customerRow as HTMLElement).getByRole('button', { name: 'Выбрать' }));
+    await user.click(screen.getByRole('button', { name: 'Сохранить назначение представителя' }));
+    await user.click(screen.getByRole('button', { name: 'Закрыть' }));
 
     await openDocumentPreview(user);
 
@@ -1536,6 +1531,16 @@ async function openSeptemberAosrDocument(user: ReturnType<typeof userEvent.setup
 
   await user.click(within(objectNavigation).getByRole('button', { name: 'Сентябрь 2026' }));
   await user.click(screen.getByRole('button', { name: /ОВ-1/u }));
+}
+
+async function openObjectSettingsFromWorkspace(
+  user: ReturnType<typeof userEvent.setup>,
+): Promise<void> {
+  const objectNavigation = screen.getByRole('navigation', { name: 'Разделы объекта' });
+
+  await user.click(
+    within(objectNavigation).getByRole('button', { name: 'Открыть параметры по умолчанию' }),
+  );
 }
 
 async function openObjectFinalPackagePage(user: ReturnType<typeof userEvent.setup>): Promise<void> {

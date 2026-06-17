@@ -22,10 +22,37 @@ export interface DemoGlobalOrganization {
   readonly caption: string;
 }
 
+export interface CounterpartyLibraryItem {
+  readonly id: string;
+  readonly displayName: string;
+  readonly fullText: string;
+  readonly defaultSubscript?: string;
+  readonly isArchived?: boolean;
+}
+
+export interface SignatoryLibraryItem {
+  readonly id: string;
+  readonly displayName: string;
+  readonly fullName: string;
+  readonly position?: string;
+  readonly organization?: string;
+  readonly authorityDocument?: string;
+  readonly nrsId?: string;
+  readonly introDisplayText: string;
+  readonly signatureText: string;
+  readonly signatureName: string;
+  readonly defaultSubscript?: string;
+  readonly isArchived?: boolean;
+}
+
+export type ActTemplateMode = 'linked' | 'manual';
+
 export interface DemoAosrObjectDefaults {
   readonly defaultComplianceStatement: string;
+  readonly defaultCopiesLine: string;
   readonly projectName: string;
   readonly objectName: string;
+  readonly objectNameSubscript: string;
   readonly defaultProjectDocumentation: string;
   readonly defaultUnderTitleText: string;
   readonly headerOrganizations: readonly DemoAosrHeaderOrganization[];
@@ -51,6 +78,127 @@ export interface DemoAosrRepresentative {
   readonly authorityBasis: string;
   readonly nrsId?: string;
   readonly details?: string;
+}
+
+export interface ObjectTemplate {
+  readonly id: string;
+  readonly objectId: string;
+  readonly objectName: string;
+  readonly objectNameSubscript: string;
+  readonly counterparties: readonly {
+    readonly id: string;
+    readonly title: string;
+    readonly counterpartyId: string;
+    readonly subscriptMode: 'fromLibrary' | 'custom';
+    readonly customSubscript?: string;
+  }[];
+  readonly representativeGroups: readonly {
+    readonly id: string;
+    readonly title: string;
+    readonly members: readonly {
+      readonly id: string;
+      readonly signatoryId: string;
+      readonly subscriptMode: 'fromLibrary' | 'custom';
+      readonly customSubscript?: string;
+    }[];
+  }[];
+  readonly projectDocumentation: string;
+  readonly complianceText: string;
+  readonly copiesLine: string;
+  readonly numberingPattern?: string;
+  readonly defaultDateMode?: 'today' | 'folderDate' | 'manual';
+}
+
+export interface AosrPrintState {
+  readonly object: {
+    readonly name: string;
+    readonly nameSubscript: string;
+  };
+  readonly counterparties: readonly {
+    readonly title: string;
+    readonly displayText: string;
+    readonly subscript: string;
+  }[];
+  readonly document: {
+    readonly numberLine: string;
+    readonly dateLine: string;
+    readonly additionalInfo: string;
+    readonly copiesLine: string;
+    readonly underTitleText: string;
+  };
+  readonly representatives: {
+    readonly groups: readonly {
+      readonly title: string;
+      readonly members: readonly {
+        readonly introDisplayText: string;
+        readonly subscript: string;
+        readonly signatureText: string;
+        readonly signatureName: string;
+      }[];
+    }[];
+  };
+  readonly work: {
+    readonly contractorName: string;
+    readonly description: string;
+    readonly startDateLine: string;
+    readonly endDateLine: string;
+    readonly nextWorks: string;
+  };
+  readonly project: {
+    readonly documentation: string;
+    readonly compliance: string;
+  };
+  readonly materials: {
+    readonly items: readonly { readonly displayText: string }[];
+  };
+  readonly confirmationDocuments: {
+    readonly items: readonly { readonly displayText: string }[];
+  };
+  readonly applications: {
+    readonly items: readonly { readonly displayText: string }[];
+  };
+}
+
+export interface DemoAosrManualTemplateSnapshot {
+  readonly object: {
+    readonly name: string;
+    readonly nameSubscript: string;
+  };
+  readonly underTitleText: string;
+  readonly counterparties: readonly {
+    readonly title: string;
+    readonly displayText: string;
+    readonly subscript: string;
+  }[];
+  readonly representatives: {
+    readonly groups: readonly {
+      readonly title: string;
+      readonly members: readonly {
+        readonly introDisplayText: string;
+        readonly subscript: string;
+        readonly signatureText: string;
+        readonly signatureName: string;
+      }[];
+    }[];
+  };
+  readonly project: {
+    readonly documentation: string;
+    readonly compliance: string;
+  };
+  readonly documentTemplateDefaults: {
+    readonly copiesLine: string;
+  };
+}
+
+export interface DemoAosrTemplateFields {
+  readonly complianceStatement: string;
+  readonly copiesLine: string;
+  readonly headerOrganizations: readonly DemoAosrHeaderOrganization[];
+  readonly objectName: string;
+  readonly objectNameSubscript: string;
+  readonly projectDocumentation: string;
+  readonly representatives: readonly DemoAosrRepresentative[];
+  readonly underTitleText: string;
 }
 
 export interface DemoMaterialCertificate {
@@ -92,6 +240,10 @@ export interface DemoAosrDraft {
   readonly headerOrganizations: readonly DemoAosrHeaderOrganization[];
   readonly materialCertificateIds: readonly string[];
   readonly materialCertificateSnapshots: readonly DemoMaterialCertificate[];
+  readonly documentType: 'AOSR_1';
+  readonly objectTemplateId: string;
+  readonly templateMode: ActTemplateMode;
+  readonly manualTemplateSnapshot?: DemoAosrManualTemplateSnapshot;
   readonly objectName: string;
   readonly objectDocumentIds: readonly string[];
   readonly objectDocumentSnapshots: readonly DemoObjectDocument[];
@@ -144,9 +296,11 @@ export type DemoAosrDraftField =
 
 export type DemoAosrObjectDefaultsField =
   | 'defaultComplianceStatement'
+  | 'defaultCopiesLine'
   | 'defaultProjectDocumentation'
   | 'defaultUnderTitleText'
   | 'objectName'
+  | 'objectNameSubscript'
   | 'projectName';
 
 const contractorRepresentative: DemoAosrRepresentative = {
@@ -196,6 +350,11 @@ const defaultProjectDocumentation =
   'Рабочая документация РД-ОВ-12 лист 4; РД-ОВ-14 лист 2; спецификация оборудования и материалов СП-ОВ-02.';
 
 const defaultObjectName = 'Реконструкция поликлиники, корпус Б';
+
+const defaultObjectNameSubscript =
+  'Наименование объекта капитального строительства в соответствии с проектной документацией.';
+
+const defaultCopiesLine = '4';
 
 const defaultHeaderOrganizations: readonly DemoAosrHeaderOrganization[] = [
   {
@@ -347,11 +506,14 @@ export const demoAosrWorkspace: DemoAosrWorkspace = {
       formVariantTitle: demoAosrFormVariant1.title,
       headerOrganizations: copyHeaderOrganizations(defaultHeaderOrganizations),
       id: 'aosr-draft-001',
+      documentType: 'AOSR_1',
       materialCertificateIds: ['certificate-ducts-001', 'certificate-fasteners-001'],
       materialCertificateSnapshots: getMaterialCertificateSnapshots([
         'certificate-ducts-001',
         'certificate-fasteners-001',
       ]),
+      objectTemplateId: 'object-template-demo',
+      templateMode: 'linked',
       objectName: defaultObjectName,
       objectDocumentIds: ['object-document-scheme-ov-04', 'object-document-journal-input-control'],
       objectDocumentSnapshots: getObjectDocumentSnapshots([
@@ -387,8 +549,11 @@ export const demoAosrWorkspace: DemoAosrWorkspace = {
       formVariantTitle: demoAosrFormVariant1.title,
       headerOrganizations: copyHeaderOrganizations(defaultHeaderOrganizations),
       id: 'aosr-draft-002',
+      documentType: 'AOSR_1',
       materialCertificateIds: ['certificate-firestop-001'],
       materialCertificateSnapshots: getMaterialCertificateSnapshots(['certificate-firestop-001']),
+      objectTemplateId: 'object-template-demo',
+      templateMode: 'linked',
       objectName: defaultObjectName,
       objectDocumentIds: ['object-document-project-ov-set'],
       objectDocumentSnapshots: getObjectDocumentSnapshots(['object-document-project-ov-set']),
@@ -411,12 +576,18 @@ export const demoAosrWorkspace: DemoAosrWorkspace = {
   name: 'Демо-рабочая область АОСР',
   objectDefaults: {
     defaultComplianceStatement,
+    defaultCopiesLine,
     defaultProjectDocumentation,
     defaultUnderTitleText,
     headerOrganizations: copyHeaderOrganizations(defaultHeaderOrganizations),
     objectName: defaultObjectName,
+    objectNameSubscript: defaultObjectNameSubscript,
     projectName: 'Реконструкция поликлиники, демонстрационный проект',
-    representativeLibrary: [],
+    representativeLibrary: [
+      contractorRepresentative,
+      buildingControlRepresentative,
+      authorSupervisionRepresentative,
+    ],
   },
   ownerName: 'Демо-владелец',
   projectCode: 'PTO-DEMO-2026',
@@ -441,15 +612,20 @@ export function createEmptyDemoAosrDraft({
     formVariantTitle: demoAosrFormVariant1.title,
     headerOrganizations: copyHeaderOrganizations(objectDefaults.headerOrganizations),
     id,
+    documentType: 'AOSR_1',
     materialCertificateIds: [],
     materialCertificateSnapshots: [],
+    objectTemplateId: 'object-template-demo',
+    templateMode: 'linked',
     objectName: objectDefaults.objectName,
     objectDocumentIds: [],
     objectDocumentSnapshots: [],
     periodEnd: '',
     periodStart: '',
     projectDocumentation: objectDefaults.defaultProjectDocumentation,
-    representatives: [],
+    representatives: objectDefaults.representativeLibrary.map((representative) => ({
+      ...representative,
+    })),
     status: 'draft',
     subsequentWorksPermitted: '',
     underTitleText: objectDefaults.defaultUnderTitleText,
@@ -462,10 +638,441 @@ export function updateDemoAosrDraftField(
   field: DemoAosrDraftField,
   value: string,
 ): DemoAosrDraft {
-  return {
+  const nextDraft = {
     ...draft,
     [field]: value,
   };
+
+  return syncManualTemplateSnapshotFromDraft(nextDraft);
+}
+
+export interface ResolveDemoAosrTemplateFieldsInput {
+  readonly counterpartyLibrary?: readonly CounterpartyLibraryItem[];
+  readonly draft: DemoAosrDraft;
+  readonly objectDefaults: DemoAosrObjectDefaults;
+  readonly signatoryLibrary?: readonly SignatoryLibraryItem[];
+}
+
+export interface BuildAosrPrintStateInput extends ResolveDemoAosrTemplateFieldsInput {
+  readonly finalApplications: readonly DemoActApplication[];
+  readonly selectedMaterials: readonly DemoMaterialCertificate[];
+  readonly selectedObjectDocuments: readonly DemoObjectDocument[];
+}
+
+export function getObjectTemplateFromDefaults(
+  objectDefaults: DemoAosrObjectDefaults,
+): ObjectTemplate {
+  return {
+    complianceText: objectDefaults.defaultComplianceStatement,
+    copiesLine: objectDefaults.defaultCopiesLine,
+    counterparties: objectDefaults.headerOrganizations.map((headerOrganization) => ({
+      counterpartyId: headerOrganization.globalOrganizationId ?? headerOrganization.id,
+      id: headerOrganization.id,
+      subscriptMode: headerOrganization.caption === undefined ? 'fromLibrary' : 'custom',
+      title: headerOrganization.label,
+      ...(headerOrganization.caption === undefined
+        ? {}
+        : { customSubscript: headerOrganization.caption }),
+    })),
+    defaultDateMode: 'manual',
+    id: 'object-template-demo',
+    objectId: 'object-demo',
+    objectName: objectDefaults.objectName,
+    objectNameSubscript: objectDefaults.objectNameSubscript,
+    projectDocumentation: objectDefaults.defaultProjectDocumentation,
+    representativeGroups: objectDefaults.representativeLibrary.map((representative) => ({
+      id: `representative-group-${representative.id}`,
+      members: [
+        {
+          id: `representative-member-${representative.id}`,
+          signatoryId: representative.globalRepresentativeId ?? representative.id,
+          subscriptMode: 'fromLibrary',
+        },
+      ],
+      title: representative.roleLabel,
+    })),
+  };
+}
+
+export function getCounterpartyLibraryItemFromGlobalOrganization(
+  organization: DemoGlobalOrganization,
+): CounterpartyLibraryItem {
+  return {
+    defaultSubscript: organization.caption,
+    displayName: organization.organizationName,
+    fullText: [organization.organizationName, organization.details].filter(Boolean).join(' '),
+    id: organization.id,
+  };
+}
+
+export function getSignatoryLibraryItemFromRepresentative(
+  representative: DemoAosrRepresentative,
+): SignatoryLibraryItem {
+  const signatureText = [representative.position, representative.organization]
+    .map((value) => value.trim())
+    .filter(Boolean)
+    .join(' ');
+  const introDisplayText = [
+    signatureText,
+    representative.fullName,
+    representative.authorityBasis,
+    representative.nrsId === undefined ? '' : `НРС ${representative.nrsId}`,
+  ]
+    .map((value) => value.trim())
+    .filter(Boolean)
+    .join(', ');
+
+  return {
+    authorityDocument: representative.authorityBasis,
+    displayName: representative.fullName,
+    fullName: representative.fullName,
+    id: representative.globalRepresentativeId ?? representative.id,
+    introDisplayText,
+    organization: representative.organization,
+    position: representative.position,
+    signatureName: representative.fullName,
+    signatureText,
+    ...(representative.nrsId === undefined ? {} : { nrsId: representative.nrsId }),
+  };
+}
+
+export function resolveDemoAosrTemplateFields({
+  counterpartyLibrary = [],
+  draft,
+  objectDefaults,
+  signatoryLibrary = [],
+}: ResolveDemoAosrTemplateFieldsInput): DemoAosrTemplateFields {
+  if (draft.templateMode === 'manual') {
+    return {
+      complianceStatement: draft.complianceStatement,
+      copiesLine: draft.copiesCount,
+      headerOrganizations: draft.headerOrganizations,
+      objectName: draft.objectName,
+      objectNameSubscript:
+        draft.manualTemplateSnapshot?.object.nameSubscript ?? objectDefaults.objectNameSubscript,
+      projectDocumentation: draft.projectDocumentation,
+      representatives: draft.representatives,
+      underTitleText: draft.underTitleText,
+    };
+  }
+
+  return resolveLinkedTemplateFields({
+    counterpartyLibrary,
+    objectDefaults,
+    signatoryLibrary,
+  });
+}
+
+export function buildDemoAosrPrintState({
+  counterpartyLibrary = [],
+  draft,
+  finalApplications,
+  objectDefaults,
+  selectedMaterials,
+  selectedObjectDocuments,
+  signatoryLibrary = [],
+}: BuildAosrPrintStateInput): AosrPrintState {
+  const templateFields = resolveDemoAosrTemplateFields({
+    counterpartyLibrary,
+    draft,
+    objectDefaults,
+    signatoryLibrary,
+  });
+  const manualSnapshot = draft.templateMode === 'manual' ? draft.manualTemplateSnapshot : undefined;
+  const executingOrganization = getExecutingOrganizationFromTemplateFields(templateFields);
+
+  return {
+    applications: {
+      items: finalApplications.map((application) => ({
+        displayText:
+          application.source === 'Сертификат / материал'
+            ? application.title
+            : `${application.title} ${application.source}`,
+      })),
+    },
+    confirmationDocuments: {
+      items: selectedObjectDocuments.map((document) => ({
+        displayText: `${document.title} ${document.reference}`,
+      })),
+    },
+    counterparties:
+      manualSnapshot?.counterparties ??
+      templateFields.headerOrganizations.map((headerOrganization) => ({
+        displayText: [headerOrganization.organizationName, headerOrganization.details]
+          .map((value) => value.trim())
+          .filter(Boolean)
+          .join(' '),
+        subscript: headerOrganization.caption ?? '',
+        title: headerOrganization.label,
+      })),
+    document: {
+      additionalInfo: draft.additionalInfo,
+      copiesLine: manualSnapshot?.documentTemplateDefaults.copiesLine ?? templateFields.copiesLine,
+      dateLine: draft.actDate,
+      numberLine: draft.actNumber,
+      underTitleText: manualSnapshot?.underTitleText ?? templateFields.underTitleText,
+    },
+    materials: {
+      items: selectedMaterials.map((certificate) => ({
+        displayText: `${certificate.materialName} (${certificate.documentName}, ${certificate.certificateNumber})`,
+      })),
+    },
+    object: {
+      name: manualSnapshot?.object.name ?? templateFields.objectName,
+      nameSubscript: manualSnapshot?.object.nameSubscript ?? templateFields.objectNameSubscript,
+    },
+    project: {
+      compliance: manualSnapshot?.project.compliance ?? templateFields.complianceStatement,
+      documentation: manualSnapshot?.project.documentation ?? templateFields.projectDocumentation,
+    },
+    representatives: {
+      groups:
+        manualSnapshot?.representatives.groups ??
+        templateFields.representatives.map((representative) => ({
+          members: [
+            {
+              introDisplayText: getRepresentativeIntroDisplayText(representative),
+              signatureName: representative.fullName,
+              signatureText: getRepresentativeSignatureText(representative),
+              subscript: representative.details ?? '',
+            },
+          ],
+          title: representative.roleLabel,
+        })),
+    },
+    work: {
+      contractorName: executingOrganization,
+      description: [draft.workDescription, draft.axes, draft.elevationRange]
+        .map((value) => value.trim())
+        .filter(Boolean)
+        .join('; '),
+      endDateLine: draft.periodEnd,
+      nextWorks: draft.subsequentWorksPermitted,
+      startDateLine: draft.periodStart,
+    },
+  };
+}
+
+export function switchDraftToManualTemplateMode({
+  counterpartyLibrary = [],
+  draft,
+  objectDefaults,
+  signatoryLibrary = [],
+}: ResolveDemoAosrTemplateFieldsInput): DemoAosrDraft {
+  const templateFields = resolveLinkedTemplateFields({
+    counterpartyLibrary,
+    objectDefaults,
+    signatoryLibrary,
+  });
+  const nextDraft: DemoAosrDraft = {
+    ...draft,
+    complianceStatement: templateFields.complianceStatement,
+    copiesCount: templateFields.copiesLine,
+    headerOrganizations: copyHeaderOrganizations(templateFields.headerOrganizations),
+    manualTemplateSnapshot: createManualTemplateSnapshot(templateFields),
+    objectName: templateFields.objectName,
+    projectDocumentation: templateFields.projectDocumentation,
+    representatives: templateFields.representatives.map((representative) => ({
+      ...representative,
+    })),
+    templateMode: 'manual',
+    underTitleText: templateFields.underTitleText,
+  };
+
+  return nextDraft;
+}
+
+export function returnDraftToLinkedTemplateMode(draft: DemoAosrDraft): DemoAosrDraft {
+  const { manualTemplateSnapshot, ...nextDraft } = draft;
+  void manualTemplateSnapshot;
+
+  return {
+    ...nextDraft,
+    templateMode: 'linked',
+  };
+}
+
+export function isManualDraftFieldDifferentFromObjectTemplate(
+  draft: DemoAosrDraft,
+  objectDefaults: DemoAosrObjectDefaults,
+  field: 'complianceStatement' | 'objectName' | 'projectDocumentation' | 'underTitleText',
+): boolean {
+  if (draft.templateMode !== 'manual') {
+    return false;
+  }
+
+  switch (field) {
+    case 'complianceStatement':
+      return draft.complianceStatement !== objectDefaults.defaultComplianceStatement;
+    case 'objectName':
+      return draft.objectName !== objectDefaults.objectName;
+    case 'projectDocumentation':
+      return draft.projectDocumentation !== objectDefaults.defaultProjectDocumentation;
+    case 'underTitleText':
+      return draft.underTitleText !== objectDefaults.defaultUnderTitleText;
+  }
+}
+
+function resolveLinkedTemplateFields({
+  counterpartyLibrary = [],
+  objectDefaults,
+  signatoryLibrary = [],
+}: Omit<ResolveDemoAosrTemplateFieldsInput, 'draft'>): DemoAosrTemplateFields {
+  return {
+    complianceStatement: objectDefaults.defaultComplianceStatement,
+    copiesLine: objectDefaults.defaultCopiesLine,
+    headerOrganizations: objectDefaults.headerOrganizations.map((headerOrganization) =>
+      resolveHeaderOrganizationFromLibrary(headerOrganization, counterpartyLibrary),
+    ),
+    objectName: objectDefaults.objectName,
+    objectNameSubscript: objectDefaults.objectNameSubscript,
+    projectDocumentation: objectDefaults.defaultProjectDocumentation,
+    representatives: objectDefaults.representativeLibrary.map((representative) =>
+      resolveRepresentativeFromLibrary(representative, signatoryLibrary),
+    ),
+    underTitleText: objectDefaults.defaultUnderTitleText,
+  };
+}
+
+function resolveHeaderOrganizationFromLibrary(
+  headerOrganization: DemoAosrHeaderOrganization,
+  counterpartyLibrary: readonly CounterpartyLibraryItem[],
+): DemoAosrHeaderOrganization {
+  const libraryItem = counterpartyLibrary.find(
+    ({ id }) => id === headerOrganization.globalOrganizationId,
+  );
+
+  if (libraryItem === undefined) {
+    return { ...headerOrganization };
+  }
+
+  return {
+    ...headerOrganization,
+    details: libraryItem.fullText,
+    organizationName: libraryItem.displayName,
+    ...(headerOrganization.caption === undefined && libraryItem.defaultSubscript === undefined
+      ? {}
+      : { caption: headerOrganization.caption ?? libraryItem.defaultSubscript }),
+  };
+}
+
+function resolveRepresentativeFromLibrary(
+  representative: DemoAosrRepresentative,
+  signatoryLibrary: readonly SignatoryLibraryItem[],
+): DemoAosrRepresentative {
+  const signatoryId = representative.globalRepresentativeId ?? representative.id;
+  const libraryItem = signatoryLibrary.find(({ id }) => id === signatoryId);
+
+  if (libraryItem === undefined) {
+    return { ...representative };
+  }
+
+  return {
+    ...representative,
+    authorityBasis: libraryItem.authorityDocument ?? representative.authorityBasis,
+    details: libraryItem.introDisplayText,
+    fullName: libraryItem.signatureName,
+    organization: libraryItem.organization ?? representative.organization,
+    position: libraryItem.position ?? representative.position,
+    ...(libraryItem.nrsId === undefined ? {} : { nrsId: libraryItem.nrsId }),
+  };
+}
+
+function createManualTemplateSnapshot(
+  templateFields: DemoAosrTemplateFields,
+): DemoAosrManualTemplateSnapshot {
+  return {
+    counterparties: templateFields.headerOrganizations.map((headerOrganization) => ({
+      displayText: [headerOrganization.organizationName, headerOrganization.details]
+        .map((value) => value.trim())
+        .filter(Boolean)
+        .join(' '),
+      subscript: headerOrganization.caption ?? '',
+      title: headerOrganization.label,
+    })),
+    documentTemplateDefaults: {
+      copiesLine: templateFields.copiesLine,
+    },
+    object: {
+      name: templateFields.objectName,
+      nameSubscript: templateFields.objectNameSubscript,
+    },
+    project: {
+      compliance: templateFields.complianceStatement,
+      documentation: templateFields.projectDocumentation,
+    },
+    representatives: {
+      groups: templateFields.representatives.map((representative) => ({
+        members: [
+          {
+            introDisplayText: getRepresentativeIntroDisplayText(representative),
+            signatureName: representative.fullName,
+            signatureText: getRepresentativeSignatureText(representative),
+            subscript: representative.details ?? '',
+          },
+        ],
+        title: representative.roleLabel,
+      })),
+    },
+    underTitleText: templateFields.underTitleText,
+  };
+}
+
+function syncManualTemplateSnapshotFromDraft(draft: DemoAosrDraft): DemoAosrDraft {
+  if (draft.templateMode !== 'manual') {
+    return draft;
+  }
+
+  return {
+    ...draft,
+    manualTemplateSnapshot: createManualTemplateSnapshot({
+      complianceStatement: draft.complianceStatement,
+      copiesLine: draft.copiesCount,
+      headerOrganizations: draft.headerOrganizations,
+      objectName: draft.objectName,
+      objectNameSubscript: draft.manualTemplateSnapshot?.object.nameSubscript ?? '',
+      projectDocumentation: draft.projectDocumentation,
+      representatives: draft.representatives,
+      underTitleText: draft.underTitleText,
+    }),
+  };
+}
+
+function getRepresentativeSignatureText(representative: DemoAosrRepresentative): string {
+  return [representative.position, representative.organization]
+    .map((value) => value.trim())
+    .filter(Boolean)
+    .join(' ');
+}
+
+function getRepresentativeIntroDisplayText(representative: DemoAosrRepresentative): string {
+  return [
+    getRepresentativeSignatureText(representative),
+    representative.fullName,
+    representative.authorityBasis,
+    representative.nrsId === undefined ? '' : `НРС ${representative.nrsId}`,
+  ]
+    .map((value) => value.trim())
+    .filter(Boolean)
+    .join(', ');
+}
+
+function getExecutingOrganizationFromTemplateFields(
+  templateFields: DemoAosrTemplateFields,
+): string {
+  const lastSignatory = templateFields.representatives[templateFields.representatives.length - 1];
+  const contractorHeader = templateFields.headerOrganizations.find(({ label }) =>
+    label.toLocaleLowerCase('ru-RU').includes('подряд'),
+  );
+  const lastHeaderOrganization =
+    templateFields.headerOrganizations[templateFields.headerOrganizations.length - 1];
+
+  return (
+    contractorHeader?.organizationName ??
+    lastSignatory?.organization ??
+    lastHeaderOrganization?.organizationName ??
+    'организацией, указанной в шаблоне объекта'
+  );
 }
 
 export function getDraftComplianceStatement(draft: DemoAosrDraft): string {
@@ -480,20 +1087,20 @@ export function isDraftComplianceFromObjectDefault(
 }
 
 export function updateDraftComplianceStatement(draft: DemoAosrDraft, value: string): DemoAosrDraft {
-  return {
+  return syncManualTemplateSnapshotFromDraft({
     ...draft,
     complianceStatement: value,
-  };
+  });
 }
 
 export function resetDraftComplianceToObjectDefault(
   draft: DemoAosrDraft,
   objectDefaults: DemoAosrObjectDefaults,
 ): DemoAosrDraft {
-  return {
+  return syncManualTemplateSnapshotFromDraft({
     ...draft,
     complianceStatement: objectDefaults.defaultComplianceStatement,
-  };
+  });
 }
 
 export function isDraftUnderTitleFromObjectDefault(
@@ -507,10 +1114,10 @@ export function resetDraftUnderTitleToObjectDefault(
   draft: DemoAosrDraft,
   objectDefaults: DemoAosrObjectDefaults,
 ): DemoAosrDraft {
-  return {
+  return syncManualTemplateSnapshotFromDraft({
     ...draft,
     underTitleText: objectDefaults.defaultUnderTitleText,
-  };
+  });
 }
 
 export function isDraftObjectNameFromObjectDefault(
@@ -524,10 +1131,10 @@ export function resetDraftObjectNameToObjectDefault(
   draft: DemoAosrDraft,
   objectDefaults: DemoAosrObjectDefaults,
 ): DemoAosrDraft {
-  return {
+  return syncManualTemplateSnapshotFromDraft({
     ...draft,
     objectName: objectDefaults.objectName,
-  };
+  });
 }
 
 export function isDraftProjectDocumentationFromObjectDefault(
@@ -541,10 +1148,10 @@ export function resetDraftProjectDocumentationToObjectDefault(
   draft: DemoAosrDraft,
   objectDefaults: DemoAosrObjectDefaults,
 ): DemoAosrDraft {
-  return {
+  return syncManualTemplateSnapshotFromDraft({
     ...draft,
     projectDocumentation: objectDefaults.defaultProjectDocumentation,
-  };
+  });
 }
 
 export function isDraftHeaderOrganizationsFromObjectDefault(
@@ -558,10 +1165,10 @@ export function resetDraftHeaderOrganizationsToObjectDefault(
   draft: DemoAosrDraft,
   objectDefaults: DemoAosrObjectDefaults,
 ): DemoAosrDraft {
-  return {
+  return syncManualTemplateSnapshotFromDraft({
     ...draft,
     headerOrganizations: copyHeaderOrganizations(objectDefaults.headerOrganizations),
-  };
+  });
 }
 
 export function moveHeaderOrganizationInDraft(
@@ -569,10 +1176,10 @@ export function moveHeaderOrganizationInDraft(
   headerOrganizationId: string,
   direction: 'up' | 'down',
 ): DemoAosrDraft {
-  return {
+  return syncManualTemplateSnapshotFromDraft({
     ...draft,
     headerOrganizations: moveItemById(draft.headerOrganizations, headerOrganizationId, direction),
-  };
+  });
 }
 
 export function updateDemoObjectDefaultsField(
@@ -642,20 +1249,20 @@ export function addRepresentativeToDraft(
     return draft;
   }
 
-  return {
+  return syncManualTemplateSnapshotFromDraft({
     ...draft,
     representatives: [...draft.representatives, representative],
-  };
+  });
 }
 
 export function removeRepresentativeFromDraft(
   draft: DemoAosrDraft,
   representativeId: string,
 ): DemoAosrDraft {
-  return {
+  return syncManualTemplateSnapshotFromDraft({
     ...draft,
     representatives: draft.representatives.filter(({ id }) => id !== representativeId),
-  };
+  });
 }
 
 export function moveRepresentativeInDraft(
@@ -663,10 +1270,10 @@ export function moveRepresentativeInDraft(
   representativeId: string,
   direction: 'up' | 'down',
 ): DemoAosrDraft {
-  return {
+  return syncManualTemplateSnapshotFromDraft({
     ...draft,
     representatives: moveItemById(draft.representatives, representativeId, direction),
-  };
+  });
 }
 
 export function reorderDraftRepresentatives(
@@ -674,14 +1281,14 @@ export function reorderDraftRepresentatives(
   representativeId: string,
   targetRepresentativeId: string,
 ): DemoAosrDraft {
-  return {
+  return syncManualTemplateSnapshotFromDraft({
     ...draft,
     representatives: moveItemBefore(
       draft.representatives,
       representativeId,
       targetRepresentativeId,
     ),
-  };
+  });
 }
 
 export function addMaterialCertificateToDraft(

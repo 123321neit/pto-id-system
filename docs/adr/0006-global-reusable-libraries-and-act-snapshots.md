@@ -10,6 +10,8 @@ Accepted.
 
 This ADR records the reusable-entity architecture decision accepted on 2026-06-11. It does not introduce schema, migrations, API routes, backend behavior, uploads, generation, auth or production feature implementation.
 
+Update 2026-06-17: ADR 0007 refines this decision for active working acts. Working acts may remain live-linked to the object template and reusable libraries until the user explicitly switches the act to a full manual snapshot. Historical stability still applies to issued/frozen outputs and manual snapshots.
+
 ## Context
 
 PTO ID System reuses certificates, organizations and representatives across objects, acts, registries and packages. Earlier conceptual documents already separated structured source data, file-backed evidence, object bindings, typed documents and immutable released outputs, but the reusable boundaries for representatives, organizations and certificates needed a precise rule.

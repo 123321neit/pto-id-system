@@ -15,12 +15,14 @@ import {
   addMaterialCertificateToDraft,
   addRepresentativeToDraft,
   addRepresentativeToLibrary,
+  buildDemoAosrPrintState,
   demoAosrWorkspace,
+  getCounterpartyLibraryItemFromGlobalOrganization,
   getDraftApplications,
   getDraftObjectDocuments,
   getIncludedDraftApplications,
   getDraftMaterialCertificates,
-  getDraftRepresentatives,
+  getSignatoryLibraryItemFromRepresentative,
   moveHeaderOrganizationInDraft,
   moveHeaderOrganizationBlock,
   moveRepresentativeInDraft,
@@ -28,20 +30,20 @@ import {
   removeObjectDocumentFromDraft,
   removeRepresentativeFromDraft,
   reorderDraftRepresentatives,
-  resetDraftComplianceToObjectDefault,
-  resetDraftHeaderOrganizationsToObjectDefault,
-  resetDraftObjectNameToObjectDefault,
-  resetDraftProjectDocumentationToObjectDefault,
-  resetDraftUnderTitleToObjectDefault,
+  resolveDemoAosrTemplateFields,
+  returnDraftToLinkedTemplateMode,
+  switchDraftToManualTemplateMode,
   toggleApplicationInclusionInDraft,
   updateDemoAosrDraftField,
   updateDemoObjectDefaultsField,
+  type AosrPrintState,
   type DemoAosrDraft,
   type DemoAosrDraftField,
   type DemoAosrHeaderOrganization,
   type DemoAosrObjectDefaults,
   type DemoAosrObjectDefaultsField,
   type DemoAosrRepresentative,
+  type DemoAosrTemplateFields,
   type DemoGlobalOrganization,
   type DemoMaterialCertificate,
   type DemoObjectDocumentType,
@@ -94,11 +96,14 @@ export function DemoAosrWorkspacePage({
   const { certificates, objectDocuments, organizations, representatives } = useDemoStore();
   const globalOrganizations = organizations.map(toDemoGlobalOrganization);
   const globalRepresentatives = representatives.map(toDemoAosrRepresentative);
+  const counterpartyLibrary = globalOrganizations.map(
+    getCounterpartyLibraryItemFromGlobalOrganization,
+  );
+  const signatoryLibrary = globalRepresentatives.map(getSignatoryLibraryItemFromRepresentative);
   const certificateLibrary = certificates.flatMap(toDemoMaterialCertificates);
-  const [localObjectDefaults, setLocalObjectDefaults] = useState<DemoAosrObjectDefaults>(() => ({
-    ...demoAosrWorkspace.objectDefaults,
-    representativeLibrary: globalRepresentatives,
-  }));
+  const [localObjectDefaults, setLocalObjectDefaults] = useState<DemoAosrObjectDefaults>(
+    demoAosrWorkspace.objectDefaults,
+  );
   const objectDefaults = controlledObjectDefaults ?? localObjectDefaults;
   const [localDrafts, setLocalDrafts] = useState<readonly DemoAosrDraft[]>(
     demoAosrWorkspace.drafts,
@@ -158,7 +163,13 @@ export function DemoAosrWorkspacePage({
     printTitle: selectedDraft.formVariantPrintTitle,
     title: selectedDraft.formVariantTitle,
   };
-  const selectedSignatories = getDraftRepresentatives(selectedDraft);
+  const selectedTemplateFields: DemoAosrTemplateFields = resolveDemoAosrTemplateFields({
+    counterpartyLibrary,
+    draft: selectedDraft,
+    objectDefaults,
+    signatoryLibrary,
+  });
+  const selectedSignatories = selectedTemplateFields.representatives;
   const selectedMaterials = getDraftMaterialCertificates(selectedDraft, certificateLibrary);
   const selectedObjectDocuments = getDraftObjectDocuments(selectedDraft, objectDocuments);
   const allApplications = getDraftApplications(selectedDraft, certificateLibrary, objectDocuments);
@@ -167,6 +178,15 @@ export function DemoAosrWorkspacePage({
     certificateLibrary,
     objectDocuments,
   );
+  const printState: AosrPrintState = buildDemoAosrPrintState({
+    counterpartyLibrary,
+    draft: selectedDraft,
+    finalApplications,
+    objectDefaults,
+    selectedMaterials,
+    selectedObjectDocuments,
+    signatoryLibrary,
+  });
 
   const updateObjectDefaults = (field: DemoAosrObjectDefaultsField, value: string): void => {
     commitObjectDefaults((currentDefaults) =>
@@ -182,6 +202,29 @@ export function DemoAosrWorkspacePage({
     commitDrafts((currentDrafts) =>
       currentDrafts.map((draft) => (draft.id === selectedDraft.id ? updater(draft) : draft)),
     );
+  };
+
+  const switchSelectedDraftToManualTemplate = (): void => {
+    const shouldSwitch = window.confirm(
+      'Акт станет ручной версией. Изменения шаблона объекта и библиотек больше не будут применяться к этому акту.',
+    );
+
+    if (!shouldSwitch) {
+      return;
+    }
+
+    updateSelectedDraftWith((draft) =>
+      switchDraftToManualTemplateMode({
+        counterpartyLibrary,
+        draft,
+        objectDefaults,
+        signatoryLibrary,
+      }),
+    );
+  };
+
+  const returnSelectedDraftToLinkedTemplate = (): void => {
+    updateSelectedDraftWith(returnDraftToLinkedTemplateMode);
   };
 
   const commitDrafts = (draftsAction: SetStateAction<readonly DemoAosrDraft[]>): void => {
@@ -442,10 +485,12 @@ export function DemoAosrWorkspacePage({
               materialSearch={materialSearch}
               objectDefaults={objectDefaults}
               objectDocumentLibrary={objectDocuments}
+              printState={printState}
               selectedDraft={selectedDraft}
               selectedMaterials={selectedMaterials}
               selectedObjectDocuments={selectedObjectDocuments}
               selectedSignatories={selectedSignatories}
+              templateFields={selectedTemplateFields}
               onAddManualRepresentative={addManualRepresentative}
               onAddMaterialToAct={(certificateId) => {
                 const certificate = certificateLibrary.find(({ id }) => id === certificateId);
@@ -504,31 +549,6 @@ export function DemoAosrWorkspacePage({
                 );
               }}
               onReorderSelectedSignatory={reorderSelectedSignatory}
-              onResetDraftComplianceToObjectDefault={() => {
-                updateSelectedDraftWith((draft) =>
-                  resetDraftComplianceToObjectDefault(draft, objectDefaults),
-                );
-              }}
-              onResetDraftHeaderOrganizationsToObjectDefault={() => {
-                updateSelectedDraftWith((draft) =>
-                  resetDraftHeaderOrganizationsToObjectDefault(draft, objectDefaults),
-                );
-              }}
-              onResetDraftObjectNameToObjectDefault={() => {
-                updateSelectedDraftWith((draft) =>
-                  resetDraftObjectNameToObjectDefault(draft, objectDefaults),
-                );
-              }}
-              onResetDraftProjectDocumentationToObjectDefault={() => {
-                updateSelectedDraftWith((draft) =>
-                  resetDraftProjectDocumentationToObjectDefault(draft, objectDefaults),
-                );
-              }}
-              onResetDraftUnderTitleToObjectDefault={() => {
-                updateSelectedDraftWith((draft) =>
-                  resetDraftUnderTitleToObjectDefault(draft, objectDefaults),
-                );
-              }}
               onToggleApplication={(applicationId) => {
                 updateSelectedDraftWith((draft) =>
                   toggleApplicationInclusionInDraft(draft, applicationId),
@@ -543,6 +563,8 @@ export function DemoAosrWorkspacePage({
               onToggleObjectDocumentLibrary={() => {
                 setObjectDocumentLibraryOpen((isOpen) => !isOpen);
               }}
+              onReturnDraftToLinkedTemplate={returnSelectedDraftToLinkedTemplate}
+              onSwitchDraftToManualTemplate={switchSelectedDraftToManualTemplate}
               onUpdateSelectedDraft={updateSelectedDraft}
             />
           </div>
@@ -568,14 +590,7 @@ export function DemoAosrWorkspacePage({
         }}
         title="Предпросмотр документа"
       >
-        <DemoAosrPreview
-          finalApplications={finalApplications}
-          formVariant={selectedFormVariant}
-          selectedDraft={selectedDraft}
-          selectedMaterials={selectedMaterials}
-          selectedObjectDocuments={selectedObjectDocuments}
-          selectedSignatories={selectedSignatories}
-        />
+        <DemoAosrPreview formVariant={selectedFormVariant} printState={printState} />
       </DocumentPreviewDrawer>
 
       {isObjectSettingsOpen ? (

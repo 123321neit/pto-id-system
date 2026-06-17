@@ -1,109 +1,300 @@
-# ADR 0007: Document Defaults, Suggestions and Controlled Updates
+# ADR 0007: Live Object Template Links and Manual Act Snapshots
 
 ## Title
 
-Document defaults are suggestions for new documents, not live document settings.
+Object templates are live links to reusable libraries; acts are either fully linked or fully manual.
 
 ## Status
 
 Accepted.
 
-This ADR records the default-parameter architecture decision accepted on 2026-06-16. It does not introduce schema, migrations, API routes, backend behavior, uploads, generation, auth, persistence, real registry generation, package release snapshots or production feature implementation.
+This ADR supersedes the 2026-06-16 decision that treated printable object defaults as document-owned copies after creation. The previous rule protected historical output, but it made ordinary working acts stale too early and encouraged partial field-level overrides. The accepted model is now explicit: working acts can stay live-linked until the user chooses a full manual snapshot, while issued packages remain frozen separately.
+
+This ADR does not introduce Prisma schema, migrations, API routes, backend behavior, auth, uploads, OCR/AI, DOCX/PDF/ZIP generation or production package release implementation. The current frontend mock may implement the model in memory only.
 
 ## Context
 
-PTO ID System needs object-level values that help users create many similar executive documents without retyping the same text and ordering choices. Examples include under-title text, point 6 compliance text, object name in the printed header, project documentation text, header organization order, selected material certificates, selected object documents, signatories, future numbering settings, future real registry parameters and future package release behavior.
+PTO ID System has three different concepts that must not be collapsed:
 
-The risk is historical drift. If an existing document reads object-level values live, then changing a default later can silently rewrite an already prepared act. That conflicts with structured source of truth, immutable released revisions and package snapshot rules.
+- reusable libraries of counterparties and signatories;
+- object templates that describe repeated printable object data and reference those libraries;
+- typed acts such as AOSR that combine object-template data with individual act data.
 
-The opposite risk is over-constraining the user. Defaults must help document creation, but the user must still be able to edit document text, use an empty number or make an exception in a specific document.
+Engineers need corrections in reusable library records to flow into active working documents. If a surname, authority document, NRS id, organization text or counterparty requisites are fixed in the library, current linked acts should preview and generate with the corrected values. The same applies when the object template replaces a signatory or counterparty reference.
+
+At the same time, users sometimes need a specific act to diverge from the object template. That must be a deliberate mode change, not an accidental side effect of typing normal act fields. Partial overrides of individual template fields create ambiguous provenance: it becomes unclear whether an act follows the object template, a few stale fields, or a hand-edited hybrid.
+
+Issued ID packages are a separate concern. A released package must preserve a frozen result snapshot so already issued documents do not drift after library or object-template edits.
 
 ## Decision
 
-Object-level "settings" that feed documents are called `Параметры по умолчанию` in the UI.
+Reusable counterparty and signatory libraries are live current-data sources for active work.
 
-Default parameters are suggestions for newly created documents. When a document is created, the relevant current defaults are copied into the document payload or draft payload.
+An object template stores repeated object data and references library records. It does not copy full counterparty or signatory printable text as the normal source of truth. It may store object-specific labels, grouping, ordering and custom subscripts.
 
-After creation, the document owns its values. Existing documents change only through explicit user action in that document or through a clearly named controlled update action, such as restoring a field from current default parameters.
+An act has exactly two template modes:
 
-Every printable AOSR value must either be stored in the document draft/revision or have an explicit, documented reason to remain live-derived. The default assumption is document ownership.
+```ts
+type ActTemplateMode = 'linked' | 'manual';
+```
 
-Under-title text is document-owned after creation. A new AOSR draft copies `defaultUnderTitleText` into document-owned under-title text. Later edits to `defaultUnderTitleText` do not silently update that draft.
+In `linked` mode:
 
-Point 6 compliance text is document-owned after creation in the current frontend mock. A new AOSR draft copies `defaultComplianceStatement` into document-owned point 6 text. Later edits to `defaultComplianceStatement` do not silently update that draft.
+- the act does not store a copy of object-template data;
+- the act resolves printable template data dynamically from the current object template;
+- the object template resolves counterparty and signatory printable data dynamically from current library items;
+- changes to library items flow through the object template into linked acts;
+- changes to object-template references, grouping, ordering or repeated texts flow into linked acts;
+- normal individual act edits never switch the act to manual mode.
 
-The printed object name and point 2 project documentation are document-owned after creation. A new AOSR draft copies `objectName` and `defaultProjectDocumentation` from current object default parameters. Later edits to those defaults do not silently update existing drafts.
+In `manual` mode:
 
-The printed header organization blocks and their order are document-owned after creation. A new AOSR draft copies the current object header organization order into the draft. Reordering or adding organizations in default parameters affects future drafts or the current draft only after an explicit restore-from-default action.
+- the act stores one complete `manualTemplateSnapshot`;
+- the snapshot contains the whole printable template part resolved from the current object template and libraries at the moment the user switches modes;
+- object-template and library changes no longer affect that act;
+- the user can edit any template-snapshot field in the manual act;
+- individual act data remains individual data and is not part of the mode decision.
 
-Form metadata that appears in the printed document, such as the AOSR form title and print title, is snapshotted into the current frontend draft model.
+There are no partial field-level overrides for template-owned data. The act is either fully linked to the object template or fully manual with a complete snapshot.
 
-Selected material certificates and selected object documents store printable snapshots in the draft when included. The live global/object libraries remain search and proposal sources, while the current act preview renders the selected draft snapshots where available.
+Switching to `manual` must require an explicit user action such as `Редактировать шаблонные данные вручную` and a confirmation that the act will stop receiving object-template and library updates.
 
-The UI may show origin/status hints:
+Returning to the object template must require an explicit user action such as `Вернуть к шаблону объекта`. This action deletes `manualTemplateSnapshot`, sets `templateMode = 'linked'`, and makes the act resolve from the current object template and current library items again.
 
-- `По параметрам по умолчанию` when a document value still equals the current default;
-- `Изменено в документе` when a document value differs.
+## Conceptual Types
 
-The UI may expose an explicit action such as `Вернуть из параметров по умолчанию`, which replaces the current document value with the current default. This is a user-controlled update of the document, not a live binding.
+```ts
+type CounterpartyLibraryItem = {
+  id: string;
+  displayName: string;
+  fullText: string;
+  defaultSubscript?: string;
+  isArchived?: boolean;
+};
 
-Empty document values remain allowed. Future print forms can render manual-fill lines instead of blocking work.
+type SignatoryLibraryItem = {
+  id: string;
+  displayName: string;
+  fullName: string;
+  position?: string;
+  organization?: string;
+  authorityDocument?: string;
+  nrsId?: string;
+  introDisplayText: string;
+  signatureText: string;
+  signatureName: string;
+  defaultSubscript?: string;
+  isArchived?: boolean;
+};
 
-Future numbering settings must follow the same rule:
+type ObjectTemplate = {
+  id: string;
+  objectId: string;
+  objectName: string;
+  objectNameSubscript: string;
+  counterparties: Array<{
+    id: string;
+    title: string;
+    counterpartyId: string;
+    subscriptMode: 'fromLibrary' | 'custom';
+    customSubscript?: string;
+  }>;
+  representativeGroups: Array<{
+    id: string;
+    title: string;
+    members: Array<{
+      id: string;
+      signatoryId: string;
+      subscriptMode: 'fromLibrary' | 'custom';
+      customSubscript?: string;
+    }>;
+  }>;
+  projectDocumentation: string;
+  complianceText: string;
+  copiesLine: string;
+  numberingPattern?: string;
+  defaultDateMode?: 'today' | 'folderDate' | 'manual';
+};
+```
 
-- automatic numbering is a suggestion;
-- users can edit the number or leave it empty;
-- object-level numbering defaults may propose the next number;
-- manual numbers do not mutate the sequence;
-- existing documents are not automatically renumbered;
-- deleted numbers are not reused by default.
+Counterparty `title` belongs to the object template. It is user-defined and must not be hardcoded to a fixed set such as builder, contractor or designer. The number of counterparties, representative groups and group members is not fixed.
 
-Future package release snapshots may freeze a historical package composition, but that is a later implementation concern. This ADR does not implement package releases or historical package storage.
+The AOSR DOCX form template is a separate entity. It owns immutable form text, tags, Word layout, fonts and spacing. It is not the object template.
+
+DOCX/PDF rendering should consume a resolved print state:
+
+```ts
+type AosrPrintState = {
+  object: {
+    name: string;
+    nameSubscript: string;
+  };
+  counterparties: Array<{
+    title: string;
+    displayText: string;
+    subscript: string;
+  }>;
+  document: {
+    numberLine: string;
+    dateLine: string;
+    additionalInfo: string;
+    copiesLine: string;
+  };
+  representatives: {
+    groups: Array<{
+      title: string;
+      members: Array<{
+        introDisplayText: string;
+        subscript: string;
+        signatureText: string;
+        signatureName: string;
+      }>;
+    }>;
+  };
+  work: {
+    contractorName: string;
+    description: string;
+    startDateLine: string;
+    endDateLine: string;
+    nextWorks: string;
+  };
+  project: {
+    documentation: string;
+    compliance: string;
+  };
+  materials: {
+    items: Array<{ displayText: string }>;
+  };
+  confirmationDocuments: {
+    items: Array<{ displayText: string }>;
+  };
+  applications: {
+    items: Array<{ displayText: string }>;
+  };
+};
+```
+
+## Act Model
+
+```ts
+type Act = {
+  id: string;
+  objectId: string;
+  objectTemplateId: string;
+  documentType: 'AOSR_1';
+  templateMode: ActTemplateMode;
+  individualData: {
+    numberLine: string;
+    dateLine: string;
+    workContractorName: string;
+    workDescription: string;
+    startDateLine: string;
+    endDateLine: string;
+    nextWorks: string;
+    additionalInfo: string;
+    materials: Array<{ displayText: string }>;
+    confirmationDocuments: Array<{ displayText: string }>;
+    applications: Array<{ displayText: string }>;
+  };
+  manualTemplateSnapshot?: {
+    object: {
+      name: string;
+      nameSubscript: string;
+    };
+    counterparties: Array<{
+      title: string;
+      displayText: string;
+      subscript: string;
+    }>;
+    representatives: {
+      groups: Array<{
+        title: string;
+        members: Array<{
+          introDisplayText: string;
+          subscript: string;
+          signatureText: string;
+          signatureName: string;
+        }>;
+      }>;
+    };
+    project: {
+      documentation: string;
+      compliance: string;
+    };
+    documentTemplateDefaults: {
+      copiesLine: string;
+    };
+  };
+};
+```
+
+For `linked` acts, the print state is resolved from:
+
+```text
+counterparty/signatory libraries -> objectTemplate -> linked act individualData
+```
+
+For `manual` acts, the print state is resolved from:
+
+```text
+manualTemplateSnapshot -> manual act individualData
+```
+
+## UI Rules
+
+Linked acts:
+
+- show status `По шаблону`;
+- do not allow direct editing of template-owned fields;
+- explain that template data comes from the object template and live libraries;
+- expose `Редактировать вручную` or equivalent.
+
+Manual acts:
+
+- show status `Ручная версия`;
+- show a calm note: `Ручная версия: изменения шаблона объекта и библиотек не применяются.`;
+- allow editing of snapshot fields;
+- show soft per-field hints such as `Отличается от шаблона объекта` where the snapshot differs from the current resolved object template;
+- avoid red errors or aggressive warnings for intentional differences;
+- expose `Вернуть к шаблону объекта`.
+
+The manual switch confirmation should say:
+
+```text
+Акт станет ручной версией. Изменения шаблона объекта и библиотек больше не будут применяться к этому акту.
+```
 
 ## Consequences
 
-- Existing drafts and future documents are protected from silent object-default drift.
-- Creation flows must copy defaults into the new document instead of leaving fields live-bound to object defaults.
-- Default-parameter UI copy must avoid implying that existing acts update automatically.
-- Document editors need explicit restore/update actions for fields that can be refreshed from current defaults.
-- Preview/rendering code must read printable AOSR values from the document draft/revision, not from mutable object defaults or global libraries.
-- Future backend/API work must model defaults separately from document-owned content and controlled update commands.
-- Registry and package features must continue to derive from document-owned content or released snapshots, not from mutable defaults.
+- Active working linked acts stay up to date with corrected library and object-template data.
+- A manual act has simple provenance: it owns one complete template snapshot.
+- There is no hybrid state made of scattered per-field overrides.
+- Individual act fields such as number, date, work description, periods, materials and applications remain editable in both modes and never imply manual template mode.
+- Preview and future DOCX/PDF generation must be routed through `AosrPrintState`.
+- Future backend/API commands should model `SwitchActTemplateModeToManual`, `ReturnActToObjectTemplate`, and object-template/library update flows explicitly.
+- Future issued packages must store frozen output snapshots and must not rely on live-linked working act state for historical documents.
 
 ## Explicitly Rejected Alternatives
 
-- Treating object-level defaults as live settings read by existing documents.
-- Automatically rewriting existing drafts when object defaults change.
-- Automatically renumbering documents after numbering settings change.
-- Reusing deleted numbers by default.
-- Making manual document numbers mutate the automatic numbering sequence.
-- Blocking document creation because a suggested default is empty.
-- Implementing numbering settings UI, real registry generation or package release snapshots as part of this frontend-only slice.
+- Copying object-template data into every act at creation as the normal working model.
+- Making object defaults only suggestions for new documents when the act remains active and unissued.
+- Partial overrides of individual template fields in a linked act.
+- Automatically switching to manual mode when the user edits individual act data.
+- Allowing a linked act to edit template-owned fields directly.
+- Making the DOCX form template act as the object template.
+- Hardcoding a fixed set of counterparty roles or representative groups.
 
 ## Invariants That Must Not Be Violated
 
-- Defaults are suggestions for new documents.
-- Documents become independent after creation.
-- Existing documents update only through explicit user action.
-- Printable AOSR preview fields are document-owned by default.
-- Under-title text is document-owned after creation.
-- Object name, project documentation, header organization order and printed form titles are document-owned after creation or must use an equivalent controlled-update model.
-- Point 6 text is document-owned after creation or must use an equivalent controlled-update model.
-- Selected certificates, object documents, organizations and representatives used by an act must render from act snapshots where those values affect historical printed output.
-- Automatic numbering is a suggestion, not a constraint.
-- Manual numbering remains allowed and does not rewrite the sequence.
-- No automatic renumbering.
-- Deleted numbers are not reused by default.
-- Package release snapshots, when implemented later, must preserve historical package output without making defaults a live historical source.
-
-## Implementation Implications
-
-- Frontend and backend creation commands should receive or resolve defaults at creation time, then store copied document-owned values.
-- Editors should compare document values to current defaults only for user-facing origin/status hints.
-- Restore-from-default actions should write the current default into the document payload through normal document editing paths.
-- Object default panels and global/object libraries are allowed to be live only as editing/search/proposal sources, not as historical printed-output sources for existing documents.
-- Future numbering settings should be stored as default/proposal configuration, with separate document-owned rendered numbers.
-- Future package release logic should snapshot document/revision/package inputs explicitly and should not rely on mutable current defaults for historical output.
+- Counterparty and signatory libraries are live current-data sources for active work.
+- Object templates store links to library records, plus object-specific labels, ordering, grouping and repeated texts.
+- A linked act does not store a template snapshot.
+- A manual act stores a complete template snapshot.
+- No partial field-level overrides exist for template-owned fields.
+- Only an explicit user action can switch a linked act to manual mode.
+- Editing individual act data does not switch template mode.
+- Returning to the object template deletes the manual snapshot and restores live resolution.
+- Issued packages must preserve frozen output snapshots.
 
 ## Related Documents
 

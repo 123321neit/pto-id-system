@@ -83,6 +83,7 @@ export function DemoDocumentTree({
               <span className="act-tree-item__index">{index + 1}</span>
               <span className="act-tree-item__number">{draft.actNumber}</span>
               <span className="act-tree-item__meta">
+                <small>{draft.templateMode === 'manual' ? 'Ручная версия' : 'По шаблону'}</small>
                 <small>Версия документа {index + 1}.0</small>
                 <small>Последнее изменение: {formatDocumentDate(draft.actDate)}</small>
               </span>
