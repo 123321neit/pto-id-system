@@ -325,11 +325,9 @@ export function DemoAosrWorkspacePage({
       manualRepresentativeForm,
     );
 
-    commitObjectDefaults((currentDefaults) =>
-      addRepresentativeToLibrary(currentDefaults, representative),
+    updateSelectedDraftWith((draft) =>
+      draft.templateMode === 'manual' ? addRepresentativeToDraft(draft, representative) : draft,
     );
-
-    updateSelectedDraftWith((draft) => addRepresentativeToDraft(draft, representative));
     setCreatedRepresentativeCount((currentCount) => currentCount + 1);
     setManualRepresentativeForm(emptyRepresentativeForm);
     setManualRepresentativeFormOpen(false);

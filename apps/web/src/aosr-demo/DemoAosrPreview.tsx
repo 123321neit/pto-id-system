@@ -52,10 +52,10 @@ export function DemoAosrPreview({
               <h3>{formVariant.printTitle}</h3>
               <div className="act-page__number-date-row">
                 <span>
-                  <strong>№ {printState.document.numberLine}</strong>
+                  <strong>№ {printState.document.number}</strong>
                 </span>
                 <span>
-                  <strong>{formatDocumentDate(printState.document.dateLine)}</strong>
+                  <strong>{formatDocumentDate(printState.document.date)}</strong>
                 </span>
               </div>
               {printState.document.underTitleText.trim() === '' ? null : (
@@ -64,24 +64,26 @@ export function DemoAosrPreview({
             </section>
 
             <section className="act-page__representative-blocks" aria-label="Представители">
-              {printState.representatives.groups.map((group, groupIndex) =>
-                group.members.map((member, memberIndex) => (
-                  <div
-                    className="act-page__representative-block"
-                    key={`${group.title}-${String(groupIndex)}-${String(memberIndex)}`}
-                  >
-                    <p className="act-page__block-label">{group.title}:</p>
-                    <p className="act-page__field-line">{member.introDisplayText}</p>
-                    <p className="act-page__field-line act-page__details-line">
-                      {member.subscript}
-                    </p>
-                    <p className="act-page__caption">
-                      (должность, фамилия, инициалы, идентификационный номер в НРС, реквизиты
-                      документа, подтверждающего полномочия)
-                    </p>
-                  </div>
-                )),
-              )}
+              {printState.representatives.groups.map((group, groupIndex) => (
+                <div
+                  className="act-page__representative-block"
+                  key={`${group.title}-${String(groupIndex)}`}
+                >
+                  <p className="act-page__block-label">{group.title}:</p>
+                  {group.members.map((member, memberIndex) => (
+                    <div key={`${member.introDisplayText}-${String(memberIndex)}`}>
+                      <p className="act-page__field-line">{member.introDisplayText}</p>
+                      <p className="act-page__field-line act-page__details-line">
+                        {member.subscript}
+                      </p>
+                      <p className="act-page__caption">
+                        (должность, фамилия, инициалы, идентификационный номер в НРС, реквизиты
+                        документа, подтверждающего полномочия)
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              ))}
               <p>
                 произвели осмотр работ, выполненных{' '}
                 <span className="act-page__print-value">{printState.work.contractorName}</span>
@@ -241,26 +243,33 @@ export function DemoAosrPreview({
               aria-label="Подписи представителей"
             >
               <div className="act-page__signature-table">
-                {printState.representatives.groups.map((group, groupIndex) =>
-                  group.members.map((member, memberIndex) => (
-                    <div
-                      className="act-page__signature-block"
-                      key={`${group.title}-signature-${String(groupIndex)}-${String(memberIndex)}`}
-                    >
-                      <p className="act-page__block-label">{group.title}:</p>
-                      <div className="act-page__signature-person-row">
-                        <span className="act-page__signature-person">
-                          {member.signatureText} {member.signatureName}
-                        </span>
-                        <span className="act-page__signature-line" aria-hidden="true" />
+                {printState.representatives.groups.map((group, groupIndex) => (
+                  <div
+                    className="act-page__signature-block"
+                    key={`${group.title}-signature-${String(groupIndex)}`}
+                  >
+                    <p className="act-page__block-label">{group.title}:</p>
+                    {group.members.map((member, memberIndex) => (
+                      <div
+                        className="act-page__signature-member"
+                        key={`${member.signatureText}-${member.signatureName}-${String(
+                          memberIndex,
+                        )}`}
+                      >
+                        <div className="act-page__signature-person-row">
+                          <span className="act-page__signature-person">
+                            {member.signatureText} {member.signatureName}
+                          </span>
+                          <span className="act-page__signature-line" aria-hidden="true" />
+                        </div>
+                        <div className="act-page__signature-caption-row">
+                          <span>(фамилия, инициалы)</span>
+                          <span>(подпись)</span>
+                        </div>
                       </div>
-                      <div className="act-page__signature-caption-row">
-                        <span>(фамилия, инициалы)</span>
-                        <span>(подпись)</span>
-                      </div>
-                    </div>
-                  )),
-                )}
+                    ))}
+                  </div>
+                ))}
               </div>
             </section>
           </div>

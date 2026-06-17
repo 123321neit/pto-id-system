@@ -643,6 +643,8 @@ user action; switching to manual creates a complete `manualTemplateSnapshot`
 from the current resolved object template and libraries. From that point,
 object-template and library changes do not affect the manual act. Returning to
 the object template deletes the manual snapshot and restores live resolution.
+Representative groups are real groups: a renderer must print the group title
+once and then all members inside that group, including in the signature section.
 
 The invariant is strict: no partial field-level overrides for template-owned
 data. An act is either `linked` or `manual`. Editing normal individual act data
@@ -654,9 +656,14 @@ consume a resolved `AosrPrintState`, assembled either from
 `objectTemplate + libraries + individualData` for linked acts or from
 `manualTemplateSnapshot + individualData` for manual acts. Issued/fixed ID
 packages must later store frozen output snapshots so released documents do not
-drift after live library or object-template edits. This current implementation
-remains frontend mock/in-memory only and adds no backend/API, Prisma/schema,
-persistence, auth, uploads, OCR/AI or DOCX/PDF/ZIP generation.
+drift after live library or object-template edits. `AosrPrintState.document.number`
+is the raw act number without `№`, and `AosrPrintState.document.date` is a raw
+date value for renderer formatting. The current frontend mock still carries
+legacy template-owned fields on `DemoAosrDraft` only for manual editor
+compatibility; production linked acts must not persist template-owned copies.
+This current implementation remains frontend mock/in-memory only and adds no
+backend/API, Prisma/schema, persistence, auth, uploads, OCR/AI or DOCX/PDF/ZIP
+generation.
 
 ---
 
@@ -4908,8 +4915,14 @@ production domain/API/persistence work remain separate explicit tasks.
 - switching to manual requires explicit user action and confirmation;
 - returning to object template deletes the manual snapshot and restores live
   links;
+- representative groups can contain several members and render with one group
+  title plus all members, including signatures;
 - no partial field-level overrides are allowed for template-owned data;
 - individual act data edits never switch the act to manual mode;
+- act number/date are raw individual values in print state; renderer code adds
+  printable prefixes and date formatting;
+- current frontend mock keeps legacy copied template fields on `DemoAosrDraft`
+  only for manual editor compatibility, not as production linked-act storage;
 - AOSR DOCX form template is separate from object template;
 - future issued packages must store frozen output snapshots.
 

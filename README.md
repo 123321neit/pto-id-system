@@ -38,6 +38,12 @@ follow the same rule: automatic numbering is a suggestion, manual numbers may be
 edited or left empty, manual edits do not mutate the sequence, documents are not
 automatically renumbered, and deleted numbers are not reused by default.
 
+ADR 0007 supersedes that copied-default rule for active working template data:
+linked acts resolve object-template and library data live, while manual acts
+own a complete `manualTemplateSnapshot`. Representative groups render one group
+title with all members inside, including signatures. `AosrPrintState.document`
+uses raw `number` and `date` values; renderers add `№` and date formatting.
+
 The first technical vertical slice now proves that the React shell can call the
 NestJS technical `/health` endpoint through `VITE_API_BASE_URL` and consume the
 shared technical response type from `packages/shared-types`. This slice is only

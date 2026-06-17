@@ -133,19 +133,19 @@ export function DemoSignatoriesEditor({
         <DemoRepresentativeForm
           afterFields={
             <p className="helper-note act-form-grid__wide">
-              В production это создаст глобального представителя, назначение на объект и снимок для
-              акта.
+              Ручная версия изменит только снимок этого акта. Шаблон объекта и библиотека не
+              изменятся.
             </p>
           }
           form={manualRepresentativeForm}
           labels={{
-            authorityBasis: 'Основание полномочий в назначении объекта',
-            details: 'Детали назначения для печатного снимка',
-            fullName: 'ФИО глобального представителя',
-            nrsId: 'Номер НРС для назначения',
-            organization: 'Организация в назначении объекта',
-            position: 'Должность в назначении объекта',
-            roleLabel: 'Роль назначения на объекте',
+            authorityBasis: 'Основание полномочий в ручной версии',
+            details: 'Подстрочный текст для ручной версии',
+            fullName: 'ФИО представителя',
+            nrsId: 'Номер НРС для ручной версии',
+            organization: 'Организация в ручной версии',
+            position: 'Должность в ручной версии',
+            roleLabel: 'Группа / роль в ручной версии',
           }}
           onChange={onChangeManualRepresentativeForm}
           onSubmit={onAddManualRepresentative}

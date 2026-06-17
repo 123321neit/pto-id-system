@@ -117,7 +117,7 @@ type ObjectTemplate = {
 };
 ```
 
-Counterparty `title` belongs to the object template. It is user-defined and must not be hardcoded to a fixed set such as builder, contractor or designer. The number of counterparties, representative groups and group members is not fixed.
+Counterparty `title` belongs to the object template. It is user-defined and must not be hardcoded to a fixed set such as builder, contractor or designer. The number of counterparties, representative groups and group members is not fixed. Renderers must treat a representative group as a real group: print the group title once, then all members inside that group. The same rule applies to the signature section.
 
 The AOSR DOCX form template is a separate entity. It owns immutable form text, tags, Word layout, fonts and spacing. It is not the object template.
 
@@ -135,8 +135,8 @@ type AosrPrintState = {
     subscript: string;
   }>;
   document: {
-    numberLine: string;
-    dateLine: string;
+    number: string;
+    date: string;
     additionalInfo: string;
     copiesLine: string;
   };
@@ -174,6 +174,8 @@ type AosrPrintState = {
 };
 ```
 
+`document.number` is the raw act number without a printed `№` prefix. `document.date` is a raw date value suitable for UI/preview formatting, such as an ISO date string in the frontend mock. Renderers add printable prefixes and date formatting. If a future DOCX renderer needs fully formatted `numberLine` or `dateLine`, those fields must be separate derived render values and must not replace the raw act number/date semantics.
+
 ## Act Model
 
 ```ts
@@ -184,8 +186,8 @@ type Act = {
   documentType: 'AOSR_1';
   templateMode: ActTemplateMode;
   individualData: {
-    numberLine: string;
-    dateLine: string;
+    number: string;
+    date: string;
     workContractorName: string;
     workDescription: string;
     startDateLine: string;

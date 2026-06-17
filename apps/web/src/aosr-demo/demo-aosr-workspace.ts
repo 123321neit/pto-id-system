@@ -120,8 +120,8 @@ export interface AosrPrintState {
     readonly subscript: string;
   }[];
   readonly document: {
-    readonly numberLine: string;
-    readonly dateLine: string;
+    readonly number: string;
+    readonly date: string;
     readonly additionalInfo: string;
     readonly copiesLine: string;
     readonly underTitleText: string;
@@ -230,6 +230,9 @@ export interface DemoAosrDraft {
   readonly actNumber: string;
   readonly additionalInfo: string;
   readonly axes: string;
+  // Mock compatibility: these template-owned fields remain on the frontend draft
+  // so existing manual editor controls can edit a snapshot. Linked production acts
+  // must not persist template-owned copies.
   readonly complianceStatement: string;
   readonly copiesCount: string;
   readonly elevationRange: string;
@@ -808,8 +811,8 @@ export function buildDemoAosrPrintState({
     document: {
       additionalInfo: draft.additionalInfo,
       copiesLine: manualSnapshot?.documentTemplateDefaults.copiesLine ?? templateFields.copiesLine,
-      dateLine: draft.actDate,
-      numberLine: draft.actNumber,
+      date: draft.actDate,
+      number: draft.actNumber,
       underTitleText: manualSnapshot?.underTitleText ?? templateFields.underTitleText,
     },
     materials: {

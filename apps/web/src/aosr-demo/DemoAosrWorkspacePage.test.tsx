@@ -824,7 +824,7 @@ describe('DemoAosrWorkspacePage', () => {
     expect(previewText).toContain('Представитель заказчика:');
   });
 
-  it('creates a representative assignment from the act form and adds its snapshot to the act', async () => {
+  it('creates a manual representative only in the current act snapshot', async () => {
     const user = userEvent.setup();
 
     renderDemoWorkspace({ initialDocumentPreviewOpen: true });
@@ -845,10 +845,10 @@ describe('DemoAosrWorkspacePage', () => {
     await user.click(screen.getByRole('button', { name: 'Показать назначения' }));
 
     const objectLibrary = screen.getByRole('list', { name: 'Назначения представителей объекта' });
-    expect(within(objectLibrary).getByText('Сидоров С.С.')).toBeTruthy();
+    expect(within(objectLibrary).queryByText('Сидоров С.С.')).toBeNull();
   });
 
-  it('does not expose the old act-only representative creation model', async () => {
+  it('describes manual representative creation as a local act snapshot edit', async () => {
     const user = userEvent.setup();
 
     renderDemoWorkspace();
@@ -863,11 +863,11 @@ describe('DemoAosrWorkspacePage', () => {
       }),
     ).toBeNull();
     expect(screen.queryByLabelText('ФИО для снимка акта')).toBeNull();
-    expect(screen.getByLabelText('ФИО глобального представителя')).toBeTruthy();
-    expect(screen.getByLabelText('Роль назначения на объекте')).toBeTruthy();
+    expect(screen.getByLabelText('ФИО представителя')).toBeTruthy();
+    expect(screen.getByLabelText('Группа / роль в ручной версии')).toBeTruthy();
     expect(
       screen.getByText(
-        'В production это создаст глобального представителя, назначение на объект и снимок для акта.',
+        'Ручная версия изменит только снимок этого акта. Шаблон объекта и библиотека не изменятся.',
       ),
     ).toBeTruthy();
   });
@@ -1423,15 +1423,15 @@ async function addRepresentativeAssignmentFromAct(
   representative: RepresentativeAssignmentInput,
 ): Promise<void> {
   await user.click(screen.getByRole('button', { name: 'Создать представителя и назначение' }));
-  await user.type(screen.getByLabelText('Роль назначения на объекте'), representative.roleLabel);
-  await user.type(screen.getByLabelText('ФИО глобального представителя'), representative.fullName);
-  await user.type(screen.getByLabelText('Должность в назначении объекта'), representative.position);
+  await user.type(screen.getByLabelText('Группа / роль в ручной версии'), representative.roleLabel);
+  await user.type(screen.getByLabelText('ФИО представителя'), representative.fullName);
+  await user.type(screen.getByLabelText('Должность в ручной версии'), representative.position);
   await user.type(
-    screen.getByLabelText('Организация в назначении объекта'),
+    screen.getByLabelText('Организация в ручной версии'),
     representative.organization,
   );
   await user.type(
-    screen.getByLabelText('Основание полномочий в назначении объекта'),
+    screen.getByLabelText('Основание полномочий в ручной версии'),
     representative.authorityBasis,
   );
 
