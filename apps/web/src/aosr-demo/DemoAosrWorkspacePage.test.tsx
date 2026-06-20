@@ -314,6 +314,38 @@ describe('DemoAosrWorkspacePage', () => {
     await user.click(within(dialog).getByRole('button', { name: 'Закрыть' }));
   });
 
+  it('stores repeated contractor, additional information and copy count in the object template', async () => {
+    const user = userEvent.setup();
+    const contractorName = 'ООО "Исполнитель из шаблона"';
+    const additionalInfo = 'Печатные сведения из шаблона объекта.';
+
+    renderDemoWorkspace({ initialDocumentPreviewOpen: true });
+    await openObjectSettings(user);
+
+    const dialog = screen.getByRole('dialog', { name: 'Шаблон объекта' });
+    const contractorField = within(dialog).getByLabelText('Лицо, выполнившее работы');
+    const copiesField = within(dialog).getByLabelText('Количество экземпляров');
+
+    await user.clear(contractorField);
+    await user.type(contractorField, contractorName);
+    await user.clear(copiesField);
+    await user.type(copiesField, '8');
+    await user.click(within(dialog).getByRole('button', { name: /Тексты акта/u }));
+
+    const additionalInfoField = within(dialog).getByLabelText('Печатный текст для актов объекта');
+    await user.clear(additionalInfoField);
+    await user.type(additionalInfoField, additionalInfo);
+
+    expect(getPreviewText()).toContain(contractorName);
+    expect(getPreviewText()).toContain(additionalInfo);
+    expect(getPreviewText()).toContain('8 экземплярах');
+
+    await user.click(within(dialog).getByRole('button', { name: 'Закрыть' }));
+
+    expect(screen.getAllByText(contractorName).length).toBeGreaterThan(0);
+    expect(screen.getByText('Экземпляров: 8')).toBeTruthy();
+  });
+
   it('uses linked object template compliance text in the act and preview', () => {
     renderDemoWorkspace({ initialDocumentPreviewOpen: true });
 
@@ -324,6 +356,39 @@ describe('DemoAosrWorkspacePage', () => {
       getTextAreaValue(within(complianceSection).getByLabelText('Текст пункта 6 в документе')),
     ).toBe(demoAosrWorkspace.objectDefaults.defaultComplianceStatement);
     expect(getPreviewText()).toContain(demoAosrWorkspace.objectDefaults.defaultComplianceStatement);
+  });
+
+  it('keeps object template data collapsed in a linked act until the user opens it', async () => {
+    const user = userEvent.setup();
+
+    renderDemoWorkspace();
+
+    const templateSections = [
+      'Данные объекта',
+      'Организации, участвующие в акте',
+      'Подписанты текущего акта',
+      'Лицо, выполнившее работы',
+      '2. Проектная документация',
+      '6. Соответствие работ',
+      'Дополнительные сведения',
+    ];
+
+    for (const sectionName of templateSections) {
+      const details = getTemplateSection(sectionName);
+
+      expect(details.open).toBe(false);
+    }
+
+    const contractorSection = getTemplateSection('Лицо, выполнившее работы');
+    await user.click(within(contractorSection).getByText('Лицо, выполнившее работы'));
+
+    expect(contractorSection.open).toBe(true);
+    expect(getInputValue(within(contractorSection).getByLabelText('Печатное наименование'))).toBe(
+      demoAosrWorkspace.objectDefaults.defaultWorkContractorName,
+    );
+    expect(
+      within(contractorSection).getByRole('button', { name: 'Изменить вручную' }),
+    ).toBeTruthy();
   });
 
   it('allows editing document compliance text and uses it in preview', async () => {
@@ -477,13 +542,14 @@ describe('DemoAosrWorkspacePage', () => {
       'Шапка печатного документа',
       'Номер акта',
       'Дата акта',
-      'Объект капитального строительства',
       'Форма акта',
       'АОСР 1',
+      'Данные объекта',
+      'Объект капитального строительства',
       'Организации, участвующие в акте',
       'Подписанты текущего акта',
-      '1. Скрытые работы',
       'Лицо, выполнившее работы',
+      '1. Скрытые работы',
       'Описание скрытых работ',
       'Оси',
       'Отметки',
@@ -1544,13 +1610,30 @@ function getTextAreaValue(element: HTMLElement): string {
 }
 
 function getSectionByHeading(heading: string): HTMLElement {
-  const section = screen.getByRole('heading', { name: heading }).closest('.form-section');
-
-  if (section === null) {
-    throw new Error(`В тесте ожидается секция "${heading}".`);
-  }
+  const headingElement = screen.queryByRole('heading', { name: heading });
+  const section =
+    headingElement?.closest('.form-section') ?? screen.getByRole('region', { name: heading });
 
   return section as HTMLElement;
+}
+
+function getTemplateSection(name: string): HTMLDetailsElement {
+  const section = screen.getByRole('region', { name });
+  const details = section.querySelector('details');
+
+  if (!(details instanceof HTMLDetailsElement)) {
+    throw new Error(`В тесте ожидается сворачиваемая секция "${name}".`);
+  }
+
+  return details;
+}
+
+function getInputValue(element: HTMLElement): string {
+  if (!(element instanceof HTMLInputElement)) {
+    throw new Error('В тесте ожидалось однострочное поле.');
+  }
+
+  return element.value;
 }
 
 function getRequiredElement<TElement>(elements: readonly TElement[], index: number): TElement {

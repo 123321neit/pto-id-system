@@ -34,8 +34,10 @@ complete `manualTemplateSnapshot`. There are no partial template-field
 overrides. The UI calls these object-level live values `Шаблон объекта`.
 Representative groups are real groups with independent ids and any number of
 members. `AosrPrintState.document` keeps raw `number` and `date`; renderers add
-`№` and date formatting. The individual `workContractorName` is entered on the
-act and is never inferred from a counterparty title.
+`№` and date formatting. The work contractor, additional information and copy
+count are repeated object-template data. In the act editor all template-owned
+sections are collapsed by default; users can expand them to verify values and
+must explicitly switch the whole act to manual mode before changing them.
 
 The first technical vertical slice now proves that the React shell can call the
 NestJS technical `/health` endpoint through `VITE_API_BASE_URL` and consume the

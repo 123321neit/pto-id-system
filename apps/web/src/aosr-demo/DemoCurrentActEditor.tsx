@@ -1,8 +1,7 @@
-import type { SyntheticEvent } from 'react';
+import type { ReactNode, SyntheticEvent } from 'react';
 
 import type { DemoAosrFormVariantMetadata } from '../act-types/act-types.js';
 import type {
-  AosrPrintState,
   DemoActApplication,
   DemoAosrDraft,
   DemoAosrDraftField,
@@ -44,7 +43,6 @@ interface DemoCurrentActEditorProps {
   readonly linkedTemplateFields: DemoAosrTemplateFields;
   readonly objectDefaults: DemoAosrObjectDefaults;
   readonly objectDocumentLibrary: readonly DemoObjectDocument[];
-  readonly printState: AosrPrintState;
   readonly selectedDraft: DemoAosrDraft;
   readonly selectedMaterials: readonly DemoMaterialCertificate[];
   readonly selectedObjectDocuments: readonly DemoObjectDocument[];
@@ -121,7 +119,6 @@ export function DemoCurrentActEditor({
   linkedTemplateFields,
   objectDefaults,
   objectDocumentLibrary,
-  printState,
   selectedDraft,
   selectedMaterials,
   selectedObjectDocuments,
@@ -166,6 +163,11 @@ export function DemoCurrentActEditor({
     isManualTemplate,
     templateFields.objectNameSubscript !== linkedTemplateFields.objectNameSubscript,
   );
+  const objectDataSourceLabel =
+    objectNameSourceLabel === 'Отличается от шаблона объекта' ||
+    objectNameSubscriptSourceLabel === 'Отличается от шаблона объекта'
+      ? 'Отличается от шаблона объекта'
+      : templateSourceLabel;
   const projectDocumentationSourceLabel = getTemplateFieldSourceLabel(
     isManualTemplate,
     isManualDraftFieldDifferentFromObjectTemplate(
@@ -181,6 +183,23 @@ export function DemoCurrentActEditor({
       objectDefaults,
       'complianceStatement',
     ),
+  );
+  const workContractorSourceLabel = getTemplateFieldSourceLabel(
+    isManualTemplate,
+    isManualDraftFieldDifferentFromObjectTemplate(
+      selectedDraft,
+      objectDefaults,
+      'workContractorName',
+    ),
+  );
+  const additionalInfoSourceLabel = getTemplateFieldSourceLabel(
+    isManualTemplate,
+    isManualDraftFieldDifferentFromObjectTemplate(
+      selectedDraft,
+      objectDefaults,
+      'additionalInfo',
+    ) ||
+      isManualDraftFieldDifferentFromObjectTemplate(selectedDraft, objectDefaults, 'copiesCount'),
   );
   const readiness = buildDemoAosrReadiness({
     complianceStatement: templateFields.complianceStatement,
@@ -274,14 +293,26 @@ export function DemoCurrentActEditor({
               value={selectedDraft.actDate}
             />
           </label>
-          <div className="document-owned-field act-form-grid__wide">
-            <div className="document-owned-field__heading">
-              <label htmlFor="draftObjectName">Объект капитального строительства в документе</label>
-              <span className="source-chip">{objectNameSourceLabel}</span>
-            </div>
+          <div className="print-header-field">
+            <span>Форма акта</span>
+            <p>{formVariant.title}</p>
+          </div>
+        </div>
+      </section>
+
+      <TemplateOwnedSection
+        defaultOpen={isManualTemplate}
+        id="act-object-data-title"
+        onSwitchToManual={onSwitchDraftToManualTemplate}
+        sourceLabel={objectDataSourceLabel}
+        summary={templateFields.objectName}
+        title="Данные объекта"
+      >
+        <div className="act-form-grid">
+          <label className="act-form-grid__wide">
+            Объект капитального строительства в документе
             <textarea
               className="medium-field"
-              id="draftObjectName"
               name="objectName"
               onChange={(event) => {
                 if (isManualTemplate) {
@@ -292,18 +323,10 @@ export function DemoCurrentActEditor({
               rows={3}
               value={templateFields.objectName}
             />
-          </div>
-          <div className="print-header-field">
-            <span>Форма акта</span>
-            <p>{formVariant.title}</p>
-          </div>
-          <div className="document-owned-field act-form-grid__wide">
-            <div className="document-owned-field__heading">
-              <label htmlFor="draftObjectNameSubscript">Подстрочное пояснение объекта</label>
-              <span className="source-chip">{objectNameSubscriptSourceLabel}</span>
-            </div>
+          </label>
+          <label className="act-form-grid__wide">
+            Подстрочное пояснение объекта
             <textarea
-              id="draftObjectNameSubscript"
               onChange={(event) => {
                 if (isManualTemplate) {
                   onUpdateObjectNameSubscript(event.currentTarget.value);
@@ -313,15 +336,16 @@ export function DemoCurrentActEditor({
               rows={2}
               value={templateFields.objectNameSubscript}
             />
-          </div>
+          </label>
         </div>
-      </section>
+      </TemplateOwnedSection>
 
       <DemoHeaderOrganizationsOrderEditor
         headerOrganizations={templateFields.headerOrganizations}
         isTemplateEditable={isManualTemplate}
         linkedHeaderOrganizations={linkedTemplateFields.headerOrganizations}
         onMoveHeaderOrganization={onMoveHeaderOrganization}
+        onSwitchToManual={onSwitchDraftToManualTemplate}
         onUpdateHeaderOrganization={onUpdateHeaderOrganization}
         sourceLabel={templateSourceLabel}
       />
@@ -346,24 +370,38 @@ export function DemoCurrentActEditor({
         onDragRepresentativeTarget={onDragRepresentativeTarget}
         onMoveSelectedSignatory={onMoveSelectedSignatory}
         onRemoveRepresentativeFromAct={onRemoveRepresentativeFromAct}
+        onSwitchToManual={onSwitchDraftToManualTemplate}
         onUpdateRepresentative={onUpdateRepresentative}
         onReorderSelectedSignatory={onReorderSelectedSignatory}
         onToggleManualRepresentativeForm={onToggleManualRepresentativeForm}
       />
 
+      <TemplateOwnedSection
+        defaultOpen={isManualTemplate}
+        id="work-contractor-data-title"
+        onSwitchToManual={onSwitchDraftToManualTemplate}
+        sourceLabel={workContractorSourceLabel}
+        summary={templateFields.workContractorName}
+        title="Лицо, выполнившее работы"
+      >
+        <label className="act-form-grid__wide">
+          Печатное наименование
+          <input
+            name="workContractorName"
+            onChange={(event) => {
+              if (isManualTemplate) {
+                onUpdateSelectedDraft('workContractorName', event.currentTarget.value);
+              }
+            }}
+            readOnly={!isManualTemplate}
+            value={templateFields.workContractorName}
+          />
+        </label>
+      </TemplateOwnedSection>
+
       <section className="form-section act-editor-card" aria-labelledby="hidden-works-data-title">
         <h3 id="hidden-works-data-title">1. Скрытые работы</h3>
         <div className="act-form-grid">
-          <label className="act-form-grid__wide">
-            Лицо, выполнившее работы
-            <input
-              name="workContractorName"
-              onChange={(event) => {
-                onUpdateSelectedDraft('workContractorName', event.currentTarget.value);
-              }}
-              value={selectedDraft.workContractorName}
-            />
-          </label>
           <label className="act-form-grid__wide">
             Описание скрытых работ
             <textarea
@@ -399,22 +437,14 @@ export function DemoCurrentActEditor({
         </div>
       </section>
 
-      <section className="form-section act-editor-card" aria-labelledby="project-docs-data-title">
-        <div className="scope-heading scope-heading--with-action">
-          <span>
-            <h3 id="project-docs-data-title">2. Проектная документация</h3>
-            <span className="source-chip">{projectDocumentationSourceLabel}</span>
-          </span>
-          {isManualTemplate ? null : (
-            <button
-              className="compact-toggle"
-              onClick={onSwitchDraftToManualTemplate}
-              type="button"
-            >
-              Редактировать вручную
-            </button>
-          )}
-        </div>
+      <TemplateOwnedSection
+        defaultOpen={isManualTemplate}
+        id="project-docs-data-title"
+        onSwitchToManual={onSwitchDraftToManualTemplate}
+        sourceLabel={projectDocumentationSourceLabel}
+        summary={templateFields.projectDocumentation}
+        title="2. Проектная документация"
+      >
         <label className="act-form-grid__wide">
           Проектная документация в документе
           <textarea
@@ -430,7 +460,7 @@ export function DemoCurrentActEditor({
             value={templateFields.projectDocumentation}
           />
         </label>
-      </section>
+      </TemplateOwnedSection>
 
       <DemoMaterialsSelector
         certificateLibrary={certificateLibrary}
@@ -486,23 +516,14 @@ export function DemoCurrentActEditor({
         </div>
       </section>
 
-      <section className="form-section act-editor-card" aria-labelledby="compliance-data-title">
-        <div className="scope-heading scope-heading--with-action">
-          <span>
-            <h3 id="compliance-data-title">6. Соответствие работ</h3>
-            <span className="source-chip">{complianceSourceLabel}</span>
-          </span>
-          {isManualTemplate ? null : (
-            <button
-              className="compact-toggle"
-              onClick={onSwitchDraftToManualTemplate}
-              type="button"
-            >
-              Редактировать вручную
-            </button>
-          )}
-        </div>
-
+      <TemplateOwnedSection
+        defaultOpen={isManualTemplate}
+        id="compliance-data-title"
+        onSwitchToManual={onSwitchDraftToManualTemplate}
+        sourceLabel={complianceSourceLabel}
+        summary={templateFields.complianceStatement}
+        title="6. Соответствие работ"
+      >
         <label className="act-form-grid__wide">
           Текст пункта 6 в документе
           <textarea
@@ -518,7 +539,7 @@ export function DemoCurrentActEditor({
             value={templateFields.complianceStatement}
           />
         </label>
-      </section>
+      </TemplateOwnedSection>
 
       <section className="form-section act-editor-card" aria-labelledby="subsequent-data-title">
         <h3 id="subsequent-data-title">7. Последующие работы</h3>
@@ -536,8 +557,14 @@ export function DemoCurrentActEditor({
         </label>
       </section>
 
-      <section className="form-section act-editor-card" aria-labelledby="additional-data-title">
-        <h3 id="additional-data-title">Дополнительные сведения</h3>
+      <TemplateOwnedSection
+        defaultOpen={isManualTemplate}
+        id="additional-data-title"
+        onSwitchToManual={onSwitchDraftToManualTemplate}
+        sourceLabel={additionalInfoSourceLabel}
+        summary={`Экземпляров: ${templateFields.copiesLine}`}
+        title="Дополнительные сведения"
+      >
         <div className="act-form-grid">
           <label>
             Дополнительные сведения
@@ -545,10 +572,13 @@ export function DemoCurrentActEditor({
               className="medium-field"
               name="additionalInfo"
               onChange={(event) => {
-                onUpdateSelectedDraft('additionalInfo', event.currentTarget.value);
+                if (isManualTemplate) {
+                  onUpdateSelectedDraft('additionalInfo', event.currentTarget.value);
+                }
               }}
+              readOnly={!isManualTemplate}
               rows={3}
-              value={selectedDraft.additionalInfo}
+              value={templateFields.additionalInfo}
             />
           </label>
           <label>
@@ -561,17 +591,64 @@ export function DemoCurrentActEditor({
                 }
               }}
               readOnly={!isManualTemplate}
-              value={printState.document.copiesLine}
+              value={templateFields.copiesLine}
             />
           </label>
         </div>
-      </section>
+      </TemplateOwnedSection>
 
       <DemoActApplicationsSection
         allApplications={allApplications}
         selectedDraft={selectedDraft}
         onToggleApplication={onToggleApplication}
       />
+    </section>
+  );
+}
+
+interface TemplateOwnedSectionProps {
+  readonly children: ReactNode;
+  readonly defaultOpen: boolean;
+  readonly id: string;
+  readonly onSwitchToManual: () => void;
+  readonly sourceLabel: string;
+  readonly summary: string;
+  readonly title: string;
+}
+
+function TemplateOwnedSection({
+  children,
+  defaultOpen,
+  id,
+  onSwitchToManual,
+  sourceLabel,
+  summary,
+  title,
+}: TemplateOwnedSectionProps): React.JSX.Element {
+  const isManual = sourceLabel !== 'По шаблону объекта';
+
+  return (
+    <section className="form-section act-editor-card template-owned-section" aria-labelledby={id}>
+      <details className="template-data-disclosure" open={defaultOpen ? true : undefined}>
+        <summary>
+          <span>
+            <strong id={id}>{title}</strong>
+            <small>{summary}</small>
+          </span>
+          <span className="source-chip">{sourceLabel}</span>
+        </summary>
+        <div className="template-data-disclosure__body">
+          {isManual ? null : (
+            <div className="template-data-disclosure__intro">
+              <p className="helper-note">Данные берутся из шаблона объекта.</p>
+              <button className="compact-toggle" onClick={onSwitchToManual} type="button">
+                Изменить вручную
+              </button>
+            </div>
+          )}
+          {children}
+        </div>
+      </details>
     </section>
   );
 }

@@ -531,7 +531,6 @@ export function DemoAosrWorkspacePage({
               linkedTemplateFields={linkedTemplateFields}
               objectDefaults={objectDefaults}
               objectDocumentLibrary={objectDocuments}
-              printState={printState}
               selectedDraft={selectedDraft}
               selectedMaterials={selectedMaterials}
               selectedObjectDocuments={selectedObjectDocuments}

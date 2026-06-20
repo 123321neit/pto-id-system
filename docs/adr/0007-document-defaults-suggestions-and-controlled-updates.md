@@ -111,6 +111,8 @@ type ObjectTemplate = {
   }>;
   projectDocumentation: string;
   complianceText: string;
+  workContractorName: string;
+  additionalInfo: string;
   copiesLine: string;
   numberingPattern?: string;
   defaultDateMode?: 'today' | 'folderDate' | 'manual';
@@ -188,12 +190,10 @@ type Act = {
   individualData: {
     number: string;
     date: string;
-    workContractorName: string;
     workDescription: string;
     startDateLine: string;
     endDateLine: string;
     nextWorks: string;
-    additionalInfo: string;
     materials: Array<{ displayText: string }>;
     confirmationDocuments: Array<{ displayText: string }>;
     applications: Array<{ displayText: string }>;
@@ -224,7 +224,11 @@ type Act = {
       compliance: string;
     };
     documentTemplateDefaults: {
+      additionalInfo: string;
       copiesLine: string;
+    };
+    workTemplateDefaults: {
+      contractorName: string;
     };
   };
 };
@@ -249,6 +253,8 @@ Linked acts:
 - show status `По шаблону`;
 - do not allow direct editing of template-owned fields;
 - explain that template data comes from the object template and live libraries;
+- keep template-owned sections collapsed by default so the act editor is focused on individual act data;
+- allow users to expand template sections to verify their resolved printable values;
 - expose `Редактировать вручную` or equivalent.
 
 Manual acts:
@@ -271,6 +277,7 @@ The manual switch confirmation should say:
 - Active working linked acts stay up to date with corrected library and object-template data.
 - A manual act has simple provenance: it owns one complete template snapshot.
 - There is no hybrid state made of scattered per-field overrides.
+- The work contractor, additional information and copy count are template-owned because they repeat across the object's acts.
 - Individual act fields such as number, date, work description, periods, materials and applications remain editable in both modes and never imply manual template mode.
 - Preview and future DOCX/PDF generation must be routed through `AosrPrintState`.
 - Future backend/API commands should model `SwitchActTemplateModeToManual`, `ReturnActToObjectTemplate`, and object-template/library update flows explicitly.

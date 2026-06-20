@@ -661,6 +661,11 @@ is the raw act number without `№`, and `AosrPrintState.document.date` is a raw
 date value for renderer formatting. The current frontend mock still carries
 legacy template-owned fields on `DemoAosrDraft` only for manual editor
 compatibility; production linked acts must not persist template-owned copies.
+The work contractor, additional information and copy count belong to
+`ObjectTemplate` because they repeat across the object's acts. The act editor
+keeps resolved template sections collapsed by default; expansion is for review,
+and changing any template-owned value requires the explicit whole-act switch to
+manual mode.
 This current implementation remains frontend mock/in-memory only and adds no
 backend/API, Prisma/schema, persistence, auth, uploads, OCR/AI or DOCX/PDF/ZIP
 generation.
@@ -2953,6 +2958,9 @@ Initial Repository Bootstrap and Development Rules V1:
 41. Object-level reusable data lives in `ObjectTemplate`. A working act is
     either fully `linked` to that template or fully `manual` with one complete
     snapshot; partial template-field overrides are forbidden.
+42. Work contractor, additional information and copy count are repeated
+    `ObjectTemplate` data. Linked act UI collapses template-owned sections by
+    default and requires the explicit whole-act manual switch before editing.
 
 ---
 
@@ -4900,6 +4908,32 @@ production domain/API/persistence work remain separate explicit tasks.
 - no DOCX/PDF/ZIP generation;
 - no production AOSR, registry, package or numbering business logic.
 
+### 2026-06-20 — Repeated act data moved into the object template
+
+- Статус: `Accepted UX and domain correction`
+- Описание: the work contractor, additional information and copy
+  count repeat across an object's acts and therefore belong to the live object
+  template rather than individual act data.
+
+Добавлено/уточнено:
+
+- linked acts resolve all three values live from `ObjectTemplate`;
+- switching to manual copies all three values into the complete
+  `manualTemplateSnapshot`;
+- returning to the object template deletes that snapshot and resumes live
+  resolution;
+- individual number, date, work description, axes, elevations, work dates,
+  materials, confirmation documents and applications remain act-owned;
+- template-owned sections in the act editor are collapsed by default and can
+  be expanded for review;
+- changing an expanded template value still requires the explicit whole-act
+  switch to manual mode; no partial overrides are introduced.
+
+Что не было введено:
+
+- no backend/API or Prisma/schema/migrations;
+- no persistence, uploads, OCR/AI or DOCX/PDF/ZIP generation.
+
 ### 2026-06-20 — Frontend mock aligned with live object-template architecture
 
 - Статус: `ADR 0007 risks corrected in frontend mock`
@@ -4919,8 +4953,9 @@ production domain/API/persistence work remain separate explicit tasks.
 - object-settings creation writes a global organization/signatory library item
   first and then stores its id in the object template;
 - manual representative creation remains local to the current act snapshot;
-- `workContractorName` is individual act data and is not inferred from a
-  hardcoded counterparty role;
+- at this checkpoint `workContractorName` was individual act data and was not
+  inferred from a hardcoded counterparty role; this classification is
+  superseded by the later 2026-06-20 repeated-template-data decision;
 - the noncanonical AOSR under-title field was removed from the mock model,
   editor and preview;
 - preview empty sections no longer print demo helper prose, signatures render

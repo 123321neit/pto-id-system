@@ -195,6 +195,19 @@ export function DemoObjectSettingsPanel({
                       value={objectDefaults.defaultCopiesLine}
                     />
                   </label>
+                  <label className="act-form-grid__wide">
+                    Лицо, выполнившее работы
+                    <input
+                      name="defaultWorkContractorName"
+                      onChange={(event) => {
+                        onUpdateObjectDefaults(
+                          'defaultWorkContractorName',
+                          event.currentTarget.value,
+                        );
+                      }}
+                      value={objectDefaults.defaultWorkContractorName}
+                    />
+                  </label>
                 </div>
               </section>
             ) : null}
@@ -269,6 +282,22 @@ export function DemoObjectSettingsPanel({
                       }}
                       rows={6}
                       value={objectDefaults.defaultComplianceStatement}
+                    />
+                  </label>
+                </section>
+
+                <section className="form-section" aria-labelledby="object-additional-info-title">
+                  <h3 id="object-additional-info-title">Дополнительные сведения</h3>
+                  <label className="act-form-grid__wide">
+                    Печатный текст для актов объекта
+                    <textarea
+                      className="medium-field"
+                      name="defaultAdditionalInfo"
+                      onChange={(event) => {
+                        onUpdateObjectDefaults('defaultAdditionalInfo', event.currentTarget.value);
+                      }}
+                      rows={3}
+                      value={objectDefaults.defaultAdditionalInfo}
                     />
                   </label>
                 </section>

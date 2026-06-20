@@ -192,9 +192,21 @@ describe('AOSR live object template model', () => {
     const draft = getSourceDraft();
     const objectDefaults = updateDemoObjectDefaultsField(
       updateDemoObjectDefaultsField(
-        demoAosrWorkspace.objectDefaults,
-        'defaultComplianceStatement',
-        'Новый live-текст пункта 6.',
+        updateDemoObjectDefaultsField(
+          updateDemoObjectDefaultsField(
+            updateDemoObjectDefaultsField(
+              demoAosrWorkspace.objectDefaults,
+              'defaultComplianceStatement',
+              'Новый live-текст пункта 6.',
+            ),
+            'defaultWorkContractorName',
+            'ООО "Новый исполнитель"',
+          ),
+          'defaultAdditionalInfo',
+          'Новые live-дополнительные сведения.',
+        ),
+        'defaultCopiesLine',
+        '6',
       ),
       'objectName',
       'Новый live-объект.',
@@ -207,15 +219,30 @@ describe('AOSR live object template model', () => {
 
     expect(templateFields.objectName).toBe('Новый live-объект.');
     expect(templateFields.complianceStatement).toBe('Новый live-текст пункта 6.');
+    expect(templateFields.workContractorName).toBe('ООО "Новый исполнитель"');
+    expect(templateFields.additionalInfo).toBe('Новые live-дополнительные сведения.');
+    expect(templateFields.copiesLine).toBe('6');
   });
 
   it('does not reflect object template edits in manual acts', () => {
     const draft = getManualDraft();
     const objectDefaults = updateDemoObjectDefaultsField(
       updateDemoObjectDefaultsField(
-        demoAosrWorkspace.objectDefaults,
-        'defaultComplianceStatement',
-        'Новый live-текст пункта 6.',
+        updateDemoObjectDefaultsField(
+          updateDemoObjectDefaultsField(
+            updateDemoObjectDefaultsField(
+              demoAosrWorkspace.objectDefaults,
+              'defaultComplianceStatement',
+              'Новый live-текст пункта 6.',
+            ),
+            'defaultWorkContractorName',
+            'ООО "Новый исполнитель"',
+          ),
+          'defaultAdditionalInfo',
+          'Новые live-дополнительные сведения.',
+        ),
+        'defaultCopiesLine',
+        '6',
       ),
       'objectName',
       'Новый live-объект.',
@@ -230,6 +257,13 @@ describe('AOSR live object template model', () => {
     expect(templateFields.complianceStatement).toBe(
       demoAosrWorkspace.objectDefaults.defaultComplianceStatement,
     );
+    expect(templateFields.workContractorName).toBe(
+      demoAosrWorkspace.objectDefaults.defaultWorkContractorName,
+    );
+    expect(templateFields.additionalInfo).toBe(
+      demoAosrWorkspace.objectDefaults.defaultAdditionalInfo,
+    );
+    expect(templateFields.copiesLine).toBe(demoAosrWorkspace.objectDefaults.defaultCopiesLine);
   });
 
   it('returns manual acts to the live object template and deletes snapshot', () => {
@@ -259,14 +293,35 @@ describe('AOSR live object template model', () => {
     const draft = getSourceDraft();
     const editedDraft = updateDemoAosrDraftField(
       updateDemoAosrDraftField(draft, 'actNumber', 'ОВ-99'),
-      'workContractorName',
-      'ООО "Индивидуальный исполнитель"',
+      'workDescription',
+      'Индивидуальное описание скрытых работ.',
     );
 
     expect(editedDraft.templateMode).toBe('linked');
     expect(editedDraft.manualTemplateSnapshot).toBeUndefined();
     expect(editedDraft.actNumber).toBe('ОВ-99');
-    expect(editedDraft.workContractorName).toBe('ООО "Индивидуальный исполнитель"');
+    expect(editedDraft.workDescription).toBe('Индивидуальное описание скрытых работ.');
+  });
+
+  it('snapshots repeated object template values only after an explicit manual action', () => {
+    const manualDraft = switchDraftToManualTemplateMode({
+      draft: getSourceDraft(),
+      objectDefaults: demoAosrWorkspace.objectDefaults,
+      signatoryLibrary: demoAosrWorkspace.objectDefaults.representativeLibrary.map(
+        getSignatoryLibraryItemFromRepresentative,
+      ),
+    });
+
+    expect(manualDraft.templateMode).toBe('manual');
+    expect(manualDraft.manualTemplateSnapshot?.workTemplateDefaults.contractorName).toBe(
+      demoAosrWorkspace.objectDefaults.defaultWorkContractorName,
+    );
+    expect(manualDraft.manualTemplateSnapshot?.documentTemplateDefaults.additionalInfo).toBe(
+      demoAosrWorkspace.objectDefaults.defaultAdditionalInfo,
+    );
+    expect(manualDraft.manualTemplateSnapshot?.documentTemplateDefaults.copiesLine).toBe(
+      demoAosrWorkspace.objectDefaults.defaultCopiesLine,
+    );
   });
 
   it('does not switch template fields to manual without an explicit manual action', () => {

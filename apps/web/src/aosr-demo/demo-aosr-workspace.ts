@@ -48,12 +48,14 @@ export interface SignatoryLibraryItem {
 export type ActTemplateMode = 'linked' | 'manual';
 
 export interface DemoAosrObjectDefaults {
+  readonly defaultAdditionalInfo: string;
   readonly defaultComplianceStatement: string;
   readonly defaultCopiesLine: string;
   readonly projectName: string;
   readonly objectName: string;
   readonly objectNameSubscript: string;
   readonly defaultProjectDocumentation: string;
+  readonly defaultWorkContractorName: string;
   readonly headerOrganizations: readonly DemoAosrHeaderOrganization[];
   readonly objectTemplate: ObjectTemplate;
   readonly representativeLibrary: readonly DemoAosrRepresentative[];
@@ -109,6 +111,8 @@ export interface ObjectTemplate {
   }[];
   readonly projectDocumentation: string;
   readonly complianceText: string;
+  readonly workContractorName: string;
+  readonly additionalInfo: string;
   readonly copiesLine: string;
   readonly numberingPattern?: string;
   readonly defaultDateMode?: 'today' | 'folderDate' | 'manual';
@@ -189,11 +193,16 @@ export interface DemoAosrManualTemplateSnapshot {
     readonly compliance: string;
   };
   readonly documentTemplateDefaults: {
+    readonly additionalInfo: string;
     readonly copiesLine: string;
+  };
+  readonly workTemplateDefaults: {
+    readonly contractorName: string;
   };
 }
 
 export interface DemoAosrTemplateFields {
+  readonly additionalInfo: string;
   readonly complianceStatement: string;
   readonly copiesLine: string;
   readonly headerOrganizations: readonly DemoAosrHeaderOrganization[];
@@ -202,6 +211,7 @@ export interface DemoAosrTemplateFields {
   readonly projectDocumentation: string;
   readonly representativeGroups: AosrPrintState['representatives']['groups'];
   readonly representatives: readonly DemoAosrRepresentative[];
+  readonly workContractorName: string;
 }
 
 export interface DemoMaterialCertificate {
@@ -301,9 +311,11 @@ export type DemoAosrDraftField =
   | 'workDescription';
 
 export type DemoAosrObjectDefaultsField =
+  | 'defaultAdditionalInfo'
   | 'defaultComplianceStatement'
   | 'defaultCopiesLine'
   | 'defaultProjectDocumentation'
+  | 'defaultWorkContractorName'
   | 'objectName'
   | 'objectNameSubscript'
   | 'projectName';
@@ -361,6 +373,10 @@ const defaultObjectNameSubscript =
 
 const defaultCopiesLine = '4';
 
+const defaultAdditionalInfo = 'Дополнительные сведения для демо-акта не требуются.';
+
+const defaultWorkContractorName = 'ООО "ПТО Монтаж"';
+
 const defaultHeaderOrganizations: readonly DemoAosrHeaderOrganization[] = [
   {
     caption: 'Наименование, ОГРН, ИНН, место нахождения, телефон/факс и иные объектовые реквизиты.',
@@ -390,6 +406,7 @@ const defaultHeaderOrganizations: readonly DemoAosrHeaderOrganization[] = [
 ];
 
 const defaultObjectTemplate: ObjectTemplate = {
+  additionalInfo: defaultAdditionalInfo,
   complianceText: defaultComplianceStatement,
   copiesLine: defaultCopiesLine,
   counterparties: defaultHeaderOrganizations.map((headerOrganization) => ({
@@ -442,6 +459,7 @@ const defaultObjectTemplate: ObjectTemplate = {
       title: authorSupervisionRepresentative.roleLabel,
     },
   ],
+  workContractorName: defaultWorkContractorName,
 };
 
 const demoObjectDocumentLibrary: readonly DemoObjectDocument[] = [
@@ -635,9 +653,11 @@ export const demoAosrWorkspace: DemoAosrWorkspace = {
   id: 'workspace-demo-aosr',
   name: 'Демо-рабочая область АОСР',
   objectDefaults: {
+    defaultAdditionalInfo,
     defaultComplianceStatement,
     defaultCopiesLine,
     defaultProjectDocumentation,
+    defaultWorkContractorName,
     headerOrganizations: copyHeaderOrganizations(defaultHeaderOrganizations),
     objectTemplate: defaultObjectTemplate,
     objectName: defaultObjectName,
@@ -661,10 +681,10 @@ export function createEmptyDemoAosrDraft({
   return {
     actDate: '',
     actNumber,
-    additionalInfo: '',
+    additionalInfo: objectDefaults.defaultAdditionalInfo,
     axes: '',
     complianceStatement: objectDefaults.defaultComplianceStatement,
-    copiesCount: '',
+    copiesCount: objectDefaults.defaultCopiesLine,
     elevationRange: '',
     excludedApplicationIds: [],
     formVariantId: demoAosrActType.defaultFormVariantId,
@@ -688,7 +708,7 @@ export function createEmptyDemoAosrDraft({
     })),
     status: 'draft',
     subsequentWorksPermitted: '',
-    workContractorName: '',
+    workContractorName: objectDefaults.defaultWorkContractorName,
     workDescription: '',
   };
 }
@@ -765,6 +785,7 @@ export function resolveDemoAosrTemplateFields({
 }: ResolveDemoAosrTemplateFieldsInput): DemoAosrTemplateFields {
   if (draft.templateMode === 'manual') {
     return {
+      additionalInfo: draft.additionalInfo,
       complianceStatement: draft.complianceStatement,
       copiesLine: draft.copiesCount,
       headerOrganizations: draft.headerOrganizations,
@@ -776,6 +797,7 @@ export function resolveDemoAosrTemplateFields({
         draft.manualTemplateSnapshot?.representatives.groups ??
         buildRepresentativePrintGroups(draft.representatives),
       representatives: draft.representatives,
+      workContractorName: draft.workContractorName,
     };
   }
 
@@ -825,7 +847,8 @@ export function buildDemoAosrPrintState({
         title: headerOrganization.label,
       })),
     document: {
-      additionalInfo: draft.additionalInfo,
+      additionalInfo:
+        manualSnapshot?.documentTemplateDefaults.additionalInfo ?? templateFields.additionalInfo,
       copiesLine: manualSnapshot?.documentTemplateDefaults.copiesLine ?? templateFields.copiesLine,
       date: draft.actDate,
       number: draft.actNumber,
@@ -847,7 +870,8 @@ export function buildDemoAosrPrintState({
       groups: manualSnapshot?.representatives.groups ?? templateFields.representativeGroups,
     },
     work: {
-      contractorName: draft.workContractorName,
+      contractorName:
+        manualSnapshot?.workTemplateDefaults.contractorName ?? templateFields.workContractorName,
       description: [draft.workDescription, draft.axes, draft.elevationRange]
         .map((value) => value.trim())
         .filter(Boolean)
@@ -872,6 +896,7 @@ export function switchDraftToManualTemplateMode({
   });
   const nextDraft: DemoAosrDraft = {
     ...draft,
+    additionalInfo: templateFields.additionalInfo,
     complianceStatement: templateFields.complianceStatement,
     copiesCount: templateFields.copiesLine,
     headerOrganizations: copyHeaderOrganizations(templateFields.headerOrganizations),
@@ -882,6 +907,7 @@ export function switchDraftToManualTemplateMode({
       ...representative,
     })),
     templateMode: 'manual',
+    workContractorName: templateFields.workContractorName,
   };
 
   return nextDraft;
@@ -900,19 +926,31 @@ export function returnDraftToLinkedTemplateMode(draft: DemoAosrDraft): DemoAosrD
 export function isManualDraftFieldDifferentFromObjectTemplate(
   draft: DemoAosrDraft,
   objectDefaults: DemoAosrObjectDefaults,
-  field: 'complianceStatement' | 'objectName' | 'projectDocumentation',
+  field:
+    | 'additionalInfo'
+    | 'complianceStatement'
+    | 'copiesCount'
+    | 'objectName'
+    | 'projectDocumentation'
+    | 'workContractorName',
 ): boolean {
   if (draft.templateMode !== 'manual') {
     return false;
   }
 
   switch (field) {
+    case 'additionalInfo':
+      return draft.additionalInfo !== objectDefaults.defaultAdditionalInfo;
     case 'complianceStatement':
       return draft.complianceStatement !== objectDefaults.defaultComplianceStatement;
+    case 'copiesCount':
+      return draft.copiesCount !== objectDefaults.defaultCopiesLine;
     case 'objectName':
       return draft.objectName !== objectDefaults.objectName;
     case 'projectDocumentation':
       return draft.projectDocumentation !== objectDefaults.defaultProjectDocumentation;
+    case 'workContractorName':
+      return draft.workContractorName !== objectDefaults.defaultWorkContractorName;
   }
 }
 
@@ -932,6 +970,7 @@ function resolveLinkedTemplateFields({
   );
 
   return {
+    additionalInfo: objectTemplate.additionalInfo,
     complianceStatement: objectTemplate.complianceText,
     copiesLine: objectTemplate.copiesLine,
     headerOrganizations,
@@ -940,6 +979,7 @@ function resolveLinkedTemplateFields({
     projectDocumentation: objectTemplate.projectDocumentation,
     representativeGroups: resolvedRepresentatives.groups,
     representatives: resolvedRepresentatives.representatives,
+    workContractorName: objectTemplate.workContractorName,
   };
 }
 
@@ -1100,6 +1140,7 @@ function createManualTemplateSnapshot(
       title: headerOrganization.label,
     })),
     documentTemplateDefaults: {
+      additionalInfo: templateFields.additionalInfo,
       copiesLine: templateFields.copiesLine,
     },
     object: {
@@ -1113,6 +1154,9 @@ function createManualTemplateSnapshot(
     representatives: {
       groups: templateFields.representativeGroups,
     },
+    workTemplateDefaults: {
+      contractorName: templateFields.workContractorName,
+    },
   };
 }
 
@@ -1124,6 +1168,7 @@ function syncManualTemplateSnapshotFromDraft(draft: DemoAosrDraft): DemoAosrDraf
   return {
     ...draft,
     manualTemplateSnapshot: createManualTemplateSnapshot({
+      additionalInfo: draft.additionalInfo,
       complianceStatement: draft.complianceStatement,
       copiesLine: draft.copiesCount,
       headerOrganizations: draft.headerOrganizations,
@@ -1132,6 +1177,7 @@ function syncManualTemplateSnapshotFromDraft(draft: DemoAosrDraft): DemoAosrDraf
       projectDocumentation: draft.projectDocumentation,
       representativeGroups: buildRepresentativePrintGroups(draft.representatives),
       representatives: draft.representatives,
+      workContractorName: draft.workContractorName,
     }),
   };
 }
@@ -1337,12 +1383,16 @@ function updateObjectTemplateField(
   value: string,
 ): ObjectTemplate {
   switch (field) {
+    case 'defaultAdditionalInfo':
+      return { ...objectTemplate, additionalInfo: value };
     case 'defaultComplianceStatement':
       return { ...objectTemplate, complianceText: value };
     case 'defaultCopiesLine':
       return { ...objectTemplate, copiesLine: value };
     case 'defaultProjectDocumentation':
       return { ...objectTemplate, projectDocumentation: value };
+    case 'defaultWorkContractorName':
+      return { ...objectTemplate, workContractorName: value };
     case 'objectName':
       return { ...objectTemplate, objectName: value };
     case 'objectNameSubscript':
