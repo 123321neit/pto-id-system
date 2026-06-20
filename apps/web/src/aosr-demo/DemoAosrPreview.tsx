@@ -70,18 +70,25 @@ export function DemoAosrPreview({
                   key={`${group.title}-${String(groupIndex)}`}
                 >
                   <p className="act-page__block-label">{group.title}:</p>
-                  {group.members.map((member, memberIndex) => (
-                    <div key={`${member.introDisplayText}-${String(memberIndex)}`}>
-                      <p className="act-page__field-line">{member.introDisplayText}</p>
-                      <p className="act-page__field-line act-page__details-line">
-                        {member.subscript}
-                      </p>
-                      <p className="act-page__caption">
-                        (должность, фамилия, инициалы, идентификационный номер в НРС, реквизиты
-                        документа, подтверждающего полномочия)
-                      </p>
-                    </div>
-                  ))}
+                  {group.members.map((member, memberIndex) => {
+                    const subscript = getDistinctRepresentativeSubscript(
+                      member.introDisplayText,
+                      member.subscript,
+                    );
+
+                    return (
+                      <div key={`${member.introDisplayText}-${String(memberIndex)}`}>
+                        <p className="act-page__field-line">{member.introDisplayText}</p>
+                        {subscript === '' ? null : (
+                          <p className="act-page__field-line act-page__details-line">{subscript}</p>
+                        )}
+                        <p className="act-page__caption">
+                          (должность, фамилия, инициалы, идентификационный номер в НРС, реквизиты
+                          документа, подтверждающего полномочия)
+                        </p>
+                      </div>
+                    );
+                  })}
                 </div>
               ))}
               <p>
@@ -277,4 +284,11 @@ export function DemoAosrPreview({
       </article>
     </section>
   );
+}
+
+function getDistinctRepresentativeSubscript(introDisplayText: string, subscript: string): string {
+  const normalizedIntro = introDisplayText.trim().replace(/\s+/gu, ' ');
+  const normalizedSubscript = subscript.trim().replace(/\s+/gu, ' ');
+
+  return normalizedSubscript === normalizedIntro ? '' : subscript.trim();
 }

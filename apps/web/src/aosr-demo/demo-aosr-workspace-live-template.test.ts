@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+  buildDemoAosrPrintState,
   demoAosrWorkspace,
   getSignatoryLibraryItemFromRepresentative,
   resolveDemoAosrTemplateFields,
@@ -22,6 +23,48 @@ describe('AOSR live object template model', () => {
     });
 
     expect(templateFields.representatives[0]?.fullName).toBe('Иванов И.И. Исправленный');
+  });
+
+  it('keeps library intro text separate from the representative subscript', () => {
+    const templateFields = resolveDemoAosrTemplateFields({
+      draft: getSourceDraft(),
+      objectDefaults: demoAosrWorkspace.objectDefaults,
+      signatoryLibrary: demoAosrWorkspace.objectDefaults.representativeLibrary.map(
+        getSignatoryLibraryItemFromRepresentative,
+      ),
+    });
+
+    expect(templateFields.representatives[0]?.details).toBeUndefined();
+  });
+
+  it('groups different representatives with the same role in one print group', () => {
+    const sourceRepresentatives = demoAosrWorkspace.objectDefaults.representativeLibrary;
+    const firstRepresentative = sourceRepresentatives[0];
+    const secondRepresentative = sourceRepresentatives[1];
+
+    if (firstRepresentative === undefined || secondRepresentative === undefined) {
+      throw new Error('Expected at least two demo representatives.');
+    }
+
+    const printState = buildDemoAosrPrintState({
+      draft: getSourceDraft(),
+      finalApplications: [],
+      objectDefaults: {
+        ...demoAosrWorkspace.objectDefaults,
+        representativeLibrary: [
+          firstRepresentative,
+          { ...secondRepresentative, roleLabel: firstRepresentative.roleLabel },
+        ],
+      },
+      selectedMaterials: [],
+      selectedObjectDocuments: [],
+    });
+
+    expect(printState.representatives.groups).toHaveLength(1);
+    expect(printState.representatives.groups[0]?.title).toBe(firstRepresentative.roleLabel);
+    expect(
+      printState.representatives.groups[0]?.members.map(({ signatureName }) => signatureName),
+    ).toEqual([firstRepresentative.fullName, secondRepresentative.fullName]);
   });
 
   it('does not reflect signatory library edits in manual acts', () => {

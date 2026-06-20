@@ -727,6 +727,7 @@ export function getSignatoryLibraryItemFromRepresentative(
 
   return {
     authorityDocument: representative.authorityBasis,
+    ...(representative.details === undefined ? {} : { defaultSubscript: representative.details }),
     displayName: representative.fullName,
     fullName: representative.fullName,
     id: representative.globalRepresentativeId ?? representative.id,
@@ -831,17 +832,7 @@ export function buildDemoAosrPrintState({
     representatives: {
       groups:
         manualSnapshot?.representatives.groups ??
-        templateFields.representatives.map((representative) => ({
-          members: [
-            {
-              introDisplayText: getRepresentativeIntroDisplayText(representative),
-              signatureName: representative.fullName,
-              signatureText: getRepresentativeSignatureText(representative),
-              subscript: representative.details ?? '',
-            },
-          ],
-          title: representative.roleLabel,
-        })),
+        buildRepresentativePrintGroups(templateFields.representatives),
     },
     work: {
       contractorName: executingOrganization,
@@ -970,10 +961,12 @@ function resolveRepresentativeFromLibrary(
     return { ...representative };
   }
 
+  const defaultSubscript = libraryItem.defaultSubscript ?? representative.details;
+
   return {
     ...representative,
     authorityBasis: libraryItem.authorityDocument ?? representative.authorityBasis,
-    details: libraryItem.introDisplayText,
+    ...(defaultSubscript === undefined ? {} : { details: defaultSubscript }),
     fullName: libraryItem.signatureName,
     organization: libraryItem.organization ?? representative.organization,
     position: libraryItem.position ?? representative.position,
@@ -1005,17 +998,7 @@ function createManualTemplateSnapshot(
       documentation: templateFields.projectDocumentation,
     },
     representatives: {
-      groups: templateFields.representatives.map((representative) => ({
-        members: [
-          {
-            introDisplayText: getRepresentativeIntroDisplayText(representative),
-            signatureName: representative.fullName,
-            signatureText: getRepresentativeSignatureText(representative),
-            subscript: representative.details ?? '',
-          },
-        ],
-        title: representative.roleLabel,
-      })),
+      groups: buildRepresentativePrintGroups(templateFields.representatives),
     },
     underTitleText: templateFields.underTitleText,
   };
@@ -1058,6 +1041,43 @@ function getRepresentativeIntroDisplayText(representative: DemoAosrRepresentativ
     .map((value) => value.trim())
     .filter(Boolean)
     .join(', ');
+}
+
+function buildRepresentativePrintGroups(
+  representatives: readonly DemoAosrRepresentative[],
+): AosrPrintState['representatives']['groups'] {
+  const groups: {
+    title: string;
+    members: AosrPrintState['representatives']['groups'][number]['members'][number][];
+  }[] = [];
+
+  for (const representative of representatives) {
+    const introDisplayText = getRepresentativeIntroDisplayText(representative);
+    const rawSubscript = representative.details?.trim() ?? '';
+    const subscript =
+      normalizeRepresentativeText(rawSubscript) === normalizeRepresentativeText(introDisplayText)
+        ? ''
+        : rawSubscript;
+    const member = {
+      introDisplayText,
+      signatureName: representative.fullName,
+      signatureText: getRepresentativeSignatureText(representative),
+      subscript,
+    };
+    const existingGroup = groups.find(({ title }) => title === representative.roleLabel);
+
+    if (existingGroup === undefined) {
+      groups.push({ members: [member], title: representative.roleLabel });
+    } else {
+      existingGroup.members.push(member);
+    }
+  }
+
+  return groups;
+}
+
+function normalizeRepresentativeText(value: string): string {
+  return value.trim().replace(/\s+/gu, ' ');
 }
 
 function getExecutingOrganizationFromTemplateFields(

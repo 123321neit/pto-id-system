@@ -154,96 +154,117 @@ export function DemoSignatoriesEditor({
       ) : null}
 
       <ol className="signatory-order-list" aria-label="Порядок подписантов">
-        {selectedSignatories.map((representative, index) => (
-          <li
-            className="signatory-order-item"
-            data-dragging={draggedRepresentativeId === representative.id ? 'true' : undefined}
-            data-drop-target={
-              dropTargetRepresentativeId === representative.id &&
-              draggedRepresentativeId !== representative.id
-                ? 'true'
-                : undefined
-            }
-            key={representative.id}
-            onDragEnter={(event) => {
-              if (!isTemplateEditable) {
-                return;
+        {selectedSignatories.map((representative, index) => {
+          const subtitle = [representative.position, representative.organization]
+            .map((value) => value.trim())
+            .filter(Boolean)
+            .join(', ');
+          const details = [
+            representative.authorityBasis,
+            representative.nrsId === undefined ? '' : `НРС ${representative.nrsId}`,
+          ]
+            .map((value) => value.trim())
+            .filter(Boolean)
+            .join(', ');
+
+          return (
+            <li
+              className="signatory-order-item"
+              data-dragging={draggedRepresentativeId === representative.id ? 'true' : undefined}
+              data-drop-target={
+                dropTargetRepresentativeId === representative.id &&
+                draggedRepresentativeId !== representative.id
+                  ? 'true'
+                  : undefined
               }
-              event.preventDefault();
-              onDragRepresentativeTarget(representative.id);
-            }}
-            onDragOver={(event) => {
-              if (!isTemplateEditable) {
-                return;
-              }
-              event.preventDefault();
-              event.dataTransfer.dropEffect = 'move';
-            }}
-            onDrop={(event) => {
-              if (!isTemplateEditable) {
-                return;
-              }
-              event.preventDefault();
-              onReorderSelectedSignatory(representative.id);
-            }}
-          >
-            {isTemplateEditable ? (
-              <button
-                aria-label={`Перетащить ${representative.fullName}`}
-                className="signatory-order-item__drag"
-                draggable
-                onDragEnd={onDragRepresentativeEnd}
-                onDragStart={(event: DragEvent<HTMLButtonElement>) => {
-                  event.dataTransfer.effectAllowed = 'move';
-                  onDragRepresentativeStart(representative.id);
-                }}
-                type="button"
-              >
-                <span aria-hidden="true">↕</span>
-              </button>
-            ) : null}
-            <span className="signatory-order-item__position">{index + 1}</span>
-            <span>
-              <strong>{representative.roleLabel}</strong>
-              <small>
-                {representative.fullName} / {representative.organization}
-              </small>
-            </span>
-            {isTemplateEditable ? (
-              <span className="signatory-order-item__actions">
-                <button
-                  aria-label={`Переместить ${representative.fullName} вверх`}
-                  disabled={index === 0}
-                  onClick={() => {
-                    onMoveSelectedSignatory(representative.id, 'up');
-                  }}
-                  type="button"
-                >
-                  Вверх
-                </button>
-                <button
-                  aria-label={`Переместить ${representative.fullName} вниз`}
-                  disabled={index === selectedSignatories.length - 1}
-                  onClick={() => {
-                    onMoveSelectedSignatory(representative.id, 'down');
-                  }}
-                  type="button"
-                >
-                  Вниз
-                </button>
-                <button
-                  aria-label={`Убрать ${representative.fullName} из акта`}
-                  onClick={() => {
-                    onRemoveRepresentativeFromAct(representative.id);
-                  }}
-                  type="button"
-                >
-                  Убрать
-                </button>
+              key={representative.id}
+              onDragEnter={(event) => {
+                if (!isTemplateEditable) {
+                  return;
+                }
+                event.preventDefault();
+                onDragRepresentativeTarget(representative.id);
+              }}
+              onDragOver={(event) => {
+                if (!isTemplateEditable) {
+                  return;
+                }
+                event.preventDefault();
+                event.dataTransfer.dropEffect = 'move';
+              }}
+              onDrop={(event) => {
+                if (!isTemplateEditable) {
+                  return;
+                }
+                event.preventDefault();
+                onReorderSelectedSignatory(representative.id);
+              }}
+            >
+              <span className="signatory-order-item__lead">
+                {isTemplateEditable ? (
+                  <button
+                    aria-label={`Перетащить ${representative.fullName}`}
+                    className="signatory-order-item__drag"
+                    draggable
+                    onDragEnd={onDragRepresentativeEnd}
+                    onDragStart={(event: DragEvent<HTMLButtonElement>) => {
+                      event.dataTransfer.effectAllowed = 'move';
+                      onDragRepresentativeStart(representative.id);
+                    }}
+                    type="button"
+                  >
+                    <span aria-hidden="true">↕</span>
+                  </button>
+                ) : null}
+                <span className="signatory-order-item__position">{index + 1}</span>
               </span>
-            ) : null}
-          </li>
-        ))}
+              <span className="signatory-order-item__body">
+                <strong className="signatory-order-item__title">
+                  {representative.roleLabel} — {representative.fullName}
+                </strong>
+                {subtitle === '' ? null : (
+                  <small className="signatory-order-item__subtitle">{subtitle}</small>
+                )}
+                {details === '' ? null : (
+                  <small className="signatory-order-item__details">{details}</small>
+                )}
+              </span>
+              {isTemplateEditable ? (
+                <span className="signatory-order-item__actions">
+                  <button
+                    aria-label={`Переместить ${representative.fullName} вверх`}
+                    disabled={index === 0}
+                    onClick={() => {
+                      onMoveSelectedSignatory(representative.id, 'up');
+                    }}
+                    type="button"
+                  >
+                    Вверх
+                  </button>
+                  <button
+                    aria-label={`Переместить ${representative.fullName} вниз`}
+                    disabled={index === selectedSignatories.length - 1}
+                    onClick={() => {
+                      onMoveSelectedSignatory(representative.id, 'down');
+                    }}
+                    type="button"
+                  >
+                    Вниз
+                  </button>
+                  <button
+                    aria-label={`Убрать ${representative.fullName} из акта`}
+                    onClick={() => {
+                      onRemoveRepresentativeFromAct(representative.id);
+                    }}
+                    type="button"
+                  >
+                    Убрать
+                  </button>
+                </span>
+              ) : null}
+            </li>
+          );
+        })}
       </ol>
     </section>
   );

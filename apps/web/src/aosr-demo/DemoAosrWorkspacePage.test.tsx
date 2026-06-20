@@ -62,6 +62,40 @@ describe('DemoAosrWorkspacePage', () => {
     expect(screen.queryByText('Выпущен')).toBeNull();
   });
 
+  it('renders signatory cards as a compact readable hierarchy', () => {
+    renderDemoWorkspace();
+
+    const signatoryList = screen.getByRole('list', { name: 'Порядок подписантов' });
+    const cards = within(signatoryList).getAllByRole('listitem');
+    const firstCard = cards[0];
+    const secondCard = cards[1];
+
+    if (firstCard === undefined || secondCard === undefined) {
+      throw new Error('Expected at least two signatory cards.');
+    }
+
+    expect(
+      within(firstCard)
+        .getByText('Представитель подрядчика — Иванов И.И.')
+        .classList.contains('signatory-order-item__title'),
+    ).toBe(true);
+    expect(
+      within(firstCard)
+        .getByText('Производитель работ, ООО "ПТО Монтаж"')
+        .classList.contains('signatory-order-item__subtitle'),
+    ).toBe(true);
+    expect(
+      within(firstCard)
+        .getByText('Приказ N 12-П от 10.05.2026')
+        .classList.contains('signatory-order-item__details'),
+    ).toBe(true);
+    expect(
+      within(secondCard)
+        .getByText('Договор строительного контроля N СК-7, НРС С-66-212868')
+        .classList.contains('signatory-order-item__details'),
+    ).toBe(true);
+  });
+
   it('renders a compact readiness panel with a ready act state', async () => {
     const user = userEvent.setup();
 
