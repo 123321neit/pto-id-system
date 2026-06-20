@@ -41,6 +41,7 @@ interface DemoCurrentActEditorProps {
   readonly isObjectDocumentLibraryOpen: boolean;
   readonly manualRepresentativeForm: RepresentativeFormState;
   readonly materialSearch: string;
+  readonly linkedTemplateFields: DemoAosrTemplateFields;
   readonly objectDefaults: DemoAosrObjectDefaults;
   readonly objectDocumentLibrary: readonly DemoObjectDocument[];
   readonly printState: AosrPrintState;
@@ -69,9 +70,30 @@ interface DemoCurrentActEditorProps {
     headerOrganizationId: string,
     direction: MoveDirection,
   ) => void;
+  readonly onUpdateObjectNameSubscript: (value: string) => void;
+  readonly onUpdateHeaderOrganization: (
+    headerOrganizationId: string,
+    field: 'caption' | 'details' | 'label' | 'organizationName',
+    value: string,
+  ) => void;
   readonly onRemoveMaterialFromAct: (certificateId: string) => void;
   readonly onRemoveObjectDocumentFromAct: (documentId: string) => void;
   readonly onRemoveRepresentativeFromAct: (representativeId: string) => void;
+  readonly onUpdateRepresentative: (
+    representativeId: string,
+    field:
+      | 'authorityBasis'
+      | 'details'
+      | 'fullName'
+      | 'introDisplayText'
+      | 'nrsId'
+      | 'organization'
+      | 'position'
+      | 'roleLabel'
+      | 'signatureName'
+      | 'signatureText',
+    value: string,
+  ) => void;
   readonly onReorderSelectedSignatory: (targetRepresentativeId: string) => void;
   readonly onToggleApplication: (applicationId: string) => void;
   readonly onToggleCertificateLibrary: () => void;
@@ -96,6 +118,7 @@ export function DemoCurrentActEditor({
   isObjectDocumentLibraryOpen,
   manualRepresentativeForm,
   materialSearch,
+  linkedTemplateFields,
   objectDefaults,
   objectDocumentLibrary,
   printState,
@@ -118,9 +141,12 @@ export function DemoCurrentActEditor({
   onDragRepresentativeTarget,
   onMoveSelectedSignatory,
   onMoveHeaderOrganization,
+  onUpdateObjectNameSubscript,
+  onUpdateHeaderOrganization,
   onRemoveMaterialFromAct,
   onRemoveObjectDocumentFromAct,
   onRemoveRepresentativeFromAct,
+  onUpdateRepresentative,
   onReorderSelectedSignatory,
   onToggleApplication,
   onToggleCertificateLibrary,
@@ -136,9 +162,9 @@ export function DemoCurrentActEditor({
     isManualTemplate,
     isManualDraftFieldDifferentFromObjectTemplate(selectedDraft, objectDefaults, 'objectName'),
   );
-  const underTitleSourceLabel = getTemplateFieldSourceLabel(
+  const objectNameSubscriptSourceLabel = getTemplateFieldSourceLabel(
     isManualTemplate,
-    isManualDraftFieldDifferentFromObjectTemplate(selectedDraft, objectDefaults, 'underTitleText'),
+    templateFields.objectNameSubscript !== linkedTemplateFields.objectNameSubscript,
   );
   const projectDocumentationSourceLabel = getTemplateFieldSourceLabel(
     isManualTemplate,
@@ -273,21 +299,19 @@ export function DemoCurrentActEditor({
           </div>
           <div className="document-owned-field act-form-grid__wide">
             <div className="document-owned-field__heading">
-              <label htmlFor="draftUnderTitleText">Текст под заголовком акта в документе</label>
-              <span className="source-chip">{underTitleSourceLabel}</span>
+              <label htmlFor="draftObjectNameSubscript">Подстрочное пояснение объекта</label>
+              <span className="source-chip">{objectNameSubscriptSourceLabel}</span>
             </div>
             <textarea
-              className="medium-field"
-              id="draftUnderTitleText"
-              name="underTitleText"
+              id="draftObjectNameSubscript"
               onChange={(event) => {
                 if (isManualTemplate) {
-                  onUpdateSelectedDraft('underTitleText', event.currentTarget.value);
+                  onUpdateObjectNameSubscript(event.currentTarget.value);
                 }
               }}
               readOnly={!isManualTemplate}
-              rows={3}
-              value={templateFields.underTitleText}
+              rows={2}
+              value={templateFields.objectNameSubscript}
             />
           </div>
         </div>
@@ -296,7 +320,9 @@ export function DemoCurrentActEditor({
       <DemoHeaderOrganizationsOrderEditor
         headerOrganizations={templateFields.headerOrganizations}
         isTemplateEditable={isManualTemplate}
+        linkedHeaderOrganizations={linkedTemplateFields.headerOrganizations}
         onMoveHeaderOrganization={onMoveHeaderOrganization}
+        onUpdateHeaderOrganization={onUpdateHeaderOrganization}
         sourceLabel={templateSourceLabel}
       />
 
@@ -308,6 +334,7 @@ export function DemoCurrentActEditor({
         isTemplateEditable={isManualTemplate}
         manualRepresentativeForm={manualRepresentativeForm}
         objectRepresentatives={objectDefaults.representativeLibrary}
+        linkedSignatories={linkedTemplateFields.representatives}
         selectedSignatories={selectedSignatories}
         sourceLabel={templateSourceLabel}
         onAddManualRepresentative={onAddManualRepresentative}
@@ -319,6 +346,7 @@ export function DemoCurrentActEditor({
         onDragRepresentativeTarget={onDragRepresentativeTarget}
         onMoveSelectedSignatory={onMoveSelectedSignatory}
         onRemoveRepresentativeFromAct={onRemoveRepresentativeFromAct}
+        onUpdateRepresentative={onUpdateRepresentative}
         onReorderSelectedSignatory={onReorderSelectedSignatory}
         onToggleManualRepresentativeForm={onToggleManualRepresentativeForm}
       />
@@ -326,6 +354,16 @@ export function DemoCurrentActEditor({
       <section className="form-section act-editor-card" aria-labelledby="hidden-works-data-title">
         <h3 id="hidden-works-data-title">1. Скрытые работы</h3>
         <div className="act-form-grid">
+          <label className="act-form-grid__wide">
+            Лицо, выполнившее работы
+            <input
+              name="workContractorName"
+              onChange={(event) => {
+                onUpdateSelectedDraft('workContractorName', event.currentTarget.value);
+              }}
+              value={selectedDraft.workContractorName}
+            />
+          </label>
           <label className="act-form-grid__wide">
             Описание скрытых работ
             <textarea

@@ -163,7 +163,7 @@ export function DemoHeaderOrganizationsPanel({
                 value={form.caption}
               />
             </label>
-            <button type="submit">Сохранить организацию в шапке</button>
+            <button type="submit">Добавить организацию в шаблон</button>
           </form>
         </div>
       ) : null}

@@ -54,8 +54,8 @@ export interface DemoAosrObjectDefaults {
   readonly objectName: string;
   readonly objectNameSubscript: string;
   readonly defaultProjectDocumentation: string;
-  readonly defaultUnderTitleText: string;
   readonly headerOrganizations: readonly DemoAosrHeaderOrganization[];
+  readonly objectTemplate: ObjectTemplate;
   readonly representativeLibrary: readonly DemoAosrRepresentative[];
 }
 
@@ -66,11 +66,13 @@ export interface DemoAosrHeaderOrganization {
   readonly organizationName: string;
   readonly details: string;
   readonly caption?: string;
+  readonly displayText?: string;
 }
 
 export interface DemoAosrRepresentative {
   readonly id: string;
   readonly globalRepresentativeId?: string;
+  readonly templateGroupId?: string;
   readonly roleLabel: string;
   readonly fullName: string;
   readonly position: string;
@@ -78,6 +80,9 @@ export interface DemoAosrRepresentative {
   readonly authorityBasis: string;
   readonly nrsId?: string;
   readonly details?: string;
+  readonly introDisplayText?: string;
+  readonly signatureText?: string;
+  readonly signatureName?: string;
 }
 
 export interface ObjectTemplate {
@@ -124,7 +129,6 @@ export interface AosrPrintState {
     readonly date: string;
     readonly additionalInfo: string;
     readonly copiesLine: string;
-    readonly underTitleText: string;
   };
   readonly representatives: {
     readonly groups: readonly {
@@ -164,7 +168,6 @@ export interface DemoAosrManualTemplateSnapshot {
     readonly name: string;
     readonly nameSubscript: string;
   };
-  readonly underTitleText: string;
   readonly counterparties: readonly {
     readonly title: string;
     readonly displayText: string;
@@ -197,8 +200,8 @@ export interface DemoAosrTemplateFields {
   readonly objectName: string;
   readonly objectNameSubscript: string;
   readonly projectDocumentation: string;
+  readonly representativeGroups: AosrPrintState['representatives']['groups'];
   readonly representatives: readonly DemoAosrRepresentative[];
-  readonly underTitleText: string;
 }
 
 export interface DemoMaterialCertificate {
@@ -256,7 +259,7 @@ export interface DemoAosrDraft {
   readonly representatives: readonly DemoAosrRepresentative[];
   readonly status: 'draft' | 'needs-review';
   readonly subsequentWorksPermitted: string;
-  readonly underTitleText: string;
+  readonly workContractorName: string;
   readonly workDescription: string;
 }
 
@@ -294,14 +297,13 @@ export type DemoAosrDraftField =
   | 'periodStart'
   | 'projectDocumentation'
   | 'subsequentWorksPermitted'
-  | 'underTitleText'
+  | 'workContractorName'
   | 'workDescription';
 
 export type DemoAosrObjectDefaultsField =
   | 'defaultComplianceStatement'
   | 'defaultCopiesLine'
   | 'defaultProjectDocumentation'
-  | 'defaultUnderTitleText'
   | 'objectName'
   | 'objectNameSubscript'
   | 'projectName';
@@ -313,6 +315,7 @@ const contractorRepresentative: DemoAosrRepresentative = {
   organization: 'ООО "ПТО Монтаж"',
   position: 'Производитель работ',
   roleLabel: 'Представитель подрядчика',
+  templateGroupId: 'representative-group-contractor',
 };
 
 const buildingControlRepresentative: DemoAosrRepresentative = {
@@ -323,6 +326,7 @@ const buildingControlRepresentative: DemoAosrRepresentative = {
   organization: 'ООО "СтройКонтроль"',
   position: 'Ведущий инженер строительного контроля',
   roleLabel: 'Стройконтроль',
+  templateGroupId: 'representative-group-building-control',
 };
 
 const authorSupervisionRepresentative: DemoAosrRepresentative = {
@@ -332,6 +336,7 @@ const authorSupervisionRepresentative: DemoAosrRepresentative = {
   organization: 'АО "Проектный институт"',
   position: 'Главный специалист авторского надзора',
   roleLabel: 'Авторский надзор',
+  templateGroupId: 'representative-group-author-supervision',
 };
 
 const customerRepresentative: DemoAosrRepresentative = {
@@ -345,9 +350,6 @@ const customerRepresentative: DemoAosrRepresentative = {
 
 const defaultComplianceStatement =
   'Проектной документацией шифр РД-ОВ-12, рабочей документацией РД-ОВ-14, ППР-ОВ-2026, СП 60.13330.2020, СП 73.13330.2016, ГОСТ 34059-2017 и ТУ производителей применённых материалов.';
-
-const defaultUnderTitleText =
-  'Участники освидетельствования произвели осмотр скрытых работ и составили настоящий акт.';
 
 const defaultProjectDocumentation =
   'Рабочая документация РД-ОВ-12 лист 4; РД-ОВ-14 лист 2; спецификация оборудования и материалов СП-ОВ-02.';
@@ -386,6 +388,61 @@ const defaultHeaderOrganizations: readonly DemoAosrHeaderOrganization[] = [
     organizationName: 'ООО "СтройКонтроль"',
   },
 ];
+
+const defaultObjectTemplate: ObjectTemplate = {
+  complianceText: defaultComplianceStatement,
+  copiesLine: defaultCopiesLine,
+  counterparties: defaultHeaderOrganizations.map((headerOrganization) => ({
+    counterpartyId: headerOrganization.globalOrganizationId ?? headerOrganization.id,
+    id: headerOrganization.id,
+    subscriptMode: headerOrganization.caption === undefined ? 'fromLibrary' : 'custom',
+    title: headerOrganization.label,
+    ...(headerOrganization.caption === undefined
+      ? {}
+      : { customSubscript: headerOrganization.caption }),
+  })),
+  defaultDateMode: 'manual',
+  id: 'object-template-demo',
+  objectId: 'object-demo',
+  objectName: defaultObjectName,
+  objectNameSubscript: defaultObjectNameSubscript,
+  projectDocumentation: defaultProjectDocumentation,
+  representativeGroups: [
+    {
+      id: 'representative-group-contractor',
+      members: [
+        {
+          id: 'representative-member-contractor-001',
+          signatoryId: contractorRepresentative.id,
+          subscriptMode: 'fromLibrary',
+        },
+      ],
+      title: contractorRepresentative.roleLabel,
+    },
+    {
+      id: 'representative-group-building-control',
+      members: [
+        {
+          id: 'representative-member-building-control-001',
+          signatoryId: buildingControlRepresentative.id,
+          subscriptMode: 'fromLibrary',
+        },
+      ],
+      title: buildingControlRepresentative.roleLabel,
+    },
+    {
+      id: 'representative-group-author-supervision',
+      members: [
+        {
+          id: 'representative-member-author-supervision-001',
+          signatoryId: authorSupervisionRepresentative.id,
+          subscriptMode: 'fromLibrary',
+        },
+      ],
+      title: authorSupervisionRepresentative.roleLabel,
+    },
+  ],
+};
 
 const demoObjectDocumentLibrary: readonly DemoObjectDocument[] = [
   {
@@ -534,7 +591,7 @@ export const demoAosrWorkspace: DemoAosrWorkspace = {
       status: 'draft',
       subsequentWorksPermitted:
         'Разрешается производство последующих работ по устройству теплоизоляции и облицовки.',
-      underTitleText: defaultUnderTitleText,
+      workContractorName: 'ООО "ПТО Монтаж"',
       workDescription:
         'Монтаж скрытых участков воздуховодов до закрытия теплоизоляцией и облицовкой.',
     },
@@ -571,7 +628,7 @@ export const demoAosrWorkspace: DemoAosrWorkspace = {
       status: 'needs-review',
       subsequentWorksPermitted:
         'Разрешается производство последующих работ по заделке отверстий в перекрытии.',
-      underTitleText: defaultUnderTitleText,
+      workContractorName: 'ООО "ПТО Монтаж"',
       workDescription: 'Установка гильз трубопроводов перед заделкой отверстий в перекрытии.',
     },
   ],
@@ -581,8 +638,8 @@ export const demoAosrWorkspace: DemoAosrWorkspace = {
     defaultComplianceStatement,
     defaultCopiesLine,
     defaultProjectDocumentation,
-    defaultUnderTitleText,
     headerOrganizations: copyHeaderOrganizations(defaultHeaderOrganizations),
+    objectTemplate: defaultObjectTemplate,
     objectName: defaultObjectName,
     objectNameSubscript: defaultObjectNameSubscript,
     projectName: 'Реконструкция поликлиники, демонстрационный проект',
@@ -618,7 +675,7 @@ export function createEmptyDemoAosrDraft({
     documentType: 'AOSR_1',
     materialCertificateIds: [],
     materialCertificateSnapshots: [],
-    objectTemplateId: 'object-template-demo',
+    objectTemplateId: objectDefaults.objectTemplate.id,
     templateMode: 'linked',
     objectName: objectDefaults.objectName,
     objectDocumentIds: [],
@@ -631,7 +688,7 @@ export function createEmptyDemoAosrDraft({
     })),
     status: 'draft',
     subsequentWorksPermitted: '',
-    underTitleText: objectDefaults.defaultUnderTitleText,
+    workContractorName: '',
     workDescription: '',
   };
 }
@@ -665,36 +722,7 @@ export interface BuildAosrPrintStateInput extends ResolveDemoAosrTemplateFieldsI
 export function getObjectTemplateFromDefaults(
   objectDefaults: DemoAosrObjectDefaults,
 ): ObjectTemplate {
-  return {
-    complianceText: objectDefaults.defaultComplianceStatement,
-    copiesLine: objectDefaults.defaultCopiesLine,
-    counterparties: objectDefaults.headerOrganizations.map((headerOrganization) => ({
-      counterpartyId: headerOrganization.globalOrganizationId ?? headerOrganization.id,
-      id: headerOrganization.id,
-      subscriptMode: headerOrganization.caption === undefined ? 'fromLibrary' : 'custom',
-      title: headerOrganization.label,
-      ...(headerOrganization.caption === undefined
-        ? {}
-        : { customSubscript: headerOrganization.caption }),
-    })),
-    defaultDateMode: 'manual',
-    id: 'object-template-demo',
-    objectId: 'object-demo',
-    objectName: objectDefaults.objectName,
-    objectNameSubscript: objectDefaults.objectNameSubscript,
-    projectDocumentation: objectDefaults.defaultProjectDocumentation,
-    representativeGroups: objectDefaults.representativeLibrary.map((representative) => ({
-      id: `representative-group-${representative.id}`,
-      members: [
-        {
-          id: `representative-member-${representative.id}`,
-          signatoryId: representative.globalRepresentativeId ?? representative.id,
-          subscriptMode: 'fromLibrary',
-        },
-      ],
-      title: representative.roleLabel,
-    })),
-  };
+  return objectDefaults.objectTemplate;
 }
 
 export function getCounterpartyLibraryItemFromGlobalOrganization(
@@ -711,19 +739,8 @@ export function getCounterpartyLibraryItemFromGlobalOrganization(
 export function getSignatoryLibraryItemFromRepresentative(
   representative: DemoAosrRepresentative,
 ): SignatoryLibraryItem {
-  const signatureText = [representative.position, representative.organization]
-    .map((value) => value.trim())
-    .filter(Boolean)
-    .join(' ');
-  const introDisplayText = [
-    signatureText,
-    representative.fullName,
-    representative.authorityBasis,
-    representative.nrsId === undefined ? '' : `НРС ${representative.nrsId}`,
-  ]
-    .map((value) => value.trim())
-    .filter(Boolean)
-    .join(', ');
+  const signatureText = getRepresentativeSignatureText(representative);
+  const introDisplayText = getRepresentativeIntroDisplayText(representative);
 
   return {
     authorityDocument: representative.authorityBasis,
@@ -734,7 +751,7 @@ export function getSignatoryLibraryItemFromRepresentative(
     introDisplayText,
     organization: representative.organization,
     position: representative.position,
-    signatureName: representative.fullName,
+    signatureName: representative.signatureName ?? representative.fullName,
     signatureText,
     ...(representative.nrsId === undefined ? {} : { nrsId: representative.nrsId }),
   };
@@ -755,8 +772,10 @@ export function resolveDemoAosrTemplateFields({
       objectNameSubscript:
         draft.manualTemplateSnapshot?.object.nameSubscript ?? objectDefaults.objectNameSubscript,
       projectDocumentation: draft.projectDocumentation,
+      representativeGroups:
+        draft.manualTemplateSnapshot?.representatives.groups ??
+        buildRepresentativePrintGroups(draft.representatives),
       representatives: draft.representatives,
-      underTitleText: draft.underTitleText,
     };
   }
 
@@ -783,7 +802,6 @@ export function buildDemoAosrPrintState({
     signatoryLibrary,
   });
   const manualSnapshot = draft.templateMode === 'manual' ? draft.manualTemplateSnapshot : undefined;
-  const executingOrganization = getExecutingOrganizationFromTemplateFields(templateFields);
 
   return {
     applications: {
@@ -802,10 +820,7 @@ export function buildDemoAosrPrintState({
     counterparties:
       manualSnapshot?.counterparties ??
       templateFields.headerOrganizations.map((headerOrganization) => ({
-        displayText: [headerOrganization.organizationName, headerOrganization.details]
-          .map((value) => value.trim())
-          .filter(Boolean)
-          .join(' '),
+        displayText: getHeaderDisplayText(headerOrganization),
         subscript: headerOrganization.caption ?? '',
         title: headerOrganization.label,
       })),
@@ -814,7 +829,6 @@ export function buildDemoAosrPrintState({
       copiesLine: manualSnapshot?.documentTemplateDefaults.copiesLine ?? templateFields.copiesLine,
       date: draft.actDate,
       number: draft.actNumber,
-      underTitleText: manualSnapshot?.underTitleText ?? templateFields.underTitleText,
     },
     materials: {
       items: selectedMaterials.map((certificate) => ({
@@ -830,12 +844,10 @@ export function buildDemoAosrPrintState({
       documentation: manualSnapshot?.project.documentation ?? templateFields.projectDocumentation,
     },
     representatives: {
-      groups:
-        manualSnapshot?.representatives.groups ??
-        buildRepresentativePrintGroups(templateFields.representatives),
+      groups: manualSnapshot?.representatives.groups ?? templateFields.representativeGroups,
     },
     work: {
-      contractorName: executingOrganization,
+      contractorName: draft.workContractorName,
       description: [draft.workDescription, draft.axes, draft.elevationRange]
         .map((value) => value.trim())
         .filter(Boolean)
@@ -870,7 +882,6 @@ export function switchDraftToManualTemplateMode({
       ...representative,
     })),
     templateMode: 'manual',
-    underTitleText: templateFields.underTitleText,
   };
 
   return nextDraft;
@@ -889,7 +900,7 @@ export function returnDraftToLinkedTemplateMode(draft: DemoAosrDraft): DemoAosrD
 export function isManualDraftFieldDifferentFromObjectTemplate(
   draft: DemoAosrDraft,
   objectDefaults: DemoAosrObjectDefaults,
-  field: 'complianceStatement' | 'objectName' | 'projectDocumentation' | 'underTitleText',
+  field: 'complianceStatement' | 'objectName' | 'projectDocumentation',
 ): boolean {
   if (draft.templateMode !== 'manual') {
     return false;
@@ -902,8 +913,6 @@ export function isManualDraftFieldDifferentFromObjectTemplate(
       return draft.objectName !== objectDefaults.objectName;
     case 'projectDocumentation':
       return draft.projectDocumentation !== objectDefaults.defaultProjectDocumentation;
-    case 'underTitleText':
-      return draft.underTitleText !== objectDefaults.defaultUnderTitleText;
   }
 }
 
@@ -912,66 +921,173 @@ function resolveLinkedTemplateFields({
   objectDefaults,
   signatoryLibrary = [],
 }: Omit<ResolveDemoAosrTemplateFieldsInput, 'draft'>): DemoAosrTemplateFields {
-  return {
-    complianceStatement: objectDefaults.defaultComplianceStatement,
-    copiesLine: objectDefaults.defaultCopiesLine,
-    headerOrganizations: objectDefaults.headerOrganizations.map((headerOrganization) =>
-      resolveHeaderOrganizationFromLibrary(headerOrganization, counterpartyLibrary),
-    ),
-    objectName: objectDefaults.objectName,
-    objectNameSubscript: objectDefaults.objectNameSubscript,
-    projectDocumentation: objectDefaults.defaultProjectDocumentation,
-    representatives: objectDefaults.representativeLibrary.map((representative) =>
-      resolveRepresentativeFromLibrary(representative, signatoryLibrary),
-    ),
-    underTitleText: objectDefaults.defaultUnderTitleText,
-  };
-}
-
-function resolveHeaderOrganizationFromLibrary(
-  headerOrganization: DemoAosrHeaderOrganization,
-  counterpartyLibrary: readonly CounterpartyLibraryItem[],
-): DemoAosrHeaderOrganization {
-  const libraryItem = counterpartyLibrary.find(
-    ({ id }) => id === headerOrganization.globalOrganizationId,
+  const objectTemplate = getObjectTemplateFromDefaults(objectDefaults);
+  const headerOrganizations = objectTemplate.counterparties.map((counterparty) =>
+    resolveCounterpartyFromTemplate(counterparty, objectDefaults, counterpartyLibrary),
+  );
+  const resolvedRepresentatives = resolveRepresentativesFromTemplate(
+    objectTemplate,
+    objectDefaults,
+    signatoryLibrary,
   );
 
-  if (libraryItem === undefined) {
-    return { ...headerOrganization };
-  }
-
   return {
-    ...headerOrganization,
-    details: libraryItem.fullText,
-    organizationName: libraryItem.displayName,
-    ...(headerOrganization.caption === undefined && libraryItem.defaultSubscript === undefined
-      ? {}
-      : { caption: headerOrganization.caption ?? libraryItem.defaultSubscript }),
+    complianceStatement: objectTemplate.complianceText,
+    copiesLine: objectTemplate.copiesLine,
+    headerOrganizations,
+    objectName: objectTemplate.objectName,
+    objectNameSubscript: objectTemplate.objectNameSubscript,
+    projectDocumentation: objectTemplate.projectDocumentation,
+    representativeGroups: resolvedRepresentatives.groups,
+    representatives: resolvedRepresentatives.representatives,
   };
 }
 
-function resolveRepresentativeFromLibrary(
-  representative: DemoAosrRepresentative,
-  signatoryLibrary: readonly SignatoryLibraryItem[],
-): DemoAosrRepresentative {
-  const signatoryId = representative.globalRepresentativeId ?? representative.id;
-  const libraryItem = signatoryLibrary.find(({ id }) => id === signatoryId);
-
-  if (libraryItem === undefined) {
-    return { ...representative };
-  }
-
-  const defaultSubscript = libraryItem.defaultSubscript ?? representative.details;
+function resolveCounterpartyFromTemplate(
+  counterparty: ObjectTemplate['counterparties'][number],
+  objectDefaults: DemoAosrObjectDefaults,
+  counterpartyLibrary: readonly CounterpartyLibraryItem[],
+): DemoAosrHeaderOrganization {
+  const libraryItem = counterpartyLibrary.find(({ id }) => id === counterparty.counterpartyId);
+  const fallback = objectDefaults.headerOrganizations.find(
+    (headerOrganization) =>
+      headerOrganization.id === counterparty.id ||
+      headerOrganization.globalOrganizationId === counterparty.counterpartyId,
+  );
+  const subscript =
+    counterparty.subscriptMode === 'custom'
+      ? counterparty.customSubscript
+      : libraryItem?.defaultSubscript;
+  const displayName = libraryItem?.displayName ?? fallback?.organizationName ?? '';
+  const displayText =
+    libraryItem?.fullText ?? (fallback === undefined ? '' : getHeaderDisplayText(fallback));
 
   return {
-    ...representative,
-    authorityBasis: libraryItem.authorityDocument ?? representative.authorityBasis,
-    ...(defaultSubscript === undefined ? {} : { details: defaultSubscript }),
-    fullName: libraryItem.signatureName,
-    organization: libraryItem.organization ?? representative.organization,
-    position: libraryItem.position ?? representative.position,
-    ...(libraryItem.nrsId === undefined ? {} : { nrsId: libraryItem.nrsId }),
+    details:
+      libraryItem === undefined
+        ? (fallback?.details ?? '')
+        : removeLeadingDisplayName(libraryItem.fullText, displayName),
+    displayText,
+    globalOrganizationId: counterparty.counterpartyId,
+    id: counterparty.id,
+    label: counterparty.title,
+    organizationName: displayName,
+    ...(subscript === undefined ? {} : { caption: subscript }),
   };
+}
+
+function resolveRepresentativesFromTemplate(
+  objectTemplate: ObjectTemplate,
+  objectDefaults: DemoAosrObjectDefaults,
+  signatoryLibrary: readonly SignatoryLibraryItem[],
+): {
+  readonly groups: AosrPrintState['representatives']['groups'];
+  readonly representatives: readonly DemoAosrRepresentative[];
+} {
+  const representatives: DemoAosrRepresentative[] = [];
+  const groups = objectTemplate.representativeGroups.map((group) => ({
+    members: group.members.map((member) => {
+      const libraryItem = signatoryLibrary.find(({ id }) => id === member.signatoryId);
+      const fallback = objectDefaults.representativeLibrary.find(
+        (representative) =>
+          representative.id === member.signatoryId ||
+          representative.globalRepresentativeId === member.signatoryId,
+      );
+      const subscript =
+        member.subscriptMode === 'custom'
+          ? (member.customSubscript ?? '')
+          : (libraryItem?.defaultSubscript ?? fallback?.details ?? '');
+      const representative = getRepresentativeFromTemplateMember(
+        group,
+        member,
+        libraryItem,
+        fallback,
+        subscript,
+      );
+
+      representatives.push(representative);
+
+      return {
+        introDisplayText: representative.introDisplayText ?? '',
+        signatureName: representative.signatureName ?? representative.fullName,
+        signatureText: representative.signatureText ?? '',
+        subscript,
+      };
+    }),
+    title: group.title,
+  }));
+
+  return { groups, representatives };
+}
+
+function getRepresentativeFromTemplateMember(
+  group: ObjectTemplate['representativeGroups'][number],
+  member: ObjectTemplate['representativeGroups'][number]['members'][number],
+  libraryItem: SignatoryLibraryItem | undefined,
+  fallback: DemoAosrRepresentative | undefined,
+  subscript: string,
+): DemoAosrRepresentative {
+  const fullName = libraryItem?.fullName ?? fallback?.fullName ?? '';
+  const position = libraryItem?.position ?? fallback?.position ?? '';
+  const organization = libraryItem?.organization ?? fallback?.organization ?? '';
+  const authorityBasis = libraryItem?.authorityDocument ?? fallback?.authorityBasis ?? '';
+  const nrsId = libraryItem?.nrsId ?? fallback?.nrsId;
+  const signatureText =
+    libraryItem?.signatureText ??
+    [position, organization]
+      .map((value) => value.trim())
+      .filter(Boolean)
+      .join(' ');
+  const signatureName = libraryItem?.signatureName ?? fullName;
+  const introDisplayText =
+    libraryItem?.introDisplayText ??
+    [signatureText, fullName, authorityBasis, nrsId === undefined ? '' : `НРС ${nrsId}`]
+      .map((value) => value.trim())
+      .filter(Boolean)
+      .join(', ');
+
+  return {
+    authorityBasis,
+    fullName,
+    globalRepresentativeId: member.signatoryId,
+    id: member.id,
+    introDisplayText,
+    organization,
+    position,
+    roleLabel: group.title,
+    signatureName,
+    signatureText,
+    templateGroupId: group.id,
+    ...(subscript === '' ? {} : { details: subscript }),
+    ...(nrsId === undefined ? {} : { nrsId }),
+  };
+}
+
+function getHeaderDisplayText(headerOrganization: DemoAosrHeaderOrganization): string {
+  if (headerOrganization.displayText !== undefined) {
+    return headerOrganization.displayText;
+  }
+
+  return [headerOrganization.organizationName, headerOrganization.details]
+    .map((value) => value.trim())
+    .filter(Boolean)
+    .join(' ');
+}
+
+function removeLeadingDisplayName(fullText: string, displayName: string): string {
+  const normalizedFullText = fullText.trim();
+  const normalizedDisplayName = displayName.trim();
+
+  if (
+    normalizedDisplayName !== '' &&
+    normalizedFullText
+      .toLocaleLowerCase('ru-RU')
+      .startsWith(normalizedDisplayName.toLocaleLowerCase('ru-RU'))
+  ) {
+    return normalizedFullText.slice(normalizedDisplayName.length).trim();
+  }
+
+  return normalizedFullText;
 }
 
 function createManualTemplateSnapshot(
@@ -979,10 +1095,7 @@ function createManualTemplateSnapshot(
 ): DemoAosrManualTemplateSnapshot {
   return {
     counterparties: templateFields.headerOrganizations.map((headerOrganization) => ({
-      displayText: [headerOrganization.organizationName, headerOrganization.details]
-        .map((value) => value.trim())
-        .filter(Boolean)
-        .join(' '),
+      displayText: getHeaderDisplayText(headerOrganization),
       subscript: headerOrganization.caption ?? '',
       title: headerOrganization.label,
     })),
@@ -998,9 +1111,8 @@ function createManualTemplateSnapshot(
       documentation: templateFields.projectDocumentation,
     },
     representatives: {
-      groups: buildRepresentativePrintGroups(templateFields.representatives),
+      groups: templateFields.representativeGroups,
     },
-    underTitleText: templateFields.underTitleText,
   };
 }
 
@@ -1018,13 +1130,17 @@ function syncManualTemplateSnapshotFromDraft(draft: DemoAosrDraft): DemoAosrDraf
       objectName: draft.objectName,
       objectNameSubscript: draft.manualTemplateSnapshot?.object.nameSubscript ?? '',
       projectDocumentation: draft.projectDocumentation,
+      representativeGroups: buildRepresentativePrintGroups(draft.representatives),
       representatives: draft.representatives,
-      underTitleText: draft.underTitleText,
     }),
   };
 }
 
 function getRepresentativeSignatureText(representative: DemoAosrRepresentative): string {
+  if (representative.signatureText !== undefined) {
+    return representative.signatureText;
+  }
+
   return [representative.position, representative.organization]
     .map((value) => value.trim())
     .filter(Boolean)
@@ -1032,6 +1148,10 @@ function getRepresentativeSignatureText(representative: DemoAosrRepresentative):
 }
 
 function getRepresentativeIntroDisplayText(representative: DemoAosrRepresentative): string {
+  if (representative.introDisplayText !== undefined) {
+    return representative.introDisplayText;
+  }
+
   return [
     getRepresentativeSignatureText(representative),
     representative.fullName,
@@ -1047,6 +1167,7 @@ function buildRepresentativePrintGroups(
   representatives: readonly DemoAosrRepresentative[],
 ): AosrPrintState['representatives']['groups'] {
   const groups: {
+    id: string;
     title: string;
     members: AosrPrintState['representatives']['groups'][number]['members'][number][];
   }[] = [];
@@ -1060,42 +1181,25 @@ function buildRepresentativePrintGroups(
         : rawSubscript;
     const member = {
       introDisplayText,
-      signatureName: representative.fullName,
+      signatureName: representative.signatureName ?? representative.fullName,
       signatureText: getRepresentativeSignatureText(representative),
       subscript,
     };
-    const existingGroup = groups.find(({ title }) => title === representative.roleLabel);
+    const groupId = representative.templateGroupId ?? `manual-group-${representative.id}`;
+    const existingGroup = groups.find(({ id }) => id === groupId);
 
     if (existingGroup === undefined) {
-      groups.push({ members: [member], title: representative.roleLabel });
+      groups.push({ id: groupId, members: [member], title: representative.roleLabel });
     } else {
       existingGroup.members.push(member);
     }
   }
 
-  return groups;
+  return groups.map(({ members, title }) => ({ members, title }));
 }
 
 function normalizeRepresentativeText(value: string): string {
   return value.trim().replace(/\s+/gu, ' ');
-}
-
-function getExecutingOrganizationFromTemplateFields(
-  templateFields: DemoAosrTemplateFields,
-): string {
-  const lastSignatory = templateFields.representatives[templateFields.representatives.length - 1];
-  const contractorHeader = templateFields.headerOrganizations.find(({ label }) =>
-    label.toLocaleLowerCase('ru-RU').includes('подряд'),
-  );
-  const lastHeaderOrganization =
-    templateFields.headerOrganizations[templateFields.headerOrganizations.length - 1];
-
-  return (
-    contractorHeader?.organizationName ??
-    lastSignatory?.organization ??
-    lastHeaderOrganization?.organizationName ??
-    'организацией, указанной в шаблоне объекта'
-  );
 }
 
 export function getDraftComplianceStatement(draft: DemoAosrDraft): string {
@@ -1123,23 +1227,6 @@ export function resetDraftComplianceToObjectDefault(
   return syncManualTemplateSnapshotFromDraft({
     ...draft,
     complianceStatement: objectDefaults.defaultComplianceStatement,
-  });
-}
-
-export function isDraftUnderTitleFromObjectDefault(
-  draft: DemoAosrDraft,
-  objectDefaults: DemoAosrObjectDefaults,
-): boolean {
-  return draft.underTitleText === objectDefaults.defaultUnderTitleText;
-}
-
-export function resetDraftUnderTitleToObjectDefault(
-  draft: DemoAosrDraft,
-  objectDefaults: DemoAosrObjectDefaults,
-): DemoAosrDraft {
-  return syncManualTemplateSnapshotFromDraft({
-    ...draft,
-    underTitleText: objectDefaults.defaultUnderTitleText,
   });
 }
 
@@ -1205,24 +1292,88 @@ export function moveHeaderOrganizationInDraft(
   });
 }
 
+export function updateHeaderOrganizationInDraft(
+  draft: DemoAosrDraft,
+  headerOrganizationId: string,
+  field: 'caption' | 'details' | 'label' | 'organizationName',
+  value: string,
+): DemoAosrDraft {
+  if (draft.templateMode !== 'manual') {
+    return draft;
+  }
+
+  return syncManualTemplateSnapshotFromDraft({
+    ...draft,
+    headerOrganizations: draft.headerOrganizations.map((headerOrganization) => {
+      if (headerOrganization.id !== headerOrganizationId) {
+        return headerOrganization;
+      }
+
+      const { displayText, ...editableHeaderOrganization } = headerOrganization;
+      void displayText;
+
+      return { ...editableHeaderOrganization, [field]: value };
+    }),
+  });
+}
+
 export function updateDemoObjectDefaultsField(
   objectDefaults: DemoAosrObjectDefaults,
   field: DemoAosrObjectDefaultsField,
   value: string,
 ): DemoAosrObjectDefaults {
+  const objectTemplate = updateObjectTemplateField(objectDefaults.objectTemplate, field, value);
+
   return {
     ...objectDefaults,
     [field]: value,
+    objectTemplate,
   };
+}
+
+function updateObjectTemplateField(
+  objectTemplate: ObjectTemplate,
+  field: DemoAosrObjectDefaultsField,
+  value: string,
+): ObjectTemplate {
+  switch (field) {
+    case 'defaultComplianceStatement':
+      return { ...objectTemplate, complianceText: value };
+    case 'defaultCopiesLine':
+      return { ...objectTemplate, copiesLine: value };
+    case 'defaultProjectDocumentation':
+      return { ...objectTemplate, projectDocumentation: value };
+    case 'objectName':
+      return { ...objectTemplate, objectName: value };
+    case 'objectNameSubscript':
+      return { ...objectTemplate, objectNameSubscript: value };
+    case 'projectName':
+      return objectTemplate;
+  }
 }
 
 export function addHeaderOrganizationBlock(
   objectDefaults: DemoAosrObjectDefaults,
   headerOrganization: DemoAosrHeaderOrganization,
 ): DemoAosrObjectDefaults {
+  const counterparty = {
+    counterpartyId: headerOrganization.globalOrganizationId ?? headerOrganization.id,
+    id: headerOrganization.id,
+    subscriptMode:
+      headerOrganization.caption === undefined ? ('fromLibrary' as const) : ('custom' as const),
+    title: headerOrganization.label,
+    ...(headerOrganization.caption === undefined
+      ? {}
+      : { customSubscript: headerOrganization.caption }),
+  };
+
   return {
     ...objectDefaults,
     headerOrganizations: [...objectDefaults.headerOrganizations, headerOrganization],
+    objectTemplate: {
+      ...objectDefaults.objectTemplate,
+      counterparties: [...objectDefaults.objectTemplate.counterparties, counterparty],
+    },
   };
 }
 
@@ -1238,6 +1389,14 @@ export function moveHeaderOrganizationBlock(
       headerOrganizationId,
       direction,
     ),
+    objectTemplate: {
+      ...objectDefaults.objectTemplate,
+      counterparties: moveItemById(
+        objectDefaults.objectTemplate.counterparties,
+        headerOrganizationId,
+        direction,
+      ),
+    },
   };
 }
 
@@ -1245,22 +1404,47 @@ export function addRepresentativeToLibrary(
   objectDefaults: DemoAosrObjectDefaults,
   representative: DemoAosrRepresentative,
 ): DemoAosrObjectDefaults {
+  const signatoryId = representative.globalRepresentativeId ?? representative.id;
+
   if (
     objectDefaults.representativeLibrary.some(
-      (existingRepresentative) =>
-        existingRepresentative.id === representative.id ||
-        (representative.globalRepresentativeId !== undefined &&
-          (existingRepresentative.id === representative.globalRepresentativeId ||
-            existingRepresentative.globalRepresentativeId ===
-              representative.globalRepresentativeId)),
+      (existingRepresentative) => existingRepresentative.id === representative.id,
     )
   ) {
     return objectDefaults;
   }
 
+  const existingGroup = objectDefaults.objectTemplate.representativeGroups.find(
+    ({ title }) => title === representative.roleLabel,
+  );
+  const groupId = existingGroup?.id ?? `representative-group-${representative.id}`;
+  const member = {
+    id: `representative-member-${representative.id}`,
+    signatoryId,
+    subscriptMode:
+      representative.details === undefined ? ('fromLibrary' as const) : ('custom' as const),
+    ...(representative.details === undefined ? {} : { customSubscript: representative.details }),
+  };
+  const representativeGroups =
+    existingGroup === undefined
+      ? [
+          ...objectDefaults.objectTemplate.representativeGroups,
+          { id: groupId, members: [member], title: representative.roleLabel },
+        ]
+      : objectDefaults.objectTemplate.representativeGroups.map((group) =>
+          group.id === existingGroup.id ? { ...group, members: [...group.members, member] } : group,
+        );
+
   return {
     ...objectDefaults,
-    representativeLibrary: [...objectDefaults.representativeLibrary, representative],
+    objectTemplate: {
+      ...objectDefaults.objectTemplate,
+      representativeGroups,
+    },
+    representativeLibrary: [
+      ...objectDefaults.representativeLibrary,
+      { ...representative, templateGroupId: groupId },
+    ],
   };
 }
 
@@ -1272,9 +1456,14 @@ export function addRepresentativeToDraft(
     return draft;
   }
 
+  const manualRepresentative = {
+    ...representative,
+    templateGroupId: representative.templateGroupId ?? `manual-group-${representative.id}`,
+  };
+
   return syncManualTemplateSnapshotFromDraft({
     ...draft,
-    representatives: [...draft.representatives, representative],
+    representatives: [...draft.representatives, manualRepresentative],
   });
 }
 
@@ -1286,6 +1475,80 @@ export function removeRepresentativeFromDraft(
     ...draft,
     representatives: draft.representatives.filter(({ id }) => id !== representativeId),
   });
+}
+
+export function updateRepresentativeInDraft(
+  draft: DemoAosrDraft,
+  representativeId: string,
+  field:
+    | 'authorityBasis'
+    | 'details'
+    | 'fullName'
+    | 'introDisplayText'
+    | 'nrsId'
+    | 'organization'
+    | 'position'
+    | 'roleLabel'
+    | 'signatureName'
+    | 'signatureText',
+  value: string,
+): DemoAosrDraft {
+  if (draft.templateMode !== 'manual') {
+    return draft;
+  }
+
+  const sourceRepresentative = draft.representatives.find(({ id }) => id === representativeId);
+
+  if (sourceRepresentative === undefined) {
+    return draft;
+  }
+
+  return syncManualTemplateSnapshotFromDraft({
+    ...draft,
+    representatives: draft.representatives.map((representative) => {
+      const isSameRepresentative = representative.id === representativeId;
+      const isSameGroupTitle =
+        field === 'roleLabel' &&
+        sourceRepresentative.templateGroupId !== undefined &&
+        representative.templateGroupId === sourceRepresentative.templateGroupId;
+
+      if (!isSameRepresentative && !isSameGroupTitle) {
+        return representative;
+      }
+
+      if (field === 'introDisplayText' || field === 'signatureName' || field === 'signatureText') {
+        return { ...representative, [field]: value };
+      }
+
+      const { introDisplayText, signatureName, signatureText, ...editableRepresentative } =
+        representative;
+      void introDisplayText;
+      void signatureName;
+      void signatureText;
+
+      return { ...editableRepresentative, [field]: value };
+    }),
+  });
+}
+
+export function updateManualObjectNameSubscript(
+  draft: DemoAosrDraft,
+  value: string,
+): DemoAosrDraft {
+  if (draft.templateMode !== 'manual' || draft.manualTemplateSnapshot === undefined) {
+    return draft;
+  }
+
+  return {
+    ...draft,
+    manualTemplateSnapshot: {
+      ...draft.manualTemplateSnapshot,
+      object: {
+        ...draft.manualTemplateSnapshot.object,
+        nameSubscript: value,
+      },
+    },
+  };
 }
 
 export function moveRepresentativeInDraft(

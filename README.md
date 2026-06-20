@@ -26,23 +26,16 @@ only the first implemented document type, while future types stay disabled as
 documents, with the real registry implementation coming soon. Numbering
 settings are planned for a later stage and are not implemented here.
 
-Document defaults principle: object-level values are now presented as
-`Параметры по умолчанию`. They are suggestions copied into newly created
-documents, not live settings that silently mutate existing acts. The current
-frontend mock now makes the printed AOSR draft own its object name, under-title
-text, header organization order, project documentation text, point 6 compliance
-text, form title metadata and selected certificate/object-document printable
-snapshots. Existing drafts change only when the user edits the document field
-or explicitly restores it from current defaults. Future numbering settings must
-follow the same rule: automatic numbering is a suggestion, manual numbers may be
-edited or left empty, manual edits do not mutate the sequence, documents are not
-automatically renumbered, and deleted numbers are not reused by default.
-
-ADR 0007 supersedes that copied-default rule for active working template data:
-linked acts resolve object-template and library data live, while manual acts
-own a complete `manualTemplateSnapshot`. Representative groups render one group
-title with all members inside, including signatures. `AosrPrintState.document`
-uses raw `number` and `date` values; renderers add `№` and date formatting.
+Live object template principle: reusable counterparties and signatories are
+global live libraries, while `ObjectTemplate` stores their ids, object-specific
+labels, grouping, order and subscripts. Linked acts resolve current printable
+data through `libraries -> ObjectTemplate -> printState`; manual acts use one
+complete `manualTemplateSnapshot`. There are no partial template-field
+overrides. The UI calls these object-level live values `Шаблон объекта`.
+Representative groups are real groups with independent ids and any number of
+members. `AosrPrintState.document` keeps raw `number` and `date`; renderers add
+`№` and date formatting. The individual `workContractorName` is entered on the
+act and is never inferred from a counterparty title.
 
 The first technical vertical slice now proves that the React shell can call the
 NestJS technical `/health` endpoint through `VITE_API_BASE_URL` and consume the
@@ -119,10 +112,10 @@ material, signatory and object-organization pickers. These dashboard sections
 have no backend, persistence, uploads, real generation, auth, share codes or
 production business logic.
 
-Stage 5 clarified the mock AOSR workspace UX: default parameters stay behind a
+Stage 5 clarified the mock AOSR workspace UX: the object template stays behind a
 compact button, the middle column is now presented as `Рабочая область акта`,
-and the UI copy separates object-level defaults from `Текущий акт`. The intended
-future model remains `global library -> object binding/snapshot -> act usage`.
+and the UI copy separates the live object template from `Текущий акт`. The
+implemented frontend chain is `global library -> object template -> linked act`.
 For demo convenience, object representatives may still be prefilled from the
 global mock library; in the real system the user will choose/bind them for the
 object. Exact Word-like AOSR preview matching remains a separate future stage.
@@ -159,18 +152,15 @@ source for the final printed applications result. No backend, persistence,
 Prisma/schema/migration, upload, OCR/AI or real DOCX/PDF generation changes were
 added.
 
-The frontend-only mock object compliance defaults step moved point 6 compliance
-text into object-level reusable values. ADR 0007 supersedes the earlier live
-default behavior: current AOSR drafts own their point 6 text after creation,
-show `По параметрам по умолчанию` while matching current defaults, show
-`Изменено в документе` when the document differs, and can explicitly restore
-from `Параметры по умолчанию` without mutating the defaults. The same
-document-owned model now covers other printable AOSR values audited in the
-editor and preview: printed object name, header organization blocks/order,
-project documentation, form title metadata and selected certificate/object
-document snapshots. This remains in-memory demo UI only and introduces no
-backend, persistence, Prisma/schema/migration, uploads, OCR/AI, generation,
-auth, sharing or production business logic.
+The frontend-only mock now implements ADR 0007 for active working AOSR drafts.
+`linked` acts read object name, counterparties, representative groups, project
+documentation, point 6 and copies from the current object template and global
+libraries. `manual` acts read those values only from their complete snapshot.
+Changing individual act data does not change the template mode. Returning to
+the object template deletes the snapshot and restores the live chain. This
+remains in-memory demo UI only and introduces no backend, persistence,
+Prisma/schema/migration, uploads, OCR/AI, generation, auth, sharing or production
+business logic.
 
 The frontend-only mock object workspace visual pass makes the object workspace
 closer to the clean UI reference: a stronger object header, compact status
@@ -408,17 +398,17 @@ production registry/package logic.
 The frontend-only print-order AOSR editor UX step makes the current act editor
 follow the real printed АОСР order instead of arbitrary form grouping. The
 editor now starts with the printed header data (`Номер акта`, `Дата акта`,
-object, form title and document-owned under-title text), then shows the
+object and form title), then shows the
 organizations participating in the act with configurable display order, then
 the current act signatories, and only after that the numbered points 1-7,
 additional data and applications. Organization order updates the editor and the
 preview immediately, signatory ordering uses a clearer drag handle plus visible
 drop target while keeping explicit move buttons, and the current demo document
-has frontend metadata for the default `АОСР 1` form variant. The under-title
-text, printed object name, header organization order, project documentation and
-point 6 text are copied from default parameters into a draft at creation and
-are then editable/restorable in the document. The preview reads these printable
-values from the draft, not live object defaults. Empty fields remain allowed.
+has frontend metadata for the default `АОСР 1` form variant. In linked mode the
+printed object name, header organization order, representative groups, project
+documentation and point 6 text resolve live from the object template and global
+libraries. In manual mode they resolve from the complete act snapshot. Empty
+fields remain allowed.
 This is frontend-only mock UX/model metadata and adds no backend/API,
 persistence, Prisma/schema/migrations,
 uploads, OCR/AI, DOCX/PDF/ZIP generation or production business logic.
@@ -613,14 +603,12 @@ Scaffold включает:
   representative/organization management page, recent documents and in-memory
   dashboard -> object workspace navigation, with no backend, persistence, auth,
   uploads, generation, share codes/grants or business logic.
-- frontend-only document default parameters: object-level default under-title,
-  object name, project documentation, header organization order and point 6
-  texts are copied into new AOSR drafts; existing drafts own their printable
-  document values and change only through editing or explicit restore from
-  `Параметры по умолчанию`; selected certificates/object documents also keep
-  draft snapshots for preview, with no backend, persistence,
-  Prisma/schema/migration, auth, uploads, generation or production business
-  logic.
+- frontend-only live object template: linked AOSR drafts resolve object-owned
+  printable data from `ObjectTemplate` and global counterparty/signatory
+  libraries; manual drafts use a complete snapshot with no partial overrides;
+  selected certificates/object documents keep their existing act snapshots,
+  with no backend, persistence, Prisma/schema/migration, auth, uploads,
+  generation or production business logic.
 - frontend-only object document workspace: object-level document registry UI
   with mock filters, summary counts, AOSR usage labels and local in-memory
   creation, sharing the demo object document source with the AOSR point 4 drawer

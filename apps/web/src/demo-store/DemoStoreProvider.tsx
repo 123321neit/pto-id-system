@@ -72,7 +72,7 @@ export function DemoStoreProvider({ children }: DemoStoreProviderProps): React.J
     setCreatedObjectDocumentCount((currentCount) => currentCount + 1);
   };
 
-  const addOrganization = (input: DemoOrganizationInput): void => {
+  const addOrganization = (input: DemoOrganizationInput): DemoOrganization => {
     const organization: DemoOrganization = {
       caption: 'Пользовательская организация из единого demo store.',
       details: input.details.trim(),
@@ -83,9 +83,11 @@ export function DemoStoreProvider({ children }: DemoStoreProviderProps): React.J
 
     setOrganizations((currentOrganizations) => [...currentOrganizations, organization]);
     setCreatedOrganizationCount((currentCount) => currentCount + 1);
+
+    return organization;
   };
 
-  const addRepresentative = (input: DemoRepresentativeInput): void => {
+  const addRepresentative = (input: DemoRepresentativeInput): DemoRepresentative => {
     const nrsDetails = input.nrsDetails.trim();
     const representative: DemoRepresentative = {
       authorityBasis: input.authorityBasis.trim(),
@@ -99,6 +101,8 @@ export function DemoStoreProvider({ children }: DemoStoreProviderProps): React.J
 
     setRepresentatives((currentRepresentatives) => [...currentRepresentatives, representative]);
     setCreatedRepresentativeCount((currentCount) => currentCount + 1);
+
+    return representative;
   };
 
   return (

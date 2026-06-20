@@ -79,8 +79,10 @@ describe('DemoAosrPreview', () => {
 
     const signatures = screen.getByRole('region', { name: 'Подписи представителей' });
     expect(within(signatures).getAllByText(`${groupTitle}:`)).toHaveLength(1);
-    expect(within(signatures).getByText('Главный инженер ООО "Монтаж" Иванов И.И.')).toBeTruthy();
-    expect(within(signatures).getByText('Инженер ПТО ООО "Монтаж" Петров П.П.')).toBeTruthy();
+    expect(within(signatures).getByText('Главный инженер ООО "Монтаж"')).toBeTruthy();
+    expect(within(signatures).getByText('Иванов И.И.')).toBeTruthy();
+    expect(within(signatures).getByText('Инженер ПТО ООО "Монтаж"')).toBeTruthy();
+    expect(within(signatures).getByText('Петров П.П.')).toBeTruthy();
   });
 
   it('does not render introDisplayText again when it is duplicated in subscript', () => {
@@ -121,7 +123,6 @@ function createPrintState(groups: AosrPrintState['representatives']['groups']): 
       copiesLine: '2',
       date: '2026-06-17',
       number: 'ОВ-77',
-      underTitleText: '',
     },
     materials: { items: [] },
     object: {

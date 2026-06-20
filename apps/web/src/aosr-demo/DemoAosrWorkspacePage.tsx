@@ -36,6 +36,9 @@ import {
   toggleApplicationInclusionInDraft,
   updateDemoAosrDraftField,
   updateDemoObjectDefaultsField,
+  updateHeaderOrganizationInDraft,
+  updateManualObjectNameSubscript,
+  updateRepresentativeInDraft,
   type AosrPrintState,
   type DemoAosrDraft,
   type DemoAosrDraftField,
@@ -93,7 +96,14 @@ export function DemoAosrWorkspacePage({
   settingsOpenRequest,
   visibleDraftIds,
 }: DemoAosrWorkspacePageProps = {}): React.JSX.Element {
-  const { certificates, objectDocuments, organizations, representatives } = useDemoStore();
+  const {
+    addOrganization,
+    addRepresentative,
+    certificates,
+    objectDocuments,
+    organizations,
+    representatives,
+  } = useDemoStore();
   const globalOrganizations = organizations.map(toDemoGlobalOrganization);
   const globalRepresentatives = representatives.map(toDemoAosrRepresentative);
   const counterpartyLibrary = globalOrganizations.map(
@@ -166,6 +176,12 @@ export function DemoAosrWorkspacePage({
   const selectedTemplateFields: DemoAosrTemplateFields = resolveDemoAosrTemplateFields({
     counterpartyLibrary,
     draft: selectedDraft,
+    objectDefaults,
+    signatoryLibrary,
+  });
+  const linkedTemplateFields: DemoAosrTemplateFields = resolveDemoAosrTemplateFields({
+    counterpartyLibrary,
+    draft: returnDraftToLinkedTemplateMode(selectedDraft),
     objectDefaults,
     signatoryLibrary,
   });
@@ -280,14 +296,25 @@ export function DemoAosrWorkspacePage({
     event.preventDefault();
 
     const caption = headerOrganizationForm.caption.trim();
-    const globalOrganizationId = headerOrganizationForm.globalOrganizationId.trim();
+    const selectedGlobalOrganizationId = headerOrganizationForm.globalOrganizationId.trim();
+    const selectedGlobalOrganization = globalOrganizations.find(
+      ({ id }) => id === selectedGlobalOrganizationId,
+    );
+    const globalOrganizationId =
+      selectedGlobalOrganizationId === ''
+        ? addOrganization({
+            details: headerOrganizationForm.details,
+            name: headerOrganizationForm.organizationName,
+            usageNote: `Используется в шаблоне объекта как «${headerOrganizationForm.label.trim()}».`,
+          }).id
+        : selectedGlobalOrganizationId;
     const headerOrganization: DemoAosrHeaderOrganization = {
       details: headerOrganizationForm.details.trim(),
       id: `header-organization-created-${String(createdHeaderOrganizationCount)}`,
       label: headerOrganizationForm.label.trim(),
       organizationName: headerOrganizationForm.organizationName.trim(),
-      ...(caption === '' ? {} : { caption }),
-      ...(globalOrganizationId === '' ? {} : { globalOrganizationId }),
+      ...(caption === '' || caption === selectedGlobalOrganization?.caption ? {} : { caption }),
+      globalOrganizationId,
     };
 
     commitObjectDefaults((currentDefaults) =>
@@ -302,10 +329,30 @@ export function DemoAosrWorkspacePage({
   const addLibraryRepresentative = (event: SyntheticEvent<HTMLFormElement>): void => {
     event.preventDefault();
 
-    const representative = createRepresentativeFromForm(
+    const selectedGlobalRepresentativeId = libraryRepresentativeForm.globalRepresentativeId.trim();
+    const globalRepresentativeId =
+      selectedGlobalRepresentativeId === ''
+        ? addRepresentative({
+            authorityBasis: libraryRepresentativeForm.authorityBasis,
+            fullName: libraryRepresentativeForm.fullName,
+            nrsDetails: libraryRepresentativeForm.nrsId,
+            organization: libraryRepresentativeForm.organization,
+            position: libraryRepresentativeForm.position,
+            roleLabel: libraryRepresentativeForm.roleLabel,
+          }).id
+        : selectedGlobalRepresentativeId;
+    const createdRepresentative = createRepresentativeFromForm(
       `representative-created-${String(createdRepresentativeCount)}`,
-      libraryRepresentativeForm,
+      { ...libraryRepresentativeForm, globalRepresentativeId },
     );
+    const selectedGlobalRepresentative = globalRepresentatives.find(
+      ({ id }) => id === selectedGlobalRepresentativeId,
+    );
+    const representative =
+      createdRepresentative.details !== undefined &&
+      createdRepresentative.details === selectedGlobalRepresentative?.details
+        ? omitRepresentativeDetails(createdRepresentative)
+        : createdRepresentative;
 
     commitObjectDefaults((currentDefaults) =>
       addRepresentativeToLibrary(currentDefaults, representative),
@@ -428,7 +475,7 @@ export function DemoAosrWorkspacePage({
                 }}
                 type="button"
               >
-                Параметры по умолчанию
+                Шаблон объекта
               </button>
             )}
             <button
@@ -481,6 +528,7 @@ export function DemoAosrWorkspacePage({
               isObjectDocumentLibraryOpen={isObjectDocumentLibraryOpen}
               manualRepresentativeForm={manualRepresentativeForm}
               materialSearch={materialSearch}
+              linkedTemplateFields={linkedTemplateFields}
               objectDefaults={objectDefaults}
               objectDocumentLibrary={objectDocuments}
               printState={printState}
@@ -530,7 +578,15 @@ export function DemoAosrWorkspacePage({
                   moveHeaderOrganizationInDraft(draft, headerOrganizationId, direction),
                 );
               }}
+              onUpdateHeaderOrganization={(headerOrganizationId, field, value) => {
+                updateSelectedDraftWith((draft) =>
+                  updateHeaderOrganizationInDraft(draft, headerOrganizationId, field, value),
+                );
+              }}
               onMoveSelectedSignatory={moveSelectedSignatory}
+              onUpdateObjectNameSubscript={(value) => {
+                updateSelectedDraftWith((draft) => updateManualObjectNameSubscript(draft, value));
+              }}
               onRemoveMaterialFromAct={(certificateId) => {
                 updateSelectedDraftWith((draft) =>
                   removeMaterialCertificateFromDraft(draft, certificateId),
@@ -544,6 +600,11 @@ export function DemoAosrWorkspacePage({
               onRemoveRepresentativeFromAct={(representativeId) => {
                 updateSelectedDraftWith((draft) =>
                   removeRepresentativeFromDraft(draft, representativeId),
+                );
+              }}
+              onUpdateRepresentative={(representativeId, field, value) => {
+                updateSelectedDraftWith((draft) =>
+                  updateRepresentativeInDraft(draft, representativeId, field, value),
                 );
               }}
               onReorderSelectedSignatory={reorderSelectedSignatory}
@@ -705,6 +766,13 @@ function toDemoMaterialCertificates(
     id: material.id,
     materialName: material.name,
   }));
+}
+
+function omitRepresentativeDetails(representative: DemoAosrRepresentative): DemoAosrRepresentative {
+  const { details, ...representativeWithoutDetails } = representative;
+  void details;
+
+  return representativeWithoutDetails;
 }
 
 function getAosrNrsId(nrsDetails: string | undefined): string | undefined {

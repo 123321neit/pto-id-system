@@ -10,6 +10,7 @@ interface DemoSignatoriesEditorProps {
   readonly dropTargetRepresentativeId: string | null;
   readonly isManualRepresentativeFormOpen: boolean;
   readonly isTemplateEditable: boolean;
+  readonly linkedSignatories: readonly DemoAosrRepresentative[];
   readonly manualRepresentativeForm: RepresentativeFormState;
   readonly objectRepresentatives: readonly DemoAosrRepresentative[];
   readonly selectedSignatories: readonly DemoAosrRepresentative[];
@@ -26,6 +27,21 @@ interface DemoSignatoriesEditorProps {
   readonly onDragRepresentativeTarget: (representativeId: string) => void;
   readonly onMoveSelectedSignatory: (representativeId: string, direction: MoveDirection) => void;
   readonly onRemoveRepresentativeFromAct: (representativeId: string) => void;
+  readonly onUpdateRepresentative: (
+    representativeId: string,
+    field:
+      | 'authorityBasis'
+      | 'details'
+      | 'fullName'
+      | 'introDisplayText'
+      | 'nrsId'
+      | 'organization'
+      | 'position'
+      | 'roleLabel'
+      | 'signatureName'
+      | 'signatureText',
+    value: string,
+  ) => void;
   readonly onReorderSelectedSignatory: (targetRepresentativeId: string) => void;
   readonly onToggleManualRepresentativeForm: () => void;
 }
@@ -36,6 +52,7 @@ export function DemoSignatoriesEditor({
   dropTargetRepresentativeId,
   isManualRepresentativeFormOpen,
   isTemplateEditable,
+  linkedSignatories,
   manualRepresentativeForm,
   objectRepresentatives,
   selectedSignatories,
@@ -49,6 +66,7 @@ export function DemoSignatoriesEditor({
   onDragRepresentativeTarget,
   onMoveSelectedSignatory,
   onRemoveRepresentativeFromAct,
+  onUpdateRepresentative,
   onReorderSelectedSignatory,
   onToggleManualRepresentativeForm,
 }: DemoSignatoriesEditorProps): React.JSX.Element {
@@ -155,6 +173,20 @@ export function DemoSignatoriesEditor({
 
       <ol className="signatory-order-list" aria-label="Порядок подписантов">
         {selectedSignatories.map((representative, index) => {
+          const linkedRepresentative = linkedSignatories.find(({ id }) => id === representative.id);
+          const isDifferent =
+            isTemplateEditable &&
+            (linkedRepresentative?.roleLabel !== representative.roleLabel ||
+              linkedRepresentative.fullName !== representative.fullName ||
+              linkedRepresentative.position !== representative.position ||
+              linkedRepresentative.organization !== representative.organization ||
+              linkedRepresentative.authorityBasis !== representative.authorityBasis ||
+              (linkedRepresentative.nrsId ?? '') !== (representative.nrsId ?? '') ||
+              (linkedRepresentative.details ?? '') !== (representative.details ?? '') ||
+              (linkedRepresentative.introDisplayText ?? '') !==
+                (representative.introDisplayText ?? '') ||
+              (linkedRepresentative.signatureText ?? '') !== (representative.signatureText ?? '') ||
+              (linkedRepresentative.signatureName ?? '') !== (representative.signatureName ?? ''));
           const subtitle = [representative.position, representative.organization]
             .map((value) => value.trim())
             .filter(Boolean)
@@ -220,7 +252,11 @@ export function DemoSignatoriesEditor({
               </span>
               <span className="signatory-order-item__body">
                 <strong className="signatory-order-item__title">
-                  {representative.roleLabel} — {representative.fullName}
+                  {representative.roleLabel}
+                  <span className="signatory-order-item__name">
+                    {' — '}
+                    {representative.fullName}
+                  </span>
                 </strong>
                 {subtitle === '' ? null : (
                   <small className="signatory-order-item__subtitle">{subtitle}</small>
@@ -228,6 +264,158 @@ export function DemoSignatoriesEditor({
                 {details === '' ? null : (
                   <small className="signatory-order-item__details">{details}</small>
                 )}
+                {isDifferent ? (
+                  <small className="source-chip">Отличается от шаблона объекта</small>
+                ) : null}
+                {isTemplateEditable ? (
+                  <details className="manual-snapshot-editor">
+                    <summary>Изменить подписанта</summary>
+                    <div className="act-form-grid">
+                      <label>
+                        Группа
+                        <input
+                          aria-label={`Группа подписанта ${representative.fullName}`}
+                          onChange={(event) => {
+                            onUpdateRepresentative(
+                              representative.id,
+                              'roleLabel',
+                              event.currentTarget.value,
+                            );
+                          }}
+                          value={representative.roleLabel}
+                        />
+                      </label>
+                      <label>
+                        ФИО
+                        <input
+                          aria-label={`ФИО подписанта ${representative.fullName}`}
+                          onChange={(event) => {
+                            onUpdateRepresentative(
+                              representative.id,
+                              'fullName',
+                              event.currentTarget.value,
+                            );
+                          }}
+                          value={representative.fullName}
+                        />
+                      </label>
+                      <label>
+                        Должность
+                        <input
+                          aria-label={`Должность подписанта ${representative.fullName}`}
+                          onChange={(event) => {
+                            onUpdateRepresentative(
+                              representative.id,
+                              'position',
+                              event.currentTarget.value,
+                            );
+                          }}
+                          value={representative.position}
+                        />
+                      </label>
+                      <label>
+                        Организация
+                        <input
+                          aria-label={`Организация подписанта ${representative.fullName}`}
+                          onChange={(event) => {
+                            onUpdateRepresentative(
+                              representative.id,
+                              'organization',
+                              event.currentTarget.value,
+                            );
+                          }}
+                          value={representative.organization}
+                        />
+                      </label>
+                      <label className="act-form-grid__wide">
+                        Основание полномочий
+                        <input
+                          aria-label={`Основание полномочий подписанта ${representative.fullName}`}
+                          onChange={(event) => {
+                            onUpdateRepresentative(
+                              representative.id,
+                              'authorityBasis',
+                              event.currentTarget.value,
+                            );
+                          }}
+                          value={representative.authorityBasis}
+                        />
+                      </label>
+                      <label>
+                        НРС
+                        <input
+                          aria-label={`НРС подписанта ${representative.fullName}`}
+                          onChange={(event) => {
+                            onUpdateRepresentative(
+                              representative.id,
+                              'nrsId',
+                              event.currentTarget.value,
+                            );
+                          }}
+                          value={representative.nrsId ?? ''}
+                        />
+                      </label>
+                      <label className="act-form-grid__wide">
+                        Подстрочное пояснение
+                        <textarea
+                          aria-label={`Подстрочное пояснение подписанта ${representative.fullName}`}
+                          onChange={(event) => {
+                            onUpdateRepresentative(
+                              representative.id,
+                              'details',
+                              event.currentTarget.value,
+                            );
+                          }}
+                          rows={2}
+                          value={representative.details ?? ''}
+                        />
+                      </label>
+                      <label className="act-form-grid__wide">
+                        Строка представителя в верхней части
+                        <textarea
+                          aria-label={`Верхняя печатная строка подписанта ${representative.fullName}`}
+                          onChange={(event) => {
+                            onUpdateRepresentative(
+                              representative.id,
+                              'introDisplayText',
+                              event.currentTarget.value,
+                            );
+                          }}
+                          rows={3}
+                          value={representative.introDisplayText ?? ''}
+                        />
+                      </label>
+                      <label className="act-form-grid__wide">
+                        Левая часть подписи
+                        <input
+                          aria-label={`Левая часть подписи ${representative.fullName}`}
+                          onChange={(event) => {
+                            onUpdateRepresentative(
+                              representative.id,
+                              'signatureText',
+                              event.currentTarget.value,
+                            );
+                          }}
+                          value={representative.signatureText ?? ''}
+                        />
+                      </label>
+                      <label>
+                        Имя в подписи
+                        <input
+                          aria-label={`Имя в подписи ${representative.fullName}`}
+                          onChange={(event) => {
+                            onUpdateRepresentative(
+                              representative.id,
+                              'signatureName',
+                              event.currentTarget.value,
+                            );
+                          }}
+                          value={representative.signatureName ?? ''}
+                        />
+                      </label>
+                    </div>
+                  </details>
+                ) : null}
               </span>
               {isTemplateEditable ? (
                 <span className="signatory-order-item__actions">

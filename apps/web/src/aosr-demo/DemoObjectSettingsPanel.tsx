@@ -65,17 +65,17 @@ const objectSettingsSections: readonly {
   {
     id: 'header',
     label: 'Шапка акта',
-    summary: 'Подсказки для новых актов',
+    summary: 'Организации и порядок',
   },
   {
     id: 'representatives',
     label: 'Представители',
-    summary: 'Назначения для актов',
+    summary: 'Группы и участники',
   },
   {
     id: 'texts',
     label: 'Тексты акта',
-    summary: 'Пункты 4 и 6 по умолчанию',
+    summary: 'Повторяющиеся пункты',
   },
 ];
 
@@ -118,7 +118,7 @@ export function DemoObjectSettingsPanel({
         <div className="object-settings-dialog__header">
           <span>
             <p className="scope-label">Уровень объекта</p>
-            <h2 id="object-settings-title">Параметры по умолчанию</h2>
+            <h2 id="object-settings-title">Шаблон объекта</h2>
           </span>
           <button className="compact-toggle" onClick={onCloseObjectSettings} type="button">
             Закрыть
@@ -126,12 +126,12 @@ export function DemoObjectSettingsPanel({
         </div>
 
         <p className="object-settings-dialog__intro">
-          Эти значения подставляются в новые документы как предложение. Уже созданные акты меняются
-          только в самом документе или через явное действие возврата к параметрам по умолчанию.
+          Связанные документы используют эти данные напрямую. Изменения библиотек и шаблона
+          автоматически видны во всех актах со статусом «По шаблону».
         </p>
 
         <div className="object-settings-layout">
-          <nav className="object-settings-menu" aria-label="Разделы параметров по умолчанию">
+          <nav className="object-settings-menu" aria-label="Разделы шаблона объекта">
             {objectSettingsSections.map((section) => (
               <button
                 aria-current={activeSectionId === section.id ? 'page' : undefined}
@@ -174,42 +174,45 @@ export function DemoObjectSettingsPanel({
                       value={objectDefaults.objectName}
                     />
                   </label>
+                  <label className="act-form-grid__wide">
+                    Подстрочное пояснение объекта
+                    <textarea
+                      name="objectNameSubscript"
+                      onChange={(event) => {
+                        onUpdateObjectDefaults('objectNameSubscript', event.currentTarget.value);
+                      }}
+                      rows={2}
+                      value={objectDefaults.objectNameSubscript}
+                    />
+                  </label>
+                  <label>
+                    Количество экземпляров
+                    <input
+                      name="defaultCopiesLine"
+                      onChange={(event) => {
+                        onUpdateObjectDefaults('defaultCopiesLine', event.currentTarget.value);
+                      }}
+                      value={objectDefaults.defaultCopiesLine}
+                    />
+                  </label>
                 </div>
               </section>
             ) : null}
 
             {activeSectionId === 'header' ? (
-              <>
-                <section className="form-section" aria-labelledby="object-header-text-title">
-                  <h3 id="object-header-text-title">Шапка акта</h3>
-                  <label className="act-form-grid__wide">
-                    Текст под заголовком акта по умолчанию
-                    <textarea
-                      className="medium-field"
-                      name="defaultUnderTitleText"
-                      onChange={(event) => {
-                        onUpdateObjectDefaults('defaultUnderTitleText', event.currentTarget.value);
-                      }}
-                      rows={3}
-                      value={objectDefaults.defaultUnderTitleText}
-                    />
-                  </label>
-                </section>
-
-                <DemoHeaderOrganizationsPanel
-                  form={headerOrganizationForm}
-                  globalOrganizations={globalOrganizations}
-                  headerOrganizations={objectDefaults.headerOrganizations}
-                  isFormOpen={isHeaderOrganizationFormOpen}
-                  organizationSearch={organizationSearch}
-                  onChangeForm={onChangeHeaderOrganizationForm}
-                  onChangeSearch={onChangeOrganizationSearch}
-                  onMoveHeaderOrganization={onMoveHeaderOrganization}
-                  onSelectGlobalOrganization={onSelectGlobalOrganization}
-                  onSubmit={onAddHeaderOrganization}
-                  onToggleForm={onToggleHeaderOrganizationForm}
-                />
-              </>
+              <DemoHeaderOrganizationsPanel
+                form={headerOrganizationForm}
+                globalOrganizations={globalOrganizations}
+                headerOrganizations={objectDefaults.headerOrganizations}
+                isFormOpen={isHeaderOrganizationFormOpen}
+                organizationSearch={organizationSearch}
+                onChangeForm={onChangeHeaderOrganizationForm}
+                onChangeSearch={onChangeOrganizationSearch}
+                onMoveHeaderOrganization={onMoveHeaderOrganization}
+                onSelectGlobalOrganization={onSelectGlobalOrganization}
+                onSubmit={onAddHeaderOrganization}
+                onToggleForm={onToggleHeaderOrganizationForm}
+              />
             ) : null}
 
             {activeSectionId === 'representatives' ? (
@@ -219,6 +222,7 @@ export function DemoObjectSettingsPanel({
                 isFormOpen={isRepresentativeLibraryFormOpen}
                 isLibraryOpen={isRepresentativeLibraryOpen}
                 objectRepresentatives={objectDefaults.representativeLibrary}
+                representativeGroups={objectDefaults.objectTemplate.representativeGroups}
                 representativeSearch={representativeSearch}
                 onChangeForm={onChangeLibraryRepresentativeForm}
                 onChangeSearch={onChangeRepresentativeSearch}
@@ -234,7 +238,7 @@ export function DemoObjectSettingsPanel({
                 <section className="form-section" aria-labelledby="object-project-docs-title">
                   <h3 id="object-project-docs-title">Пункт 4. Проектная документация</h3>
                   <label className="act-form-grid__wide">
-                    Проектная документация по умолчанию
+                    Проектная документация шаблона
                     <textarea
                       className="large-field"
                       name="defaultProjectDocumentation"

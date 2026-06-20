@@ -1,6 +1,6 @@
 import type { SyntheticEvent } from 'react';
 
-import type { DemoAosrRepresentative } from './demo-aosr-workspace.js';
+import type { DemoAosrRepresentative, ObjectTemplate } from './demo-aosr-workspace.js';
 import type { RepresentativeFormState } from './demo-aosr-ui.js';
 import { DemoRepresentativeForm } from './DemoRepresentativeForm.js';
 
@@ -10,6 +10,7 @@ interface DemoObjectRepresentativesPanelProps {
   readonly isFormOpen: boolean;
   readonly isLibraryOpen: boolean;
   readonly objectRepresentatives: readonly DemoAosrRepresentative[];
+  readonly representativeGroups: ObjectTemplate['representativeGroups'];
   readonly representativeSearch: string;
   readonly onChangeForm: (field: keyof RepresentativeFormState, value: string) => void;
   readonly onChangeSearch: (value: string) => void;
@@ -25,6 +26,7 @@ export function DemoObjectRepresentativesPanel({
   isFormOpen,
   isLibraryOpen,
   objectRepresentatives,
+  representativeGroups,
   representativeSearch,
   onChangeForm,
   onChangeSearch,
@@ -44,7 +46,8 @@ export function DemoObjectRepresentativesPanel({
         <span>
           <h3 id="representative-library-title">Представители для актов</h3>
           <p className="helper-note">
-            Назначьте людей один раз на объекте, затем выбирайте их в подписантах конкретного акта.
+            Группы и участники идут в том же порядке, что и в печатном документе. Связанные акты
+            используют этот состав автоматически.
           </p>
         </span>
         <span className="inline-actions">
@@ -64,16 +67,34 @@ export function DemoObjectRepresentativesPanel({
             role="list"
             aria-label="Назначения представителей объекта"
           >
-            {objectRepresentatives.map((representative) => (
-              <div className="library-row" key={representative.id} role="listitem">
+            {representativeGroups.map((group) => (
+              <div className="library-row library-row--stacked" key={group.id} role="listitem">
                 <span>
-                  <strong>{representative.fullName}</strong>
-                  <small>
-                    {representative.roleLabel} / {representative.position}
-                  </small>
-                  <small>{representative.organization}</small>
-                  <small>{representative.authorityBasis}</small>
+                  <strong>{group.title}</strong>
                 </span>
+                <ol className="compact-card-list" aria-label={`Участники группы ${group.title}`}>
+                  {group.members.map((member) => {
+                    const representative = objectRepresentatives.find(
+                      (candidate) =>
+                        candidate.id === member.signatoryId ||
+                        candidate.globalRepresentativeId === member.signatoryId,
+                    );
+
+                    return (
+                      <li className="compact-card-list__item" key={member.id}>
+                        <span>
+                          <strong>{representative?.fullName ?? 'Подписант не найден'}</strong>
+                          <small>
+                            {[representative?.position, representative?.organization]
+                              .filter(Boolean)
+                              .join(', ')}
+                          </small>
+                          <small>{representative?.authorityBasis ?? ''}</small>
+                        </span>
+                      </li>
+                    );
+                  })}
+                </ol>
               </div>
             ))}
           </div>
@@ -123,7 +144,7 @@ export function DemoObjectRepresentativesPanel({
             form={form}
             labels={{
               authorityBasis: 'Основание полномочий для объекта',
-              details: 'Дополнительные сведения для объекта',
+              details: 'Подстрочное пояснение',
               fullName: 'ФИО представителя',
               nrsId: 'Номер НРС для объекта',
               organization: 'Организация на этом объекте',
@@ -132,7 +153,7 @@ export function DemoObjectRepresentativesPanel({
             }}
             onChange={onChangeForm}
             onSubmit={onSubmit}
-            submitLabel="Сохранить назначение представителя"
+            submitLabel="Добавить представителя в шаблон"
           />
         </div>
       ) : null}

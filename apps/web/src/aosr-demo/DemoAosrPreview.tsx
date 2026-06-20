@@ -58,9 +58,6 @@ export function DemoAosrPreview({
                   <strong>{formatDocumentDate(printState.document.date)}</strong>
                 </span>
               </div>
-              {printState.document.underTitleText.trim() === '' ? null : (
-                <p className="act-page__under-title-text">{printState.document.underTitleText}</p>
-              )}
             </section>
 
             <section className="act-page__representative-blocks" aria-label="Представители">
@@ -136,7 +133,7 @@ export function DemoAosrPreview({
                   ))}
                 </div>
               ) : (
-                <p>Материалы из демо-библиотеки сертификатов не выбраны.</p>
+                <p className="act-page__field-line" aria-label="Материалы не указаны" />
               )}
               <p className="act-page__caption">
                 (наименование материалов и реквизиты документов, подтверждающих качество)
@@ -159,7 +156,7 @@ export function DemoAosrPreview({
                   ))}
                 </div>
               ) : (
-                <p>Документы объекта для пункта 4 пока не выбраны.</p>
+                <p className="act-page__field-line" aria-label="Документы не указаны" />
               )}
               <p className="act-page__caption">
                 (исполнительные схемы, результаты обследований, журналы и иные материалы)
@@ -183,16 +180,6 @@ export function DemoAosrPreview({
                 </span>
               </p>
             </section>
-          </div>
-        </section>
-
-        <div className="act-page__page-break" aria-hidden="true" />
-
-        <section className="act-page__page-frame" aria-labelledby="aosr-preview-page-2-label">
-          <p className="act-page__page-label" id="aosr-preview-page-2-label">
-            Страница 2
-          </p>
-          <div className="act-page__sheet">
             <section className="act-page__official-section" aria-label="Соответствие работ">
               <p>
                 <span className="act-page__item-label">6. Работы выполнены в соответствии с:</span>{' '}
@@ -237,9 +224,7 @@ export function DemoAosrPreview({
                       );
                     })
                   ) : (
-                    <p>
-                      <span className="act-page__print-value">Приложения не включены.</span>
-                    </p>
+                    <p className="act-page__field-line" aria-label="Приложения не указаны" />
                   )}
                 </div>
               </div>
@@ -264,14 +249,14 @@ export function DemoAosrPreview({
                         )}`}
                       >
                         <div className="act-page__signature-person-row">
-                          <span className="act-page__signature-person">
-                            {member.signatureText} {member.signatureName}
-                          </span>
+                          <span className="act-page__signature-person">{member.signatureText}</span>
                           <span className="act-page__signature-line" aria-hidden="true" />
+                          <span className="act-page__signature-name">{member.signatureName}</span>
                         </div>
                         <div className="act-page__signature-caption-row">
-                          <span>(фамилия, инициалы)</span>
+                          <span>(должность, организация)</span>
                           <span>(подпись)</span>
+                          <span>(фамилия, инициалы)</span>
                         </div>
                       </div>
                     ))}

@@ -7,6 +7,7 @@ interface DocumentPreviewDrawerProps {
   readonly eyebrow?: string;
   readonly isOpen: boolean;
   readonly onClose: () => void;
+  readonly pageCount?: number;
   readonly title: string;
 }
 
@@ -17,6 +18,7 @@ export function DocumentPreviewDrawer({
   eyebrow,
   isOpen,
   onClose,
+  pageCount = 1,
   title,
 }: DocumentPreviewDrawerProps): React.JSX.Element | null {
   if (!isOpen) {
@@ -51,7 +53,7 @@ export function DocumentPreviewDrawer({
           </button>
         </header>
         <div className="document-preview-drawer__toolbar" aria-label="Параметры предпросмотра">
-          <span>2 страницы</span>
+          <span>{pageCount === 1 ? '1 страница' : `${String(pageCount)} страницы`}</span>
           <span>Формат A4</span>
           <span>Масштаб 100%</span>
         </div>

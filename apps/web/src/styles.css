@@ -4121,10 +4121,14 @@ h3 {
 }
 
 .signatory-order-item__title {
-  overflow-wrap: anywhere;
+  overflow-wrap: break-word;
   font-size: 0.86rem;
   font-weight: 750;
   line-height: 1.3;
+}
+
+.signatory-order-item__name {
+  white-space: nowrap;
 }
 
 .signatory-order-item__subtitle,
@@ -4142,8 +4146,34 @@ h3 {
   font-size: 0.74rem;
 }
 
+.manual-snapshot-editor {
+  margin-top: 6px;
+  border-top: 1px solid #e2e8ec;
+  padding-top: 6px;
+}
+
+.manual-snapshot-editor summary {
+  width: fit-content;
+  color: #486066;
+  cursor: pointer;
+  font-size: 0.75rem;
+  font-weight: 750;
+}
+
+.manual-snapshot-editor > .act-form-grid {
+  margin-top: 8px;
+}
+
+.manual-snapshot-editor label {
+  font-size: 0.75rem;
+}
+
 .signatory-order-item__actions {
   display: flex;
+  grid-row: 2;
+  grid-column: 2 / -1;
+  flex-wrap: wrap;
+  justify-self: end;
   gap: 6px;
 }
 
@@ -4228,12 +4258,6 @@ h3 {
   font-weight: 850;
   letter-spacing: 0;
   line-height: 1.15;
-}
-
-.act-page__page-break {
-  width: min(100%, 760px);
-  height: 1px;
-  background: linear-gradient(90deg, transparent, #c5d3df 18%, #c5d3df 82%, transparent);
 }
 
 .act-page__sheet {
@@ -4350,13 +4374,6 @@ h3 {
   text-align: right;
 }
 
-.act-page__under-title-text {
-  margin: 6px 0 0;
-  color: #2f3539;
-  font-size: 0.86rem;
-  line-height: 1.45;
-}
-
 .act-page__number-date-row strong {
   border-bottom: 1px solid #111111;
   padding: 0 2px 1px;
@@ -4408,7 +4425,7 @@ h3 {
 .act-page__signature-person-row,
 .act-page__signature-caption-row {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(112px, 0.28fr);
+  grid-template-columns: minmax(0, 1fr) minmax(92px, 0.22fr) minmax(120px, 0.3fr);
   gap: 18px;
   align-items: end;
 }
@@ -4422,6 +4439,12 @@ h3 {
 
 .act-page__signature-person {
   font-style: italic;
+}
+
+.act-page__signature-name {
+  border-bottom: 1px solid #111111;
+  font-style: italic;
+  text-align: center;
 }
 
 .act-page__signature-line {
@@ -4756,7 +4779,7 @@ h3 {
 
   .signatory-order-item__actions {
     grid-column: 2;
-    flex-wrap: wrap;
+    justify-self: start;
   }
 
   .signatory-order-item__body,

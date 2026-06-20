@@ -266,7 +266,7 @@ export function ObjectWorkspacePage({
             </button>
             <button
               aria-current={activeSection === 'settings' ? 'page' : undefined}
-              aria-label="Открыть параметры по умолчанию"
+              aria-label="Открыть шаблон объекта"
               onClick={openObjectSettings}
               type="button"
             >
@@ -274,8 +274,8 @@ export function ObjectWorkspacePage({
                 ○
               </span>
               <span className="object-workspace-nav__label">
-                <strong>Параметры по умолчанию</strong>
-                <small>Для новых документов</small>
+                <strong>Шаблон объекта</strong>
+                <small>Live-данные документов</small>
               </span>
             </button>
           </div>
@@ -411,7 +411,7 @@ function getSectionBreadcrumb(section: ObjectWorkspaceSection): string {
     case 'aosr':
       return `Периоды / ${aosrActType.code}`;
     case 'settings':
-      return 'Параметры по умолчанию';
+      return 'Шаблон объекта';
     case 'documents':
       return 'Документы объекта';
     case 'final-package':
