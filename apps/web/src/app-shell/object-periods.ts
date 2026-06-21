@@ -16,8 +16,8 @@ export const defaultDemoObjectPeriod: DemoObjectPeriod = {
   draftIds: ['aosr-draft-001'],
   id: 'period-2026-09',
   name: 'Сентябрь 2026',
-  periodicIdTitle: 'Периодическая ИД за Сентябрь 2026',
-  registryTitle: 'Реестр периода за Сентябрь 2026',
+  periodicIdTitle: 'Промежуточная ИД: Сентябрь 2026',
+  registryTitle: 'Реестр папки «Сентябрь 2026»',
 };
 
 export const demoObjectPeriods: readonly DemoObjectPeriod[] = [
@@ -26,8 +26,8 @@ export const demoObjectPeriods: readonly DemoObjectPeriod[] = [
     draftIds: ['aosr-draft-002'],
     id: 'period-2026-10',
     name: 'Октябрь 2026',
-    periodicIdTitle: 'Периодическая ИД за Октябрь 2026',
-    registryTitle: 'Реестр периода за Октябрь 2026',
+    periodicIdTitle: 'Промежуточная ИД: Октябрь 2026',
+    registryTitle: 'Реестр папки «Октябрь 2026»',
   },
 ];
 

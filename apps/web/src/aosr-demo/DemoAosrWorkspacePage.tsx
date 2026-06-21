@@ -507,12 +507,7 @@ export function DemoAosrWorkspacePage({
           onSelectDraft={setSelectedDraftId}
         />
 
-        <section className="act-form-panel" aria-labelledby="act-form-title">
-          <div className="panel-heading">
-            <p className="section-kicker">Редактируемая демо-форма</p>
-            <h2 id="act-form-title">Рабочая область акта</h2>
-          </div>
-
+        <section className="act-form-panel" aria-label="Редактор документа">
           <div className="form-sections">
             <DemoCurrentActEditor
               actRepresentativeSearch={actRepresentativeSearch}

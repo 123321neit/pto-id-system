@@ -43,7 +43,6 @@ interface DemoSignatoriesEditorProps {
     value: string,
   ) => void;
   readonly onReorderSelectedSignatory: (targetRepresentativeId: string) => void;
-  readonly onSwitchToManual: () => void;
   readonly onToggleManualRepresentativeForm: () => void;
 }
 
@@ -69,7 +68,6 @@ export function DemoSignatoriesEditor({
   onRemoveRepresentativeFromAct,
   onUpdateRepresentative,
   onReorderSelectedSignatory,
-  onSwitchToManual,
   onToggleManualRepresentativeForm,
 }: DemoSignatoriesEditorProps): React.JSX.Element {
   const filteredRepresentatives = filterObjectRepresentatives(
@@ -88,17 +86,12 @@ export function DemoSignatoriesEditor({
             <strong id="commission-data-title">Подписанты текущего акта</strong>
             <small>Подписантов в печатном порядке: {selectedSignatories.length}</small>
           </span>
-          <span className="source-chip">{sourceLabel}</span>
+          {isTemplateEditable ? <span className="source-chip">{sourceLabel}</span> : null}
         </summary>
 
         <div className="template-data-disclosure__body">
-          <div className="template-data-disclosure__intro">
-            <p className="helper-note">
-              {isTemplateEditable
-                ? 'Ручная версия хранит собственный снимок подписантов.'
-                : 'Состав подписантов берётся из шаблона объекта.'}
-            </p>
-            {isTemplateEditable ? (
+          {isTemplateEditable ? (
+            <div className="template-data-disclosure__intro">
               <button
                 className="compact-toggle compact-toggle--accent"
                 onClick={onToggleManualRepresentativeForm}
@@ -106,12 +99,8 @@ export function DemoSignatoriesEditor({
               >
                 Создать представителя и назначение
               </button>
-            ) : (
-              <button className="compact-toggle" onClick={onSwitchToManual} type="button">
-                Изменить вручную
-              </button>
-            )}
-          </div>
+            </div>
+          ) : null}
 
           {isTemplateEditable ? (
             <>

@@ -38,9 +38,9 @@ describe('DemoAosrWorkspacePage', () => {
   it('shows object-level and act-level areas as separate scopes', () => {
     renderDemoWorkspace();
 
-    expect(screen.getByRole('heading', { name: 'Рабочая область акта' })).toBeTruthy();
+    expect(screen.getByRole('region', { name: 'Редактор документа' })).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Шаблон объекта' })).toBeTruthy();
-    expect(screen.getByRole('heading', { name: 'Текущий акт' })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: 'Документ ОВ-1' })).toBeTruthy();
     expect(screen.queryByRole('dialog', { name: 'Шаблон объекта' })).toBeNull();
     expect(screen.queryByLabelText('Название проекта / объекта')).toBeNull();
   });
@@ -48,7 +48,7 @@ describe('DemoAosrWorkspacePage', () => {
   it('keeps the act editor focused on document metadata instead of repeated counters', () => {
     renderDemoWorkspace();
 
-    const metadata = screen.getByLabelText('Метаданные текущего акта');
+    const metadata = screen.getByLabelText('Метаданные документа');
 
     expect(within(metadata).getByText('Документ')).toBeTruthy();
     expect(within(metadata).getByText('ОВ-1')).toBeTruthy();
@@ -95,30 +95,15 @@ describe('DemoAosrWorkspacePage', () => {
     ).toBe(true);
   });
 
-  it('renders a compact readiness panel with a ready act state', async () => {
-    const user = userEvent.setup();
-
+  it('keeps readiness hints out of the document workspace', () => {
     renderDemoWorkspace();
 
-    const readinessPanel = screen.getByRole('region', { name: 'Подсказки по акту' });
-
-    expect((readinessPanel as HTMLDetailsElement).open).toBe(false);
-    expect(within(readinessPanel).getByRole('heading', { name: 'Подсказки по акту' })).toBeTruthy();
-    expect(within(readinessPanel).getByText('🟢 Поля заполнены')).toBeTruthy();
-
-    await user.click(within(readinessPanel).getByRole('heading', { name: 'Подсказки по акту' }));
-
-    expect((readinessPanel as HTMLDetailsElement).open).toBe(true);
-    expect(
-      within(readinessPanel).getByText(
-        'Это не блокировка: пустые поля останутся строками в печатной форме и их можно будет заполнить от руки.',
-      ),
-    ).toBeTruthy();
-    expect(within(readinessPanel).getByText('Пробелов по демо-проверкам нет.')).toBeTruthy();
-    expect(within(readinessPanel).queryByText('Пустые разделы:')).toBeNull();
+    expect(screen.queryByRole('region', { name: 'Подсказки по акту' })).toBeNull();
+    expect(screen.queryByText('🟢 Поля заполнены')).toBeNull();
+    expect(screen.getByRole('button', { name: 'Предпросмотр документа' })).toBeTruthy();
   });
 
-  it('shows readiness warnings when required demo data is missing', async () => {
+  it('keeps preview available when document sections are empty', async () => {
     const user = userEvent.setup();
 
     renderDemoWorkspace();
@@ -149,17 +134,8 @@ describe('DemoAosrWorkspacePage', () => {
     await user.click(screen.getByRole('button', { name: 'Убрать Смирнова С.С. из акта' }));
     await user.clear(screen.getByLabelText('Текст пункта 6 в документе'));
 
-    const readinessPanel = screen.getByRole('region', { name: 'Подсказки по акту' });
-
-    expect(within(readinessPanel).getByText('🟡 Есть пустые разделы')).toBeTruthy();
-
-    await user.click(within(readinessPanel).getByRole('heading', { name: 'Подсказки по акту' }));
-
-    expect(within(readinessPanel).getByText('Пустые разделы:')).toBeTruthy();
-    expect(within(readinessPanel).getByText('Нет подписантов')).toBeTruthy();
-    expect(within(readinessPanel).getByText('Не выбраны материалы')).toBeTruthy();
-    expect(within(readinessPanel).getByText('Не выбраны документы объекта')).toBeTruthy();
-    expect(within(readinessPanel).getByText('Не заполнена нормативная база')).toBeTruthy();
+    expect(screen.queryByRole('region', { name: 'Подсказки по акту' })).toBeNull();
+    expect(screen.getByRole('button', { name: 'Предпросмотр документа' })).toBeTruthy();
   });
 
   it('shows document context in the header without object-wide counters', () => {
@@ -178,8 +154,8 @@ describe('DemoAosrWorkspacePage', () => {
     expect(screen.getByRole('button', { name: 'Предпросмотр документа' })).toBeTruthy();
     expect(screen.queryByRole('dialog', { name: 'Предпросмотр документа' })).toBeNull();
     expect(screen.queryByLabelText('Демо-предпросмотр печатной формы АОСР')).toBeNull();
-    expect(screen.getByRole('heading', { name: 'Документы периода' })).toBeTruthy();
-    expect(screen.getByRole('heading', { name: 'Рабочая область акта' })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: 'Документы папки' })).toBeTruthy();
+    expect(screen.getByRole('region', { name: 'Редактор документа' })).toBeTruthy();
   });
 
   it('opens and closes the document preview drawer with existing preview content', async () => {
@@ -210,7 +186,7 @@ describe('DemoAosrWorkspacePage', () => {
     );
 
     expect(screen.queryByRole('dialog', { name: 'Предпросмотр документа' })).toBeNull();
-    expect(screen.getByRole('heading', { name: 'Рабочая область акта' })).toBeTruthy();
+    expect(screen.getByRole('region', { name: 'Редактор документа' })).toBeTruthy();
   });
 
   it('keeps default parameters and libraries compact until opened', () => {
@@ -351,7 +327,8 @@ describe('DemoAosrWorkspacePage', () => {
 
     const complianceSection = getSectionByHeading('6. Соответствие работ');
 
-    expect(within(complianceSection).getByText('По шаблону объекта')).toBeTruthy();
+    expect(within(complianceSection).queryByText('По шаблону объекта')).toBeNull();
+    expect(screen.getAllByText('По шаблону объекта')).toHaveLength(1);
     expect(
       getTextAreaValue(within(complianceSection).getByLabelText('Текст пункта 6 в документе')),
     ).toBe(demoAosrWorkspace.objectDefaults.defaultComplianceStatement);
@@ -386,8 +363,9 @@ describe('DemoAosrWorkspacePage', () => {
     expect(getInputValue(within(contractorSection).getByLabelText('Печатное наименование'))).toBe(
       demoAosrWorkspace.objectDefaults.defaultWorkContractorName,
     );
+    expect(within(contractorSection).queryByRole('button')).toBeNull();
     expect(
-      within(contractorSection).getByRole('button', { name: 'Изменить вручную' }),
+      screen.getByRole('button', { name: 'Редактировать шаблонные данные вручную' }),
     ).toBeTruthy();
   });
 
@@ -429,7 +407,7 @@ describe('DemoAosrWorkspacePage', () => {
 
     await user.click(screen.getByRole('button', { name: 'Вернуть к шаблону объекта' }));
 
-    expect(screen.getAllByText('По шаблону объекта').length).toBeGreaterThan(1);
+    expect(screen.getAllByText('По шаблону объекта')).toHaveLength(1);
     expect(getPreviewText()).toContain(demoAosrWorkspace.objectDefaults.defaultComplianceStatement);
     expect(getPreviewText()).not.toContain('Индивидуальное исключение для проверки возврата.');
   });
@@ -469,11 +447,12 @@ describe('DemoAosrWorkspacePage', () => {
     expect(screen.getByText(/Связанные документы используют эти данные напрямую/u)).toBeTruthy();
   });
 
-  it('explains that linked act signatories come from the object template', () => {
+  it('keeps linked act signatories read-only without repeated helper text', () => {
     renderDemoWorkspace();
 
     expect(screen.queryByLabelText('Добавить назначение представителя в акт')).toBeNull();
-    expect(screen.getByText('Состав подписантов берётся из шаблона объекта.')).toBeTruthy();
+    expect(screen.queryByText('Состав подписантов берётся из шаблона объекта.')).toBeNull();
+    expect(screen.getAllByText('По шаблону объекта')).toHaveLength(1);
   });
 
   it('explains that act materials must be selected from the certificate library', () => {
@@ -537,7 +516,7 @@ describe('DemoAosrWorkspacePage', () => {
   it('renders act editor sections in the intended AOSR order', () => {
     renderDemoWorkspace();
 
-    const editorText = screen.getByRole('region', { name: 'Текущий акт' }).textContent;
+    const editorText = screen.getByRole('region', { name: 'Документ ОВ-1' }).textContent;
     const orderedFragments = [
       'Шапка печатного документа',
       'Номер акта',
@@ -574,7 +553,7 @@ describe('DemoAosrWorkspacePage', () => {
   it('renders organization order before signatories and the numbered act body', () => {
     renderDemoWorkspace();
 
-    const editorText = screen.getByRole('region', { name: 'Текущий акт' }).textContent;
+    const editorText = screen.getByRole('region', { name: 'Документ ОВ-1' }).textContent;
 
     expect(editorText.indexOf('Организации, участвующие в акте')).toBeLessThan(
       editorText.indexOf('Подписанты текущего акта'),
@@ -710,7 +689,7 @@ describe('DemoAosrWorkspacePage', () => {
   it('keeps applications in a separate section after additional info while signatories stay near top', () => {
     renderDemoWorkspace();
 
-    const editorText = screen.getByRole('region', { name: 'Текущий акт' }).textContent;
+    const editorText = screen.getByRole('region', { name: 'Документ ОВ-1' }).textContent;
 
     expect(editorText.indexOf('Подписанты текущего акта')).toBeLessThan(
       editorText.indexOf('1. Скрытые работы'),

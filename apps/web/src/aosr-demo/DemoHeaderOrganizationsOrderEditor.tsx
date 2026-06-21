@@ -14,7 +14,6 @@ interface DemoHeaderOrganizationsOrderEditorProps {
     field: 'caption' | 'details' | 'label' | 'organizationName',
     value: string,
   ) => void;
-  readonly onSwitchToManual: () => void;
   readonly sourceLabel: string;
 }
 
@@ -23,7 +22,6 @@ export function DemoHeaderOrganizationsOrderEditor({
   isTemplateEditable,
   linkedHeaderOrganizations,
   onMoveHeaderOrganization,
-  onSwitchToManual,
   onUpdateHeaderOrganization,
   sourceLabel,
 }: DemoHeaderOrganizationsOrderEditorProps): React.JSX.Element {
@@ -38,21 +36,10 @@ export function DemoHeaderOrganizationsOrderEditor({
             <strong id="act-organizations-title">Организации, участвующие в акте</strong>
             <small>Блоков в печатном порядке: {headerOrganizations.length}</small>
           </span>
-          <span className="source-chip">{sourceLabel}</span>
+          {isTemplateEditable ? <span className="source-chip">{sourceLabel}</span> : null}
         </summary>
 
         <div className="template-data-disclosure__body">
-          <div className="template-data-disclosure__intro">
-            <p className="helper-note">
-              Порядок этих блоков используется в верхней части печатного АОСР.
-            </p>
-            {isTemplateEditable ? null : (
-              <button className="compact-toggle" onClick={onSwitchToManual} type="button">
-                Изменить вручную
-              </button>
-            )}
-          </div>
-
           <ol className="print-order-list" aria-label="Порядок организаций в акте">
             {headerOrganizations.map((headerOrganization, index) => {
               const linkedHeaderOrganization = linkedHeaderOrganizations.find(

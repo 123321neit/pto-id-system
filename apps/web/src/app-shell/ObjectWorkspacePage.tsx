@@ -34,6 +34,7 @@ function getDocumentDisplayNumber(documentNumber: string): string {
 
 type ObjectWorkspaceSection =
   | 'overview'
+  | 'folders'
   | 'period'
   | 'periodic-package'
   | 'aosr'
@@ -174,8 +175,9 @@ export function ObjectWorkspacePage({
               </span>
             </button>
             <button
-              aria-label="Периоды"
+              aria-label="Папки ИД"
               aria-current={
+                activeSection === 'folders' ||
                 activeSection === 'period' ||
                 activeSection === 'periodic-package' ||
                 activeSection === 'aosr'
@@ -183,7 +185,8 @@ export function ObjectWorkspacePage({
                   : undefined
               }
               onClick={() => {
-                openPeriod(selectedPeriodId);
+                setCreateDocumentPanelOpen(false);
+                setActiveSection('folders');
               }}
               type="button"
             >
@@ -191,8 +194,8 @@ export function ObjectWorkspacePage({
                 ▦
               </span>
               <span className="object-workspace-nav__label">
-                <strong>Периоды</strong>
-                <small>Рабочие папки</small>
+                <strong>Папки ИД</strong>
+                <small>Все рабочие папки</small>
               </span>
             </button>
             {demoObjectPeriods.map((period) => (
@@ -249,7 +252,7 @@ export function ObjectWorkspacePage({
             </button>
             <button
               aria-current={activeSection === 'final-package' ? 'page' : undefined}
-              aria-label="Открыть итоговый комплект ИД"
+              aria-label="Печать итоговой ИД"
               onClick={() => {
                 setCreateDocumentPanelOpen(false);
                 setActiveSection('final-package');
@@ -260,8 +263,8 @@ export function ObjectWorkspacePage({
                 ◫
               </span>
               <span className="object-workspace-nav__label">
-                <strong>Итоговая ИД</strong>
-                <small>Генерируемый вид</small>
+                <strong>Печать итоговой ИД</strong>
+                <small>По всем папкам</small>
               </span>
             </button>
             <button
@@ -288,25 +291,15 @@ export function ObjectWorkspacePage({
         {activeSection === 'overview' ? (
           <ObjectOverview
             drafts={drafts}
-            isCreateDocumentPanelOpen={isCreateDocumentPanelOpen}
-            object={object}
             periods={periods}
-            documentNumber={documentNumberInput}
-            proposedAosrNumber={proposedAosrNumber}
             selectedPeriod={selectedPeriod}
-            onChangeDocumentNumber={setDocumentNumberInput}
-            onCloseCreateDocumentPanel={() => {
-              setCreateDocumentPanelOpen(false);
-            }}
-            onCreateAosr={createAosrDraft}
             onOpenDraft={openDraft}
             onOpenPeriod={openPeriod}
-            onOpenCreateDocumentPanel={openCreateDocumentPanel}
-            onOpenFinalPackage={() => {
-              setCreateDocumentPanelOpen(false);
-              setActiveSection('final-package');
-            }}
           />
+        ) : null}
+
+        {activeSection === 'folders' ? (
+          <ObjectFoldersPage drafts={drafts} periods={periods} onOpenPeriod={openPeriod} />
         ) : null}
 
         {activeSection === 'period' ? (
@@ -380,21 +373,8 @@ function ObjectWorkspaceHeader({
         <p className="object-workspace-breadcrumbs">
           Объекты / {object.title} / {sectionBreadcrumb}
         </p>
-        <div className="object-workspace-header__heading">
-          <h1 id="object-workspace-title">{object.title}</h1>
-          <span className={`status-chip status-chip--${object.status}`}>{object.statusLabel}</span>
-        </div>
+        <h1 id="object-workspace-title">{object.title}</h1>
         <p>{object.address}</p>
-        <dl className="object-workspace-header__meta-list" aria-label="Метаданные объекта">
-          <div>
-            <dt>Открыт раздел</dt>
-            <dd>{sectionBreadcrumb}</dd>
-          </div>
-          <div>
-            <dt>Последнее изменение</dt>
-            <dd>{object.updatedAtLabel}</dd>
-          </div>
-        </dl>
       </div>
     </header>
   );
@@ -404,93 +384,50 @@ function getSectionBreadcrumb(section: ObjectWorkspaceSection): string {
   switch (section) {
     case 'overview':
       return 'Обзор';
+    case 'folders':
+      return 'Папки ИД';
     case 'period':
-      return 'Периоды';
+      return 'Папки ИД';
     case 'periodic-package':
-      return 'Периоды / Периодическая ИД';
+      return 'Папки ИД / Промежуточная ИД';
     case 'aosr':
-      return `Периоды / ${aosrActType.code}`;
+      return `Папки ИД / ${aosrActType.code}`;
     case 'settings':
       return 'Шаблон объекта';
     case 'documents':
       return 'Документы объекта';
     case 'final-package':
-      return 'Итоговая ИД';
+      return 'Печать итоговой ИД';
   }
 }
 
 interface ObjectOverviewProps {
   readonly drafts: readonly DemoAosrDraft[];
-  readonly documentNumber: string;
-  readonly isCreateDocumentPanelOpen: boolean;
-  readonly object: MockObjectCard;
   readonly periods: readonly DemoObjectPeriod[];
-  readonly proposedAosrNumber: string;
   readonly selectedPeriod: DemoObjectPeriod;
-  readonly onChangeDocumentNumber: (value: string) => void;
-  readonly onCloseCreateDocumentPanel: () => void;
-  readonly onCreateAosr: () => void;
-  readonly onOpenCreateDocumentPanel: () => void;
   readonly onOpenDraft: (draft: DemoAosrDraft) => void;
-  readonly onOpenFinalPackage: () => void;
   readonly onOpenPeriod: (periodId: DemoObjectPeriodId) => void;
 }
 
 function ObjectOverview({
   drafts,
-  documentNumber,
-  isCreateDocumentPanelOpen,
-  object,
   periods,
-  proposedAosrNumber,
   selectedPeriod,
-  onChangeDocumentNumber,
-  onCloseCreateDocumentPanel,
-  onCreateAosr,
-  onOpenCreateDocumentPanel,
   onOpenDraft,
-  onOpenFinalPackage,
   onOpenPeriod,
 }: ObjectOverviewProps): React.JSX.Element {
   return (
     <section className="object-overview" aria-labelledby="object-overview-title">
-      <div className="object-overview__intro">
-        <div className="object-overview__intro-copy">
-          <p className="section-kicker">Обзор</p>
-          <h2 id="object-overview-title">Обзор объекта</h2>
-          <strong>{object.title}</strong>
-          <p>{object.address}. Начните с документа или продолжите текущий период.</p>
-        </div>
-        <div className="object-overview__intro-actions">
-          <button
-            aria-label="Создать документ"
-            className="action-button action-button--primary"
-            onClick={onOpenCreateDocumentPanel}
-            type="button"
-          >
-            + Создать документ
-          </button>
-        </div>
+      <div className="object-overview__heading">
+        <p className="section-kicker">Обзор</p>
+        <h2 id="object-overview-title">Обзор объекта</h2>
       </div>
-
-      {isCreateDocumentPanelOpen ? (
-        <CreateDocumentPanel
-          documentNumber={documentNumber}
-          proposedAosrNumber={proposedAosrNumber}
-          selectedPeriod={selectedPeriod}
-          onChangeDocumentNumber={onChangeDocumentNumber}
-          onClose={onCloseCreateDocumentPanel}
-          onCreateAosr={onCreateAosr}
-        />
-      ) : null}
 
       <section className="object-overview__focus" aria-labelledby="overview-focus-title">
         <div className="object-overview__focus-main">
-          <p className="section-kicker">Продолжить</p>
-          <h3 id="overview-focus-title">Текущий период</h3>
-          <p>
-            <strong>{selectedPeriod.name}</strong> — рабочая папка с документами и реестром периода.
-          </p>
+          <p className="section-kicker">Продолжить работу</p>
+          <h3 id="overview-focus-title">{selectedPeriod.name}</h3>
+          <p>Рабочая папка с документами и автоматически сформированным реестром.</p>
         </div>
         <div className="object-overview__focus-actions">
           <button
@@ -500,10 +437,7 @@ function ObjectOverview({
             }}
             type="button"
           >
-            Открыть период
-          </button>
-          <button className="compact-toggle" onClick={onOpenFinalPackage} type="button">
-            Итоговая ИД
+            Открыть папку
           </button>
         </div>
       </section>
@@ -511,10 +445,10 @@ function ObjectOverview({
       <section className="object-overview__panel" aria-labelledby="overview-recent-documents-title">
         <div className="object-overview__panel-heading">
           <p className="section-kicker">Недавние документы</p>
-          <h3 id="overview-recent-documents-title">Документы в периодах</h3>
+          <h3 id="overview-recent-documents-title">Последние документы</h3>
         </div>
         <ul className="object-overview__recent-list object-overview__recent-list--wide">
-          {drafts.map((draft, index) => {
+          {drafts.map((draft) => {
             const period = getDemoObjectPeriodForDraftId(draft.id, periods);
 
             return (
@@ -532,12 +466,8 @@ function ObjectOverview({
                     </small>
                   </span>
                   <span>
-                    <small>Последнее изменение</small>
-                    <strong>{draft.actDate}</strong>
-                  </span>
-                  <span>
-                    <small>Версия документа</small>
-                    <strong>{index + 1}.0</strong>
+                    <small>Открыть</small>
+                    <strong aria-hidden="true">→</strong>
                   </span>
                 </button>
               </li>
@@ -547,6 +477,76 @@ function ObjectOverview({
       </section>
     </section>
   );
+}
+
+interface ObjectFoldersPageProps {
+  readonly drafts: readonly DemoAosrDraft[];
+  readonly periods: readonly DemoObjectPeriod[];
+  readonly onOpenPeriod: (periodId: DemoObjectPeriodId) => void;
+}
+
+function ObjectFoldersPage({
+  drafts,
+  periods,
+  onOpenPeriod,
+}: ObjectFoldersPageProps): React.JSX.Element {
+  return (
+    <section className="object-folders" aria-labelledby="object-folders-title">
+      <div className="object-folders__heading">
+        <p className="section-kicker">Промежуточная исполнительная документация</p>
+        <h2 id="object-folders-title">Папки ИД</h2>
+        <p>Все рабочие папки объекта. Внутри каждой находятся документы и её реестр.</p>
+      </div>
+
+      <div className="object-folder-directory" aria-label="Все папки ИД">
+        {periods.map((period) => {
+          const periodDrafts = getDemoObjectPeriodDrafts(period, drafts);
+
+          return (
+            <button
+              className="object-folder-row"
+              key={period.id}
+              onClick={() => {
+                onOpenPeriod(period.id);
+              }}
+              type="button"
+            >
+              <span className="object-folder-row__icon" aria-hidden="true">
+                ▣
+              </span>
+              <span className="object-folder-row__main">
+                <strong>{period.name}</strong>
+                <small>Промежуточная исполнительная документация</small>
+              </span>
+              <span className="object-folder-row__count">
+                {periodDrafts.length} {getDocumentCountLabel(periodDrafts.length)}
+              </span>
+              <span className="object-folder-row__action">Открыть</span>
+            </button>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
+function getDocumentCountLabel(count: number): string {
+  const remainder100 = count % 100;
+  const remainder10 = count % 10;
+
+  if (remainder100 >= 11 && remainder100 <= 14) {
+    return 'документов';
+  }
+
+  if (remainder10 === 1) {
+    return 'документ';
+  }
+
+  if (remainder10 >= 2 && remainder10 <= 4) {
+    return 'документа';
+  }
+
+  return 'документов';
 }
 
 interface CreateDocumentPanelProps {
@@ -576,7 +576,7 @@ function CreateDocumentPanel({
         <p className="section-kicker">Новый документ</p>
         <h3 id="create-document-title">Создать документ</h3>
         <p>
-          Выберите тип документа. Черновик будет создан в рабочей папке{' '}
+          Выберите тип документа. Документ будет создан в рабочей папке{' '}
           <strong>{selectedPeriod.name}</strong>.
         </p>
       </div>
@@ -685,11 +685,9 @@ function ObjectPeriodPage({
             ▣
           </span>
           <div>
-            <p className="section-kicker">Рабочая папка периода</p>
+            <p className="section-kicker">Рабочая папка ИД</p>
             <h2 id="object-period-title">{period.name}</h2>
-            <p>
-              Период — папка с документами. Реестр и периодическая ИД формируются из её состава.
-            </p>
+            <p>Документы папки определяют её реестр и состав промежуточной печати.</p>
           </div>
         </div>
         <button
@@ -718,11 +716,11 @@ function ObjectPeriodPage({
           aria-labelledby="period-documents-title"
         >
           <div className="object-overview__panel-heading">
-            <p className="section-kicker">Документы периода</p>
+            <p className="section-kicker">Состав папки</p>
             <h3 id="period-documents-title">Документы</h3>
           </div>
           <ul className="object-overview__recent-list object-overview__recent-list--wide">
-            {drafts.map((draft, index) => (
+            {drafts.map((draft) => (
               <li key={draft.id}>
                 <button
                   onClick={() => {
@@ -739,8 +737,8 @@ function ObjectPeriodPage({
                     <strong>{draft.actDate}</strong>
                   </span>
                   <span>
-                    <small>Версия документа</small>
-                    <strong>{index + 1}.0</strong>
+                    <small>Открыть</small>
+                    <strong aria-hidden="true">→</strong>
                   </span>
                 </button>
               </li>
@@ -755,9 +753,8 @@ function ObjectPeriodPage({
           >
             <div className="object-overview__panel-heading">
               <p className="section-kicker">Сформированный вид</p>
-              <h3 id="period-registry-title">{periodRegistry.title}</h3>
+              <h3 id="period-registry-title">Реестр папки «{period.name}»</h3>
             </div>
-            <p className="object-period-panel__note">Формируется из документов периода.</p>
             <DerivedRegistryTable registry={periodRegistry} />
           </section>
 
@@ -770,10 +767,10 @@ function ObjectPeriodPage({
             </span>
             <div>
               <p className="section-kicker">Сформированный вид</p>
-              <h3 id="period-package-title">{period.periodicIdTitle}</h3>
-              <p>Формируется из текущих данных. Не сохраняется и не блокирует работу.</p>
+              <h3 id="period-package-title">Промежуточная ИД</h3>
+              <p>Печатный комплект из документов этой папки.</p>
               <button className="compact-toggle" onClick={onOpenPeriodicPackage} type="button">
-                Сформировать периодическую ИД
+                Открыть состав печати
               </button>
             </div>
           </section>

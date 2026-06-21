@@ -1,6 +1,5 @@
 import type { DemoActTypeMetadata } from '../act-types/act-types.js';
 import type { DemoAosrDraft } from './demo-aosr-workspace.js';
-import { formatDocumentDate } from './demo-aosr-ui.js';
 
 interface DemoDocumentTreeProps {
   readonly actType: DemoActTypeMetadata;
@@ -28,18 +27,18 @@ export function DemoDocumentTree({
   return (
     <section className="document-tree-panel" aria-labelledby="document-tree-title">
       <div className="panel-heading">
-        <p className="section-kicker">Период</p>
-        <h2 id="document-tree-title">Документы периода</h2>
+        <p className="section-kicker">Папка ИД</p>
+        <h2 id="document-tree-title">Документы папки</h2>
       </div>
 
-      <div className="document-tree" aria-label="Навигация документов периода">
+      <div className="document-tree" aria-label="Навигация документов папки">
         <div className="tree-folder">
           <span className="tree-folder__icon" aria-hidden="true">
             ▣
           </span>
           <span>
-            <strong>{periodName ?? 'Текущий период'}</strong>
-            <small>период / документы / реестр / комплект</small>
+            <strong>{periodName ?? 'Рабочая папка'}</strong>
+            <small>документы и реестр</small>
           </span>
         </div>
 
@@ -49,7 +48,7 @@ export function DemoDocumentTree({
           </span>
           <span>
             <strong>Документы</strong>
-            <small>{actType.code} / акты периода</small>
+            <small>{actType.code} / документы папки</small>
           </span>
         </div>
 
@@ -81,11 +80,11 @@ export function DemoDocumentTree({
                 ::
               </span>
               <span className="act-tree-item__index">{index + 1}</span>
-              <span className="act-tree-item__number">{draft.actNumber}</span>
+              <span className="act-tree-item__number">
+                {draft.actNumber.trim() === '' ? 'Без номера' : draft.actNumber}
+              </span>
               <span className="act-tree-item__meta">
                 <small>{draft.templateMode === 'manual' ? 'Ручная версия' : 'По шаблону'}</small>
-                <small>Версия документа {index + 1}.0</small>
-                <small>Последнее изменение: {formatDocumentDate(draft.actDate)}</small>
               </span>
             </button>
           ))}

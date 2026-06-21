@@ -83,11 +83,9 @@ export interface FinalPackageModel {
 
 const aosrActType = getDemoActTypeById('aosr');
 
-export const finalIdPackageDescription =
-  'Формируется из текущих данных. Не сохраняется и не блокирует работу.';
+export const finalIdPackageDescription = 'Документы из всех папок объекта без дублирования файлов.';
 
-export const periodicIdPackageDescription =
-  'Формируется из текущих данных выбранного периода. Не сохраняется и не закрывает период.';
+export const periodicIdPackageDescription = 'Документы, сертификаты и файлы выбранной папки.';
 
 export function buildIdPackageOverviewModel(
   drafts: readonly DemoAosrDraft[],
@@ -106,7 +104,7 @@ export function buildIdPackageOverviewModel(
         objectDocuments: finalPackage.summary.objectDocuments,
         usedCertificates: finalPackage.summary.certificates,
       },
-      title: 'Итоговая ИД по объекту',
+      title: 'Печать итоговой ИД',
       type: 'final',
     },
     periodicPackages: periods.map((period) => {
@@ -150,9 +148,9 @@ export function buildPeriodicPackageModel(
         id: 'registry',
         items: [],
         registry: periodRegistry,
-        title: 'Реестр периода',
+        title: 'Реестр папки',
       },
-      { ...actsGroup, title: 'Документы периода' },
+      { ...actsGroup, title: 'Документы папки' },
       certificatesGroup,
       objectDocumentsGroup,
     ],
@@ -201,7 +199,7 @@ export function buildFinalPackageModel(
   return {
     groups: [
       { id: 'registry', items: [], registry: finalRegistry, title: finalRegistry.title },
-      { id: 'acts', items: actItems, title: 'Документы из периодов' },
+      { id: 'acts', items: actItems, title: 'Документы из папок' },
       { id: 'certificates', items: certificateItems, title: 'Сертификаты' },
       { id: 'object-documents', items: objectDocumentItems, title: 'Документы объекта' },
     ],

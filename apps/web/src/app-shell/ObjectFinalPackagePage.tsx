@@ -45,12 +45,10 @@ export function ObjectFinalPackagePage({
       <header className="object-documents-hero object-final-package-hero">
         <div>
           <p className="section-kicker">Генерируемое представление</p>
-          <h2 id="object-final-package-title">{packageOverview.finalPackage.title}</h2>
+          <h2 id="object-final-package-title">Печать итоговой ИД по объекту</h2>
           <p>{finalIdPackageDescription}</p>
         </div>
       </header>
-
-      <FinalPackageFlowExplanation />
 
       <PeriodicPackageOverview packages={packageOverview.periodicPackages} />
 
@@ -58,7 +56,7 @@ export function ObjectFinalPackagePage({
         className="object-documents-summary object-documents-summary--quiet"
         aria-label="Сводка итогового комплекта ИД"
       >
-        <SummaryItem label="Документы из периодов" value={finalPackage.summary.acts} />
+        <SummaryItem label="Документы из папок" value={finalPackage.summary.acts} />
         <SummaryItem label="Сертификаты без дублей" value={finalPackage.summary.certificates} />
         <SummaryItem
           label="Документы / чертежи без дублей"
@@ -66,36 +64,6 @@ export function ObjectFinalPackagePage({
         />
         <SummaryItem label="Всего позиций" value={finalPackage.summary.total} />
       </dl>
-
-      <section
-        className={`readiness-card readiness-card--${finalPackage.readiness.status}`}
-        aria-labelledby="final-package-readiness-title"
-      >
-        <div className="readiness-card__header">
-          <div>
-            <p className="section-kicker">Подсказки</p>
-            <h3 id="final-package-readiness-title">Подсказки по комплекту</h3>
-          </div>
-          <strong className="readiness-card__status">{finalPackage.readiness.statusLabel}</strong>
-        </div>
-
-        <p className="readiness-card__helper">
-          Формируется из текущих данных. Не сохраняется и не блокирует работу.
-        </p>
-
-        {finalPackage.readiness.issues.length > 0 ? (
-          <div className="readiness-card__issues">
-            <p>Пустые разделы:</p>
-            <ul>
-              {finalPackage.readiness.issues.map((issue) => (
-                <li key={issue}>{issue}</li>
-              ))}
-            </ul>
-          </div>
-        ) : (
-          <p className="readiness-card__empty">Пробелов по демо-проверкам нет.</p>
-        )}
-      </section>
 
       <div className="final-package-groups">
         {finalPackage.groups.map((group) => (
@@ -105,12 +73,12 @@ export function ObjectFinalPackagePage({
 
       <section className="object-documents-panel final-package-download" aria-label="Скачивание">
         <div>
-          <p className="section-kicker">Демо действие</p>
-          <h3>Сформировать итоговую ИД</h3>
-          <p>Демо показывает состав комплекта без генерации файлов и сохранения архива.</p>
+          <p className="section-kicker">Итоговый комплект</p>
+          <h3>Печать итоговой ИД</h3>
+          <p>Документы всех папок собираются без дублирования сертификатов и файлов.</p>
         </div>
         <button className="action-button" disabled type="button">
-          Сформировать итоговую ИД
+          Печать итоговой ИД
         </button>
       </section>
     </section>
@@ -145,13 +113,11 @@ export function ObjectPeriodicPackagePage({
         </div>
       </header>
 
-      <PeriodicPackageFlowExplanation periodName={period.name} />
-
       <dl
         className="object-documents-summary object-documents-summary--quiet"
-        aria-label="Сводка периодической ИД"
+        aria-label="Сводка промежуточной ИД"
       >
-        <SummaryItem label="Документы периода" value={periodicPackage.summary.acts} />
+        <SummaryItem label="Документы папки" value={periodicPackage.summary.acts} />
         <SummaryItem label="Сертификаты без дублей" value={periodicPackage.summary.certificates} />
         <SummaryItem
           label="Документы / чертежи без дублей"
@@ -159,38 +125,6 @@ export function ObjectPeriodicPackagePage({
         />
         <SummaryItem label="Всего позиций" value={periodicPackage.summary.total} />
       </dl>
-
-      <section
-        className={`readiness-card readiness-card--${periodicPackage.readiness.status}`}
-        aria-labelledby="periodic-package-readiness-title"
-      >
-        <div className="readiness-card__header">
-          <div>
-            <p className="section-kicker">Подсказки</p>
-            <h3 id="periodic-package-readiness-title">Подсказки по периодической ИД</h3>
-          </div>
-          <strong className="readiness-card__status">
-            {periodicPackage.readiness.statusLabel}
-          </strong>
-        </div>
-
-        <p className="readiness-card__helper">
-          Формируется из текущих данных. Не сохраняется и не закрывает период.
-        </p>
-
-        {periodicPackage.readiness.issues.length > 0 ? (
-          <div className="readiness-card__issues">
-            <p>Пустые разделы:</p>
-            <ul>
-              {periodicPackage.readiness.issues.map((issue) => (
-                <li key={issue}>{issue}</li>
-              ))}
-            </ul>
-          </div>
-        ) : (
-          <p className="readiness-card__empty">Пробелов по демо-проверкам нет.</p>
-        )}
-      </section>
 
       <div className="final-package-groups">
         {periodicPackage.groups.map((group) => (
@@ -200,50 +134,14 @@ export function ObjectPeriodicPackagePage({
 
       <section className="object-documents-panel final-package-download" aria-label="Формирование">
         <div>
-          <p className="section-kicker">Демо действие</p>
-          <h3>Сформировать периодическую ИД</h3>
-          <p>Демо показывает состав периода без генерации файлов и закрытия периода.</p>
+          <p className="section-kicker">Промежуточный комплект</p>
+          <h3>Печать промежуточной ИД</h3>
+          <p>Комплект печатается из текущего состава папки.</p>
         </div>
         <button className="action-button" disabled type="button">
-          Сформировать периодическую ИД
+          Печать промежуточной ИД
         </button>
       </section>
-    </section>
-  );
-}
-
-function FinalPackageFlowExplanation(): React.JSX.Element {
-  return (
-    <section
-      className="id-package-flow id-package-flow--compact"
-      aria-labelledby="final-package-flow-title"
-    >
-      <div>
-        <p className="section-kicker">Статус</p>
-        <h3 id="final-package-flow-title">Формируется из текущих данных</h3>
-        <p>Состав пересобирается из периодов, реестров и приложений без отдельного сохранения.</p>
-      </div>
-    </section>
-  );
-}
-
-interface PeriodicPackageFlowExplanationProps {
-  readonly periodName: string;
-}
-
-function PeriodicPackageFlowExplanation({
-  periodName,
-}: PeriodicPackageFlowExplanationProps): React.JSX.Element {
-  return (
-    <section
-      className="id-package-flow id-package-flow--compact"
-      aria-labelledby="periodic-package-flow-title"
-    >
-      <div>
-        <p className="section-kicker">Статус</p>
-        <h3 id="periodic-package-flow-title">Формируется из текущих данных</h3>
-        <p>{periodName} остается рабочей папкой. Повторный просмотр покажет текущий состав.</p>
-      </div>
     </section>
   );
 }
@@ -257,17 +155,17 @@ function PeriodicPackageOverview({ packages }: PeriodicPackageOverviewProps): Re
     <section className="periodic-package-overview" aria-labelledby="periodic-package-title">
       <div className="periodic-package-overview__heading">
         <div>
-          <p className="section-kicker">Периоды</p>
-          <h3 id="periodic-package-title">Периодическая ИД</h3>
+          <p className="section-kicker">Папки ИД</p>
+          <h3 id="periodic-package-title">Промежуточная ИД по папкам</h3>
         </div>
-        <p>Генерируемые представления по периодам, без закрытия периода и без сохранения пакета.</p>
+        <p>Состав промежуточной печати по каждой папке.</p>
       </div>
 
       <div className="periodic-package-list">
         {packages.map((idPackage) => (
           <article className="periodic-package-row" key={idPackage.id}>
             <div>
-              <p className="section-tag">Период</p>
+              <p className="section-tag">Папка</p>
               <h4>{idPackage.periodName}</h4>
               <p>{idPackage.title}</p>
             </div>
@@ -279,7 +177,6 @@ function PeriodicPackageOverview({ packages }: PeriodicPackageOverviewProps): Re
               />
               <SummaryItem label="Документы объекта" value={idPackage.summary.objectDocuments} />
             </dl>
-            <p className="periodic-package-row__note">{idPackage.note}</p>
           </article>
         ))}
       </div>

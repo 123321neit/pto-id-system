@@ -71,10 +71,6 @@ export function MockObjectDashboardPage({
             <span aria-hidden="true">○</span>
             Настройки
           </button>
-          <button type="button">
-            <span aria-hidden="true">?</span>
-            Помощь
-          </button>
         </nav>
 
         <div className="app-sidebar__account">
