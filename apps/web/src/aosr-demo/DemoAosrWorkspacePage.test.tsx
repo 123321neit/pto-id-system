@@ -241,8 +241,6 @@ describe('DemoAosrWorkspacePage', () => {
 
     const dialog = screen.getByRole('dialog', { name: 'Шаблон объекта' });
 
-    await user.click(within(dialog).getByRole('button', { name: /Тексты акта/u }));
-
     expect(
       within(dialog).getByRole('heading', {
         name: 'Пункт 6. Соответствие требованиям',
@@ -274,8 +272,6 @@ describe('DemoAosrWorkspacePage', () => {
 
     await openObjectSettings(user);
     const dialog = screen.getByRole('dialog', { name: 'Шаблон объекта' });
-    await user.click(within(dialog).getByRole('button', { name: /Тексты акта/u }));
-
     const defaultProjectDocumentationField = within(dialog).getByLabelText(
       'Проектная документация шаблона',
     );
@@ -306,8 +302,6 @@ describe('DemoAosrWorkspacePage', () => {
     await user.type(contractorField, contractorName);
     await user.clear(copiesField);
     await user.type(copiesField, '8');
-    await user.click(within(dialog).getByRole('button', { name: /Тексты акта/u }));
-
     const additionalInfoField = within(dialog).getByLabelText('Печатный текст для актов объекта');
     await user.clear(additionalInfoField);
     await user.type(additionalInfoField, additionalInfo);
@@ -427,8 +421,6 @@ describe('DemoAosrWorkspacePage', () => {
     await openObjectSettings(user);
 
     const dialog = screen.getByRole('dialog', { name: 'Шаблон объекта' });
-    await user.click(within(dialog).getByRole('button', { name: /Тексты акта/u }));
-
     expect(
       getTextAreaValue(
         within(dialog).getByLabelText(
@@ -438,13 +430,20 @@ describe('DemoAosrWorkspacePage', () => {
     ).toBe(demoAosrWorkspace.objectDefaults.defaultComplianceStatement);
   });
 
-  it('explains live object template behavior', async () => {
+  it('keeps object settings understandable without a separate helper paragraph', async () => {
     const user = userEvent.setup();
 
     renderDemoWorkspace();
     await openObjectSettings(user);
 
-    expect(screen.getByText(/Связанные документы используют эти данные напрямую/u)).toBeTruthy();
+    const dialog = screen.getByRole('dialog', { name: 'Шаблон объекта' });
+
+    expect(within(dialog).getByRole('button', { name: /Данные и тексты/u })).toBeTruthy();
+    expect(within(dialog).getByRole('button', { name: /Организации/u })).toBeTruthy();
+    expect(within(dialog).getByRole('button', { name: /Представители/u })).toBeTruthy();
+    expect(
+      within(dialog).queryByText(/Связанные документы используют эти данные напрямую/u),
+    ).toBeNull();
   });
 
   it('keeps linked act signatories read-only without repeated helper text', () => {
@@ -599,7 +598,7 @@ describe('DemoAosrWorkspacePage', () => {
 
     await openObjectSettings(user);
     const dialog = screen.getByRole('dialog', { name: 'Шаблон объекта' });
-    await user.click(within(dialog).getByRole('button', { name: /Шапка акта/u }));
+    await user.click(within(dialog).getByRole('button', { name: /Организации/u }));
     await user.click(within(dialog).getByRole('button', { name: 'Переместить Подрядчик вверх' }));
 
     expect(getOrganizationOrderText().indexOf('Заказчик')).toBeLessThan(
@@ -795,7 +794,7 @@ describe('DemoAosrWorkspacePage', () => {
     renderDemoWorkspace({ initialDocumentPreviewOpen: true });
 
     await openObjectSettings(user);
-    await user.click(screen.getByRole('button', { name: /Шапка акта/u }));
+    await user.click(screen.getByRole('button', { name: /Организации/u }));
     await user.click(screen.getByRole('button', { name: 'Добавить блок шапки' }));
     await user.type(
       screen.getByLabelText('Найти организацию в глобальной библиотеке'),
@@ -839,7 +838,7 @@ describe('DemoAosrWorkspacePage', () => {
 
     renderDemoWorkspace({ initialDocumentPreviewOpen: true });
     await openObjectSettings(user);
-    await user.click(screen.getByRole('button', { name: /Шапка акта/u }));
+    await user.click(screen.getByRole('button', { name: /Организации/u }));
     await user.click(screen.getByRole('button', { name: 'Добавить блок шапки' }));
     await user.type(screen.getByLabelText('Название блока'), 'Проектировщик');
     await user.type(

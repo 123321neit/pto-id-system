@@ -3548,14 +3548,6 @@ h3 {
   gap: 18px;
 }
 
-.object-settings-dialog__intro {
-  margin: 0;
-  max-width: 720px;
-  color: #516064;
-  font-size: 0.9rem;
-  line-height: 1.55;
-}
-
 .object-settings-dialog .form-section {
   gap: 14px;
   border-color: #dce6ef;
@@ -3613,6 +3605,11 @@ h3 {
 
 .object-settings-panel {
   min-width: 0;
+}
+
+.object-settings-section-list {
+  display: grid;
+  gap: 12px;
 }
 
 .compact-card-list {

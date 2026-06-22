@@ -50,7 +50,7 @@ interface DemoObjectSettingsPanelProps {
   readonly onUpdateObjectDefaults: (field: DemoAosrObjectDefaultsField, value: string) => void;
 }
 
-type ObjectSettingsSectionId = 'main' | 'header' | 'representatives' | 'texts';
+type ObjectSettingsSectionId = 'main' | 'header' | 'representatives';
 
 const objectSettingsSections: readonly {
   readonly id: ObjectSettingsSectionId;
@@ -59,23 +59,18 @@ const objectSettingsSections: readonly {
 }[] = [
   {
     id: 'main',
-    label: 'Основное',
-    summary: 'Проект и объект',
+    label: 'Данные и тексты',
+    summary: 'Объект и повторяющиеся поля',
   },
   {
     id: 'header',
-    label: 'Шапка акта',
-    summary: 'Организации и порядок',
+    label: 'Организации',
+    summary: 'Блоки и печатный порядок',
   },
   {
     id: 'representatives',
     label: 'Представители',
     summary: 'Группы и участники',
-  },
-  {
-    id: 'texts',
-    label: 'Тексты акта',
-    summary: 'Повторяющиеся пункты',
   },
 ];
 
@@ -125,11 +120,6 @@ export function DemoObjectSettingsPanel({
           </button>
         </div>
 
-        <p className="object-settings-dialog__intro">
-          Связанные документы используют эти данные напрямую. Изменения библиотек и шаблона
-          автоматически видны во всех актах со статусом «По шаблону».
-        </p>
-
         <div className="object-settings-layout">
           <nav className="object-settings-menu" aria-label="Разделы шаблона объекта">
             {objectSettingsSections.map((section) => (
@@ -149,105 +139,69 @@ export function DemoObjectSettingsPanel({
 
           <div className="object-settings-dialog__body object-settings-panel">
             {activeSectionId === 'main' ? (
-              <section className="form-section" aria-labelledby="object-data-title">
-                <h3 id="object-data-title">Основное</h3>
-                <div className="act-form-grid">
-                  <label className="act-form-grid__wide">
-                    Название проекта / объекта
-                    <input
-                      name="projectName"
-                      onChange={(event) => {
-                        onUpdateObjectDefaults('projectName', event.currentTarget.value);
-                      }}
-                      value={objectDefaults.projectName}
-                    />
-                  </label>
-                  <label className="act-form-grid__wide">
-                    Объект капитального строительства
-                    <textarea
-                      className="medium-field"
-                      name="objectName"
-                      onChange={(event) => {
-                        onUpdateObjectDefaults('objectName', event.currentTarget.value);
-                      }}
-                      rows={3}
-                      value={objectDefaults.objectName}
-                    />
-                  </label>
-                  <label className="act-form-grid__wide">
-                    Подстрочное пояснение объекта
-                    <textarea
-                      name="objectNameSubscript"
-                      onChange={(event) => {
-                        onUpdateObjectDefaults('objectNameSubscript', event.currentTarget.value);
-                      }}
-                      rows={2}
-                      value={objectDefaults.objectNameSubscript}
-                    />
-                  </label>
-                  <label>
-                    Количество экземпляров
-                    <input
-                      name="defaultCopiesLine"
-                      onChange={(event) => {
-                        onUpdateObjectDefaults('defaultCopiesLine', event.currentTarget.value);
-                      }}
-                      value={objectDefaults.defaultCopiesLine}
-                    />
-                  </label>
-                  <label className="act-form-grid__wide">
-                    Лицо, выполнившее работы
-                    <input
-                      name="defaultWorkContractorName"
-                      onChange={(event) => {
-                        onUpdateObjectDefaults(
-                          'defaultWorkContractorName',
-                          event.currentTarget.value,
-                        );
-                      }}
-                      value={objectDefaults.defaultWorkContractorName}
-                    />
-                  </label>
-                </div>
-              </section>
-            ) : null}
+              <div className="object-settings-section-list">
+                <section className="form-section" aria-labelledby="object-data-title">
+                  <h3 id="object-data-title">Объект и общие данные</h3>
+                  <div className="act-form-grid">
+                    <label className="act-form-grid__wide">
+                      Название проекта / объекта
+                      <input
+                        name="projectName"
+                        onChange={(event) => {
+                          onUpdateObjectDefaults('projectName', event.currentTarget.value);
+                        }}
+                        value={objectDefaults.projectName}
+                      />
+                    </label>
+                    <label className="act-form-grid__wide">
+                      Объект капитального строительства
+                      <textarea
+                        className="medium-field"
+                        name="objectName"
+                        onChange={(event) => {
+                          onUpdateObjectDefaults('objectName', event.currentTarget.value);
+                        }}
+                        rows={3}
+                        value={objectDefaults.objectName}
+                      />
+                    </label>
+                    <label className="act-form-grid__wide">
+                      Подстрочный текст под названием объекта
+                      <textarea
+                        name="objectNameSubscript"
+                        onChange={(event) => {
+                          onUpdateObjectDefaults('objectNameSubscript', event.currentTarget.value);
+                        }}
+                        rows={2}
+                        value={objectDefaults.objectNameSubscript}
+                      />
+                    </label>
+                    <label>
+                      Количество экземпляров
+                      <input
+                        name="defaultCopiesLine"
+                        onChange={(event) => {
+                          onUpdateObjectDefaults('defaultCopiesLine', event.currentTarget.value);
+                        }}
+                        value={objectDefaults.defaultCopiesLine}
+                      />
+                    </label>
+                    <label className="act-form-grid__wide">
+                      Лицо, выполнившее работы
+                      <input
+                        name="defaultWorkContractorName"
+                        onChange={(event) => {
+                          onUpdateObjectDefaults(
+                            'defaultWorkContractorName',
+                            event.currentTarget.value,
+                          );
+                        }}
+                        value={objectDefaults.defaultWorkContractorName}
+                      />
+                    </label>
+                  </div>
+                </section>
 
-            {activeSectionId === 'header' ? (
-              <DemoHeaderOrganizationsPanel
-                form={headerOrganizationForm}
-                globalOrganizations={globalOrganizations}
-                headerOrganizations={objectDefaults.headerOrganizations}
-                isFormOpen={isHeaderOrganizationFormOpen}
-                organizationSearch={organizationSearch}
-                onChangeForm={onChangeHeaderOrganizationForm}
-                onChangeSearch={onChangeOrganizationSearch}
-                onMoveHeaderOrganization={onMoveHeaderOrganization}
-                onSelectGlobalOrganization={onSelectGlobalOrganization}
-                onSubmit={onAddHeaderOrganization}
-                onToggleForm={onToggleHeaderOrganizationForm}
-              />
-            ) : null}
-
-            {activeSectionId === 'representatives' ? (
-              <DemoObjectRepresentativesPanel
-                form={libraryRepresentativeForm}
-                globalRepresentatives={globalRepresentatives}
-                isFormOpen={isRepresentativeLibraryFormOpen}
-                isLibraryOpen={isRepresentativeLibraryOpen}
-                objectRepresentatives={objectDefaults.representativeLibrary}
-                representativeGroups={objectDefaults.objectTemplate.representativeGroups}
-                representativeSearch={representativeSearch}
-                onChangeForm={onChangeLibraryRepresentativeForm}
-                onChangeSearch={onChangeRepresentativeSearch}
-                onSelectGlobalRepresentative={onSelectGlobalRepresentative}
-                onSubmit={onAddLibraryRepresentative}
-                onToggleForm={onToggleRepresentativeLibraryForm}
-                onToggleLibrary={onToggleRepresentativeLibrary}
-              />
-            ) : null}
-
-            {activeSectionId === 'texts' ? (
-              <>
                 <section className="form-section" aria-labelledby="object-project-docs-title">
                   <h3 id="object-project-docs-title">Пункт 4. Проектная документация</h3>
                   <label className="act-form-grid__wide">
@@ -301,7 +255,41 @@ export function DemoObjectSettingsPanel({
                     />
                   </label>
                 </section>
-              </>
+              </div>
+            ) : null}
+
+            {activeSectionId === 'header' ? (
+              <DemoHeaderOrganizationsPanel
+                form={headerOrganizationForm}
+                globalOrganizations={globalOrganizations}
+                headerOrganizations={objectDefaults.headerOrganizations}
+                isFormOpen={isHeaderOrganizationFormOpen}
+                organizationSearch={organizationSearch}
+                onChangeForm={onChangeHeaderOrganizationForm}
+                onChangeSearch={onChangeOrganizationSearch}
+                onMoveHeaderOrganization={onMoveHeaderOrganization}
+                onSelectGlobalOrganization={onSelectGlobalOrganization}
+                onSubmit={onAddHeaderOrganization}
+                onToggleForm={onToggleHeaderOrganizationForm}
+              />
+            ) : null}
+
+            {activeSectionId === 'representatives' ? (
+              <DemoObjectRepresentativesPanel
+                form={libraryRepresentativeForm}
+                globalRepresentatives={globalRepresentatives}
+                isFormOpen={isRepresentativeLibraryFormOpen}
+                isLibraryOpen={isRepresentativeLibraryOpen}
+                objectRepresentatives={objectDefaults.representativeLibrary}
+                representativeGroups={objectDefaults.objectTemplate.representativeGroups}
+                representativeSearch={representativeSearch}
+                onChangeForm={onChangeLibraryRepresentativeForm}
+                onChangeSearch={onChangeRepresentativeSearch}
+                onSelectGlobalRepresentative={onSelectGlobalRepresentative}
+                onSubmit={onAddLibraryRepresentative}
+                onToggleForm={onToggleRepresentativeLibraryForm}
+                onToggleLibrary={onToggleRepresentativeLibrary}
+              />
             ) : null}
           </div>
         </div>

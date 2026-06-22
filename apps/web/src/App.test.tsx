@@ -427,9 +427,9 @@ describe('App shell mock navigation', () => {
       within(dialog).getByLabelText('Объект капитального строительства'),
       nextObjectName,
     );
-    await user.click(within(dialog).getByRole('button', { name: /Шапка акта/u }));
+    await user.click(within(dialog).getByRole('button', { name: /Организации/u }));
     await user.click(within(dialog).getByRole('button', { name: 'Переместить Подрядчик вверх' }));
-    await user.click(within(dialog).getByRole('button', { name: /Тексты акта/u }));
+    await user.click(within(dialog).getByRole('button', { name: /Данные и тексты/u }));
     await user.clear(within(dialog).getByLabelText('Проектная документация шаблона'));
     await user.type(
       within(dialog).getByLabelText('Проектная документация шаблона'),
@@ -896,13 +896,12 @@ describe('App shell mock navigation', () => {
     expect(
       within(dialog).getByRole('navigation', { name: 'Разделы шаблона объекта' }),
     ).toBeTruthy();
-    expect(within(dialog).getByRole('button', { name: /Основное/u })).toBeTruthy();
-    expect(within(dialog).getByRole('button', { name: /Шапка акта/u })).toBeTruthy();
+    expect(within(dialog).getByRole('button', { name: /Данные и тексты/u })).toBeTruthy();
+    expect(within(dialog).getByRole('button', { name: /Организации/u })).toBeTruthy();
     expect(within(dialog).getByRole('button', { name: /Представители/u })).toBeTruthy();
-    expect(within(dialog).getByRole('button', { name: /Тексты акта/u })).toBeTruthy();
+    expect(within(dialog).queryByRole('button', { name: /Тексты акта/u })).toBeNull();
     expect(within(dialog).getByLabelText('Объект капитального строительства')).toBeTruthy();
-
-    await user.click(within(dialog).getByRole('button', { name: /Тексты акта/u }));
+    expect(within(dialog).getByLabelText('Подстрочный текст под названием объекта')).toBeTruthy();
     expect(
       within(dialog).getByRole('heading', { name: 'Пункт 6. Соответствие требованиям' }),
     ).toBeTruthy();
@@ -1206,7 +1205,7 @@ describe('App shell mock navigation', () => {
     await user.click(screen.getByRole('button', { name: 'Вернуться к объектам' }));
     await user.click(getFirstOpenObjectButton());
     await user.click(screen.getByRole('button', { name: 'Открыть шаблон объекта' }));
-    await user.click(screen.getByRole('button', { name: /Шапка акта/u }));
+    await user.click(screen.getByRole('button', { name: /Организации/u }));
     await user.click(screen.getByRole('button', { name: 'Добавить блок шапки' }));
     await user.type(
       screen.getByLabelText('Найти организацию в глобальной библиотеке'),
