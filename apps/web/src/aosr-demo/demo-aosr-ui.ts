@@ -1,4 +1,8 @@
-import type { DemoAosrRepresentative } from './demo-aosr-workspace.js';
+import {
+  defaultAosrCounterpartySubscript,
+  defaultAosrRepresentativeSubscript,
+  type DemoAosrRepresentative,
+} from './demo-aosr-workspace.js';
 
 export type MoveDirection = 'up' | 'down';
 
@@ -22,7 +26,7 @@ export interface RepresentativeFormState {
 }
 
 export const emptyHeaderOrganizationForm: HeaderOrganizationFormState = {
-  caption: '',
+  caption: defaultAosrCounterpartySubscript,
   details: '',
   globalOrganizationId: '',
   label: '',
@@ -31,7 +35,7 @@ export const emptyHeaderOrganizationForm: HeaderOrganizationFormState = {
 
 export const emptyRepresentativeForm: RepresentativeFormState = {
   authorityBasis: '',
-  details: '',
+  details: defaultAosrRepresentativeSubscript,
   fullName: '',
   globalRepresentativeId: '',
   nrsId: '',

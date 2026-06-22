@@ -320,6 +320,15 @@ export type DemoAosrObjectDefaultsField =
   | 'objectNameSubscript'
   | 'projectName';
 
+export const defaultAosrObjectNameSubscript =
+  'наименование объекта капитального строительства в соответствии с проектной документацией, почтовый или строительный адрес объекта капитального строительства';
+
+export const defaultAosrRepresentativeSubscript =
+  'должность, фамилия, инициалы, идентификационный номер в НРС, реквизиты документа, подтверждающего полномочия';
+
+export const defaultAosrCounterpartySubscript =
+  'Наименование, ОГРН, ИНН, место нахождения, телефон/факс и иные реквизиты участника.';
+
 const contractorRepresentative: DemoAosrRepresentative = {
   authorityBasis: 'Приказ N 12-П от 10.05.2026',
   fullName: 'Иванов И.И.',
@@ -368,8 +377,7 @@ const defaultProjectDocumentation =
 
 const defaultObjectName = 'Реконструкция поликлиники, корпус Б';
 
-const defaultObjectNameSubscript =
-  'Наименование объекта капитального строительства в соответствии с проектной документацией.';
+const defaultObjectNameSubscript = defaultAosrObjectNameSubscript;
 
 const defaultCopiesLine = '4';
 
@@ -429,9 +437,10 @@ const defaultObjectTemplate: ObjectTemplate = {
       id: 'representative-group-contractor',
       members: [
         {
+          customSubscript: defaultAosrRepresentativeSubscript,
           id: 'representative-member-contractor-001',
           signatoryId: contractorRepresentative.id,
-          subscriptMode: 'fromLibrary',
+          subscriptMode: 'custom',
         },
       ],
       title: contractorRepresentative.roleLabel,
@@ -440,9 +449,10 @@ const defaultObjectTemplate: ObjectTemplate = {
       id: 'representative-group-building-control',
       members: [
         {
+          customSubscript: defaultAosrRepresentativeSubscript,
           id: 'representative-member-building-control-001',
           signatoryId: buildingControlRepresentative.id,
-          subscriptMode: 'fromLibrary',
+          subscriptMode: 'custom',
         },
       ],
       title: buildingControlRepresentative.roleLabel,
@@ -451,9 +461,10 @@ const defaultObjectTemplate: ObjectTemplate = {
       id: 'representative-group-author-supervision',
       members: [
         {
+          customSubscript: defaultAosrRepresentativeSubscript,
           id: 'representative-member-author-supervision-001',
           signatoryId: authorSupervisionRepresentative.id,
-          subscriptMode: 'fromLibrary',
+          subscriptMode: 'custom',
         },
       ],
       title: authorSupervisionRepresentative.roleLabel,
@@ -1447,6 +1458,114 @@ export function moveHeaderOrganizationBlock(
         direction,
       ),
     },
+  };
+}
+
+export function updateHeaderOrganizationBlock(
+  objectDefaults: DemoAosrObjectDefaults,
+  headerOrganizationId: string,
+  field: 'caption' | 'details' | 'label' | 'organizationName',
+  value: string,
+): DemoAosrObjectDefaults {
+  return {
+    ...objectDefaults,
+    headerOrganizations: objectDefaults.headerOrganizations.map((headerOrganization) => {
+      if (headerOrganization.id !== headerOrganizationId) {
+        return headerOrganization;
+      }
+
+      const { displayText, ...editableHeaderOrganization } = headerOrganization;
+      void displayText;
+
+      return { ...editableHeaderOrganization, [field]: value };
+    }),
+    objectTemplate: {
+      ...objectDefaults.objectTemplate,
+      counterparties: objectDefaults.objectTemplate.counterparties.map((counterparty) => {
+        if (counterparty.id !== headerOrganizationId) {
+          return counterparty;
+        }
+
+        if (field === 'label') {
+          return { ...counterparty, title: value };
+        }
+
+        if (field === 'caption') {
+          return {
+            ...counterparty,
+            customSubscript: value,
+            subscriptMode: 'custom',
+          };
+        }
+
+        return counterparty;
+      }),
+    },
+  };
+}
+
+export function updateObjectRepresentativeGroupTitle(
+  objectDefaults: DemoAosrObjectDefaults,
+  groupId: string,
+  value: string,
+): DemoAosrObjectDefaults {
+  return {
+    ...objectDefaults,
+    objectTemplate: {
+      ...objectDefaults.objectTemplate,
+      representativeGroups: objectDefaults.objectTemplate.representativeGroups.map((group) =>
+        group.id === groupId ? { ...group, title: value } : group,
+      ),
+    },
+    representativeLibrary: objectDefaults.representativeLibrary.map((representative) =>
+      representative.templateGroupId === groupId
+        ? { ...representative, roleLabel: value }
+        : representative,
+    ),
+  };
+}
+
+export function updateObjectRepresentative(
+  objectDefaults: DemoAosrObjectDefaults,
+  groupId: string,
+  memberId: string,
+  signatoryId: string,
+  field: 'authorityBasis' | 'details' | 'fullName' | 'nrsId' | 'organization' | 'position',
+  value: string,
+): DemoAosrObjectDefaults {
+  const representativeLibrary = objectDefaults.representativeLibrary.map((representative) => {
+    if (
+      representative.id !== signatoryId &&
+      representative.globalRepresentativeId !== signatoryId
+    ) {
+      return representative;
+    }
+
+    return { ...representative, [field]: value };
+  });
+
+  if (field !== 'details') {
+    return { ...objectDefaults, representativeLibrary };
+  }
+
+  return {
+    ...objectDefaults,
+    objectTemplate: {
+      ...objectDefaults.objectTemplate,
+      representativeGroups: objectDefaults.objectTemplate.representativeGroups.map((group) =>
+        group.id === groupId
+          ? {
+              ...group,
+              members: group.members.map((member) =>
+                member.id === memberId
+                  ? { ...member, customSubscript: value, subscriptMode: 'custom' }
+                  : member,
+              ),
+            }
+          : group,
+      ),
+    },
+    representativeLibrary,
   };
 }
 

@@ -70,11 +70,11 @@ describe('DemoAosrPreview', () => {
     expect(within(bodyRepresentatives).getAllByText(`${groupTitle}:`)).toHaveLength(1);
     expect(within(bodyRepresentatives).getAllByText(firstMember)).toHaveLength(1);
     expect(
-      within(bodyRepresentatives).getByText('Подстрочный текст первого представителя'),
+      within(bodyRepresentatives).getByText('(Подстрочный текст первого представителя)'),
     ).toBeTruthy();
     expect(within(bodyRepresentatives).getAllByText(secondMember)).toHaveLength(1);
     expect(
-      within(bodyRepresentatives).getByText('Подстрочный текст второго представителя'),
+      within(bodyRepresentatives).getByText('(Подстрочный текст второго представителя)'),
     ).toBeTruthy();
 
     const signatures = screen.getByRole('region', { name: 'Подписи представителей' });

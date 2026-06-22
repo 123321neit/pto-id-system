@@ -1,4 +1,4 @@
-import type { SyntheticEvent } from 'react';
+import { useState, type SyntheticEvent } from 'react';
 
 import type { DemoAosrRepresentative, ObjectTemplate } from './demo-aosr-workspace.js';
 import type { RepresentativeFormState } from './demo-aosr-ui.js';
@@ -8,7 +8,6 @@ interface DemoObjectRepresentativesPanelProps {
   readonly form: RepresentativeFormState;
   readonly globalRepresentatives: readonly DemoAosrRepresentative[];
   readonly isFormOpen: boolean;
-  readonly isLibraryOpen: boolean;
   readonly objectRepresentatives: readonly DemoAosrRepresentative[];
   readonly representativeGroups: ObjectTemplate['representativeGroups'];
   readonly representativeSearch: string;
@@ -17,14 +16,20 @@ interface DemoObjectRepresentativesPanelProps {
   readonly onSelectGlobalRepresentative: (representative: DemoAosrRepresentative) => void;
   readonly onSubmit: (event: SyntheticEvent<HTMLFormElement>) => void;
   readonly onToggleForm: () => void;
-  readonly onToggleLibrary: () => void;
+  readonly onUpdateRepresentative: (
+    groupId: string,
+    memberId: string,
+    signatoryId: string,
+    field: 'authorityBasis' | 'details' | 'fullName' | 'nrsId' | 'organization' | 'position',
+    value: string,
+  ) => void;
+  readonly onUpdateRepresentativeGroupTitle: (groupId: string, value: string) => void;
 }
 
 export function DemoObjectRepresentativesPanel({
   form,
   globalRepresentatives,
   isFormOpen,
-  isLibraryOpen,
   objectRepresentatives,
   representativeGroups,
   representativeSearch,
@@ -33,73 +38,200 @@ export function DemoObjectRepresentativesPanel({
   onSelectGlobalRepresentative,
   onSubmit,
   onToggleForm,
-  onToggleLibrary,
+  onUpdateRepresentative,
+  onUpdateRepresentativeGroupTitle,
 }: DemoObjectRepresentativesPanelProps): React.JSX.Element {
   const filteredRepresentatives = filterRepresentatives(
     globalRepresentatives,
     representativeSearch,
   );
+  const [editingGroupId, setEditingGroupId] = useState<string | null>(null);
 
   return (
     <section className="form-section" aria-labelledby="representative-library-title">
       <div className="scope-heading scope-heading--with-action">
         <span>
           <h3 id="representative-library-title">Представители для актов</h3>
-          <p className="helper-note">
-            Группы и участники идут в том же порядке, что и в печатном документе. Связанные акты
-            используют этот состав автоматически.
-          </p>
         </span>
-        <span className="inline-actions">
-          <button className="compact-toggle" onClick={onToggleLibrary} type="button">
-            {isLibraryOpen ? 'Скрыть назначения' : 'Показать назначения'}
-          </button>
-          <button className="compact-toggle" onClick={onToggleForm} type="button">
-            {isFormOpen ? 'Свернуть добавление' : 'Добавить представителя'}
-          </button>
-        </span>
+        <button className="compact-toggle" onClick={onToggleForm} type="button">
+          {isFormOpen ? 'Свернуть добавление' : 'Добавить представителя'}
+        </button>
       </div>
 
-      {isLibraryOpen ? (
-        <div className="library-panel">
-          <div
-            className="library-list library-list--compact"
-            role="list"
-            aria-label="Назначения представителей объекта"
-          >
-            {representativeGroups.map((group) => (
-              <div className="library-row library-row--stacked" key={group.id} role="listitem">
-                <span>
-                  <strong>{group.title}</strong>
-                </span>
-                <ol className="compact-card-list" aria-label={`Участники группы ${group.title}`}>
-                  {group.members.map((member) => {
-                    const representative = objectRepresentatives.find(
-                      (candidate) =>
-                        candidate.id === member.signatoryId ||
-                        candidate.globalRepresentativeId === member.signatoryId,
-                    );
+      <div
+        className="representative-template-groups"
+        role="list"
+        aria-label="Назначения представителей объекта"
+      >
+        {representativeGroups.map((group) => {
+          const isEditing = editingGroupId === group.id;
 
-                    return (
-                      <li className="compact-card-list__item" key={member.id}>
-                        <span>
-                          <strong>{representative?.fullName ?? 'Подписант не найден'}</strong>
-                          <small>
-                            {[representative?.position, representative?.organization]
-                              .filter(Boolean)
-                              .join(', ')}
-                          </small>
-                          <small>{representative?.authorityBasis ?? ''}</small>
-                        </span>
-                      </li>
-                    );
-                  })}
-                </ol>
+          return (
+            <section className="representative-template-group" key={group.id} role="listitem">
+              <div className="representative-template-group__heading">
+                <strong>{group.title}</strong>
+                <button
+                  aria-expanded={isEditing}
+                  className="compact-toggle"
+                  onClick={() => {
+                    setEditingGroupId(isEditing ? null : group.id);
+                  }}
+                  type="button"
+                >
+                  {isEditing ? 'Готово' : 'Редактировать'}
+                </button>
               </div>
-            ))}
-          </div>
-        </div>
-      ) : null}
+
+              {isEditing ? (
+                <label className="representative-template-group__title-field">
+                  Название группы / роль
+                  <input
+                    onChange={(event) => {
+                      onUpdateRepresentativeGroupTitle(group.id, event.currentTarget.value);
+                    }}
+                    value={group.title}
+                  />
+                </label>
+              ) : null}
+
+              <ol className="compact-card-list" aria-label={`Участники группы ${group.title}`}>
+                {group.members.map((member) => {
+                  const globalRepresentative = globalRepresentatives.find(
+                    (candidate) => candidate.id === member.signatoryId,
+                  );
+                  const objectRepresentative = objectRepresentatives.find(
+                    (candidate) =>
+                      candidate.id === member.signatoryId ||
+                      candidate.globalRepresentativeId === member.signatoryId,
+                  );
+                  const representative = globalRepresentative ?? objectRepresentative;
+                  const subscript =
+                    member.subscriptMode === 'custom'
+                      ? (member.customSubscript ?? '')
+                      : (globalRepresentative?.details ?? objectRepresentative?.details ?? '');
+
+                  return (
+                    <li className="compact-card-list__item" key={member.id}>
+                      <span>
+                        <strong>{representative?.fullName ?? 'Подписант не найден'}</strong>
+                        <small>
+                          {[representative?.position, representative?.organization]
+                            .filter(Boolean)
+                            .join(', ')}
+                        </small>
+                        <small>
+                          {[representative?.authorityBasis, representative?.nrsId]
+                            .filter(Boolean)
+                            .join(', ')}
+                        </small>
+                        {subscript === '' ? null : (
+                          <small className="template-subscript">({subscript})</small>
+                        )}
+                      </span>
+
+                      {isEditing ? (
+                        <div className="object-template-inline-edit">
+                          <label>
+                            ФИО
+                            <input
+                              onChange={(event) => {
+                                onUpdateRepresentative(
+                                  group.id,
+                                  member.id,
+                                  member.signatoryId,
+                                  'fullName',
+                                  event.currentTarget.value,
+                                );
+                              }}
+                              value={representative?.fullName ?? ''}
+                            />
+                          </label>
+                          <label>
+                            Должность
+                            <input
+                              onChange={(event) => {
+                                onUpdateRepresentative(
+                                  group.id,
+                                  member.id,
+                                  member.signatoryId,
+                                  'position',
+                                  event.currentTarget.value,
+                                );
+                              }}
+                              value={representative?.position ?? ''}
+                            />
+                          </label>
+                          <label>
+                            Организация
+                            <input
+                              onChange={(event) => {
+                                onUpdateRepresentative(
+                                  group.id,
+                                  member.id,
+                                  member.signatoryId,
+                                  'organization',
+                                  event.currentTarget.value,
+                                );
+                              }}
+                              value={representative?.organization ?? ''}
+                            />
+                          </label>
+                          <label>
+                            Основание полномочий
+                            <input
+                              onChange={(event) => {
+                                onUpdateRepresentative(
+                                  group.id,
+                                  member.id,
+                                  member.signatoryId,
+                                  'authorityBasis',
+                                  event.currentTarget.value,
+                                );
+                              }}
+                              value={representative?.authorityBasis ?? ''}
+                            />
+                          </label>
+                          <label>
+                            Номер НРС
+                            <input
+                              onChange={(event) => {
+                                onUpdateRepresentative(
+                                  group.id,
+                                  member.id,
+                                  member.signatoryId,
+                                  'nrsId',
+                                  event.currentTarget.value,
+                                );
+                              }}
+                              value={representative?.nrsId ?? ''}
+                            />
+                          </label>
+                          <label className="act-form-grid__wide">
+                            Подстрочный текст
+                            <textarea
+                              onChange={(event) => {
+                                onUpdateRepresentative(
+                                  group.id,
+                                  member.id,
+                                  member.signatoryId,
+                                  'details',
+                                  event.currentTarget.value,
+                                );
+                              }}
+                              rows={2}
+                              value={subscript}
+                            />
+                          </label>
+                        </div>
+                      ) : null}
+                    </li>
+                  );
+                })}
+              </ol>
+            </section>
+          );
+        })}
+      </div>
 
       {isFormOpen ? (
         <div className="library-panel">
@@ -144,7 +276,7 @@ export function DemoObjectRepresentativesPanel({
             form={form}
             labels={{
               authorityBasis: 'Основание полномочий для объекта',
-              details: 'Подстрочное пояснение',
+              details: 'Подстрочный текст',
               fullName: 'ФИО представителя',
               nrsId: 'Номер НРС для объекта',
               organization: 'Организация на этом объекте',

@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest';
 
 import {
   buildDemoAosrPrintState,
+  defaultAosrObjectNameSubscript,
+  defaultAosrRepresentativeSubscript,
   demoAosrWorkspace,
   getCounterpartyLibraryItemFromGlobalOrganization,
   getSignatoryLibraryItemFromRepresentative,
@@ -10,6 +12,9 @@ import {
   switchDraftToManualTemplateMode,
   updateDemoAosrDraftField,
   updateDemoObjectDefaultsField,
+  updateHeaderOrganizationBlock,
+  updateObjectRepresentative,
+  updateObjectRepresentativeGroupTitle,
   type SignatoryLibraryItem,
 } from './demo-aosr-workspace.js';
 
@@ -63,7 +68,10 @@ describe('AOSR live object template model', () => {
       ),
     });
 
-    expect(templateFields.representatives[0]?.details).toBeUndefined();
+    expect(templateFields.representatives[0]?.details).toBe(defaultAosrRepresentativeSubscript);
+    expect(templateFields.representatives[0]?.details).not.toBe(
+      templateFields.representatives[0]?.introDisplayText,
+    );
   });
 
   it('keeps multiple members inside the representative group defined by objectTemplate', () => {
@@ -222,6 +230,53 @@ describe('AOSR live object template model', () => {
     expect(templateFields.workContractorName).toBe('ООО "Новый исполнитель"');
     expect(templateFields.additionalInfo).toBe('Новые live-дополнительные сведения.');
     expect(templateFields.copiesLine).toBe('6');
+  });
+
+  it('uses the exact editable subscripts from the DOCX template by default', () => {
+    const templateFields = resolveDemoAosrTemplateFields({
+      draft: getSourceDraft(),
+      objectDefaults: demoAosrWorkspace.objectDefaults,
+    });
+
+    expect(templateFields.objectNameSubscript).toBe(defaultAosrObjectNameSubscript);
+    expect(templateFields.representativeGroups[0]?.members[0]?.subscript).toBe(
+      defaultAosrRepresentativeSubscript,
+    );
+  });
+
+  it('updates object-level organization and representative values without mutating defaults', () => {
+    const organizationDefaults = updateHeaderOrganizationBlock(
+      demoAosrWorkspace.objectDefaults,
+      'header-organization-customer',
+      'caption',
+      'Новый подстрочник организации',
+    );
+    const renamedGroupDefaults = updateObjectRepresentativeGroupTitle(
+      organizationDefaults,
+      'representative-group-contractor',
+      'Новая роль представителя',
+    );
+    const representativeDefaults = updateObjectRepresentative(
+      renamedGroupDefaults,
+      'representative-group-contractor',
+      'representative-member-contractor-001',
+      'representative-contractor-001',
+      'details',
+      'Новый подстрочник представителя',
+    );
+    const templateFields = resolveDemoAosrTemplateFields({
+      draft: getSourceDraft(),
+      objectDefaults: representativeDefaults,
+    });
+
+    expect(templateFields.headerOrganizations[0]?.caption).toBe('Новый подстрочник организации');
+    expect(templateFields.representativeGroups[0]?.title).toBe('Новая роль представителя');
+    expect(templateFields.representativeGroups[0]?.members[0]?.subscript).toBe(
+      'Новый подстрочник представителя',
+    );
+    expect(demoAosrWorkspace.objectDefaults.headerOrganizations[0]?.caption).not.toBe(
+      'Новый подстрочник организации',
+    );
   });
 
   it('does not reflect object template edits in manual acts', () => {

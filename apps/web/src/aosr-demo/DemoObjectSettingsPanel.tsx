@@ -20,7 +20,6 @@ interface DemoObjectSettingsPanelProps {
   readonly headerOrganizationForm: HeaderOrganizationFormState;
   readonly isHeaderOrganizationFormOpen: boolean;
   readonly isRepresentativeLibraryFormOpen: boolean;
-  readonly isRepresentativeLibraryOpen: boolean;
   readonly libraryRepresentativeForm: RepresentativeFormState;
   readonly objectDefaults: DemoAosrObjectDefaults;
   readonly organizationSearch: string;
@@ -45,9 +44,21 @@ interface DemoObjectSettingsPanelProps {
   readonly onSelectGlobalRepresentative: (representative: DemoAosrRepresentative) => void;
   readonly onCloseObjectSettings: () => void;
   readonly onToggleHeaderOrganizationForm: () => void;
-  readonly onToggleRepresentativeLibrary: () => void;
   readonly onToggleRepresentativeLibraryForm: () => void;
+  readonly onUpdateHeaderOrganization: (
+    headerOrganization: DemoAosrObjectDefaults['headerOrganizations'][number],
+    field: 'caption' | 'details' | 'label' | 'organizationName',
+    value: string,
+  ) => void;
   readonly onUpdateObjectDefaults: (field: DemoAosrObjectDefaultsField, value: string) => void;
+  readonly onUpdateRepresentative: (
+    groupId: string,
+    memberId: string,
+    signatoryId: string,
+    field: 'authorityBasis' | 'details' | 'fullName' | 'nrsId' | 'organization' | 'position',
+    value: string,
+  ) => void;
+  readonly onUpdateRepresentativeGroupTitle: (groupId: string, value: string) => void;
 }
 
 type ObjectSettingsSectionId = 'main' | 'header' | 'representatives';
@@ -80,7 +91,6 @@ export function DemoObjectSettingsPanel({
   headerOrganizationForm,
   isHeaderOrganizationFormOpen,
   isRepresentativeLibraryFormOpen,
-  isRepresentativeLibraryOpen,
   libraryRepresentativeForm,
   objectDefaults,
   organizationSearch,
@@ -96,9 +106,11 @@ export function DemoObjectSettingsPanel({
   onSelectGlobalRepresentative,
   onCloseObjectSettings,
   onToggleHeaderOrganizationForm,
-  onToggleRepresentativeLibrary,
   onToggleRepresentativeLibraryForm,
+  onUpdateHeaderOrganization,
   onUpdateObjectDefaults,
+  onUpdateRepresentative,
+  onUpdateRepresentativeGroupTitle,
 }: DemoObjectSettingsPanelProps): React.JSX.Element {
   const [activeSectionId, setActiveSectionId] = useState<ObjectSettingsSectionId>('main');
 
@@ -271,6 +283,7 @@ export function DemoObjectSettingsPanel({
                 onSelectGlobalOrganization={onSelectGlobalOrganization}
                 onSubmit={onAddHeaderOrganization}
                 onToggleForm={onToggleHeaderOrganizationForm}
+                onUpdateHeaderOrganization={onUpdateHeaderOrganization}
               />
             ) : null}
 
@@ -279,7 +292,6 @@ export function DemoObjectSettingsPanel({
                 form={libraryRepresentativeForm}
                 globalRepresentatives={globalRepresentatives}
                 isFormOpen={isRepresentativeLibraryFormOpen}
-                isLibraryOpen={isRepresentativeLibraryOpen}
                 objectRepresentatives={objectDefaults.representativeLibrary}
                 representativeGroups={objectDefaults.objectTemplate.representativeGroups}
                 representativeSearch={representativeSearch}
@@ -288,7 +300,8 @@ export function DemoObjectSettingsPanel({
                 onSelectGlobalRepresentative={onSelectGlobalRepresentative}
                 onSubmit={onAddLibraryRepresentative}
                 onToggleForm={onToggleRepresentativeLibraryForm}
-                onToggleLibrary={onToggleRepresentativeLibrary}
+                onUpdateRepresentative={onUpdateRepresentative}
+                onUpdateRepresentativeGroupTitle={onUpdateRepresentativeGroupTitle}
               />
             ) : null}
           </div>

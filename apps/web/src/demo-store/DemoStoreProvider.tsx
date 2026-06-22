@@ -105,6 +105,32 @@ export function DemoStoreProvider({ children }: DemoStoreProviderProps): React.J
     return representative;
   };
 
+  const updateOrganization = (
+    organizationId: string,
+    field: 'details' | 'name',
+    value: string,
+  ): void => {
+    setOrganizations((currentOrganizations) =>
+      currentOrganizations.map((organization) =>
+        organization.id === organizationId ? { ...organization, [field]: value } : organization,
+      ),
+    );
+  };
+
+  const updateRepresentative = (
+    representativeId: string,
+    field: 'authorityBasis' | 'fullName' | 'nrsDetails' | 'organization' | 'position',
+    value: string,
+  ): void => {
+    setRepresentatives((currentRepresentatives) =>
+      currentRepresentatives.map((representative) =>
+        representative.id === representativeId
+          ? { ...representative, [field]: value }
+          : representative,
+      ),
+    );
+  };
+
   return (
     <DemoStoreContext.Provider
       value={{
@@ -116,6 +142,8 @@ export function DemoStoreProvider({ children }: DemoStoreProviderProps): React.J
         objectDocuments,
         organizations,
         representatives,
+        updateOrganization,
+        updateRepresentative,
       }}
     >
       {children}

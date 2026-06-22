@@ -16,6 +16,7 @@ import {
   addRepresentativeToDraft,
   addRepresentativeToLibrary,
   buildDemoAosrPrintState,
+  defaultAosrRepresentativeSubscript,
   demoAosrWorkspace,
   getCounterpartyLibraryItemFromGlobalOrganization,
   getDraftApplications,
@@ -37,7 +38,10 @@ import {
   updateDemoAosrDraftField,
   updateDemoObjectDefaultsField,
   updateHeaderOrganizationInDraft,
+  updateHeaderOrganizationBlock,
   updateManualObjectNameSubscript,
+  updateObjectRepresentative,
+  updateObjectRepresentativeGroupTitle,
   updateRepresentativeInDraft,
   type AosrPrintState,
   type DemoAosrDraft,
@@ -103,6 +107,8 @@ export function DemoAosrWorkspacePage({
     objectDocuments,
     organizations,
     representatives,
+    updateOrganization,
+    updateRepresentative,
   } = useDemoStore();
   const globalOrganizations = organizations.map(toDemoGlobalOrganization);
   const globalRepresentatives = representatives.map(toDemoAosrRepresentative);
@@ -131,7 +137,6 @@ export function DemoAosrWorkspacePage({
   const [representativeDropTargetId, setRepresentativeDropTargetId] = useState<string | null>(null);
   const [isObjectSettingsOpen, setObjectSettingsOpen] = useState(false);
   const [isHeaderOrganizationFormOpen, setHeaderOrganizationFormOpen] = useState(false);
-  const [isRepresentativeLibraryOpen, setRepresentativeLibraryOpen] = useState(false);
   const [isRepresentativeLibraryFormOpen, setRepresentativeLibraryFormOpen] = useState(false);
   const [isManualRepresentativeFormOpen, setManualRepresentativeFormOpen] = useState(false);
   const [isCertificateLibraryOpen, setCertificateLibraryOpen] = useState(false);
@@ -207,6 +212,42 @@ export function DemoAosrWorkspacePage({
   const updateObjectDefaults = (field: DemoAosrObjectDefaultsField, value: string): void => {
     commitObjectDefaults((currentDefaults) =>
       updateDemoObjectDefaultsField(currentDefaults, field, value),
+    );
+  };
+
+  const updateObjectHeaderOrganization = (
+    headerOrganization: DemoAosrHeaderOrganization,
+    field: 'caption' | 'details' | 'label' | 'organizationName',
+    value: string,
+  ): void => {
+    if (headerOrganization.globalOrganizationId !== undefined) {
+      if (field === 'organizationName') {
+        updateOrganization(headerOrganization.globalOrganizationId, 'name', value);
+      }
+
+      if (field === 'details') {
+        updateOrganization(headerOrganization.globalOrganizationId, 'details', value);
+      }
+    }
+
+    commitObjectDefaults((currentDefaults) =>
+      updateHeaderOrganizationBlock(currentDefaults, headerOrganization.id, field, value),
+    );
+  };
+
+  const updateObjectRepresentativeValue = (
+    groupId: string,
+    memberId: string,
+    signatoryId: string,
+    field: 'authorityBasis' | 'details' | 'fullName' | 'nrsId' | 'organization' | 'position',
+    value: string,
+  ): void => {
+    if (field !== 'details') {
+      updateRepresentative(signatoryId, field === 'nrsId' ? 'nrsDetails' : field, value);
+    }
+
+    commitObjectDefaults((currentDefaults) =>
+      updateObjectRepresentative(currentDefaults, groupId, memberId, signatoryId, field, value),
     );
   };
 
@@ -361,7 +402,6 @@ export function DemoAosrWorkspacePage({
     setLibraryRepresentativeForm(emptyRepresentativeForm);
     setRepresentativeSearch('');
     setRepresentativeLibraryFormOpen(false);
-    setRepresentativeLibraryOpen(true);
   };
 
   const addManualRepresentative = (event: SyntheticEvent<HTMLFormElement>): void => {
@@ -393,7 +433,7 @@ export function DemoAosrWorkspacePage({
   const selectGlobalRepresentative = (representative: DemoAosrRepresentative): void => {
     setLibraryRepresentativeForm({
       authorityBasis: representative.authorityBasis,
-      details: representative.details ?? '',
+      details: representative.details ?? defaultAosrRepresentativeSubscript,
       fullName: representative.fullName,
       globalRepresentativeId: representative.id,
       nrsId: representative.nrsId ?? '',
@@ -653,7 +693,6 @@ export function DemoAosrWorkspacePage({
           headerOrganizationForm={headerOrganizationForm}
           isHeaderOrganizationFormOpen={isHeaderOrganizationFormOpen}
           isRepresentativeLibraryFormOpen={isRepresentativeLibraryFormOpen}
-          isRepresentativeLibraryOpen={isRepresentativeLibraryOpen}
           libraryRepresentativeForm={libraryRepresentativeForm}
           objectDefaults={objectDefaults}
           organizationSearch={organizationSearch}
@@ -675,14 +714,17 @@ export function DemoAosrWorkspacePage({
           onToggleHeaderOrganizationForm={() => {
             setHeaderOrganizationFormOpen((isOpen) => !isOpen);
           }}
-          onToggleRepresentativeLibrary={() => {
-            setRepresentativeLibraryOpen((isOpen) => !isOpen);
-          }}
           onToggleRepresentativeLibraryForm={() => {
             setRepresentativeLibraryFormOpen((isOpen) => !isOpen);
-            setRepresentativeLibraryOpen(true);
           }}
+          onUpdateHeaderOrganization={updateObjectHeaderOrganization}
           onUpdateObjectDefaults={updateObjectDefaults}
+          onUpdateRepresentative={updateObjectRepresentativeValue}
+          onUpdateRepresentativeGroupTitle={(groupId, value) => {
+            commitObjectDefaults((currentDefaults) =>
+              updateObjectRepresentativeGroupTitle(currentDefaults, groupId, value),
+            );
+          }}
         />
       ) : null}
     </section>

@@ -981,7 +981,6 @@ describe('DemoAosrWorkspacePage', () => {
 
     await openObjectSettings(user);
     await user.click(screen.getByRole('button', { name: /Представители/u }));
-    await user.click(screen.getByRole('button', { name: 'Показать назначения' }));
 
     const objectLibrary = screen.getByRole('list', { name: 'Назначения представителей объекта' });
     expect(within(objectLibrary).queryByText('Сидоров С.С.')).toBeNull();
@@ -993,7 +992,6 @@ describe('DemoAosrWorkspacePage', () => {
     renderDemoWorkspace();
     await openObjectSettings(user);
     await user.click(screen.getByRole('button', { name: /Представители/u }));
-    await user.click(screen.getByRole('button', { name: 'Показать назначения' }));
 
     const contractorGroup = screen.getByRole('list', {
       name: 'Участники группы Представитель подрядчика',
@@ -1001,6 +999,75 @@ describe('DemoAosrWorkspacePage', () => {
 
     expect(within(contractorGroup).getByText('Иванов И.И.')).toBeTruthy();
     expect(within(contractorGroup).getByText('Производитель работ, ООО "ПТО Монтаж"')).toBeTruthy();
+  });
+
+  it('edits an existing organization block and its subscript in the linked act', async () => {
+    const user = userEvent.setup();
+
+    renderDemoWorkspace({ initialDocumentPreviewOpen: true });
+    await openObjectSettings(user);
+    await user.click(screen.getByRole('button', { name: /Организации/u }));
+
+    const organizationCard = within(screen.getByRole('list', { name: 'Организации в шапке акта' }))
+      .getByText('Заказчик')
+      .closest('.compact-card-list__item');
+
+    if (organizationCard === null) {
+      throw new Error('Expected the customer organization card.');
+    }
+
+    await user.click(
+      within(organizationCard as HTMLElement).getByRole('button', { name: 'Редактировать' }),
+    );
+    const organizationName = within(organizationCard as HTMLElement).getByLabelText('Организация');
+    const organizationDetails = within(organizationCard as HTMLElement).getByLabelText(
+      'Реквизиты организации',
+    );
+    const organizationSubscript = within(organizationCard as HTMLElement).getByLabelText(
+      'Подстрочный текст',
+    );
+
+    await user.clear(organizationName);
+    await user.type(organizationName, 'ООО "Новый заказчик"');
+    await user.clear(organizationDetails);
+    await user.type(organizationDetails, 'ОГРН 123; ИНН 456.');
+    await user.clear(organizationSubscript);
+    await user.type(organizationSubscript, 'Изменяемая подпись организации');
+
+    expect(getPreviewText()).toContain('ООО "Новый заказчик" ОГРН 123; ИНН 456.');
+    expect(getPreviewText()).toContain('(Изменяемая подпись организации)');
+  });
+
+  it('edits a representative group, member values and subscript in the linked act', async () => {
+    const user = userEvent.setup();
+
+    renderDemoWorkspace({ initialDocumentPreviewOpen: true });
+    await openObjectSettings(user);
+    await user.click(screen.getByRole('button', { name: /Представители/u }));
+
+    const group = within(screen.getByRole('list', { name: 'Назначения представителей объекта' }))
+      .getByText('Представитель подрядчика')
+      .closest('.representative-template-group');
+
+    if (group === null) {
+      throw new Error('Expected the contractor representative group.');
+    }
+
+    await user.click(within(group as HTMLElement).getByRole('button', { name: 'Редактировать' }));
+    const groupTitle = within(group as HTMLElement).getByLabelText('Название группы / роль');
+    const fullName = within(group as HTMLElement).getByLabelText('ФИО');
+    const subscript = within(group as HTMLElement).getByLabelText('Подстрочный текст');
+
+    await user.clear(groupTitle);
+    await user.type(groupTitle, 'Представитель монтажной организации');
+    await user.clear(fullName);
+    await user.type(fullName, 'Сидоров С.С.');
+    await user.clear(subscript);
+    await user.type(subscript, 'Изменяемая подпись представителя');
+
+    expect(getPreviewText()).toContain('Представитель монтажной организации:');
+    expect(getPreviewText()).toContain('Сидоров С.С.');
+    expect(getPreviewText()).toContain('(Изменяемая подпись представителя)');
   });
 
   it('describes manual representative creation as a local act snapshot edit', async () => {

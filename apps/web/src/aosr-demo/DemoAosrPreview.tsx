@@ -77,12 +77,8 @@ export function DemoAosrPreview({
                       <div key={`${member.introDisplayText}-${String(memberIndex)}`}>
                         <p className="act-page__field-line">{member.introDisplayText}</p>
                         {subscript === '' ? null : (
-                          <p className="act-page__field-line act-page__details-line">{subscript}</p>
+                          <p className="act-page__caption">({subscript})</p>
                         )}
-                        <p className="act-page__caption">
-                          (должность, фамилия, инициалы, идентификационный номер в НРС, реквизиты
-                          документа, подтверждающего полномочия)
-                        </p>
                       </div>
                     );
                   })}

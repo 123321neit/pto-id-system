@@ -86,6 +86,16 @@ export interface DemoStoreValue {
   readonly addObjectDocument: (document: DemoObjectDocumentInput) => void;
   readonly addOrganization: (organization: DemoOrganizationInput) => DemoOrganization;
   readonly addRepresentative: (representative: DemoRepresentativeInput) => DemoRepresentative;
+  readonly updateOrganization: (
+    organizationId: string,
+    field: 'details' | 'name',
+    value: string,
+  ) => void;
+  readonly updateRepresentative: (
+    representativeId: string,
+    field: 'authorityBasis' | 'fullName' | 'nrsDetails' | 'organization' | 'position',
+    value: string,
+  ) => void;
 }
 
 export const demoCertificateStatuses: readonly DemoCertificateStatus[] = [

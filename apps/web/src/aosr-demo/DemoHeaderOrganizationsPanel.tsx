@@ -1,4 +1,4 @@
-import type { SyntheticEvent } from 'react';
+import { useState, type SyntheticEvent } from 'react';
 
 import type { DemoAosrHeaderOrganization, DemoGlobalOrganization } from './demo-aosr-workspace.js';
 import type { HeaderOrganizationFormState, MoveDirection } from './demo-aosr-ui.js';
@@ -18,6 +18,11 @@ interface DemoHeaderOrganizationsPanelProps {
   readonly onSelectGlobalOrganization: (organization: DemoGlobalOrganization) => void;
   readonly onSubmit: (event: SyntheticEvent<HTMLFormElement>) => void;
   readonly onToggleForm: () => void;
+  readonly onUpdateHeaderOrganization: (
+    headerOrganization: DemoAosrHeaderOrganization,
+    field: 'caption' | 'details' | 'label' | 'organizationName',
+    value: string,
+  ) => void;
 }
 
 export function DemoHeaderOrganizationsPanel({
@@ -32,17 +37,16 @@ export function DemoHeaderOrganizationsPanel({
   onSelectGlobalOrganization,
   onSubmit,
   onToggleForm,
+  onUpdateHeaderOrganization,
 }: DemoHeaderOrganizationsPanelProps): React.JSX.Element {
   const filteredOrganizations = filterGlobalOrganizations(globalOrganizations, organizationSearch);
+  const [editingOrganizationId, setEditingOrganizationId] = useState<string | null>(null);
 
   return (
     <section className="form-section" aria-labelledby="header-organizations-title">
       <div className="scope-heading scope-heading--with-action">
         <span>
           <h3 id="header-organizations-title">Организации в шапке печатного акта</h3>
-          <p className="helper-note">
-            Блоки идут сверху вниз в том порядке, в котором появятся в печатном документе.
-          </p>
         </span>
         <button className="compact-toggle" onClick={onToggleForm} type="button">
           {isFormOpen ? 'Свернуть добавление' : 'Добавить блок шапки'}
@@ -50,37 +54,118 @@ export function DemoHeaderOrganizationsPanel({
       </div>
 
       <ol className="compact-card-list" aria-label="Организации в шапке акта">
-        {headerOrganizations.map((headerOrganization, index) => (
-          <li className="compact-card-list__item" key={headerOrganization.id}>
-            <span>
-              <strong>{headerOrganization.label}</strong>
-              <small>{headerOrganization.organizationName}</small>
-              <small>{headerOrganization.details}</small>
-            </span>
-            <span className="inline-actions">
-              <button
-                aria-label={`Переместить ${headerOrganization.label} вверх`}
-                disabled={index === 0}
-                onClick={() => {
-                  onMoveHeaderOrganization(headerOrganization.id, 'up');
-                }}
-                type="button"
-              >
-                Вверх
-              </button>
-              <button
-                aria-label={`Переместить ${headerOrganization.label} вниз`}
-                disabled={index === headerOrganizations.length - 1}
-                onClick={() => {
-                  onMoveHeaderOrganization(headerOrganization.id, 'down');
-                }}
-                type="button"
-              >
-                Вниз
-              </button>
-            </span>
-          </li>
-        ))}
+        {headerOrganizations.map((headerOrganization, index) => {
+          const globalOrganization = globalOrganizations.find(
+            ({ id }) => id === headerOrganization.globalOrganizationId,
+          );
+          const organizationName =
+            globalOrganization?.organizationName ?? headerOrganization.organizationName;
+          const details = globalOrganization?.details ?? headerOrganization.details;
+          const caption = headerOrganization.caption ?? globalOrganization?.caption ?? '';
+          const isEditing = editingOrganizationId === headerOrganization.id;
+
+          return (
+            <li className="compact-card-list__item" key={headerOrganization.id}>
+              <span>
+                <strong>{headerOrganization.label}</strong>
+                <small>{organizationName}</small>
+                <small>{details}</small>
+                {caption === '' ? null : <small className="template-subscript">({caption})</small>}
+              </span>
+              <span className="inline-actions">
+                <button
+                  aria-expanded={isEditing}
+                  className="compact-toggle"
+                  onClick={() => {
+                    setEditingOrganizationId(isEditing ? null : headerOrganization.id);
+                  }}
+                  type="button"
+                >
+                  {isEditing ? 'Готово' : 'Редактировать'}
+                </button>
+                <button
+                  aria-label={`Переместить ${headerOrganization.label} вверх`}
+                  disabled={index === 0}
+                  onClick={() => {
+                    onMoveHeaderOrganization(headerOrganization.id, 'up');
+                  }}
+                  type="button"
+                >
+                  Вверх
+                </button>
+                <button
+                  aria-label={`Переместить ${headerOrganization.label} вниз`}
+                  disabled={index === headerOrganizations.length - 1}
+                  onClick={() => {
+                    onMoveHeaderOrganization(headerOrganization.id, 'down');
+                  }}
+                  type="button"
+                >
+                  Вниз
+                </button>
+              </span>
+
+              {isEditing ? (
+                <div className="object-template-inline-edit">
+                  <label>
+                    Название блока
+                    <input
+                      onChange={(event) => {
+                        onUpdateHeaderOrganization(
+                          headerOrganization,
+                          'label',
+                          event.currentTarget.value,
+                        );
+                      }}
+                      value={headerOrganization.label}
+                    />
+                  </label>
+                  <label>
+                    Организация
+                    <input
+                      onChange={(event) => {
+                        onUpdateHeaderOrganization(
+                          headerOrganization,
+                          'organizationName',
+                          event.currentTarget.value,
+                        );
+                      }}
+                      value={organizationName}
+                    />
+                  </label>
+                  <label className="act-form-grid__wide">
+                    Реквизиты организации
+                    <textarea
+                      onChange={(event) => {
+                        onUpdateHeaderOrganization(
+                          headerOrganization,
+                          'details',
+                          event.currentTarget.value,
+                        );
+                      }}
+                      rows={3}
+                      value={details}
+                    />
+                  </label>
+                  <label className="act-form-grid__wide">
+                    Подстрочный текст
+                    <textarea
+                      onChange={(event) => {
+                        onUpdateHeaderOrganization(
+                          headerOrganization,
+                          'caption',
+                          event.currentTarget.value,
+                        );
+                      }}
+                      rows={2}
+                      value={caption}
+                    />
+                  </label>
+                </div>
+              ) : null}
+            </li>
+          );
+        })}
       </ol>
 
       {isFormOpen ? (
@@ -153,7 +238,7 @@ export function DemoHeaderOrganizationsPanel({
               />
             </label>
             <label className="act-form-grid__wide">
-              Подпись-подсказка
+              Подстрочный текст
               <textarea
                 className="medium-field"
                 onChange={(event) => {
