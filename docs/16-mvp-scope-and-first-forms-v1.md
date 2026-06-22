@@ -462,6 +462,9 @@ Simple numbering rules:
 - rendered number is derived and stored with released revision;
 - uniqueness/collision is checked inside chosen scope;
 - manual rendered-number free text is not source of truth.
+- a direct manual number edit affects only that document and does not invoke
+  renumbering of previous or next documents;
+- a dedicated explicit renumber flow remains a separate operation.
 
 Renumber flow:
 

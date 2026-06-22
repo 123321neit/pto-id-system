@@ -340,10 +340,10 @@ Object
 └── Default parameters
 ```
 
-The first frontend-only numbering helper is present for mock AOSR creation. It
-keeps numbering per document type and can be scoped globally by object or
-restarted per period. The current mock setting for AOSR is global by object
-with prefix `ОВ-`, suffix empty and template:
+The frontend-only AOSR mock now keeps its numbering rule in the object template.
+The user can choose one continuous sequence across the object or restart the
+sequence in each folder, and can edit the prefix and suffix. The default is
+global object numbering with prefix `ОВ-`, suffix empty and template:
 
 ```text
 {prefix}{number}{suffix}
@@ -358,12 +358,13 @@ Examples:
 ```
 
 The create-document panel shows the proposed next number, for example
-`Предлагаемый номер: ОВ-3` when `ОВ-1` and `ОВ-2` already exist, and pre-fills
-editable `Номер документа` with that suggestion. The user may override it
-freely, including leaving it empty, before the frontend-only draft is created.
-The auto-number is only a suggestion. Template/settings UI and the production
-numbering engine are not implemented yet. No backend rules, persistence or
-production numbering logic is implemented in this frontend mock.
+`Предлагаемый номер: ОВ-3`, and pre-fills editable `Номер документа`. The user
+may override it freely, including leaving it empty. A manually entered number
+does not consume or shift the automatic sequence. If an automatically numbered
+act is renamed later, its allocated sequence remains consumed, so previous and
+next act numbers do not change. Existing acts are never renumbered by ordinary
+field edits. This remains an in-memory frontend mock: no backend rules,
+persistence, collision transaction or production numbering engine is included.
 
 The frontend-only object workspace premium UX polish keeps the same mock
 functionality but makes the workspace feel more like a calm professional SaaS:
@@ -428,9 +429,10 @@ folder for documents, not an AOSR-only area. Its primary action is now
 `Создать документ`; the selector creates AOSR as the first active document type
 and leaves future document types disabled as `скоро`. Registry and Periodic ID
 remain compact generated views from period documents; the real registry
-implementation and numbering settings are planned later. This is frontend-only
-UX/product cleanup and adds no backend/API, Prisma, persistence, uploads,
-OCR/AI or DOCX/PDF/ZIP behavior.
+implementation is planned later. The later frontend mock adds simple numbering
+settings to the object template, while production numbering remains deferred.
+This is frontend-only UX/product work and adds no backend/API, Prisma,
+persistence, uploads, OCR/AI or DOCX/PDF/ZIP behavior.
 
 Production feature coding remains blocked outside explicitly requested narrow
 demo/technical slices.

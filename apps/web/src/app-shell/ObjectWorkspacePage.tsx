@@ -12,7 +12,7 @@ import { DerivedRegistryTable } from './DerivedRegistryTable.js';
 import { ObjectDocumentsPage } from './ObjectDocumentsPage.js';
 import { ObjectFinalPackagePage, ObjectPeriodicPackagePage } from './ObjectFinalPackagePage.js';
 import type { MockObjectCard } from './mock-dashboard.js';
-import { getProposedDemoDocumentNumber } from './object-document-numbering.js';
+import { getProposedDemoDocumentNumberDetails } from './object-document-numbering.js';
 import {
   addDemoObjectPeriodDraft,
   demoObjectPeriods,
@@ -66,16 +66,31 @@ export function ObjectWorkspacePage({
   const isAosrVisible = activeSection === 'aosr' || activeSection === 'settings';
   const selectedPeriod = getDemoObjectPeriodById(selectedPeriodId, periods);
   const selectedPeriodDrafts = getDemoObjectPeriodDrafts(selectedPeriod, drafts);
-  const proposedAosrNumber = useMemo(
+  const proposedAosrNumberDetails = useMemo(
     () =>
-      getProposedDemoDocumentNumber({
+      getProposedDemoDocumentNumberDetails({
         documentTypeId: 'aosr',
         drafts,
         periodId: selectedPeriodId,
         periods,
+        setting: {
+          documentTypeId: 'aosr',
+          prefix: objectDefaults.objectTemplate.numberingPrefix,
+          scope: objectDefaults.objectTemplate.numberingScope,
+          suffix: objectDefaults.objectTemplate.numberingSuffix,
+          template: '{prefix}{number}{suffix}',
+        },
       }),
-    [drafts, periods, selectedPeriodId],
+    [
+      drafts,
+      objectDefaults.objectTemplate.numberingPrefix,
+      objectDefaults.objectTemplate.numberingScope,
+      objectDefaults.objectTemplate.numberingSuffix,
+      periods,
+      selectedPeriodId,
+    ],
   );
+  const proposedAosrNumber = proposedAosrNumberDetails.renderedNumber;
 
   useEffect(() => {
     if (isCreateDocumentPanelOpen) {
@@ -112,9 +127,16 @@ export function ObjectWorkspacePage({
   };
 
   const createAosrDraft = (): void => {
+    const usesAutomaticNumber = documentNumberInput === proposedAosrNumber;
     const draft = createEmptyDemoAosrDraft({
       actNumber: documentNumberInput,
       id: `aosr-draft-created-${String(createdAosrDraftCount)}`,
+      numberingAssignment: usesAutomaticNumber
+        ? {
+            automaticSequences: proposedAosrNumberDetails.sequences,
+            source: 'automatic',
+          }
+        : { source: 'manual' },
       objectDefaults,
     });
 
@@ -593,7 +615,10 @@ function CreateDocumentPanel({
             value={documentNumber}
           />
         </label>
-        <p>Автонумерация — только подсказка. Номер можно изменить или оставить пустым.</p>
+        <p>
+          Ручной номер действует только для этого акта и не изменяет автоматическую
+          последовательность.
+        </p>
       </div>
       <ul className="document-type-card-list" aria-label="Доступные типы документов">
         {registeredDemoActTypes.map((actType) => (

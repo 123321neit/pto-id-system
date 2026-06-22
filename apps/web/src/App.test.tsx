@@ -89,7 +89,7 @@ describe('App shell mock navigation', () => {
     let documentNumberInput = within(selector).getByLabelText<HTMLInputElement>('Номер документа');
     expect(documentNumberInput.value).toBe('ОВ-3');
     expect(selector.textContent).toContain(
-      'Автонумерация — только подсказка. Номер можно изменить или оставить пустым.',
+      'Ручной номер действует только для этого акта и не изменяет автоматическую последовательность.',
     );
     expect(within(selector).getByText('Акт испытаний')).toBeTruthy();
     expect(within(selector).getAllByRole('button', { name: 'Скоро' })).toHaveLength(2);
@@ -113,6 +113,12 @@ describe('App shell mock navigation', () => {
     expect(screen.getByRole('heading', { name: 'Документы' })).toBeTruthy();
     expect(screen.getByRole('button', { name: /12-3-ОВ/u })).toBeTruthy();
     expect(screen.queryByLabelText('Текущий документ: 12-3-ОВ')).toBeNull();
+
+    await user.click(getFirstCreateDocumentButton());
+    selector = screen.getByRole('dialog', { name: 'Создать документ' });
+    expect(selector.textContent).toContain('Предлагаемый номер: ОВ-3');
+    await user.click(within(selector).getByRole('button', { name: 'Закрыть' }));
+
     await user.click(screen.getByRole('button', { name: /12-3-ОВ/u }));
 
     expect(screen.getAllByText(/Папки ИД \/ АОСР/u).length).toBeGreaterThan(0);
@@ -385,6 +391,11 @@ describe('App shell mock navigation', () => {
     expect(screen.getByRole('heading', { name: 'Октябрь 2026' })).toBeTruthy();
     expect(screen.getByRole('button', { name: /ОВ-3/u })).toBeTruthy();
     expect(screen.queryByLabelText('Текущий документ: ОВ-3')).toBeNull();
+
+    await user.click(screen.getByRole('button', { name: 'Создать документ' }));
+    const nextSelector = screen.getByRole('dialog', { name: 'Создать документ' });
+    expect(nextSelector.textContent).toContain('Предлагаемый номер: ОВ-4');
+    await user.click(within(nextSelector).getByRole('button', { name: 'Закрыть' }));
 
     const updatedOctoberRegistry = within(getSectionByHeading('Реестр папки «Октябрь 2026»'));
     expect(updatedOctoberRegistry.getByText('ОВ-3')).toBeTruthy();
@@ -910,6 +921,43 @@ describe('App shell mock navigation', () => {
 
     expect(screen.queryByRole('dialog', { name: 'Шаблон объекта' })).toBeNull();
     expect(screen.getByRole('heading', { name: 'Документ ОВ-1' })).toBeTruthy();
+  });
+
+  it('uses the object template numbering rule for new acts', async () => {
+    const user = userEvent.setup();
+
+    render(<App />);
+    await user.click(getFirstOpenObjectButton());
+
+    const objectNavigation = screen.getByRole('navigation', { name: 'Разделы объекта' });
+    await user.click(
+      within(objectNavigation).getByRole('button', { name: 'Открыть шаблон объекта' }),
+    );
+
+    const dialog = screen.getByRole('dialog', { name: 'Шаблон объекта' });
+    const globalScope = within(dialog).getByLabelText<HTMLInputElement>(/Сквозная по объекту/u);
+    const periodScope = within(dialog).getByLabelText<HTMLInputElement>(/Отдельно в каждой папке/u);
+    const prefix = within(dialog).getByLabelText<HTMLInputElement>('Префикс номера');
+    const suffix = within(dialog).getByLabelText<HTMLInputElement>('Суффикс номера');
+
+    expect(globalScope.checked).toBe(true);
+    expect(periodScope.checked).toBe(false);
+    await user.click(periodScope);
+    await user.clear(prefix);
+    await user.type(prefix, 'АОСР/');
+    await user.type(suffix, '/2026');
+
+    expect(within(dialog).getByLabelText('Пример номера').textContent).toBe('АОСР/1/2026');
+    await user.click(within(dialog).getByRole('button', { name: 'Закрыть' }));
+
+    await user.click(within(objectNavigation).getByRole('button', { name: 'Октябрь 2026' }));
+    await user.click(screen.getByRole('button', { name: 'Создать документ' }));
+
+    const selector = screen.getByRole('dialog', { name: 'Создать документ' });
+    expect(selector.textContent).toContain('Предлагаемый номер: АОСР/2/2026');
+    expect(within(selector).getByLabelText<HTMLInputElement>('Номер документа').value).toBe(
+      'АОСР/2/2026',
+    );
   });
 
   it('opens the certificate library page from quick access with onboarding visible', async () => {

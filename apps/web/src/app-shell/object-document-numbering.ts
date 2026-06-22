@@ -1,5 +1,9 @@
 import type { DemoActTypeId } from '../act-types/act-types.js';
-import type { DemoAosrDraft } from '../aosr-demo/demo-aosr-workspace.js';
+import type {
+  DemoAosrDraft,
+  DemoDocumentNumberingScope,
+  DemoDocumentNumberingSequences,
+} from '../aosr-demo/demo-aosr-workspace.js';
 import {
   getDemoObjectPeriodById,
   getDemoObjectPeriodDrafts,
@@ -7,7 +11,7 @@ import {
   type DemoObjectPeriodId,
 } from './object-periods.js';
 
-export type DemoDocumentNumberingScope = 'global-object' | 'restart-per-period';
+export type { DemoDocumentNumberingScope } from '../aosr-demo/demo-aosr-workspace.js';
 
 export interface DemoDocumentNumberingSetting {
   readonly documentTypeId: DemoActTypeId;
@@ -25,9 +29,11 @@ export interface DemoDocumentNumberingInput {
   readonly setting?: DemoDocumentNumberingSetting;
 }
 
-// Frontend-only numbering foundation. Future UI can expose templates such as
-// ОВ-{n}, 12-{n}-ОВ and АОСР/{YYYY}/{n}, with global object numbering or
-// numbering restarted per period. No backend/persistence numbering policy here.
+export interface DemoDocumentNumberProposal {
+  readonly renderedNumber: string;
+  readonly sequences: DemoDocumentNumberingSequences;
+}
+
 export const demoAosrNumberingSetting: DemoDocumentNumberingSetting = {
   documentTypeId: 'aosr',
   prefix: 'ОВ-',
@@ -42,63 +48,41 @@ const demoDocumentNumberingSettings: Readonly<Record<DemoActTypeId, DemoDocument
   };
 
 export function getProposedDemoDocumentNumber(input: DemoDocumentNumberingInput): string {
-  const setting = input.setting ?? demoDocumentNumberingSettings[input.documentTypeId];
-  const scopedDrafts = getNumberingScopeDrafts(input, setting);
-  const usedSequences = scopedDrafts
-    .map((draft) => parseDemoDocumentSequence(draft.actNumber, setting))
-    .filter((sequence): sequence is number => sequence !== undefined);
-  const nextSequence = Math.max(0, ...usedSequences) + 1;
-
-  return formatDemoDocumentNumber(setting, nextSequence);
+  return getProposedDemoDocumentNumberDetails(input).renderedNumber;
 }
 
-function getNumberingScopeDrafts(
+export function getProposedDemoDocumentNumberDetails(
   input: DemoDocumentNumberingInput,
-  setting: DemoDocumentNumberingSetting,
-): readonly DemoAosrDraft[] {
-  if (setting.scope === 'global-object') {
-    return input.drafts;
-  }
-
-  return getDemoObjectPeriodDrafts(
+): DemoDocumentNumberProposal {
+  const setting = input.setting ?? demoDocumentNumberingSettings[input.documentTypeId];
+  const periodDrafts = getDemoObjectPeriodDrafts(
     getDemoObjectPeriodById(input.periodId, input.periods),
     input.drafts,
   );
+  const sequences = {
+    globalObject: getNextAutomaticSequence(input.drafts, 'globalObject'),
+    period: getNextAutomaticSequence(periodDrafts, 'period'),
+  };
+  const selectedSequence =
+    setting.scope === 'global-object' ? sequences.globalObject : sequences.period;
+
+  return {
+    renderedNumber: formatDemoDocumentNumber(setting, selectedSequence),
+    sequences,
+  };
+}
+
+function getNextAutomaticSequence(
+  drafts: readonly DemoAosrDraft[],
+  sequenceKey: keyof DemoDocumentNumberingSequences,
+): number {
+  const usedSequences = drafts
+    .map((draft) => draft.numberingAssignment.automaticSequences?.[sequenceKey])
+    .filter((sequence): sequence is number => sequence !== undefined);
+
+  return Math.max(0, ...usedSequences) + 1;
 }
 
 function formatDemoDocumentNumber(setting: DemoDocumentNumberingSetting, sequence: number): string {
   return `${setting.prefix}${String(sequence)}${setting.suffix}`;
-}
-
-function parseDemoDocumentSequence(
-  renderedNumber: string,
-  setting: DemoDocumentNumberingSetting,
-): number | undefined {
-  if (!renderedNumber.startsWith(setting.prefix)) {
-    return parseTrailingNumber(renderedNumber);
-  }
-
-  const withoutPrefix = renderedNumber.slice(setting.prefix.length);
-  const numberPart =
-    setting.suffix === ''
-      ? withoutPrefix
-      : withoutPrefix.endsWith(setting.suffix)
-        ? withoutPrefix.slice(0, -setting.suffix.length)
-        : '';
-
-  if (!/^\d+$/u.test(numberPart)) {
-    return parseTrailingNumber(renderedNumber);
-  }
-
-  return Number.parseInt(numberPart, 10);
-}
-
-function parseTrailingNumber(renderedNumber: string): number | undefined {
-  const [, numericPart] = /(\d+)\D*$/u.exec(renderedNumber) ?? [];
-
-  if (numericPart === undefined) {
-    return undefined;
-  }
-
-  return Number.parseInt(numericPart, 10);
 }

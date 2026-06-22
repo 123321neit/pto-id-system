@@ -36,6 +36,8 @@ import {
   switchDraftToManualTemplateMode,
   toggleApplicationInclusionInDraft,
   updateDemoAosrDraftField,
+  updateDemoObjectNumberingAffix,
+  updateDemoObjectNumberingScope,
   updateDemoObjectDefaultsField,
   updateHeaderOrganizationInDraft,
   updateHeaderOrganizationBlock,
@@ -51,6 +53,8 @@ import {
   type DemoAosrObjectDefaultsField,
   type DemoAosrRepresentative,
   type DemoAosrTemplateFields,
+  type DemoDocumentNumberingAffixField,
+  type DemoDocumentNumberingScope,
   type DemoGlobalOrganization,
   type DemoMaterialCertificate,
   type DemoObjectDocumentType,
@@ -718,6 +722,16 @@ export function DemoAosrWorkspacePage({
             setRepresentativeLibraryFormOpen((isOpen) => !isOpen);
           }}
           onUpdateHeaderOrganization={updateObjectHeaderOrganization}
+          onUpdateNumberingAffix={(field: DemoDocumentNumberingAffixField, value: string) => {
+            commitObjectDefaults((currentDefaults) =>
+              updateDemoObjectNumberingAffix(currentDefaults, field, value),
+            );
+          }}
+          onUpdateNumberingScope={(numberingScope: DemoDocumentNumberingScope) => {
+            commitObjectDefaults((currentDefaults) =>
+              updateDemoObjectNumberingScope(currentDefaults, numberingScope),
+            );
+          }}
           onUpdateObjectDefaults={updateObjectDefaults}
           onUpdateRepresentative={updateObjectRepresentativeValue}
           onUpdateRepresentativeGroupTitle={(groupId, value) => {

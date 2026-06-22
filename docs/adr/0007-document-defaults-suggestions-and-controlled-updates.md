@@ -115,6 +115,9 @@ type ObjectTemplate = {
   additionalInfo: string;
   copiesLine: string;
   numberingPattern?: string;
+  numberingPrefix: string;
+  numberingScope: 'global-object' | 'restart-per-folder';
+  numberingSuffix: string;
   defaultDateMode?: 'today' | 'folderDate' | 'manual';
 };
 ```
@@ -177,6 +180,15 @@ type AosrPrintState = {
 ```
 
 `document.number` is the raw act number without a printed `№` prefix. `document.date` is a raw date value suitable for UI/preview formatting, such as an ISO date string in the frontend mock. Renderers add printable prefixes and date formatting. If a future DOCX renderer needs fully formatted `numberLine` or `dateLine`, those fields must be separate derived render values and must not replace the raw act number/date semantics.
+
+Numbering is independent from `templateMode`. The object template owns the
+numbering scope, prefix and suffix used to propose numbers for new acts. A
+manual number override changes only the rendered number of that act and never
+changes earlier or later sequence allocations. Creating an act with a manual
+number does not consume an automatic sequence. Editing the rendered number of
+an already automatically numbered act preserves its allocated sequence. An
+ordinary number edit is not a bulk renumber command and must not renumber other
+acts.
 
 ## Act Model
 

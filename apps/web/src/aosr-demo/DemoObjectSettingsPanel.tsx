@@ -4,6 +4,8 @@ import type {
   DemoAosrObjectDefaults,
   DemoAosrObjectDefaultsField,
   DemoAosrRepresentative,
+  DemoDocumentNumberingAffixField,
+  DemoDocumentNumberingScope,
   DemoGlobalOrganization,
 } from './demo-aosr-workspace.js';
 import type {
@@ -50,6 +52,8 @@ interface DemoObjectSettingsPanelProps {
     field: 'caption' | 'details' | 'label' | 'organizationName',
     value: string,
   ) => void;
+  readonly onUpdateNumberingAffix: (field: DemoDocumentNumberingAffixField, value: string) => void;
+  readonly onUpdateNumberingScope: (numberingScope: DemoDocumentNumberingScope) => void;
   readonly onUpdateObjectDefaults: (field: DemoAosrObjectDefaultsField, value: string) => void;
   readonly onUpdateRepresentative: (
     groupId: string,
@@ -108,6 +112,8 @@ export function DemoObjectSettingsPanel({
   onToggleHeaderOrganizationForm,
   onToggleRepresentativeLibraryForm,
   onUpdateHeaderOrganization,
+  onUpdateNumberingAffix,
+  onUpdateNumberingScope,
   onUpdateObjectDefaults,
   onUpdateRepresentative,
   onUpdateRepresentativeGroupTitle,
@@ -209,6 +215,76 @@ export function DemoObjectSettingsPanel({
                           );
                         }}
                         value={objectDefaults.defaultWorkContractorName}
+                      />
+                    </label>
+                  </div>
+                </section>
+
+                <section className="form-section" aria-labelledby="object-numbering-title">
+                  <div className="object-numbering-heading">
+                    <span>
+                      <h3 id="object-numbering-title">Нумерация актов</h3>
+                      <p>Правило применяется к новым актам этого объекта.</p>
+                    </span>
+                    <output aria-label="Пример номера" className="object-numbering-preview">
+                      {objectDefaults.objectTemplate.numberingPrefix}1
+                      {objectDefaults.objectTemplate.numberingSuffix}
+                    </output>
+                  </div>
+
+                  <fieldset className="object-numbering-scope">
+                    <legend>Порядок нумерации</legend>
+                    <label>
+                      <input
+                        checked={objectDefaults.objectTemplate.numberingScope === 'global-object'}
+                        name="numberingScope"
+                        onChange={() => {
+                          onUpdateNumberingScope('global-object');
+                        }}
+                        type="radio"
+                      />
+                      <span>
+                        <strong>Сквозная по объекту</strong>
+                        <small>Одна последовательность во всех папках</small>
+                      </span>
+                    </label>
+                    <label>
+                      <input
+                        checked={
+                          objectDefaults.objectTemplate.numberingScope === 'restart-per-period'
+                        }
+                        name="numberingScope"
+                        onChange={() => {
+                          onUpdateNumberingScope('restart-per-period');
+                        }}
+                        type="radio"
+                      />
+                      <span>
+                        <strong>Отдельно в каждой папке</strong>
+                        <small>В каждой папке последовательность начинается заново</small>
+                      </span>
+                    </label>
+                  </fieldset>
+
+                  <div className="act-form-grid object-numbering-affixes">
+                    <label>
+                      Префикс номера
+                      <input
+                        name="numberingPrefix"
+                        onChange={(event) => {
+                          onUpdateNumberingAffix('numberingPrefix', event.currentTarget.value);
+                        }}
+                        value={objectDefaults.objectTemplate.numberingPrefix}
+                      />
+                    </label>
+                    <label>
+                      Суффикс номера
+                      <input
+                        name="numberingSuffix"
+                        onChange={(event) => {
+                          onUpdateNumberingAffix('numberingSuffix', event.currentTarget.value);
+                        }}
+                        value={objectDefaults.objectTemplate.numberingSuffix}
                       />
                     </label>
                   </div>

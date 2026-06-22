@@ -47,6 +47,25 @@ export interface SignatoryLibraryItem {
 
 export type ActTemplateMode = 'linked' | 'manual';
 
+export type DemoDocumentNumberingScope = 'global-object' | 'restart-per-period';
+
+export type DemoDocumentNumberingAffixField = 'numberingPrefix' | 'numberingSuffix';
+
+export interface DemoDocumentNumberingSequences {
+  readonly globalObject: number;
+  readonly period: number;
+}
+
+export type DemoDocumentNumberingAssignment =
+  | {
+      readonly automaticSequences: DemoDocumentNumberingSequences;
+      readonly source: 'automatic';
+    }
+  | {
+      readonly automaticSequences?: DemoDocumentNumberingSequences;
+      readonly source: 'manual';
+    };
+
 export interface DemoAosrObjectDefaults {
   readonly defaultAdditionalInfo: string;
   readonly defaultComplianceStatement: string;
@@ -115,6 +134,9 @@ export interface ObjectTemplate {
   readonly additionalInfo: string;
   readonly copiesLine: string;
   readonly numberingPattern?: string;
+  readonly numberingPrefix: string;
+  readonly numberingScope: DemoDocumentNumberingScope;
+  readonly numberingSuffix: string;
   readonly defaultDateMode?: 'today' | 'folderDate' | 'manual';
 }
 
@@ -256,6 +278,7 @@ export interface DemoAosrDraft {
   readonly headerOrganizations: readonly DemoAosrHeaderOrganization[];
   readonly materialCertificateIds: readonly string[];
   readonly materialCertificateSnapshots: readonly DemoMaterialCertificate[];
+  readonly numberingAssignment: DemoDocumentNumberingAssignment;
   readonly documentType: 'AOSR_1';
   readonly objectTemplateId: string;
   readonly templateMode: ActTemplateMode;
@@ -282,6 +305,7 @@ export interface DemoActApplication {
 export interface CreateDemoAosrDraftInput {
   readonly actNumber: string;
   readonly id: string;
+  readonly numberingAssignment?: DemoDocumentNumberingAssignment;
   readonly objectDefaults: DemoAosrObjectDefaults;
 }
 
@@ -385,6 +409,12 @@ const defaultAdditionalInfo = 'Дополнительные сведения д�
 
 const defaultWorkContractorName = 'ООО "ПТО Монтаж"';
 
+const defaultNumberingPrefix = 'ОВ-';
+
+const defaultNumberingScope: DemoDocumentNumberingScope = 'global-object';
+
+const defaultNumberingSuffix = '';
+
 const defaultHeaderOrganizations: readonly DemoAosrHeaderOrganization[] = [
   {
     caption: 'Наименование, ОГРН, ИНН, место нахождения, телефон/факс и иные объектовые реквизиты.',
@@ -431,6 +461,10 @@ const defaultObjectTemplate: ObjectTemplate = {
   objectId: 'object-demo',
   objectName: defaultObjectName,
   objectNameSubscript: defaultObjectNameSubscript,
+  numberingPattern: '{prefix}{number}{suffix}',
+  numberingPrefix: defaultNumberingPrefix,
+  numberingScope: defaultNumberingScope,
+  numberingSuffix: defaultNumberingSuffix,
   projectDocumentation: defaultProjectDocumentation,
   representativeGroups: [
     {
@@ -601,6 +635,10 @@ export const demoAosrWorkspace: DemoAosrWorkspace = {
         'certificate-ducts-001',
         'certificate-fasteners-001',
       ]),
+      numberingAssignment: {
+        automaticSequences: { globalObject: 1, period: 1 },
+        source: 'automatic',
+      },
       objectTemplateId: 'object-template-demo',
       templateMode: 'linked',
       objectName: defaultObjectName,
@@ -641,6 +679,10 @@ export const demoAosrWorkspace: DemoAosrWorkspace = {
       documentType: 'AOSR_1',
       materialCertificateIds: ['certificate-firestop-001'],
       materialCertificateSnapshots: getMaterialCertificateSnapshots(['certificate-firestop-001']),
+      numberingAssignment: {
+        automaticSequences: { globalObject: 2, period: 1 },
+        source: 'automatic',
+      },
       objectTemplateId: 'object-template-demo',
       templateMode: 'linked',
       objectName: defaultObjectName,
@@ -687,6 +729,7 @@ export const demoAosrWorkspace: DemoAosrWorkspace = {
 export function createEmptyDemoAosrDraft({
   actNumber,
   id,
+  numberingAssignment,
   objectDefaults,
 }: CreateDemoAosrDraftInput): DemoAosrDraft {
   return {
@@ -706,6 +749,7 @@ export function createEmptyDemoAosrDraft({
     documentType: 'AOSR_1',
     materialCertificateIds: [],
     materialCertificateSnapshots: [],
+    numberingAssignment: numberingAssignment ?? { source: 'manual' },
     objectTemplateId: objectDefaults.objectTemplate.id,
     templateMode: 'linked',
     objectName: objectDefaults.objectName,
@@ -732,6 +776,14 @@ export function updateDemoAosrDraftField(
   const nextDraft = {
     ...draft,
     [field]: value,
+    ...(field === 'actNumber'
+      ? {
+          numberingAssignment: {
+            ...draft.numberingAssignment,
+            source: 'manual' as const,
+          },
+        }
+      : {}),
   };
 
   return syncManualTemplateSnapshotFromDraft(nextDraft);
@@ -1385,6 +1437,33 @@ export function updateDemoObjectDefaultsField(
     ...objectDefaults,
     [field]: value,
     objectTemplate,
+  };
+}
+
+export function updateDemoObjectNumberingScope(
+  objectDefaults: DemoAosrObjectDefaults,
+  numberingScope: DemoDocumentNumberingScope,
+): DemoAosrObjectDefaults {
+  return {
+    ...objectDefaults,
+    objectTemplate: {
+      ...objectDefaults.objectTemplate,
+      numberingScope,
+    },
+  };
+}
+
+export function updateDemoObjectNumberingAffix(
+  objectDefaults: DemoAosrObjectDefaults,
+  field: DemoDocumentNumberingAffixField,
+  value: string,
+): DemoAosrObjectDefaults {
+  return {
+    ...objectDefaults,
+    objectTemplate: {
+      ...objectDefaults.objectTemplate,
+      [field]: value,
+    },
   };
 }
 

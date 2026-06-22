@@ -4488,6 +4488,36 @@ production domain/API/persistence work remain separate explicit tasks.
 - no production registry, package, certificate, object-document or AOSR
   business logic.
 
+### 2026-06-22 — Frontend-only object-template AOSR numbering
+
+- Статус: `Frontend mock automatic numbering only`
+- Описание: implemented the accepted simple AOSR numbering rule in the current
+  in-memory object workspace without backend or persistence changes.
+
+Добавлено/уточнено:
+
+- AOSR numbering settings now live in the object template UI;
+- the user chooses one continuous sequence across the object or a sequence that
+  restarts in each folder;
+- prefix and suffix are editable, with default example `ОВ-1`;
+- a new automatically numbered act receives separate object and folder sequence
+  allocations, independent from its displayed number;
+- a manual number entered during creation does not consume an automatic
+  sequence;
+- editing the displayed number of an automatically numbered act changes only
+  that act and preserves its allocated sequence;
+- previous and following acts are never renumbered by an ordinary manual edit;
+- empty manual numbers remain allowed;
+- existing acts are not automatically renumbered when template settings change.
+
+Что не было введено:
+
+- no backend/API numbering transaction;
+- no Prisma/schema/migrations or persistence;
+- no collision reservation across concurrent users;
+- no bulk renumber command;
+- no DOCX/PDF/ZIP generation changes.
+
 ### 2026-06-11 — Frontend-only object overview and certificate architecture correction
 
 - Статус: `Frontend mock object overview and certificate architecture correction only`

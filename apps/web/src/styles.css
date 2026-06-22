@@ -3612,6 +3612,100 @@ h3 {
   gap: 12px;
 }
 
+.object-numbering-heading {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.object-numbering-heading span {
+  display: grid;
+  gap: 4px;
+}
+
+.object-numbering-heading p {
+  color: #667583;
+  font-size: 0.78rem;
+  font-weight: 680;
+  line-height: 1.4;
+}
+
+.object-numbering-preview {
+  min-width: 86px;
+  border: 1px solid #cbd8e4;
+  border-radius: 7px;
+  background: #f8fbff;
+  padding: 8px 10px;
+  color: #172033;
+  font-size: 0.88rem;
+  font-weight: 850;
+  text-align: center;
+}
+
+.object-numbering-scope {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin: 0;
+  border: 0;
+  padding: 0;
+}
+
+.object-numbering-scope legend {
+  grid-column: 1 / -1;
+  margin-bottom: 7px;
+  color: #48575c;
+  font-size: 0.86rem;
+  font-weight: 750;
+}
+
+.object-numbering-scope label {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 9px;
+  align-items: start;
+  border: 1px solid #d6e1ec;
+  border-radius: 8px;
+  background: #ffffff;
+  padding: 11px;
+  cursor: pointer;
+}
+
+.object-numbering-scope label:has(input:checked) {
+  border-color: #7fa5c9;
+  background: #f4f8fc;
+  box-shadow: inset 3px 0 0 #4d7fae;
+}
+
+.object-numbering-scope input {
+  width: 16px;
+  margin-top: 2px;
+  box-shadow: none;
+}
+
+.object-numbering-scope span {
+  display: grid;
+  gap: 3px;
+}
+
+.object-numbering-scope strong {
+  color: #172033;
+  font-size: 0.82rem;
+  line-height: 1.35;
+}
+
+.object-numbering-scope small {
+  color: #667583;
+  font-size: 0.74rem;
+  font-weight: 680;
+  line-height: 1.35;
+}
+
+.object-numbering-affixes {
+  max-width: 560px;
+}
+
 .compact-card-list {
   display: grid;
   gap: 8px;
@@ -5094,6 +5188,18 @@ h3 {
   .certificate-picker-drawer__header,
   .document-preview-drawer__header {
     display: grid;
+  }
+
+  .object-numbering-heading {
+    display: grid;
+  }
+
+  .object-numbering-preview {
+    width: fit-content;
+  }
+
+  .object-numbering-scope {
+    grid-template-columns: 1fr;
   }
 
   .document-preview-drawer__body {
