@@ -119,6 +119,16 @@ export function DemoObjectSettingsPanel({
   onUpdateRepresentativeGroupTitle,
 }: DemoObjectSettingsPanelProps): React.JSX.Element {
   const [activeSectionId, setActiveSectionId] = useState<ObjectSettingsSectionId>('main');
+  const representativeGroupCount = objectDefaults.objectTemplate.representativeGroups.length;
+  const representativeMemberCount = objectDefaults.objectTemplate.representativeGroups.reduce(
+    (count, group) => count + group.members.length,
+    0,
+  );
+  const numberingExample = `${objectDefaults.objectTemplate.numberingPrefix}1${objectDefaults.objectTemplate.numberingSuffix}`;
+  const numberingScopeLabel =
+    objectDefaults.objectTemplate.numberingScope === 'global-object'
+      ? 'сквозная по объекту'
+      : 'отдельно в каждой папке';
 
   return (
     <div className="object-settings-overlay">
@@ -132,11 +142,43 @@ export function DemoObjectSettingsPanel({
           <span>
             <p className="scope-label">Уровень объекта</p>
             <h2 id="object-settings-title">Шаблон объекта</h2>
+            <p className="object-settings-dialog__lead">
+              Единое место для данных, которые автоматически попадают в новые linked-АОСР этого
+              объекта.
+            </p>
           </span>
           <button className="compact-toggle" onClick={onCloseObjectSettings} type="button">
             Закрыть
           </button>
         </div>
+
+        <section className="object-template-status" aria-label="Сводка шаблона объекта">
+          <article className="object-template-status__card object-template-status__card--wide">
+            <span>Live-цепочка</span>
+            <strong>Библиотеки → шаблон объекта → linked-акты</strong>
+            <small>
+              Изменения видны рабочим linked-документам. Ручные версии и выпущенные результаты
+              остаются отдельными снимками.
+            </small>
+          </article>
+          <article className="object-template-status__card">
+            <span>Организации</span>
+            <strong>{objectDefaults.headerOrganizations.length} блока</strong>
+            <small>Порядок шапки печатного АОСР</small>
+          </article>
+          <article className="object-template-status__card">
+            <span>Представители</span>
+            <strong>
+              {representativeGroupCount} группы / {representativeMemberCount} участника
+            </strong>
+            <small>Назначения объекта для подписей</small>
+          </article>
+          <article className="object-template-status__card">
+            <span>Нумерация</span>
+            <strong>{numberingExample}</strong>
+            <small>{numberingScopeLabel}</small>
+          </article>
+        </section>
 
         <div className="object-settings-layout">
           <nav className="object-settings-menu" aria-label="Разделы шаблона объекта">
@@ -224,7 +266,10 @@ export function DemoObjectSettingsPanel({
                   <div className="object-numbering-heading">
                     <span>
                       <h3 id="object-numbering-title">Нумерация актов</h3>
-                      <p>Правило применяется к новым актам этого объекта.</p>
+                      <p>
+                        Правило применяется к новым актам этого объекта. Уже созданные номера не
+                        перенумеровываются автоматически.
+                      </p>
                     </span>
                     <output aria-label="Пример номера" className="object-numbering-preview">
                       {objectDefaults.objectTemplate.numberingPrefix}1

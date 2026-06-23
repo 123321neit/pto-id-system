@@ -446,6 +446,38 @@ describe('DemoAosrWorkspacePage', () => {
     ).toBeNull();
   });
 
+  it('summarizes the object template before the user edits detailed sections', async () => {
+    const user = userEvent.setup();
+
+    renderDemoWorkspace();
+    await openObjectSettings(user);
+
+    const dialog = screen.getByRole('dialog', { name: 'Шаблон объекта' });
+    const summary = within(dialog).getByRole('region', { name: 'Сводка шаблона объекта' });
+
+    expect(within(summary).getByText('Библиотеки → шаблон объекта → linked-акты')).toBeTruthy();
+    expect(within(summary).getByText('3 блока')).toBeTruthy();
+    expect(within(summary).getByText('3 группы / 3 участника')).toBeTruthy();
+    expect(within(summary).getByText('ОВ-1')).toBeTruthy();
+    expect(within(summary).getByText('сквозная по объекту')).toBeTruthy();
+
+    await user.click(within(dialog).getByRole('button', { name: /Организации/u }));
+    expect(
+      within(dialog).getByText(/Выберите организацию из глобальной библиотеки или создайте новую/u),
+    ).toBeTruthy();
+
+    await user.click(within(dialog).getByRole('button', { name: 'Добавить блок шапки' }));
+    expect(within(dialog).getByText('Глобальная библиотека → назначение в шаблоне')).toBeTruthy();
+
+    await user.click(within(dialog).getByRole('button', { name: /Представители/u }));
+    expect(within(dialog).getByText(/Группы определяют роли и порядок подписей/u)).toBeTruthy();
+
+    await user.click(within(dialog).getByRole('button', { name: 'Добавить представителя' }));
+    expect(
+      within(dialog).getByText('Библиотека представителей → назначение на объект'),
+    ).toBeTruthy();
+  });
+
   it('keeps linked act signatories read-only without repeated helper text', () => {
     renderDemoWorkspace();
 

@@ -47,6 +47,10 @@ export function DemoHeaderOrganizationsPanel({
       <div className="scope-heading scope-heading--with-action">
         <span>
           <h3 id="header-organizations-title">Организации в шапке печатного акта</h3>
+          <p className="helper-note">
+            Выберите организацию из глобальной библиотеки или создайте новую. В шаблоне объекта
+            хранится её роль, порядок и печатный текст для актов этого объекта.
+          </p>
         </span>
         <button className="compact-toggle" onClick={onToggleForm} type="button">
           {isFormOpen ? 'Свернуть добавление' : 'Добавить блок шапки'}
@@ -170,6 +174,14 @@ export function DemoHeaderOrganizationsPanel({
 
       {isFormOpen ? (
         <div className="library-panel">
+          <div className="library-panel__intro">
+            <strong>Глобальная библиотека → назначение в шаблоне</strong>
+            <small>
+              Выбор не копирует отдельную “организацию объекта”: linked-акты читают текущие данные
+              через шаблон, а исторический снимок появится только при ручной версии или выпуске.
+            </small>
+          </div>
+
           <label className="search-field">
             Найти организацию в глобальной библиотеке
             <input

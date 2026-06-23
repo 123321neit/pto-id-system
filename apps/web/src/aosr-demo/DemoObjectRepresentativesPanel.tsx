@@ -52,6 +52,10 @@ export function DemoObjectRepresentativesPanel({
       <div className="scope-heading scope-heading--with-action">
         <span>
           <h3 id="representative-library-title">Представители для актов</h3>
+          <p className="helper-note">
+            Группы определяют роли и порядок подписей. Участники берутся из глобальной библиотеки, а
+            шаблон хранит объектовый контекст: должность, основание и подстрочный текст.
+          </p>
         </span>
         <button className="compact-toggle" onClick={onToggleForm} type="button">
           {isFormOpen ? 'Свернуть добавление' : 'Добавить представителя'}
@@ -235,6 +239,14 @@ export function DemoObjectRepresentativesPanel({
 
       {isFormOpen ? (
         <div className="library-panel">
+          <div className="library-panel__intro">
+            <strong>Библиотека представителей → назначение на объект</strong>
+            <small>
+              Добавленный представитель становится частью шаблона объекта и сразу попадает в
+              linked-акты. Ручной акт можно отделить позже через режим “ручная версия”.
+            </small>
+          </div>
+
           <label className="search-field">
             Найти представителя в глобальной библиотеке
             <input

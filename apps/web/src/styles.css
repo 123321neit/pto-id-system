@@ -3654,6 +3654,15 @@ h3 {
   gap: 4px;
 }
 
+.object-settings-dialog__lead {
+  max-width: 720px;
+  margin: 0;
+  color: #536268;
+  font-size: 0.86rem;
+  font-weight: 680;
+  line-height: 1.45;
+}
+
 .object-settings-dialog__body {
   display: grid;
   gap: 18px;
@@ -3716,6 +3725,54 @@ h3 {
 
 .object-settings-panel {
   min-width: 0;
+}
+
+.object-template-status {
+  display: grid;
+  grid-template-columns: minmax(0, 1.45fr) repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  border: 1px solid #d3e1ed;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #f7fbff 0%, #ffffff 68%);
+  padding: 10px;
+}
+
+.object-template-status__card {
+  display: grid;
+  align-content: start;
+  gap: 5px;
+  min-width: 0;
+  border: 1px solid #dce6ef;
+  border-radius: 8px;
+  background: rgb(255 255 255 / 84%);
+  padding: 11px;
+}
+
+.object-template-status__card--wide {
+  border-color: #bfd7fb;
+  background: #f8fbff;
+}
+
+.object-template-status__card span {
+  color: #0f6b62;
+  font-size: 0.7rem;
+  font-weight: 850;
+  letter-spacing: 0.02em;
+  line-height: 1.25;
+  text-transform: uppercase;
+}
+
+.object-template-status__card strong {
+  color: #172033;
+  font-size: 0.88rem;
+  line-height: 1.35;
+}
+
+.object-template-status__card small {
+  color: #63717a;
+  font-size: 0.74rem;
+  font-weight: 680;
+  line-height: 1.35;
 }
 
 .object-settings-section-list {
@@ -4111,6 +4168,28 @@ h3 {
 .application-checklist {
   display: grid;
   gap: 10px;
+}
+
+.library-panel__intro {
+  display: grid;
+  gap: 4px;
+  border: 1px solid #d5e5f0;
+  border-radius: 8px;
+  background: #f8fbff;
+  padding: 10px 11px;
+}
+
+.library-panel__intro strong {
+  color: #172033;
+  font-size: 0.84rem;
+  line-height: 1.35;
+}
+
+.library-panel__intro small {
+  color: #627075;
+  font-size: 0.76rem;
+  font-weight: 680;
+  line-height: 1.4;
 }
 
 .library-list,
@@ -5002,6 +5081,7 @@ h3 {
   .object-overview__create-panel,
   .object-period-generated-views,
   .periodic-package-overview__heading,
+  .object-template-status,
   .object-settings-layout {
     grid-template-columns: 1fr;
   }
