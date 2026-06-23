@@ -1260,12 +1260,13 @@ A: Вошёл первый узкий framework-free backend application slice �
 
 - `apps/api/src/documents/application/document-creation-context.ts`;
 - focused backend tests for the creation-context contract;
-- explicit access-decision-before-object/folder-lookup behavior;
+- explicit access-decision-before-object/section/folder-lookup behavior;
 - leakage-safe `NOT_FOUND_OR_NOT_AUTHORIZED` denial;
-- support for arbitrary user-defined ID folder names;
+- support for arbitrary user-defined section and ID folder names;
 - approved document type read model;
-- selected folder and current `ObjectTemplate` summary;
-- live chain `global_libraries -> object_template -> linked_working_document`;
+- selected section/folder and current `SectionTemplate` summary;
+- live chain `global_libraries -> section_template -> linked_working_document`;
+- ID package scope: intermediate ID by folder, final ID by section;
 - proposal-only next number with no reservation and no sequence mutation;
 - `documentCreationContextReadPort` token for future canonical wiring.
 
@@ -1280,3 +1281,59 @@ A: Вошёл первый узкий framework-free backend application slice �
 - frontend integration;
 - production AOSR/document creation behavior;
 - uploads, storage, queues, renderer or generation.
+
+---
+
+## 49. Section-scoped ID and section template settings
+
+### Q: Если на одном объекте есть вентиляция, отопление, водоснабжение и другие разделы, должны ли они быть папками ИД?
+
+A: Нет. `Вентиляция`, `Отопление`, `Водоснабжение`, `ОВ`, `ВК`, `Система В1`
+and similar user names are documentation sections, not ordinary ID folders.
+
+Canonical hierarchy:
+
+```text
+Object
+  -> DocumentationSection
+      -> SectionTemplate / настройки шаблона раздела
+      -> ID folders
+          -> documents
+```
+
+Правила:
+
+- пользователь сам создаёт разделы и задаёт им названия;
+- разделы не являются fixed enum;
+- пользователь работает внутри выбранного раздела;
+- папки ИД создаются внутри раздела;
+- промежуточная ИД собирается по папке внутри раздела;
+- итоговая ИД собирается по разделу, а не по объекту целиком по умолчанию;
+- live template для актов принадлежит разделу и называется
+  `Настройки шаблона раздела`;
+- future implementation term is `SectionTemplate`, not `ObjectTemplate`;
+- linked acts resolve through
+  `global libraries -> SectionTemplate -> linked act`.
+
+Шаблон раздела можно копировать в другой раздел того же объекта или вообще в
+раздел другого объекта. Копирование переносит:
+
+- repeated template texts;
+- numbering policy;
+- links/assignments to global organization and representative libraries;
+- section-specific labels, roles, ordering, groups and subscripts.
+
+Копирование не переносит:
+
+- папки;
+- документы/черновики;
+- released revisions;
+- manual snapshots;
+- issued packages/final ID;
+- generated artifacts;
+- сами записи глобальных библиотек.
+
+Это architecture/backend-contract correction only. Frontend section UI,
+Prisma/schema/migrations, routes/controllers, persistence, template-copy
+storage, uploads, generation and production package behavior are still not
+implemented.

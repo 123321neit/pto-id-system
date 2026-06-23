@@ -10,7 +10,7 @@
 
 Источник архитектурных принципов: `docs/PROJECT_MEMORY.md`.
 
-Основание модели: `docs/06-data-model-v1.md`, `docs/07-aosr-domain-specification.md`, `docs/08-document-types-catalog.md`, `docs/09-aggregate-boundaries-and-invariants.md`, `docs/10-auth-workspace-rbac-model.md`, `docs/11-ai-project-ingestion-and-assistance-model.md`, ADR 0001-0007.
+Основание модели: `docs/06-data-model-v1.md`, `docs/07-aosr-domain-specification.md`, `docs/08-document-types-catalog.md`, `docs/09-aggregate-boundaries-and-invariants.md`, `docs/10-auth-workspace-rbac-model.md`, `docs/11-ai-project-ingestion-and-assistance-model.md`, ADR 0001-0008.
 
 Access amendment note, 2026-05-29:
 
@@ -20,26 +20,28 @@ docs/19-sharing-and-access-model-v1.md supersedes the membership/RBAC table fami
 
 The conceptual schema below remains historical V1 context where it describes tenant isolation, opaque invite-token safety, auditability and no cross-workspace references. Future physical schema work for MVP access must use owner-based `OwnedWorkspace`, share codes, share grants and grant capabilities from `docs/19`, not the `Membership` role matrix described here.
 
-Object-template amendment note, 2026-06-22:
+Section-template amendment note, 2026-06-23:
 
 ```text
-ADR 0007 supersedes snapshot/default table assumptions for active working acts.
+ADR 0007 and ADR 0008 supersede snapshot/default table assumptions for active working acts.
 ```
 
 No physical schema may be derived directly from legacy `ObjectCompanySnapshot`
 or representative-default rows in this document. Future schema must model
-global reusable libraries, `ObjectTemplate` references, linked/manual act mode,
-one complete manual snapshot and separate immutable released revision/package
-snapshots.
+global reusable libraries, `DocumentationSection`, `SectionTemplate`
+references, linked/manual act mode, one complete manual snapshot and separate
+immutable released revision/package snapshots.
 
 Backend contract amendment, 2026-06-23:
 
 `docs/14-backend-api-architecture-v1.md` and
 `docs/15-api-command-readmodel-contracts-v1.md` now define the future
-application-level command/read contract for `ObjectTemplate`, user-defined ID
-folders and linked/manual AOSR behavior. This document remains conceptual
-storage history only: physical tables, Prisma schema, migrations, repositories
-and persistence mapping remain a later explicit task.
+application-level command/read contract for `SectionTemplate`, user-defined
+sections, user-defined ID folders and linked/manual AOSR behavior. ADR 0008
+amends that contract so future implementation uses `SectionTemplate` /
+`настройки шаблона раздела` and section-scoped final ID. This document remains
+conceptual storage history only: physical tables, Prisma schema, migrations,
+repositories and persistence mapping remain a later explicit task.
 
 ---
 
@@ -53,7 +55,8 @@ Schema V1 должна позволить представить:
 
 - изолированные personal и organization workspaces;
 - memberships, invites and audit attribution;
-- object workspace и отдельный `FolderTree`;
+- object workspace, user-defined documentation sections and section-scoped
+  `FolderTree`;
 - typed `Document`, первым полностью описанным payload которого является `AOSR`;
 - file-backed quality evidence и исполнительные схемы;
 - project source materials и proposal-only AI assistance;
@@ -99,13 +102,13 @@ Schema V1 должна позволить представить:
 
 ### 2.1 Ownership and truth
 
-| Principle | Schema consequence |
-| --- | --- |
-| Structured data is source of truth | Typed payload, confirmed metadata and explicit links хранят смысл; outputs только ссылаются на источники. |
-| Typed documents | `Document` имеет immutable type и type-specific payload tables; generic document blob не является baseline. |
-| Explicit owner | Каждая таблица относится к aggregate owner, owned entity, snapshot, projection, artifact, proposal или audit record. |
-| Snapshot reproducibility | Released revisions и successful package builds фиксируют использованные значения и file identities, а не плавающие latest links. |
-| Projection is not ownership | Materialized or cached registry result, если он появится, остаётся derived and rebuildable. |
+| Principle                          | Schema consequence                                                                                                               |
+| ---------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| Structured data is source of truth | Typed payload, confirmed metadata and explicit links хранят смысл; outputs только ссылаются на источники.                        |
+| Typed documents                    | `Document` имеет immutable type и type-specific payload tables; generic document blob не является baseline.                      |
+| Explicit owner                     | Каждая таблица относится к aggregate owner, owned entity, snapshot, projection, artifact, proposal или audit record.             |
+| Snapshot reproducibility           | Released revisions и successful package builds фиксируют использованные значения и file identities, а не плавающие latest links. |
+| Projection is not ownership        | Materialized or cached registry result, если он появится, остаётся derived and rebuildable.                                      |
 
 ### 2.2 Workspace isolation
 
@@ -123,30 +126,30 @@ Controlled copy/transfer в будущем означает создание н�
 
 ### 2.3 Root versus owned and derived records
 
-| Classification | Schema treatment |
-| --- | --- |
-| Aggregate root | Имеет собственную identity/lifecycle row и защищает свои изменения. |
-| Owned entity | Имеет identity только внутри owner scope; не переносит lifecycle к потребителю. |
-| Immutable snapshot | Создаётся при release/build и больше не изменяется как historical truth. |
-| Operational state | Lock/job status поддерживает workflow, но не меняет content сам по себе. |
-| Proposal/finding | Отдельно от confirmed target; acceptance создаёт domain command/audit, а не превращает proposal в owner. |
-| Derived projection/artifact | Может быть пересчитан/регенерирован; provenance указывает sources. |
+| Classification              | Schema treatment                                                                                         |
+| --------------------------- | -------------------------------------------------------------------------------------------------------- |
+| Aggregate root              | Имеет собственную identity/lifecycle row и защищает свои изменения.                                      |
+| Owned entity                | Имеет identity только внутри owner scope; не переносит lifecycle к потребителю.                          |
+| Immutable snapshot          | Создаётся при release/build и больше не изменяется как historical truth.                                 |
+| Operational state           | Lock/job status поддерживает workflow, но не меняет content сам по себе.                                 |
+| Proposal/finding            | Отдельно от confirmed target; acceptance создаёт domain command/audit, а не превращает proposal в owner. |
+| Derived projection/artifact | Может быть пересчитан/регенерирован; provenance указывает sources.                                       |
 
 ### 2.4 Common conceptual fields
 
 Названия ниже являются архитектурным vocabulary, а не готовым DDL.
 
-| Field concept | Meaning |
-| --- | --- |
-| `id` | Stable identity within the owning model. |
-| `workspace_id` | Mandatory tenant identity for scoped data. |
-| `object_id` | Mandatory object context where data relate to one construction object. |
-| `status` | Lifecycle or processing state defined by the owning aggregate. |
-| `created_at`, `created_by_membership_id` | Attribution for creation where domain/audit relevant. |
-| `updated_at` | Current mutable record update marker; not a revision substitute. |
-| `deleted_at` | Soft-delete marker where lifecycle permits deletion. |
-| `released_at`, `released_by_membership_id` | Attribution for immutable released state. |
-| `source_*` / `provenance_*` | Explanation of origin; never a license to rewrite the referenced source. |
+| Field concept                              | Meaning                                                                  |
+| ------------------------------------------ | ------------------------------------------------------------------------ |
+| `id`                                       | Stable identity within the owning model.                                 |
+| `workspace_id`                             | Mandatory tenant identity for scoped data.                               |
+| `object_id`                                | Mandatory object context where data relate to one construction object.   |
+| `status`                                   | Lifecycle or processing state defined by the owning aggregate.           |
+| `created_at`, `created_by_membership_id`   | Attribution for creation where domain/audit relevant.                    |
+| `updated_at`                               | Current mutable record update marker; not a revision substitute.         |
+| `deleted_at`                               | Soft-delete marker where lifecycle permits deletion.                     |
+| `released_at`, `released_by_membership_id` | Attribution for immutable released state.                                |
+| `source_*` / `provenance_*`                | Explanation of origin; never a license to rewrite the referenced source. |
 
 ### 2.5 Deletion and history
 
@@ -154,17 +157,17 @@ Soft deletion is the baseline for mutable business records. A record or file ref
 
 ### 2.6 Table family overview
 
-| Family | Primary purpose | Owner class |
-| --- | --- | --- |
-| Workspace and access | Tenant boundary and authorization context | Workspace/access aggregates |
-| Object and FolderTree | Object setup and user organization | Separate roots |
-| Companies and representatives | Reusable context and fixed display values | Library/root plus snapshots |
-| Project sources and AI | Provenance and human-review workflow | Object-scoped sources/proposals |
-| Documents and AOSR | Typed executive documents | `Document` root |
-| Evidence and schemes | Physical supporting materials | Independent roots |
-| Templates and outputs | Reproducible rendering | Template root/derived artifacts |
-| Registry and package | Derived view and immutable builds | Projection / Package root |
-| Revisions and audit | History and accountability | Snapshot/audit records |
+| Family                        | Primary purpose                           | Owner class                     |
+| ----------------------------- | ----------------------------------------- | ------------------------------- |
+| Workspace and access          | Tenant boundary and authorization context | Workspace/access aggregates     |
+| Object and FolderTree         | Object setup and user organization        | Separate roots                  |
+| Companies and representatives | Reusable context and fixed display values | Library/root plus snapshots     |
+| Project sources and AI        | Provenance and human-review workflow      | Object-scoped sources/proposals |
+| Documents and AOSR            | Typed executive documents                 | `Document` root                 |
+| Evidence and schemes          | Physical supporting materials             | Independent roots               |
+| Templates and outputs         | Reproducible rendering                    | Template root/derived artifacts |
+| Registry and package          | Derived view and immutable builds         | Projection / Package root       |
+| Revisions and audit           | History and accountability                | Snapshot/audit records          |
 
 ---
 
@@ -174,15 +177,15 @@ Soft deletion is the baseline for mutable business records. A record or file ref
 
 `workspace` is the tenant anchor for all business data.
 
-| Conceptual column | Meaning / constraint |
-| --- | --- |
-| `workspace_id` | Stable tenant identity. |
-| `workspace_kind` | `PERSONAL` or `ORGANIZATION`. |
-| `display_name` | User-visible workspace name. |
-| `status` | Active/archived or later approved lifecycle state. |
+| Conceptual column  | Meaning / constraint                                                    |
+| ------------------ | ----------------------------------------------------------------------- |
+| `workspace_id`     | Stable tenant identity.                                                 |
+| `workspace_kind`   | `PERSONAL` or `ORGANIZATION`.                                           |
+| `display_name`     | User-visible workspace name.                                            |
+| `status`           | Active/archived or later approved lifecycle state.                      |
 | `founding_user_id` | Identity initiating creation; does not grant access without membership. |
-| `created_at` | Creation audit input. |
-| `archived_at` | Nullable lifecycle marker; hard delete policy deferred. |
+| `created_at`       | Creation audit input.                                                   |
+| `archived_at`      | Nullable lifecycle marker; hard delete policy deferred.                 |
 
 Invariants:
 
@@ -195,13 +198,13 @@ Invariants:
 
 Optional scoped configuration for domain defaults that do not belong to an individual document or package.
 
-| Conceptual column | Meaning / constraint |
-| --- | --- |
-| `workspace_setting_id` | Setting record identity. |
-| `workspace_id` | Owner tenant. |
-| `setting_kind` | Typed setting category, not arbitrary source document data. |
-| `structured_value` | Validated configuration appropriate to `setting_kind`. |
-| `status` | Current/retired marker. |
+| Conceptual column      | Meaning / constraint                                        |
+| ---------------------- | ----------------------------------------------------------- |
+| `workspace_setting_id` | Setting record identity.                                    |
+| `workspace_id`         | Owner tenant.                                               |
+| `setting_kind`         | Typed setting category, not arbitrary source document data. |
+| `structured_value`     | Validated configuration appropriate to `setting_kind`.      |
+| `status`               | Current/retired marker.                                     |
 
 This table must not become a generic bucket for document payload, permissions or unknown future product behavior.
 
@@ -213,29 +216,29 @@ This table must not become a generic bucket for document payload, permissions or
 
 `user_account` represents a natural-person identity, not a business-data tenant.
 
-| Conceptual column | Meaning / constraint |
-| --- | --- |
-| `user_id` | Global account identity. |
-| `email_identity` | Authentication-facing identity according to later auth policy. |
-| `email_verification_state` | Needed for invitation policy where applicable. |
-| `display_name` | Personal product profile value. |
-| `account_status` | Account lifecycle state. |
-| `created_at` | Registration marker. |
+| Conceptual column          | Meaning / constraint                                           |
+| -------------------------- | -------------------------------------------------------------- |
+| `user_id`                  | Global account identity.                                       |
+| `email_identity`           | Authentication-facing identity according to later auth policy. |
+| `email_verification_state` | Needed for invitation policy where applicable.                 |
+| `display_name`             | Personal product profile value.                                |
+| `account_status`           | Account lifecycle state.                                       |
+| `created_at`               | Registration marker.                                           |
 
 `user_account` does not contain `workspace_role`, ownership of documents, or direct permission to any object/file.
 
 ### 4.2 `membership`
 
-| Conceptual column | Meaning / constraint |
-| --- | --- |
-| `membership_id` | Authorization relation identity. |
-| `workspace_id` | Authorized tenant. |
-| `user_id` | Natural-person account. |
-| `role` | `OWNER`, `ADMIN`, `PTO_ENGINEER`, `FOREMAN`, `VIEWER`. |
-| `status` | Active/suspended/removed or later ratified states. |
-| `origin_kind` | Personal founder, organization creator, accepted invite or later approved origin. |
-| `origin_invite_id` | Nullable reference to consumed invite. |
-| `created_at`, `ended_at` | Access lifecycle markers. |
+| Conceptual column        | Meaning / constraint                                                              |
+| ------------------------ | --------------------------------------------------------------------------------- |
+| `membership_id`          | Authorization relation identity.                                                  |
+| `workspace_id`           | Authorized tenant.                                                                |
+| `user_id`                | Natural-person account.                                                           |
+| `role`                   | `OWNER`, `ADMIN`, `PTO_ENGINEER`, `FOREMAN`, `VIEWER`.                            |
+| `status`                 | Active/suspended/removed or later ratified states.                                |
+| `origin_kind`            | Personal founder, organization creator, accepted invite or later approved origin. |
+| `origin_invite_id`       | Nullable reference to consumed invite.                                            |
+| `created_at`, `ended_at` | Access lifecycle markers.                                                         |
 
 Invariants:
 
@@ -246,18 +249,18 @@ Invariants:
 
 ### 4.3 `invite`
 
-| Conceptual column | Meaning / constraint |
-| --- | --- |
-| `invite_id` | Stored invitation identity. |
-| `workspace_id` | Target `ORGANIZATION` workspace. |
-| `issued_by_membership_id` | Issuing authorized member in the same workspace. |
-| `intended_role` | Role offered on successful acceptance; Owner invitation not baseline. |
-| `usage_mode` | Single-use baseline or explicitly enabled multi-use policy. |
-| `usage_limit`, `usage_count` | Nullable controlled-use metadata. |
-| `bound_email_identity` | Nullable or required for protected roles according to invite policy. |
-| `token_verification_reference` | Verifier/digest/reference for an opaque URL token; trusted rights are not in URL. |
-| `expires_at`, `revoked_at`, `consumed_at` | Lifecycle restrictions. |
-| `status` | Issued/consumed/revoked/expired representation. |
+| Conceptual column                         | Meaning / constraint                                                              |
+| ----------------------------------------- | --------------------------------------------------------------------------------- |
+| `invite_id`                               | Stored invitation identity.                                                       |
+| `workspace_id`                            | Target `ORGANIZATION` workspace.                                                  |
+| `issued_by_membership_id`                 | Issuing authorized member in the same workspace.                                  |
+| `intended_role`                           | Role offered on successful acceptance; Owner invitation not baseline.             |
+| `usage_mode`                              | Single-use baseline or explicitly enabled multi-use policy.                       |
+| `usage_limit`, `usage_count`              | Nullable controlled-use metadata.                                                 |
+| `bound_email_identity`                    | Nullable or required for protected roles according to invite policy.              |
+| `token_verification_reference`            | Verifier/digest/reference for an opaque URL token; trusted rights are not in URL. |
+| `expires_at`, `revoked_at`, `consumed_at` | Lifecycle restrictions.                                                           |
+| `status`                                  | Issued/consumed/revoked/expired representation.                                   |
 
 Invariants:
 
@@ -267,14 +270,14 @@ Invariants:
 
 ### 4.4 `invite_acceptance`
 
-| Conceptual column | Meaning / constraint |
-| --- | --- |
-| `invite_acceptance_id` | Attempt/result identity. |
-| `invite_id` | Stored offer evaluated. |
-| `user_id` | Account attempting or completing acceptance. |
-| `created_membership_id` | Nullable result of successful acceptance. |
-| `outcome` | Accepted/rejected/expired/revoked/already-member or approved vocabulary. |
-| `occurred_at` | Audit time. |
+| Conceptual column       | Meaning / constraint                                                     |
+| ----------------------- | ------------------------------------------------------------------------ |
+| `invite_acceptance_id`  | Attempt/result identity.                                                 |
+| `invite_id`             | Stored offer evaluated.                                                  |
+| `user_id`               | Account attempting or completing acceptance.                             |
+| `created_membership_id` | Nullable result of successful acceptance.                                |
+| `outcome`               | Accepted/rejected/expired/revoked/already-member or approved vocabulary. |
+| `occurred_at`           | Audit time.                                                              |
 
 This record supports governance/audit; it is not itself access authority.
 
@@ -284,26 +287,26 @@ This record supports governance/audit; it is not itself access authority.
 
 ### 5.1 `object`
 
-| Conceptual column | Meaning / constraint |
-| --- | --- |
-| `object_id` | Construction object identity. |
-| `workspace_id` | Tenant owner. |
-| `name`, `address` | Current object identity/display data. |
-| `status` | Active/archived/soft-deleted baseline. |
-| `discipline_scope` | Current object focus where explicitly configured. |
-| `created_by_membership_id` | Actor attribution in the same workspace. |
-| `created_at`, `updated_at`, `deleted_at` | Lifecycle markers. |
+| Conceptual column                        | Meaning / constraint                              |
+| ---------------------------------------- | ------------------------------------------------- |
+| `object_id`                              | Construction object identity.                     |
+| `workspace_id`                           | Tenant owner.                                     |
+| `name`, `address`                        | Current object identity/display data.             |
+| `status`                                 | Active/archived/soft-deleted baseline.            |
+| `discipline_scope`                       | Current object focus where explicitly configured. |
+| `created_by_membership_id`               | Actor attribution in the same workspace.          |
+| `created_at`, `updated_at`, `deleted_at` | Lifecycle markers.                                |
 
 `object` holds context, not arrays of documents, certificates, schemes, packages or artifact bytes.
 
 ### 5.2 `engineering_system`
 
-| Conceptual column | Meaning / constraint |
-| --- | --- |
-| `engineering_system_id` | Object-local system identity. |
-| `workspace_id`, `object_id` | Same tenant/object owner. |
+| Conceptual column            | Meaning / constraint                            |
+| ---------------------------- | ----------------------------------------------- |
+| `engineering_system_id`      | Object-local system identity.                   |
+| `workspace_id`, `object_id`  | Same tenant/object owner.                       |
 | `code`, `name`, `discipline` | Structured classification, for example ОВиК/ВК. |
-| `status` | Current/retired marker. |
+| `status`                     | Current/retired marker.                         |
 
 System values used in a released act are captured in document revision context; later changes do not rewrite old acts.
 
@@ -311,38 +314,38 @@ System values used in a released act are captured in document revision context; 
 
 Limited object-owned settings boundary for common project basis and output defaults.
 
-| Conceptual column | Meaning / constraint |
-| --- | --- |
+| Conceptual column                 | Meaning / constraint                        |
+| --------------------------------- | ------------------------------------------- |
 | `object_documentation_context_id` | One bounded documentation-settings context. |
-| `workspace_id`, `object_id` | Owner identity. |
-| `status` | Current/archived marker. |
-| `created_at`, `updated_at` | Configuration lifecycle. |
+| `workspace_id`, `object_id`       | Owner identity.                             |
+| `status`                          | Current/archived marker.                    |
+| `created_at`, `updated_at`        | Configuration lifecycle.                    |
 
 It owns `ProjectDrawingSet` entries and object-level defaults; it does not own file-backed executive schemes or typed document revisions.
 
 ### 5.4 `project_drawing_set`
 
-| Conceptual column | Meaning / constraint |
-| --- | --- |
-| `project_drawing_set_id` | Owned entity identity. |
-| `workspace_id`, `object_id`, `object_documentation_context_id` | Owner scope. |
-| `drawing_name`, `drawing_code`, `section` | Working/project drawing identification. |
-| `sheet_count`, `note` | Display information for registry/references. |
-| `company_snapshot_id` | Nullable reference to relevant object company snapshot. |
-| `status` | Current/retired marker; independent approval/version lifecycle is not introduced. |
+| Conceptual column                                              | Meaning / constraint                                                              |
+| -------------------------------------------------------------- | --------------------------------------------------------------------------------- |
+| `project_drawing_set_id`                                       | Owned entity identity.                                                            |
+| `workspace_id`, `object_id`, `object_documentation_context_id` | Owner scope.                                                                      |
+| `drawing_name`, `drawing_code`, `section`                      | Working/project drawing identification.                                           |
+| `sheet_count`, `note`                                          | Display information for registry/references.                                      |
+| `company_snapshot_id`                                          | Nullable reference to relevant object company snapshot.                           |
+| `status`                                                       | Current/retired marker; independent approval/version lifecycle is not introduced. |
 
 `project_drawing_set` is not `ExecutiveScheme`, not a physical as-built evidence entity and not an independent aggregate root in V1.
 
 ### 5.5 `numbering_policy`
 
-| Conceptual column | Meaning / constraint |
-| --- | --- |
-| `numbering_policy_id` | Policy identity. |
-| `workspace_id`, `object_id` | Scope boundary. |
-| `scope_kind`, `scope_reference_id` | Object or folder-scoped policy, subject to later command design. |
-| `document_type` | Typed-document applicability. |
-| `prefix`, `suffix`, `sequence_rule` | Number generation inputs. |
-| `status` | Active/retired marker. |
+| Conceptual column                   | Meaning / constraint                                             |
+| ----------------------------------- | ---------------------------------------------------------------- |
+| `numbering_policy_id`               | Policy identity.                                                 |
+| `workspace_id`, `object_id`         | Scope boundary.                                                  |
+| `scope_kind`, `scope_reference_id`  | Object or folder-scoped policy, subject to later command design. |
+| `document_type`                     | Typed-document applicability.                                    |
+| `prefix`, `suffix`, `sequence_rule` | Number generation inputs.                                        |
+| `status`                            | Active/retired marker.                                           |
 
 Changing a number of an already final document is a `Document` revision command, never a folder or registry mutation.
 
@@ -352,25 +355,25 @@ Changing a number of an already final document is a `Document` revision command,
 
 ### 6.1 `folder_tree`
 
-| Conceptual column | Meaning / constraint |
-| --- | --- |
-| `folder_tree_id` | Aggregate root identity. |
+| Conceptual column           | Meaning / constraint      |
+| --------------------------- | ------------------------- |
+| `folder_tree_id`            | Aggregate root identity.  |
 | `workspace_id`, `object_id` | Exactly one object scope. |
-| `status` | Active/archived marker. |
-| `created_at`, `updated_at` | Tree lifecycle markers. |
+| `status`                    | Active/archived marker.   |
+| `created_at`, `updated_at`  | Tree lifecycle markers.   |
 
 There is one active tree baseline per object unless a later workspace UX decision introduces multiple trees.
 
 ### 6.2 `folder_node`
 
-| Conceptual column | Meaning / constraint |
-| --- | --- |
-| `folder_node_id` | Node identity inside tree. |
+| Conceptual column                             | Meaning / constraint                                    |
+| --------------------------------------------- | ------------------------------------------------------- |
+| `folder_node_id`                              | Node identity inside tree.                              |
 | `folder_tree_id`, `workspace_id`, `object_id` | Redundant tenant/object scope for safe relation checks. |
-| `parent_folder_node_id` | Nullable parent within the same tree. |
-| `title` | Business folder label. |
-| `display_order` | Sibling ordering. |
-| `status`, `deleted_at` | Soft deletion/restoration state. |
+| `parent_folder_node_id`                       | Nullable parent within the same tree.                   |
+| `title`                                       | Business folder label.                                  |
+| `display_order`                               | Sibling ordering.                                       |
+| `status`, `deleted_at`                        | Soft deletion/restoration state.                        |
 
 Constraints:
 
@@ -382,15 +385,15 @@ Constraints:
 
 Placement is owned by `FolderTree`; it does not transfer lifecycle ownership of the placed target.
 
-| Conceptual column | Meaning / constraint |
-| --- | --- |
-| `folder_placement_id` | Placement identity. |
-| `folder_tree_id`, `folder_node_id` | Owning navigation location. |
-| `workspace_id`, `object_id` | Scope checks. |
-| `placeable_kind` | Allowed scoped concept such as `DOCUMENT`, `EXECUTIVE_SCHEME` or `PACKAGE`. |
-| `placeable_id` | Identity of an entity in the same workspace/object when object-specific. |
-| `display_order` | Ordering within folder. |
-| `status`, `deleted_at` | Placement soft deletion. |
+| Conceptual column                  | Meaning / constraint                                                        |
+| ---------------------------------- | --------------------------------------------------------------------------- |
+| `folder_placement_id`              | Placement identity.                                                         |
+| `folder_tree_id`, `folder_node_id` | Owning navigation location.                                                 |
+| `workspace_id`, `object_id`        | Scope checks.                                                               |
+| `placeable_kind`                   | Allowed scoped concept such as `DOCUMENT`, `EXECUTIVE_SCHEME` or `PACKAGE`. |
+| `placeable_id`                     | Identity of an entity in the same workspace/object when object-specific.    |
+| `display_order`                    | Ordering within folder.                                                     |
+| `status`, `deleted_at`             | Placement soft deletion.                                                    |
 
 Moving a document changes `folder_placement`, not its typed content. A simultaneous renumber is a separate document command.
 
@@ -404,31 +407,31 @@ Folder duplication is a domain operation rather than a mandatory persisted aggre
 
 ### 7.1 `company_profile`
 
-| Conceptual column | Meaning / constraint |
-| --- | --- |
-| `company_profile_id` | Reusable company library identity. |
-| `workspace_id` | Library tenant scope. |
-| `legal_name`, `short_name` | Current company names. |
-| `tax_and_registration_details` | Typed requisite block appropriate to later contract. |
-| `legal_address`, `actual_address` | Current addresses. |
-| `director_and_authority` | Current representative authority context. |
-| `sro_and_contact_details` | Current optional business details. |
-| `status`, `deleted_at` | Library lifecycle. |
+| Conceptual column                 | Meaning / constraint                                 |
+| --------------------------------- | ---------------------------------------------------- |
+| `company_profile_id`              | Reusable company library identity.                   |
+| `workspace_id`                    | Library tenant scope.                                |
+| `legal_name`, `short_name`        | Current company names.                               |
+| `tax_and_registration_details`    | Typed requisite block appropriate to later contract. |
+| `legal_address`, `actual_address` | Current addresses.                                   |
+| `director_and_authority`          | Current representative authority context.            |
+| `sro_and_contact_details`         | Current optional business details.                   |
+| `status`, `deleted_at`            | Library lifecycle.                                   |
 
 Changes affect later selections only unless an explicit object update creates a new applicable snapshot.
 
 ### 7.2 `object_company_snapshot`
 
-| Conceptual column | Meaning / constraint |
-| --- | --- |
-| `object_company_snapshot_id` | Immutable snapshot identity. |
-| `workspace_id`, `object_id` | Object owner scope. |
-| `source_company_profile_id` | Nullable origin reference. |
-| `party_role` | Contractor/customer/designer or later approved object role. |
-| `display_requisites` | Frozen structured requisites for object/document output. |
-| `contract_work_sro_context` | Frozen object-specific display values where used. |
-| `captured_at`, `captured_by_membership_id` | Snapshot provenance. |
-| `supersedes_snapshot_id` | Nullable explicit adoption of updated object context. |
+| Conceptual column                          | Meaning / constraint                                        |
+| ------------------------------------------ | ----------------------------------------------------------- |
+| `object_company_snapshot_id`               | Immutable snapshot identity.                                |
+| `workspace_id`, `object_id`                | Object owner scope.                                         |
+| `source_company_profile_id`                | Nullable origin reference.                                  |
+| `party_role`                               | Contractor/customer/designer or later approved object role. |
+| `display_requisites`                       | Frozen structured requisites for object/document output.    |
+| `contract_work_sro_context`                | Frozen object-specific display values where used.           |
+| `captured_at`, `captured_by_membership_id` | Snapshot provenance.                                        |
+| `supersedes_snapshot_id`                   | Nullable explicit adoption of updated object context.       |
 
 Snapshots are not updated in place to follow a live company profile.
 
@@ -436,15 +439,15 @@ Snapshots are not updated in place to follow a live company profile.
 
 Schema V1 reserves a workspace-scoped reusable representative library because the product memory requires reusable representatives, while released output continues to rely on snapshots.
 
-| Conceptual column | Meaning / constraint |
-| --- | --- |
-| `representative_profile_id` | Reusable profile identity. |
-| `workspace_id` | Tenant scope. |
-| `company_profile_id` | Nullable current organization relation. |
-| `full_name`, `position` | Current reusable person display details. |
-| `authority_basis`, `optional_registry_details` | Current authority/NRS data. |
-| `contact_details` | Optional current metadata. |
-| `status`, `deleted_at` | Profile lifecycle. |
+| Conceptual column                              | Meaning / constraint                     |
+| ---------------------------------------------- | ---------------------------------------- |
+| `representative_profile_id`                    | Reusable profile identity.               |
+| `workspace_id`                                 | Tenant scope.                            |
+| `company_profile_id`                           | Nullable current organization relation.  |
+| `full_name`, `position`                        | Current reusable person display details. |
+| `authority_basis`, `optional_registry_details` | Current authority/NRS data.              |
+| `contact_details`                              | Optional current metadata.               |
+| `status`, `deleted_at`                         | Profile lifecycle.                       |
 
 This table is a convenience source for future selections; it is never the source for an already released signature block.
 
@@ -452,14 +455,14 @@ Whether this reusable library is required in the first implemented scope, and wh
 
 ### 7.4 `object_representative_binding`
 
-| Conceptual column | Meaning / constraint |
-| --- | --- |
-| `object_representative_binding_id` | Object default identity. |
-| `workspace_id`, `object_id` | Owner scope. |
-| `representative_profile_id` | Nullable reusable origin. |
-| `participant_role` | Default semantic role. |
-| `default_display_values` | Editable object-level default. |
-| `display_order`, `status` | Default organization. |
+| Conceptual column                  | Meaning / constraint           |
+| ---------------------------------- | ------------------------------ |
+| `object_representative_binding_id` | Object default identity.       |
+| `workspace_id`, `object_id`        | Owner scope.                   |
+| `representative_profile_id`        | Nullable reusable origin.      |
+| `participant_role`                 | Default semantic role.         |
+| `default_display_values`           | Editable object-level default. |
+| `display_order`, `status`          | Default organization.          |
 
 ### 7.5 Released representative snapshots
 
@@ -471,17 +474,17 @@ Whether this reusable library is required in the first implemented scope, and wh
 
 ### 8.1 `project_source_file`
 
-| Conceptual column | Meaning / constraint |
-| --- | --- |
-| `project_source_file_id` | Project-source identity. |
-| `workspace_id`, `object_id` | Mandatory same-tenant/object scope. |
-| `file_asset_id` | Physical uploaded original in `file_asset`. |
-| `source_kind` | User-confirmed type such as project PDF, drawing or specification. |
-| `title`, `description` | Human-oriented description. |
-| `classification_state` | Unclassified/proposed/confirmed state. |
-| `uploaded_by_membership_id`, `uploaded_at` | Provenance. |
-| `status` | Active/archived/superseded/soft-deleted vocabulary to ratify. |
-| `supersedes_project_source_file_id` | Nullable explicit provenance; full revision policy remains open. |
+| Conceptual column                          | Meaning / constraint                                               |
+| ------------------------------------------ | ------------------------------------------------------------------ |
+| `project_source_file_id`                   | Project-source identity.                                           |
+| `workspace_id`, `object_id`                | Mandatory same-tenant/object scope.                                |
+| `file_asset_id`                            | Physical uploaded original in `file_asset`.                        |
+| `source_kind`                              | User-confirmed type such as project PDF, drawing or specification. |
+| `title`, `description`                     | Human-oriented description.                                        |
+| `classification_state`                     | Unclassified/proposed/confirmed state.                             |
+| `uploaded_by_membership_id`, `uploaded_at` | Provenance.                                                        |
+| `status`                                   | Active/archived/superseded/soft-deleted vocabulary to ratify.      |
+| `supersedes_project_source_file_id`        | Nullable explicit provenance; full revision policy remains open.   |
 
 Invariants:
 
@@ -491,27 +494,27 @@ Invariants:
 
 ### 8.2 `project_source_classification`
 
-| Conceptual column | Meaning / constraint |
-| --- | --- |
-| `project_source_classification_id` | Classification decision identity. |
-| `project_source_file_id`, `workspace_id`, `object_id` | Source scope. |
-| `classification_kind`, `structured_labels` | Confirmed categorization. |
-| `state` | Proposed/confirmed/rejected. |
-| `confirmed_by_membership_id`, `confirmed_at` | Nullable human confirmation. |
+| Conceptual column                                     | Meaning / constraint              |
+| ----------------------------------------------------- | --------------------------------- |
+| `project_source_classification_id`                    | Classification decision identity. |
+| `project_source_file_id`, `workspace_id`, `object_id` | Source scope.                     |
+| `classification_kind`, `structured_labels`            | Confirmed categorization.         |
+| `state`                                               | Proposed/confirmed/rejected.      |
+| `confirmed_by_membership_id`, `confirmed_at`          | Nullable human confirmation.      |
 
 If a classification originated from AI, the proposal remains recorded separately in Section 9 before this confirmed target is written.
 
 ### 8.3 `project_source_reference`
 
-| Conceptual column | Meaning / constraint |
-| --- | --- |
-| `project_source_reference_id` | Provenance relation identity. |
-| `workspace_id`, `object_id` | Same source/target scope. |
-| `project_source_file_id` | Referenced original. |
-| `target_kind`, `target_id` | Confirmed domain target or revision context. |
-| `citation_location` | Human-reviewable page/sheet/fragment reference where available. |
-| `relation_purpose` | Basis/reference/comparison or later typed vocabulary. |
-| `confirmed_by_membership_id`, `confirmed_at` | Attributable confirmation. |
+| Conceptual column                            | Meaning / constraint                                            |
+| -------------------------------------------- | --------------------------------------------------------------- |
+| `project_source_reference_id`                | Provenance relation identity.                                   |
+| `workspace_id`, `object_id`                  | Same source/target scope.                                       |
+| `project_source_file_id`                     | Referenced original.                                            |
+| `target_kind`, `target_id`                   | Confirmed domain target or revision context.                    |
+| `citation_location`                          | Human-reviewable page/sheet/fragment reference where available. |
+| `relation_purpose`                           | Basis/reference/comparison or later typed vocabulary.           |
+| `confirmed_by_membership_id`, `confirmed_at` | Attributable confirmation.                                      |
 
 This relation proves provenance; it does not make a file the owner of confirmed document data.
 
@@ -521,53 +524,53 @@ This relation proves provenance; it does not make a file the owner of confirmed 
 
 ### 9.1 `assistance_processing_run`
 
-| Conceptual column | Meaning / constraint |
-| --- | --- |
-| `assistance_processing_run_id` | Processing request/result context. |
-| `workspace_id`, `object_id` | Isolation boundary. |
-| `project_source_file_id` | Source analysed, when project ingestion is involved. |
-| `requested_by_membership_id`, `requested_at` | Authorized initiation. |
-| `processing_purpose` | Extraction, consistency review or later allowed purpose. |
-| `status` | Requested/running/completed/failed/cancelled representation. |
-| `processing_policy_reference` | Future approved policy/provider/context provenance; not provider choice here. |
+| Conceptual column                            | Meaning / constraint                                                          |
+| -------------------------------------------- | ----------------------------------------------------------------------------- |
+| `assistance_processing_run_id`               | Processing request/result context.                                            |
+| `workspace_id`, `object_id`                  | Isolation boundary.                                                           |
+| `project_source_file_id`                     | Source analysed, when project ingestion is involved.                          |
+| `requested_by_membership_id`, `requested_at` | Authorized initiation.                                                        |
+| `processing_purpose`                         | Extraction, consistency review or later allowed purpose.                      |
+| `status`                                     | Requested/running/completed/failed/cancelled representation.                  |
+| `processing_policy_reference`                | Future approved policy/provider/context provenance; not provider choice here. |
 
 Actual AI/OCR execution is deferred; these records define the boundary required if assistance is enabled.
 
 ### 9.2 `ai_extraction_proposal`
 
-| Conceptual column | Meaning / constraint |
-| --- | --- |
-| `ai_extraction_proposal_id` | Proposal identity. |
-| `assistance_processing_run_id`, `workspace_id`, `object_id` | Source scope. |
-| `target_kind`, `target_field_or_relation_kind` | Proposed destination semantics. |
-| `proposed_structured_value` | Reviewable candidate content. |
-| `confidence_or_explanation` | Optional review aid, never approval. |
-| `status` | Pending/accepted/edited-and-accepted/rejected/stale. |
-| `reviewed_by_membership_id`, `reviewed_at` | Human action only. |
-| `resulting_target_reference` | Nullable confirmed record created/changed by domain command. |
+| Conceptual column                                           | Meaning / constraint                                         |
+| ----------------------------------------------------------- | ------------------------------------------------------------ |
+| `ai_extraction_proposal_id`                                 | Proposal identity.                                           |
+| `assistance_processing_run_id`, `workspace_id`, `object_id` | Source scope.                                                |
+| `target_kind`, `target_field_or_relation_kind`              | Proposed destination semantics.                              |
+| `proposed_structured_value`                                 | Reviewable candidate content.                                |
+| `confidence_or_explanation`                                 | Optional review aid, never approval.                         |
+| `status`                                                    | Pending/accepted/edited-and-accepted/rejected/stale.         |
+| `reviewed_by_membership_id`, `reviewed_at`                  | Human action only.                                           |
+| `resulting_target_reference`                                | Nullable confirmed record created/changed by domain command. |
 
 ### 9.3 `ai_consistency_finding_proposal`
 
-| Conceptual column | Meaning / constraint |
-| --- | --- |
-| `ai_finding_id` | Reviewable finding identity. |
-| `assistance_processing_run_id`, `workspace_id`, `object_id` | Scope. |
-| `finding_kind` | Missing evidence candidate, mismatch, completeness or stale reference candidate. |
-| `finding_explanation` | Human-reviewable basis. |
-| `suggested_severity` | Advisory only; not domain validation outcome. |
-| `status` | Pending/acknowledged/dismissed/stale/converted-by-confirmed-rule. |
-| `reviewed_by_membership_id`, `reviewed_at` | Human review attribution. |
+| Conceptual column                                           | Meaning / constraint                                                             |
+| ----------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| `ai_finding_id`                                             | Reviewable finding identity.                                                     |
+| `assistance_processing_run_id`, `workspace_id`, `object_id` | Scope.                                                                           |
+| `finding_kind`                                              | Missing evidence candidate, mismatch, completeness or stale reference candidate. |
+| `finding_explanation`                                       | Human-reviewable basis.                                                          |
+| `suggested_severity`                                        | Advisory only; not domain validation outcome.                                    |
+| `status`                                                    | Pending/acknowledged/dismissed/stale/converted-by-confirmed-rule.                |
+| `reviewed_by_membership_id`, `reviewed_at`                  | Human review attribution.                                                        |
 
 ### 9.4 `proposal_source_citation`
 
-| Conceptual column | Meaning / constraint |
-| --- | --- |
-| `proposal_source_citation_id` | Citation identity. |
-| `workspace_id`, `object_id` | Isolation boundary. |
-| `proposal_kind`, `proposal_id` | Extraction or finding proposal. |
-| `project_source_file_id` | Original cited source. |
+| Conceptual column                                 | Meaning / constraint                            |
+| ------------------------------------------------- | ----------------------------------------------- |
+| `proposal_source_citation_id`                     | Citation identity.                              |
+| `workspace_id`, `object_id`                       | Isolation boundary.                             |
+| `proposal_kind`, `proposal_id`                    | Extraction or finding proposal.                 |
+| `project_source_file_id`                          | Original cited source.                          |
 | `citation_location`, `citation_excerpt_reference` | Page/sheet/region/text locator where permitted. |
-| `citation_role` | Basis/comparison/evidence-expectation context. |
+| `citation_role`                                   | Basis/comparison/evidence-expectation context.  |
 
 ### 9.5 Proposal invariants
 
@@ -586,16 +589,16 @@ Actual AI/OCR execution is deferred; these records define the boundary required 
 
 `document` is the stable aggregate identity for a typed act.
 
-| Conceptual column | Meaning / constraint |
-| --- | --- |
-| `document_id` | Stable document identity. |
-| `workspace_id`, `object_id` | Mandatory tenant/object context. |
-| `document_type` | Immutable type, initially including `AOSR`; test types require ratified contracts. |
-| `lifecycle_status` | `DRAFT`, `FINAL`, `ARCHIVED`, `DELETED` baseline. |
-| `current_working_content_id` | Nullable pointer to current editable structured content. |
-| `latest_released_revision_id` | Nullable pointer to latest released snapshot. |
-| `created_by_membership_id`, `created_at` | Creation provenance. |
-| `updated_at`, `deleted_at` | Current aggregate lifecycle markers. |
+| Conceptual column                        | Meaning / constraint                                                               |
+| ---------------------------------------- | ---------------------------------------------------------------------------------- |
+| `document_id`                            | Stable document identity.                                                          |
+| `workspace_id`, `object_id`              | Mandatory tenant/object context.                                                   |
+| `document_type`                          | Immutable type, initially including `AOSR`; test types require ratified contracts. |
+| `lifecycle_status`                       | `DRAFT`, `FINAL`, `ARCHIVED`, `DELETED` baseline.                                  |
+| `current_working_content_id`             | Nullable pointer to current editable structured content.                           |
+| `latest_released_revision_id`            | Nullable pointer to latest released snapshot.                                      |
+| `created_by_membership_id`, `created_at` | Creation provenance.                                                               |
+| `updated_at`, `deleted_at`               | Current aggregate lifecycle markers.                                               |
 
 Constraints:
 
@@ -607,41 +610,41 @@ Constraints:
 
 Logical parent for structured editable content and released content instances. It avoids treating autosave or generated files as the document itself.
 
-| Conceptual column | Meaning / constraint |
-| --- | --- |
-| `document_content_id` | Content state identity. |
-| `document_id`, `workspace_id`, `object_id` | Owner scope. |
-| `content_role` | `WORKING` or `RELEASED_REVISION`. |
-| `document_number_values`, `document_date` | Structured identity values for this content. |
-| `content_status` | Editable/released/superseded marker. |
-| `revision_number` | Required only for released revision content. |
-| `template_version_id` | Required for released rendered output where a template is used. |
-| `immutable_from` | Required for released revision content; absent on current mutable working content. |
+| Conceptual column                          | Meaning / constraint                                                               |
+| ------------------------------------------ | ---------------------------------------------------------------------------------- |
+| `document_content_id`                      | Content state identity.                                                            |
+| `document_id`, `workspace_id`, `object_id` | Owner scope.                                                                       |
+| `content_role`                             | `WORKING` or `RELEASED_REVISION`.                                                  |
+| `document_number_values`, `document_date`  | Structured identity values for this content.                                       |
+| `content_status`                           | Editable/released/superseded marker.                                               |
+| `revision_number`                          | Required only for released revision content.                                       |
+| `template_version_id`                      | Required for released rendered output where a template is used.                    |
+| `immutable_from`                           | Required for released revision content; absent on current mutable working content. |
 
 The later physical design may normalize fields further, but it must preserve the distinction between mutable working content and immutable released content.
 
 ### 10.3 `document_validation_finding`
 
-| Conceptual column | Meaning / constraint |
-| --- | --- |
-| `document_validation_finding_id` | Finding identity. |
-| `document_content_id`, `workspace_id`, `object_id` | Evaluated content. |
-| `finding_level` | `ERROR`, `WARNING`, `INFO`. |
-| `rule_code`, `message`, `related_target_reference` | Explainable rule result. |
-| `acknowledged_by_membership_id`, `acknowledged_at` | Nullable warning handling. |
-| `evaluated_at` | Validation provenance. |
+| Conceptual column                                  | Meaning / constraint        |
+| -------------------------------------------------- | --------------------------- |
+| `document_validation_finding_id`                   | Finding identity.           |
+| `document_content_id`, `workspace_id`, `object_id` | Evaluated content.          |
+| `finding_level`                                    | `ERROR`, `WARNING`, `INFO`. |
+| `rule_code`, `message`, `related_target_reference` | Explainable rule result.    |
+| `acknowledged_by_membership_id`, `acknowledged_at` | Nullable warning handling.  |
+| `evaluated_at`                                     | Validation provenance.      |
 
 AI findings do not enter this table as validation outcomes unless an authorized, approved domain workflow applies a formal rule.
 
 ### 10.4 `document_lock`
 
-| Conceptual column | Meaning / constraint |
-| --- | --- |
-| `document_lock_id` | Operational lease identity. |
-| `workspace_id`, `document_id` | Tenant-safe locked target. |
-| `membership_id`, `session_reference` | Authorized editing holder. |
-| `locked_at`, `heartbeat_at`, `expires_at`, `released_at` | Lease state. |
-| `override_audit_reference` | Nullable future authorized override provenance. |
+| Conceptual column                                        | Meaning / constraint                            |
+| -------------------------------------------------------- | ----------------------------------------------- |
+| `document_lock_id`                                       | Operational lease identity.                     |
+| `workspace_id`, `document_id`                            | Tenant-safe locked target.                      |
+| `membership_id`, `session_reference`                     | Authorized editing holder.                      |
+| `locked_at`, `heartbeat_at`, `expires_at`, `released_at` | Lease state.                                    |
+| `override_audit_reference`                               | Nullable future authorized override provenance. |
 
 Lock acquire/heartbeat/release/expiry never creates a document revision or package invalidation by itself.
 
@@ -653,84 +656,84 @@ Lock acquire/heartbeat/release/expiry never creates a document revision or packa
 
 ### 11.1 `aosr_payload`
 
-| Conceptual column | Meaning / constraint |
-| --- | --- |
-| `document_content_id` | One-to-one owner reference and payload identity. |
-| `workspace_id`, `object_id`, `document_id` | Tenant/document safety. |
-| `work_description` | Structured/renderable description of concealed works. |
-| `work_location_values` | Typed location components plus rendered value as required. |
-| `execution_period` | Work execution dates where applicable. |
-| `acceptance_conclusion` | Result/permission for subsequent works and notes. |
-| `additional_information` | Typed optional AOSR-specific information under approved form. |
+| Conceptual column                          | Meaning / constraint                                          |
+| ------------------------------------------ | ------------------------------------------------------------- |
+| `document_content_id`                      | One-to-one owner reference and payload identity.              |
+| `workspace_id`, `object_id`, `document_id` | Tenant/document safety.                                       |
+| `work_description`                         | Structured/renderable description of concealed works.         |
+| `work_location_values`                     | Typed location components plus rendered value as required.    |
+| `execution_period`                         | Work execution dates where applicable.                        |
+| `acceptance_conclusion`                    | Result/permission for subsequent works and notes.             |
+| `additional_information`                   | Typed optional AOSR-specific information under approved form. |
 
 This payload is structured source data. It does not contain a DOCX/PDF as editable master.
 
 ### 11.2 `aosr_system_reference`
 
-| Conceptual column | Meaning / constraint |
-| --- | --- |
-| `aosr_system_reference_id` | Relation identity. |
-| `document_content_id`, `workspace_id`, `object_id` | Payload scope. |
-| `engineering_system_id` | Object-local source reference. |
-| `rendered_snapshot_value` | Captured output value when content is released. |
-| `display_order` | Order if multiple systems appear. |
+| Conceptual column                                  | Meaning / constraint                            |
+| -------------------------------------------------- | ----------------------------------------------- |
+| `aosr_system_reference_id`                         | Relation identity.                              |
+| `document_content_id`, `workspace_id`, `object_id` | Payload scope.                                  |
+| `engineering_system_id`                            | Object-local source reference.                  |
+| `rendered_snapshot_value`                          | Captured output value when content is released. |
+| `display_order`                                    | Order if multiple systems appear.               |
 
 ### 11.3 `aosr_project_reference`
 
-| Conceptual column | Meaning / constraint |
-| --- | --- |
-| `aosr_project_reference_id` | Project/normative reference identity. |
-| `document_content_id`, `workspace_id`, `object_id` | Owner scope. |
-| `reference_kind` | Drawing set, normative document, PPR or controlled kind. |
-| `project_drawing_set_id` | Nullable object-owned confirmed drawing set. |
-| `project_source_reference_id` | Nullable confirmed provenance citation. |
-| `rendered_reference_value` | Content displayed in this AOSR state. |
-| `display_order` | Document-owned output order. |
+| Conceptual column                                  | Meaning / constraint                                     |
+| -------------------------------------------------- | -------------------------------------------------------- |
+| `aosr_project_reference_id`                        | Project/normative reference identity.                    |
+| `document_content_id`, `workspace_id`, `object_id` | Owner scope.                                             |
+| `reference_kind`                                   | Drawing set, normative document, PPR or controlled kind. |
+| `project_drawing_set_id`                           | Nullable object-owned confirmed drawing set.             |
+| `project_source_reference_id`                      | Nullable confirmed provenance citation.                  |
+| `rendered_reference_value`                         | Content displayed in this AOSR state.                    |
+| `display_order`                                    | Document-owned output order.                             |
 
 ### 11.4 `aosr_material_usage`
 
-| Conceptual column | Meaning / constraint |
-| --- | --- |
-| `aosr_material_usage_id` | Document-owned material/equipment use identity. |
-| `document_content_id`, `workspace_id`, `object_id` | Owner scope. |
-| `usage_kind` | Material/equipment classification. |
-| `name`, `brand_model`, `manufacturer` | Claimed installed/used item values. |
-| `quantity_and_unit`, `batch_lot` | Nullable applicability fields. |
-| `application_location` | Nullable more specific use location. |
-| `display_order` | Rendering order. |
+| Conceptual column                                  | Meaning / constraint                            |
+| -------------------------------------------------- | ----------------------------------------------- |
+| `aosr_material_usage_id`                           | Document-owned material/equipment use identity. |
+| `document_content_id`, `workspace_id`, `object_id` | Owner scope.                                    |
+| `usage_kind`                                       | Material/equipment classification.              |
+| `name`, `brand_model`, `manufacturer`              | Claimed installed/used item values.             |
+| `quantity_and_unit`, `batch_lot`                   | Nullable applicability fields.                  |
+| `application_location`                             | Nullable more specific use location.            |
+| `display_order`                                    | Rendering order.                                |
 
 There is no independent `WorkItem` or required reusable material catalog in V1 baseline; this table keeps the asserted usage with the act.
 
 ### 11.5 `aosr_material_certificate_link`
 
-| Conceptual column | Meaning / constraint |
-| --- | --- |
-| `aosr_material_certificate_link_id` | Evidence relation identity. |
-| `aosr_material_usage_id`, `document_content_id` | Document-owned purpose/context. |
-| `workspace_id`, `object_id` | Same-scope checks. |
-| `certificate_id` | Independent file-backed evidence owner. |
-| `relation_purpose`, `display_order` | Why/how certificate is represented. |
-| `rendered_evidence_snapshot` | Output-relevant confirmed values for released content. |
+| Conceptual column                               | Meaning / constraint                                   |
+| ----------------------------------------------- | ------------------------------------------------------ |
+| `aosr_material_certificate_link_id`             | Evidence relation identity.                            |
+| `aosr_material_usage_id`, `document_content_id` | Document-owned purpose/context.                        |
+| `workspace_id`, `object_id`                     | Same-scope checks.                                     |
+| `certificate_id`                                | Independent file-backed evidence owner.                |
+| `relation_purpose`, `display_order`             | Why/how certificate is represented.                    |
+| `rendered_evidence_snapshot`                    | Output-relevant confirmed values for released content. |
 
 An AOSR cannot satisfy a quality-document reference by a manually typed registration number without this relation to a certificate with its physical file.
 
 ### 11.6 `aosr_scheme_link` and `aosr_attachment_reference`
 
-| Table | Required conceptual content | Rule |
-| --- | --- | --- |
-| `aosr_scheme_link` | `document_content_id`, `executive_scheme_id`, purpose, caption, order, output snapshot values | A cited/attached scheme requires its physical file. |
-| `aosr_attachment_reference` | `document_content_id`, typed attachment purpose, file-backed/domain target, caption, order | Certificate and scheme originals remain owned by their own aggregates. |
+| Table                       | Required conceptual content                                                                   | Rule                                                                   |
+| --------------------------- | --------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| `aosr_scheme_link`          | `document_content_id`, `executive_scheme_id`, purpose, caption, order, output snapshot values | A cited/attached scheme requires its physical file.                    |
+| `aosr_attachment_reference` | `document_content_id`, typed attachment purpose, file-backed/domain target, caption, order    | Certificate and scheme originals remain owned by their own aggregates. |
 
 ### 11.7 `document_representative_snapshot`
 
-| Conceptual column | Meaning / constraint |
-| --- | --- |
-| `document_representative_snapshot_id` | Participant display identity in content/revision. |
-| `document_content_id`, `workspace_id`, `object_id` | Owning document content. |
-| `participant_role` | Semantic AOSR/form role. |
-| `source_binding_or_profile_reference` | Nullable origin provenance only. |
-| `display_organization`, `display_position`, `display_name` | Frozen displayed participant values. |
-| `authority_values`, `caption`, `display_order` | Frozen authority/signature block values. |
+| Conceptual column                                          | Meaning / constraint                              |
+| ---------------------------------------------------------- | ------------------------------------------------- |
+| `document_representative_snapshot_id`                      | Participant display identity in content/revision. |
+| `document_content_id`, `workspace_id`, `object_id`         | Owning document content.                          |
+| `participant_role`                                         | Semantic AOSR/form role.                          |
+| `source_binding_or_profile_reference`                      | Nullable origin provenance only.                  |
+| `display_organization`, `display_position`, `display_name` | Frozen displayed participant values.              |
+| `authority_values`, `caption`, `display_order`             | Frozen authority/signature block values.          |
 
 For released AOSR content this record is immutable even if profile/default values later change.
 
@@ -742,22 +745,22 @@ Acts of testing belong to the MVP-oriented document family, but concrete forms a
 
 ### 12.1 `test_act_payload_candidate`
 
-| Conceptual column | Meaning / constraint |
-| --- | --- |
-| `document_content_id` | Parent typed content, only when approved `document_type` contract exists. |
-| `workspace_id`, `object_id`, `document_id` | Scope. |
-| `test_act_subtype` | Candidate concrete contract such as hydraulic, pressure or flushing after ratification. |
-| `tested_subject_values` | Structured tested system/section/equipment context. |
-| `method_or_basis` | Testing method/normative basis. |
-| `execution_time_values` | Applicable testing date/time. |
-| `result_conclusion` | Structured result/conclusion. |
+| Conceptual column                          | Meaning / constraint                                                                    |
+| ------------------------------------------ | --------------------------------------------------------------------------------------- |
+| `document_content_id`                      | Parent typed content, only when approved `document_type` contract exists.               |
+| `workspace_id`, `object_id`, `document_id` | Scope.                                                                                  |
+| `test_act_subtype`                         | Candidate concrete contract such as hydraulic, pressure or flushing after ratification. |
+| `tested_subject_values`                    | Structured tested system/section/equipment context.                                     |
+| `method_or_basis`                          | Testing method/normative basis.                                                         |
+| `execution_time_values`                    | Applicable testing date/time.                                                           |
+| `result_conclusion`                        | Structured result/conclusion.                                                           |
 
 ### 12.2 Candidate owned detail tables
 
-| Candidate table | Purpose | Activation rule |
-| --- | --- | --- |
-| `test_act_parameter_candidate` | Named target/actual measured parameters and units. | Required set must be defined by approved subtype. |
-| `test_act_participant_snapshot_candidate` | Released participant/signature values. | Same snapshot principle as AOSR after form approval. |
+| Candidate table                           | Purpose                                                             | Activation rule                                            |
+| ----------------------------------------- | ------------------------------------------------------------------- | ---------------------------------------------------------- |
+| `test_act_parameter_candidate`            | Named target/actual measured parameters and units.                  | Required set must be defined by approved subtype.          |
+| `test_act_participant_snapshot_candidate` | Released participant/signature values.                              | Same snapshot principle as AOSR after form approval.       |
 | `test_act_supporting_reference_candidate` | Related schemes, evidence, instruments, documents or project basis. | Link requirements must follow approved subtype validation. |
 
 ### 12.3 Candidate constraints
@@ -775,28 +778,28 @@ Acts of testing belong to the MVP-oriented document family, but concrete forms a
 
 `certificate` is the quality-evidence root, including declarations, passports and controlled quality-document kinds.
 
-| Conceptual column | Meaning / constraint |
-| --- | --- |
-| `certificate_id` | Evidence identity. |
-| `workspace_id` | Library tenant scope. |
-| `evidence_kind` | Certificate/declaration/passport/approved letter kind. |
-| `registration_number` | Confirmed identifier where applicable. |
-| `coverage_description`, `manufacturer`, `issuer` | Confirmed evidence meaning. |
-| `issue_date`, `valid_until` | Confirmed validity inputs where applicable. |
-| `page_count` | Confirmed metadata where used. |
-| `confirmation_status` | Draft/unconfirmed/confirmed or approved vocabulary. |
-| `status`, `deleted_at` | Evidence lifecycle with historical protection. |
+| Conceptual column                                | Meaning / constraint                                   |
+| ------------------------------------------------ | ------------------------------------------------------ |
+| `certificate_id`                                 | Evidence identity.                                     |
+| `workspace_id`                                   | Library tenant scope.                                  |
+| `evidence_kind`                                  | Certificate/declaration/passport/approved letter kind. |
+| `registration_number`                            | Confirmed identifier where applicable.                 |
+| `coverage_description`, `manufacturer`, `issuer` | Confirmed evidence meaning.                            |
+| `issue_date`, `valid_until`                      | Confirmed validity inputs where applicable.            |
+| `page_count`                                     | Confirmed metadata where used.                         |
+| `confirmation_status`                            | Draft/unconfirmed/confirmed or approved vocabulary.    |
+| `status`, `deleted_at`                           | Evidence lifecycle with historical protection.         |
 
 ### 13.2 `certificate_original_file`
 
-| Conceptual column | Meaning / constraint |
-| --- | --- |
-| `certificate_original_file_id` | Binding identity. |
-| `certificate_id`, `workspace_id` | Evidence owner scope. |
-| `file_asset_id` | Physical original file. |
-| `binding_status` | Active/superseded/retained marker once policy is ratified. |
-| `uploaded_by_membership_id`, `uploaded_at` | Provenance. |
-| `supersedes_binding_id` | Nullable future explicit replacement path. |
+| Conceptual column                          | Meaning / constraint                                       |
+| ------------------------------------------ | ---------------------------------------------------------- |
+| `certificate_original_file_id`             | Binding identity.                                          |
+| `certificate_id`, `workspace_id`           | Evidence owner scope.                                      |
+| `file_asset_id`                            | Physical original file.                                    |
+| `binding_status`                           | Active/superseded/retained marker once policy is ratified. |
+| `uploaded_by_membership_id`, `uploaded_at` | Provenance.                                                |
+| `supersedes_binding_id`                    | Nullable future explicit replacement path.                 |
 
 Invariants:
 
@@ -805,13 +808,13 @@ Invariants:
 
 ### 13.3 `certificate_metadata_confirmation`
 
-| Conceptual column | Meaning / constraint |
-| --- | --- |
-| `certificate_confirmation_id` | Confirmation action identity. |
-| `certificate_id`, `workspace_id` | Target scope. |
-| `proposed_source_reference` | Nullable OCR/AI proposal origin. |
-| `confirmed_field_values` | Values accepted or corrected by user. |
-| `confirmed_by_membership_id`, `confirmed_at` | Attribution. |
+| Conceptual column                            | Meaning / constraint                  |
+| -------------------------------------------- | ------------------------------------- |
+| `certificate_confirmation_id`                | Confirmation action identity.         |
+| `certificate_id`, `workspace_id`             | Target scope.                         |
+| `proposed_source_reference`                  | Nullable OCR/AI proposal origin.      |
+| `confirmed_field_values`                     | Values accepted or corrected by user. |
+| `confirmed_by_membership_id`, `confirmed_at` | Attribution.                          |
 
 ### 13.4 Certificate validity usage
 
@@ -823,25 +826,25 @@ Validity outcome belongs to the referring document content/revision, represented
 
 ### 14.1 `executive_scheme`
 
-| Conceptual column | Meaning / constraint |
-| --- | --- |
-| `executive_scheme_id` | Scheme aggregate identity. |
-| `workspace_id`, `object_id` | Tenant/object scope. |
-| `title`, `registration_number`, `scheme_date` | Structured scheme metadata. |
-| `sheet_count`, `note` | Output metadata. |
-| `engineering_system_id` | Nullable object-local context. |
-| `status`, `deleted_at` | Lifecycle markers. |
-| `created_by_membership_id`, `created_at` | Provenance. |
+| Conceptual column                             | Meaning / constraint           |
+| --------------------------------------------- | ------------------------------ |
+| `executive_scheme_id`                         | Scheme aggregate identity.     |
+| `workspace_id`, `object_id`                   | Tenant/object scope.           |
+| `title`, `registration_number`, `scheme_date` | Structured scheme metadata.    |
+| `sheet_count`, `note`                         | Output metadata.               |
+| `engineering_system_id`                       | Nullable object-local context. |
+| `status`, `deleted_at`                        | Lifecycle markers.             |
+| `created_by_membership_id`, `created_at`      | Provenance.                    |
 
 ### 14.2 `executive_scheme_original_file`
 
-| Conceptual column | Meaning / constraint |
-| --- | --- |
-| `executive_scheme_original_file_id` | File binding identity. |
-| `executive_scheme_id`, `workspace_id`, `object_id` | Owner scope. |
-| `file_asset_id` | Required physical original. |
-| `binding_status`, `supersedes_binding_id` | Explicit replacement provenance only if later policy enables it. |
-| `uploaded_by_membership_id`, `uploaded_at` | Attribution. |
+| Conceptual column                                  | Meaning / constraint                                             |
+| -------------------------------------------------- | ---------------------------------------------------------------- |
+| `executive_scheme_original_file_id`                | File binding identity.                                           |
+| `executive_scheme_id`, `workspace_id`, `object_id` | Owner scope.                                                     |
+| `file_asset_id`                                    | Required physical original.                                      |
+| `binding_status`, `supersedes_binding_id`          | Explicit replacement provenance only if later policy enables it. |
+| `uploaded_by_membership_id`, `uploaded_at`         | Attribution.                                                     |
 
 ### 14.3 Scheme constraints
 
@@ -856,46 +859,46 @@ Validity outcome belongs to the referring document content/revision, represented
 
 ### 15.1 `template`
 
-| Conceptual column | Meaning / constraint |
-| --- | --- |
-| `template_id` | Form family identity. |
-| `workspace_id` | Nullable only if later approved system-provided template scope exists; workspace variant remains isolated. |
-| `template_purpose` | Typed document, registry or later approved output purpose. |
-| `document_type` | Required for typed-document templates where applicable. |
-| `display_name`, `status` | Family metadata. |
+| Conceptual column        | Meaning / constraint                                                                                       |
+| ------------------------ | ---------------------------------------------------------------------------------------------------------- |
+| `template_id`            | Form family identity.                                                                                      |
+| `workspace_id`           | Nullable only if later approved system-provided template scope exists; workspace variant remains isolated. |
+| `template_purpose`       | Typed document, registry or later approved output purpose.                                                 |
+| `document_type`          | Required for typed-document templates where applicable.                                                    |
+| `display_name`, `status` | Family metadata.                                                                                           |
 
 ### 15.2 `template_version`
 
-| Conceptual column | Meaning / constraint |
-| --- | --- |
-| `template_version_id` | Immutable-used version identity. |
-| `template_id` | Owning form family. |
-| `version_label` | Human/audit version value. |
-| `rendering_contract_reference` | Structured form contract metadata without choosing engine. |
-| `status` | Draft/available/used/retired representation. |
-| `first_used_at` | Once populated, version content is immutable. |
-| `created_by_membership_id`, `created_at` | Provenance in workspace scope. |
+| Conceptual column                        | Meaning / constraint                                       |
+| ---------------------------------------- | ---------------------------------------------------------- |
+| `template_version_id`                    | Immutable-used version identity.                           |
+| `template_id`                            | Owning form family.                                        |
+| `version_label`                          | Human/audit version value.                                 |
+| `rendering_contract_reference`           | Structured form contract metadata without choosing engine. |
+| `status`                                 | Draft/available/used/retired representation.               |
+| `first_used_at`                          | Once populated, version content is immutable.              |
+| `created_by_membership_id`, `created_at` | Provenance in workspace scope.                             |
 
 If a future platform-provided template has no tenant owner, that exception concerns only the reusable form offering: an object's binding, released revision and generated output remain in exactly one workspace scope.
 
 ### 15.3 `template_version_asset`
 
-| Conceptual column | Meaning / constraint |
-| --- | --- |
-| `template_version_asset_id` | Version-to-file binding identity. |
-| `template_version_id` | Owner version. |
-| `file_asset_id` | Physical template source if that output method uses a file. |
-| `asset_purpose` | Template source/supporting asset purpose. |
+| Conceptual column           | Meaning / constraint                                        |
+| --------------------------- | ----------------------------------------------------------- |
+| `template_version_asset_id` | Version-to-file binding identity.                           |
+| `template_version_id`       | Owner version.                                              |
+| `file_asset_id`             | Physical template source if that output method uses a file. |
+| `asset_purpose`             | Template source/supporting asset purpose.                   |
 
 ### 15.4 `object_template_binding`
 
-| Conceptual column | Meaning / constraint |
-| --- | --- |
-| `object_template_binding_id` | Default binding identity. |
-| `workspace_id`, `object_id` | Object scope. |
-| `document_type_or_output_purpose` | Binding applicability. |
-| `template_version_id` | Available version chosen as default. |
-| `status` | Active/retired. |
+| Conceptual column                 | Meaning / constraint                 |
+| --------------------------------- | ------------------------------------ |
+| `object_template_binding_id`      | Default binding identity.            |
+| `workspace_id`, `object_id`       | Object scope.                        |
+| `document_type_or_output_purpose` | Binding applicability.               |
+| `template_version_id`             | Available version chosen as default. |
+| `status`                          | Active/retired.                      |
 
 Released document content and generated artifacts capture their exact version rather than relying only on a mutable default.
 
@@ -905,71 +908,71 @@ Released document content and generated artifacts capture their exact version ra
 
 ### 16.1 `registry_scope`
 
-| Conceptual column | Meaning / constraint |
-| --- | --- |
-| `registry_scope_id` | Configuration/output scope identity. |
-| `workspace_id`, `object_id` | Tenant/object scope. |
-| `package_id` | Nullable package-specific scope. |
-| `scope_definition` | Selected object/folder/document range represented conceptually. |
-| `status` | Active/archived. |
+| Conceptual column           | Meaning / constraint                                                    |
+| --------------------------- | ----------------------------------------------------------------------- |
+| `registry_scope_id`         | Configuration/output scope identity.                                    |
+| `workspace_id`, `object_id` | Tenant/object scope.                                                    |
+| `package_id`                | Nullable package-specific scope.                                        |
+| `scope_definition`          | Selected object/section/folder/document range represented conceptually. |
+| `status`                    | Active/archived.                                                        |
 
 ### 16.2 `registry_override`
 
-| Conceptual column | Meaning / constraint |
-| --- | --- |
-| `registry_override_id` | Presentation configuration identity. |
-| `registry_scope_id`, `workspace_id`, `object_id` | Owner scope. |
-| `created_by_membership_id`, `updated_at` | Authored configuration provenance. |
-| `status` | Active/retired. |
+| Conceptual column                                | Meaning / constraint                 |
+| ------------------------------------------------ | ------------------------------------ |
+| `registry_override_id`                           | Presentation configuration identity. |
+| `registry_scope_id`, `workspace_id`, `object_id` | Owner scope.                         |
+| `created_by_membership_id`, `updated_at`         | Authored configuration provenance.   |
+| `status`                                         | Active/retired.                      |
 
 ### 16.3 `registry_override_item`
 
-| Conceptual column | Meaning / constraint |
-| --- | --- |
-| `registry_override_item_id` | Instruction identity. |
-| `registry_override_id` | Owner configuration. |
-| `override_kind` | Ordering, inclusion/hiding, printable note, section setting or signer selection. |
-| `projected_target_reference` | Row/section/source identity to present, not edit. |
-| `presentation_value` | Allowed presentation/configuration value. |
-| `display_order` | Output order where applicable. |
+| Conceptual column            | Meaning / constraint                                                             |
+| ---------------------------- | -------------------------------------------------------------------------------- |
+| `registry_override_item_id`  | Instruction identity.                                                            |
+| `registry_override_id`       | Owner configuration.                                                             |
+| `override_kind`              | Ordering, inclusion/hiding, printable note, section setting or signer selection. |
+| `projected_target_reference` | Row/section/source identity to present, not edit.                                |
+| `presentation_value`         | Allowed presentation/configuration value.                                        |
+| `display_order`              | Output order where applicable.                                                   |
 
 `registry_override_item` may not store a corrected act number/date, certificate metadata, scheme metadata or company requisites as a substitute for their owners.
 
 ### 16.4 `registry_signer_snapshot`
 
-| Conceptual column | Meaning / constraint |
-| --- | --- |
-| `registry_signer_snapshot_id` | Output signer identity. |
-| `registry_scope_id`, `workspace_id`, `object_id` | Output scope. |
-| `source_representative_reference` | Nullable origin. |
-| `display_name`, `display_position`, `display_organization` | Captured values. |
-| `authority_values`, `caption` | Output-specific signer content. |
-| `captured_at` | Snapshot provenance. |
+| Conceptual column                                          | Meaning / constraint            |
+| ---------------------------------------------------------- | ------------------------------- |
+| `registry_signer_snapshot_id`                              | Output signer identity.         |
+| `registry_scope_id`, `workspace_id`, `object_id`           | Output scope.                   |
+| `source_representative_reference`                          | Nullable origin.                |
+| `display_name`, `display_position`, `display_organization` | Captured values.                |
+| `authority_values`, `caption`                              | Output-specific signer content. |
+| `captured_at`                                              | Snapshot provenance.            |
 
 ### 16.5 `registry_projection_result`
 
 Optional retained result/cache/output input for a calculation, always derived.
 
-| Conceptual column | Meaning / constraint |
-| --- | --- |
-| `registry_projection_result_id` | Derived calculation identity. |
-| `registry_scope_id`, `workspace_id`, `object_id` | Source scope. |
-| `applied_override_id` | Presentation input. |
-| `dependency_reference_set` | Identities/revisions/snapshots used. |
-| `calculated_at`, `freshness_status` | Derived lifecycle. |
+| Conceptual column                                | Meaning / constraint                 |
+| ------------------------------------------------ | ------------------------------------ |
+| `registry_projection_result_id`                  | Derived calculation identity.        |
+| `registry_scope_id`, `workspace_id`, `object_id` | Source scope.                        |
+| `applied_override_id`                            | Presentation input.                  |
+| `dependency_reference_set`                       | Identities/revisions/snapshots used. |
+| `calculated_at`, `freshness_status`              | Derived lifecycle.                   |
 
 ### 16.6 `registry_projection_row`
 
 If retained for output or performance, each row carries resolved source provenance and never becomes primary owner data.
 
-| Conceptual column | Meaning / constraint |
-| --- | --- |
-| `registry_projection_row_id` | Derived row identity. |
-| `registry_projection_result_id` | Parent calculation. |
-| `row_block_kind` | Object/company/drawings/quality documents/acts/schemes/signer. |
-| `source_reference` | Upstream aggregate/revision/evidence identity. |
-| `resolved_display_values` | Rendered projection values at calculation time. |
-| `display_order` | Calculated/presentation order. |
+| Conceptual column               | Meaning / constraint                                           |
+| ------------------------------- | -------------------------------------------------------------- |
+| `registry_projection_row_id`    | Derived row identity.                                          |
+| `registry_projection_result_id` | Parent calculation.                                            |
+| `row_block_kind`                | Object/company/drawings/quality documents/acts/schemes/signer. |
+| `source_reference`              | Upstream aggregate/revision/evidence identity.                 |
+| `resolved_display_values`       | Rendered projection values at calculation time.                |
+| `display_order`                 | Calculated/presentation order.                                 |
 
 ---
 
@@ -977,72 +980,72 @@ If retained for output or performance, each row carries resolved source provenan
 
 ### 17.1 `package`
 
-| Conceptual column | Meaning / constraint |
-| --- | --- |
-| `package_id` | Package aggregate identity. |
-| `workspace_id`, `object_id` | Tenant/object scope. |
-| `title`, `purpose` | Human/output context. |
-| `scope_definition` | Intended inclusion scope. |
-| `registry_scope_id` | Registry configuration for package where applicable. |
-| `status` | Current/archived/stale-facing aggregate status. |
-| `created_by_membership_id`, `created_at`, `updated_at` | Provenance. |
+| Conceptual column                                      | Meaning / constraint                                 |
+| ------------------------------------------------------ | ---------------------------------------------------- |
+| `package_id`                                           | Package aggregate identity.                          |
+| `workspace_id`, `object_id`                            | Tenant/object scope.                                 |
+| `title`, `purpose`                                     | Human/output context.                                |
+| `scope_definition`                                     | Intended inclusion scope.                            |
+| `registry_scope_id`                                    | Registry configuration for package where applicable. |
+| `status`                                               | Current/archived/stale-facing aggregate status.      |
+| `created_by_membership_id`, `created_at`, `updated_at` | Provenance.                                          |
 
 ### 17.2 `package_component_selection`
 
-| Conceptual column | Meaning / constraint |
-| --- | --- |
-| `package_component_selection_id` | Current inclusion/ordering instruction. |
-| `package_id`, `workspace_id`, `object_id` | Owner scope. |
-| `component_kind`, `component_reference` | Document/evidence/scheme/registry component selection. |
-| `inclusion_mode` | Explicit inclusion/exclusion or approved rule. |
-| `display_order` | User-defined ordering. |
+| Conceptual column                         | Meaning / constraint                                   |
+| ----------------------------------------- | ------------------------------------------------------ |
+| `package_component_selection_id`          | Current inclusion/ordering instruction.                |
+| `package_id`, `workspace_id`, `object_id` | Owner scope.                                           |
+| `component_kind`, `component_reference`   | Document/evidence/scheme/registry component selection. |
+| `inclusion_mode`                          | Explicit inclusion/exclusion or approved rule.         |
+| `display_order`                           | User-defined ordering.                                 |
 
 This is configuration, not a successful historical build result.
 
 ### 17.3 `package_build`
 
-| Conceptual column | Meaning / constraint |
-| --- | --- |
-| `package_build_id` | Async attempt identity. |
-| `package_id`, `workspace_id`, `object_id` | Owner scope. |
-| `requested_by_membership_id`, `requested_at` | Trigger attribution. |
-| `status` | Queued/running/succeeded/failed/cancelled model. |
-| `progress_summary`, `failure_summary` | Operational user feedback without choosing job technology. |
-| `started_at`, `completed_at` | Execution history. |
+| Conceptual column                            | Meaning / constraint                                       |
+| -------------------------------------------- | ---------------------------------------------------------- |
+| `package_build_id`                           | Async attempt identity.                                    |
+| `package_id`, `workspace_id`, `object_id`    | Owner scope.                                               |
+| `requested_by_membership_id`, `requested_at` | Trigger attribution.                                       |
+| `status`                                     | Queued/running/succeeded/failed/cancelled model.           |
+| `progress_summary`, `failure_summary`        | Operational user feedback without choosing job technology. |
+| `started_at`, `completed_at`                 | Execution history.                                         |
 
 Build is asynchronous by architecture. It reads sources and creates a snapshot; it never mutates included source aggregates.
 
 ### 17.4 `package_snapshot`
 
-| Conceptual column | Meaning / constraint |
-| --- | --- |
-| `package_snapshot_id` | Immutable successful build identity. |
-| `package_id`, `package_build_id`, `workspace_id`, `object_id` | Build provenance. |
-| `scope_snapshot`, `ordering_snapshot` | Captured configuration/result. |
-| `registry_projection_result_id` | Captured registry result where included. |
-| `built_at`, `built_by_membership_id` | Attribution. |
-| `freshness_status` | Current/stale marker for convenience; snapshot content remains immutable. |
+| Conceptual column                                             | Meaning / constraint                                                      |
+| ------------------------------------------------------------- | ------------------------------------------------------------------------- |
+| `package_snapshot_id`                                         | Immutable successful build identity.                                      |
+| `package_id`, `package_build_id`, `workspace_id`, `object_id` | Build provenance.                                                         |
+| `scope_snapshot`, `ordering_snapshot`                         | Captured configuration/result.                                            |
+| `registry_projection_result_id`                               | Captured registry result where included.                                  |
+| `built_at`, `built_by_membership_id`                          | Attribution.                                                              |
+| `freshness_status`                                            | Current/stale marker for convenience; snapshot content remains immutable. |
 
 ### 17.5 `package_snapshot_item`
 
-| Conceptual column | Meaning / constraint |
-| --- | --- |
-| `package_snapshot_item_id` | Included item identity. |
-| `package_snapshot_id`, `workspace_id`, `object_id` | Snapshot scope. |
-| `item_kind` | Registry artifact, document revision artifact, certificate original, executive scheme original or allowed package output. |
-| `source_reference` | Exact revision/evidence/file/projection identity. |
-| `file_asset_id` / `generated_artifact_id` | Exact included file or output identity. |
-| `display_order` | Frozen package order. |
-| `provenance_values` | Output-relevant resolved metadata. |
+| Conceptual column                                  | Meaning / constraint                                                                                                      |
+| -------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| `package_snapshot_item_id`                         | Included item identity.                                                                                                   |
+| `package_snapshot_id`, `workspace_id`, `object_id` | Snapshot scope.                                                                                                           |
+| `item_kind`                                        | Registry artifact, document revision artifact, certificate original, executive scheme original or allowed package output. |
+| `source_reference`                                 | Exact revision/evidence/file/projection identity.                                                                         |
+| `file_asset_id` / `generated_artifact_id`          | Exact included file or output identity.                                                                                   |
+| `display_order`                                    | Frozen package order.                                                                                                     |
+| `provenance_values`                                | Output-relevant resolved metadata.                                                                                        |
 
 ### 17.6 `package_snapshot_dependency`
 
-| Conceptual column | Meaning / constraint |
-| --- | --- |
-| `package_snapshot_dependency_id` | Dependency identity. |
-| `package_snapshot_id` | Historical result. |
-| `dependency_kind`, `dependency_reference` | Exact revision/file/template/snapshot/override/source used. |
-| `captured_dependency_state` | Fingerprint or values adequate to detect change later, implementation deferred. |
+| Conceptual column                         | Meaning / constraint                                                            |
+| ----------------------------------------- | ------------------------------------------------------------------------------- |
+| `package_snapshot_dependency_id`          | Dependency identity.                                                            |
+| `package_snapshot_id`                     | Historical result.                                                              |
+| `dependency_kind`, `dependency_reference` | Exact revision/file/template/snapshot/override/source used.                     |
+| `captured_dependency_state`               | Fingerprint or values adequate to detect change later, implementation deferred. |
 
 ### 17.7 Package invariants
 
@@ -1059,41 +1062,41 @@ Build is asynchronous by architecture. It reads sources and creates a snapshot; 
 
 `file_asset` identifies a physical retained file without choosing storage technology.
 
-| Conceptual column | Meaning / constraint |
-| --- | --- |
-| `file_asset_id` | Physical file identity. |
-| `workspace_id` | Mandatory tenant scope for business files. |
-| `object_id` | Nullable where library/workspace file is not object-specific. |
-| `file_role` | Uploaded evidence original, executive scheme original, project source original, template asset or generated output. |
-| `media_type`, `original_filename`, `size_metadata` | File description. |
-| `integrity_reference` | Future integrity/checksum provenance without choosing mechanism. |
-| `storage_reference` | Opaque storage locator under later storage design. |
-| `created_by_membership_id`, `created_at` | Attribution. |
-| `retention_status`, `deleted_at` | Protected lifecycle marker. |
+| Conceptual column                                  | Meaning / constraint                                                                                                |
+| -------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| `file_asset_id`                                    | Physical file identity.                                                                                             |
+| `workspace_id`                                     | Mandatory tenant scope for business files.                                                                          |
+| `object_id`                                        | Nullable where library/workspace file is not object-specific.                                                       |
+| `file_role`                                        | Uploaded evidence original, executive scheme original, project source original, template asset or generated output. |
+| `media_type`, `original_filename`, `size_metadata` | File description.                                                                                                   |
+| `integrity_reference`                              | Future integrity/checksum provenance without choosing mechanism.                                                    |
+| `storage_reference`                                | Opaque storage locator under later storage design.                                                                  |
+| `created_by_membership_id`, `created_at`           | Attribution.                                                                                                        |
+| `retention_status`, `deleted_at`                   | Protected lifecycle marker.                                                                                         |
 
 ### 18.2 `generated_artifact`
 
-| Conceptual column | Meaning / constraint |
-| --- | --- |
-| `generated_artifact_id` | Derived output identity. |
-| `workspace_id`, `object_id` | Source/output scope. |
-| `artifact_kind` | Document DOCX/PDF, registry output, package PDF/ZIP or approved output. |
-| `file_asset_id` | Physical generated file where retained. |
-| `generation_status`, `generated_at` | Output lifecycle. |
-| `template_version_id` | Exact rendering form where applicable. |
-| `document_revision_id` | Nullable exact typed document release origin. |
-| `package_snapshot_id` | Nullable package output origin. |
-| `registry_projection_result_id` | Nullable registry output origin. |
-| `stale_at` | Current-use convenience marker; output history remains. |
+| Conceptual column                   | Meaning / constraint                                                    |
+| ----------------------------------- | ----------------------------------------------------------------------- |
+| `generated_artifact_id`             | Derived output identity.                                                |
+| `workspace_id`, `object_id`         | Source/output scope.                                                    |
+| `artifact_kind`                     | Document DOCX/PDF, registry output, package PDF/ZIP or approved output. |
+| `file_asset_id`                     | Physical generated file where retained.                                 |
+| `generation_status`, `generated_at` | Output lifecycle.                                                       |
+| `template_version_id`               | Exact rendering form where applicable.                                  |
+| `document_revision_id`              | Nullable exact typed document release origin.                           |
+| `package_snapshot_id`               | Nullable package output origin.                                         |
+| `registry_projection_result_id`     | Nullable registry output origin.                                        |
+| `stale_at`                          | Current-use convenience marker; output history remains.                 |
 
 ### 18.3 `artifact_source_reference`
 
-| Conceptual column | Meaning / constraint |
-| --- | --- |
-| `artifact_source_reference_id` | Provenance edge identity. |
-| `generated_artifact_id`, `workspace_id` | Derived artifact scope. |
-| `source_kind`, `source_reference` | Exact source revision/snapshot/file/template/override. |
-| `source_role` | Render/include/registry/dependency purpose. |
+| Conceptual column                       | Meaning / constraint                                   |
+| --------------------------------------- | ------------------------------------------------------ |
+| `artifact_source_reference_id`          | Provenance edge identity.                              |
+| `generated_artifact_id`, `workspace_id` | Derived artifact scope.                                |
+| `source_kind`, `source_reference`       | Exact source revision/snapshot/file/template/override. |
+| `source_role`                           | Render/include/registry/dependency purpose.            |
 
 ### 18.4 File/artifact invariants
 
@@ -1108,41 +1111,41 @@ Build is asynchronous by architecture. It reads sources and creates a snapshot; 
 
 ### 19.1 `document_revision_snapshot`
 
-| Conceptual column | Meaning / constraint |
-| --- | --- |
-| `document_revision_id` | Released revision identity. |
-| `document_id`, `document_content_id` | Exact released structured state. |
-| `workspace_id`, `object_id` | Tenant/object scope. |
-| `revision_number` | Monotonically meaningful document release number within document. |
-| `release_status` | Released/final or later approved lifecycle marker. |
-| `template_version_id` | Exact form for released output. |
-| `validation_summary` | Captured release validation outcome/acknowledgements. |
-| `released_by_membership_id`, `released_at` | Attribution. |
+| Conceptual column                          | Meaning / constraint                                              |
+| ------------------------------------------ | ----------------------------------------------------------------- |
+| `document_revision_id`                     | Released revision identity.                                       |
+| `document_id`, `document_content_id`       | Exact released structured state.                                  |
+| `workspace_id`, `object_id`                | Tenant/object scope.                                              |
+| `revision_number`                          | Monotonically meaningful document release number within document. |
+| `release_status`                           | Released/final or later approved lifecycle marker.                |
+| `template_version_id`                      | Exact form for released output.                                   |
+| `validation_summary`                       | Captured release validation outcome/acknowledgements.             |
+| `released_by_membership_id`, `released_at` | Attribution.                                                      |
 
 The payload/link/snapshot rows attached to released `document_content` are immutable components of this revision.
 
 ### 19.2 `autosave_snapshot`
 
-| Conceptual column | Meaning / constraint |
-| --- | --- |
-| `autosave_snapshot_id` | Recovery identity. |
-| `document_id`, `document_content_id`, `workspace_id`, `object_id` | Working target. |
-| `structured_working_state_reference` | Complete recoverable draft state conceptually. |
-| `saved_by_membership_id`, `saved_at` | Provenance. |
-| `recovery_status` | Latest/replaced/restored or approved operational vocabulary. |
+| Conceptual column                                                 | Meaning / constraint                                         |
+| ----------------------------------------------------------------- | ------------------------------------------------------------ |
+| `autosave_snapshot_id`                                            | Recovery identity.                                           |
+| `document_id`, `document_content_id`, `workspace_id`, `object_id` | Working target.                                              |
+| `structured_working_state_reference`                              | Complete recoverable draft state conceptually.               |
+| `saved_by_membership_id`, `saved_at`                              | Provenance.                                                  |
+| `recovery_status`                                                 | Latest/replaced/restored or approved operational vocabulary. |
 
 Autosave is not a final revision and does not by itself invalidate package outputs.
 
 ### 19.3 Snapshot catalog and ownership
 
-| Snapshot | Owner | Immutable after | Purpose |
-| --- | --- | --- | --- |
-| `object_company_snapshot` | `Object` | Capture/adoption | Stable object organization values. |
-| `document_representative_snapshot` on released content | `DocumentRevisionSnapshot` | Release | Stable participant/signature display. |
-| `document_revision_snapshot` and its released typed content | `Document` | Release | Reproducible act truth. |
-| `registry_signer_snapshot` captured for output | Registry/package output context | Output capture | Reproducible registry signer. |
-| `package_snapshot` and its items/dependencies | `Package` | Successful build | Reproducible complete output. |
-| Artifact provenance | Generating revision/snapshot | Artifact generation | Explain derived files. |
+| Snapshot                                                    | Owner                           | Immutable after     | Purpose                               |
+| ----------------------------------------------------------- | ------------------------------- | ------------------- | ------------------------------------- |
+| `object_company_snapshot`                                   | `Object`                        | Capture/adoption    | Stable object organization values.    |
+| `document_representative_snapshot` on released content      | `DocumentRevisionSnapshot`      | Release             | Stable participant/signature display. |
+| `document_revision_snapshot` and its released typed content | `Document`                      | Release             | Reproducible act truth.               |
+| `registry_signer_snapshot` captured for output              | Registry/package output context | Output capture      | Reproducible registry signer.         |
+| `package_snapshot` and its items/dependencies               | `Package`                       | Successful build    | Reproducible complete output.         |
+| Artifact provenance                                         | Generating revision/snapshot    | Artifact generation | Explain derived files.                |
 
 ### 19.4 Revision triggers
 
@@ -1156,30 +1159,30 @@ Lock heartbeat, current registry presentation-only override, viewing/downloading
 
 ### 20.1 `activity_event`
 
-| Conceptual column | Meaning / constraint |
-| --- | --- |
-| `activity_event_id` | Audit/history identity. |
-| `workspace_id` | Tenant context of domain action. |
+| Conceptual column                      | Meaning / constraint                                                                       |
+| -------------------------------------- | ------------------------------------------------------------------------------------------ |
+| `activity_event_id`                    | Audit/history identity.                                                                    |
+| `workspace_id`                         | Tenant context of domain action.                                                           |
 | `actor_user_id`, `actor_membership_id` | Historical actor and authorization context; nullable system actor only under later policy. |
-| `event_kind` | Typed event vocabulary. |
-| `target_kind`, `target_id` | Primary acted-on entity/snapshot/output. |
-| `object_id` | Nullable related object context. |
-| `occurred_at` | Time of event. |
-| `event_summary` | Safe explanatory structured metadata. |
-| `related_provenance_reference` | Nullable proposal/build/revision/file linkage. |
+| `event_kind`                           | Typed event vocabulary.                                                                    |
+| `target_kind`, `target_id`             | Primary acted-on entity/snapshot/output.                                                   |
+| `object_id`                            | Nullable related object context.                                                           |
+| `occurred_at`                          | Time of event.                                                                             |
+| `event_summary`                        | Safe explanatory structured metadata.                                                      |
+| `related_provenance_reference`         | Nullable proposal/build/revision/file linkage.                                             |
 
 ### 20.2 Mandatory event families represented in V1
 
-| Event family | Examples |
-| --- | --- |
-| Workspace/access | Personal/organization workspace creation, invite issue/revoke/accept, membership role/status change. |
-| Object/setup | Object creation/update, object company snapshot adoption, drawing-set change, folder operations when material. |
-| Document/revision | Typed document creation, finalization, revision, archive/delete/restore, critical warning acknowledgement. |
-| Evidence/scheme | File upload, metadata confirmation, relation changes, allowed replacement/supersession action. |
-| AI assistance | Processing request, proposal generation state, acceptance/edit/rejection/dismissal/staleness. |
-| Templates/artifacts | Template version creation/first use, document/registry artifact generation. |
-| Registry/package | Override change, build request/success/failure, snapshot creation, staleness marking. |
-| Sensitive access | Original-file download/access or denied access where privacy/security policy requires it. |
+| Event family        | Examples                                                                                                       |
+| ------------------- | -------------------------------------------------------------------------------------------------------------- |
+| Workspace/access    | Personal/organization workspace creation, invite issue/revoke/accept, membership role/status change.           |
+| Object/setup        | Object creation/update, object company snapshot adoption, drawing-set change, folder operations when material. |
+| Document/revision   | Typed document creation, finalization, revision, archive/delete/restore, critical warning acknowledgement.     |
+| Evidence/scheme     | File upload, metadata confirmation, relation changes, allowed replacement/supersession action.                 |
+| AI assistance       | Processing request, proposal generation state, acceptance/edit/rejection/dismissal/staleness.                  |
+| Templates/artifacts | Template version creation/first use, document/registry artifact generation.                                    |
+| Registry/package    | Override change, build request/success/failure, snapshot creation, staleness marking.                          |
+| Sensitive access    | Original-file download/access or denied access where privacy/security policy requires it.                      |
 
 ### 20.3 Audit invariants
 
@@ -1194,51 +1197,51 @@ Lock heartbeat, current registry presentation-only override, viewing/downloading
 
 ### 21.1 Tenant and object relationships
 
-| From | To | Cardinality intent | Rule |
-| --- | --- | --- | --- |
-| `workspace` | `membership` | one-to-many | Authorization only inside matching workspace. |
-| `user_account` | `membership` | one-to-many | No direct business-data ownership. |
-| `workspace` | `invite` | one-to-many for organization | Invite acceptance creates membership. |
-| `workspace` | `object` | one-to-many | Object cannot cross tenant. |
-| `object` | `folder_tree` | one-to-one active baseline | Separate root with object scope. |
-| `object` | `object_documentation_context` | one bounded context | Owns drawing set entries. |
-| `object_documentation_context` | `project_drawing_set` | one-to-many | Owned, not independent root. |
+| From                           | To                             | Cardinality intent           | Rule                                          |
+| ------------------------------ | ------------------------------ | ---------------------------- | --------------------------------------------- |
+| `workspace`                    | `membership`                   | one-to-many                  | Authorization only inside matching workspace. |
+| `user_account`                 | `membership`                   | one-to-many                  | No direct business-data ownership.            |
+| `workspace`                    | `invite`                       | one-to-many for organization | Invite acceptance creates membership.         |
+| `workspace`                    | `object`                       | one-to-many                  | Object cannot cross tenant.                   |
+| `object`                       | `folder_tree`                  | one-to-one active baseline   | Separate root with object scope.              |
+| `object`                       | `object_documentation_context` | one bounded context          | Owns drawing set entries.                     |
+| `object_documentation_context` | `project_drawing_set`          | one-to-many                  | Owned, not independent root.                  |
 
 ### 21.2 Document and context relationships
 
-| From | To | Cardinality intent | Rule |
-| --- | --- | --- | --- |
-| `object` | `document` | one-to-many | Document is separate root in same workspace. |
-| `folder_tree` | `document` via `folder_placement` | optional placement | Folder does not own content. |
-| `document` | `document_content` | working plus released states | Released content immutable. |
-| `document` | `document_revision_snapshot` | zero-to-many | Exact release history. |
-| `document_content(AOSR)` | `aosr_payload` | exactly one | Required typed content for AOSR. |
-| `aosr_payload` | `aosr_material_usage` | zero-to-many | Document-owned work/equipment claims. |
-| `aosr_material_usage` | `certificate` via link | zero-to-many subject to validation | Physical certificate file required when invoked. |
-| `aosr_payload` | `executive_scheme` via link | zero-to-many | Physical scheme file required when cited. |
-| `document_content` | `document_representative_snapshot` | form-dependent many | Frozen upon release. |
+| From                     | To                                 | Cardinality intent                 | Rule                                             |
+| ------------------------ | ---------------------------------- | ---------------------------------- | ------------------------------------------------ |
+| `object`                 | `document`                         | one-to-many                        | Document is separate root in same workspace.     |
+| `folder_tree`            | `document` via `folder_placement`  | optional placement                 | Folder does not own content.                     |
+| `document`               | `document_content`                 | working plus released states       | Released content immutable.                      |
+| `document`               | `document_revision_snapshot`       | zero-to-many                       | Exact release history.                           |
+| `document_content(AOSR)` | `aosr_payload`                     | exactly one                        | Required typed content for AOSR.                 |
+| `aosr_payload`           | `aosr_material_usage`              | zero-to-many                       | Document-owned work/equipment claims.            |
+| `aosr_material_usage`    | `certificate` via link             | zero-to-many subject to validation | Physical certificate file required when invoked. |
+| `aosr_payload`           | `executive_scheme` via link        | zero-to-many                       | Physical scheme file required when cited.        |
+| `document_content`       | `document_representative_snapshot` | form-dependent many                | Frozen upon release.                             |
 
 ### 21.3 Source, proposal and confirmation relationships
 
-| From | To | Rule |
-| --- | --- | --- |
-| `project_source_file` | `file_asset` | Required physical original and same workspace. |
-| `project_source_file` | `assistance_processing_run` | Processing stays in its workspace/object scope. |
-| `assistance_processing_run` | proposals/findings | Only reviewable outputs. |
-| proposal/finding | `proposal_source_citation` | Traceable source location where available. |
-| accepted proposal | confirmed owner record | Created/changed by authorized domain action plus audit, not by automatic copy. |
+| From                        | To                          | Rule                                                                           |
+| --------------------------- | --------------------------- | ------------------------------------------------------------------------------ |
+| `project_source_file`       | `file_asset`                | Required physical original and same workspace.                                 |
+| `project_source_file`       | `assistance_processing_run` | Processing stays in its workspace/object scope.                                |
+| `assistance_processing_run` | proposals/findings          | Only reviewable outputs.                                                       |
+| proposal/finding            | `proposal_source_citation`  | Traceable source location where available.                                     |
+| accepted proposal           | confirmed owner record      | Created/changed by authorized domain action plus audit, not by automatic copy. |
 
 ### 21.4 Output relationships
 
-| From | To | Rule |
-| --- | --- | --- |
-| `template` | `template_version` | Used version immutable. |
-| `document_revision_snapshot` | `generated_artifact` | Artifact names exact released source and template. |
-| `registry_scope` / overrides | `registry_projection_result` | Result remains derived. |
-| `package` | `package_build` | Async attempt. |
-| successful `package_build` | `package_snapshot` | Immutable result. |
-| `package_snapshot` | snapshot items/dependencies | Exact revisions/files/projections/templates captured. |
-| generated outputs/originals | `file_asset` | File identity and retention/provenance controlled. |
+| From                         | To                           | Rule                                                  |
+| ---------------------------- | ---------------------------- | ----------------------------------------------------- |
+| `template`                   | `template_version`           | Used version immutable.                               |
+| `document_revision_snapshot` | `generated_artifact`         | Artifact names exact released source and template.    |
+| `registry_scope` / overrides | `registry_projection_result` | Result remains derived.                               |
+| `package`                    | `package_build`              | Async attempt.                                        |
+| successful `package_build`   | `package_snapshot`           | Immutable result.                                     |
+| `package_snapshot`           | snapshot items/dependencies  | Exact revisions/files/projections/templates captured. |
+| generated outputs/originals  | `file_asset`                 | File identity and retention/provenance controlled.    |
 
 ---
 
@@ -1246,53 +1249,53 @@ Lock heartbeat, current registry presentation-only override, viewing/downloading
 
 ### 22.1 Tenant and access constraints
 
-| ID | Constraint |
-| --- | --- |
-| `SCH-001` | Every business aggregate, source file, proposal, revision, projection result, package and artifact is owned by exactly one `workspace`. |
+| ID        | Constraint                                                                                                                                                  |
+| --------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `SCH-001` | Every business aggregate, source file, proposal, revision, projection result, package and artifact is owned by exactly one `workspace`.                     |
 | `SCH-002` | A relation across business tables is valid only when workspace scopes match, unless a future explicit copy/transfer model creates a new destination record. |
-| `SCH-003` | `user_account` has no direct business-data role; an active `membership` is required for workspace action. |
-| `SCH-004` | Invite URLs carry opaque token/reference only; stored `invite` state determines role and validity. |
+| `SCH-003` | `user_account` has no direct business-data role; an active `membership` is required for workspace action.                                                   |
+| `SCH-004` | Invite URLs carry opaque token/reference only; stored `invite` state determines role and validity.                                                          |
 
 ### 22.2 Object, folder and setup constraints
 
-| ID | Constraint |
-| --- | --- |
-| `SCH-010` | `object` is context root, not owner of independent document/evidence/template/package lifecycle histories. |
-| `SCH-011` | Each active `folder_tree` is scoped to one object; nodes cannot form cycles or move across objects. |
-| `SCH-012` | Folder placement changes cannot silently change document content, number or revision. |
+| ID        | Constraint                                                                                                       |
+| --------- | ---------------------------------------------------------------------------------------------------------------- |
+| `SCH-010` | `object` is context root, not owner of independent document/evidence/template/package lifecycle histories.       |
+| `SCH-011` | Each active `folder_tree` is scoped to one object; nodes cannot form cycles or move across objects.              |
+| `SCH-012` | Folder placement changes cannot silently change document content, number or revision.                            |
 | `SCH-013` | `project_drawing_set` belongs to `object_documentation_context` and is never substituted for `executive_scheme`. |
-| `SCH-014` | No separate `work_item` aggregate table is introduced in Schema V1; asserted work belongs to typed content. |
+| `SCH-014` | No separate `work_item` aggregate table is introduced in Schema V1; asserted work belongs to typed content.      |
 
 ### 22.3 Document and evidence constraints
 
-| ID | Constraint |
-| --- | --- |
-| `SCH-020` | `document.document_type` is immutable. |
-| `SCH-021` | A released document revision and its payload/link/snapshot content are immutable; correction creates the next revision. |
-| `SCH-022` | `AOSR` uses structured payload tables and explicit links; DOCX/PDF cannot hold canonical content. |
-| `SCH-023` | A quality evidence reference displayed/used by an act requires a `certificate` with retained physical original file. |
-| `SCH-024` | An executive scheme referenced/included as evidence requires a retained physical original file. |
+| ID        | Constraint                                                                                                                                              |
+| --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `SCH-020` | `document.document_type` is immutable.                                                                                                                  |
+| `SCH-021` | A released document revision and its payload/link/snapshot content are immutable; correction creates the next revision.                                 |
+| `SCH-022` | `AOSR` uses structured payload tables and explicit links; DOCX/PDF cannot hold canonical content.                                                       |
+| `SCH-023` | A quality evidence reference displayed/used by an act requires a `certificate` with retained physical original file.                                    |
+| `SCH-024` | An executive scheme referenced/included as evidence requires a retained physical original file.                                                         |
 | `SCH-025` | Certificate validity finding is evaluated against referring `document_date`; expiry is warning-level under existing baseline unless later strengthened. |
 
 ### 22.4 Template, registry, package and artifact constraints
 
-| ID | Constraint |
-| --- | --- |
-| `SCH-030` | `template_version` cannot change after first released/output use. |
-| `SCH-031` | `registry_projection_result` and rows are derived; `registry_override` stores presentation/configuration only. |
-| `SCH-032` | `package_build` is asynchronous conceptually and successful `package_snapshot` is immutable. |
+| ID        | Constraint                                                                                                                             |
+| --------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| `SCH-030` | `template_version` cannot change after first released/output use.                                                                      |
+| `SCH-031` | `registry_projection_result` and rows are derived; `registry_override` stores presentation/configuration only.                         |
+| `SCH-032` | `package_build` is asynchronous conceptually and successful `package_snapshot` is immutable.                                           |
 | `SCH-033` | Package snapshots include exact revisions and file identities; source change makes current output stale rather than rewriting history. |
-| `SCH-034` | `generated_artifact` is derived and cannot be imported back as source without a separately designed process. |
+| `SCH-034` | `generated_artifact` is derived and cannot be imported back as source without a separately designed process.                           |
 
 ### 22.5 AI, source and audit constraints
 
-| ID | Constraint |
-| --- | --- |
+| ID        | Constraint                                                                                                            |
+| --------- | --------------------------------------------------------------------------------------------------------------------- |
 | `SCH-040` | A project source upload remains source material/provenance; confirmed structured owner data remain operational truth. |
-| `SCH-041` | AI/OCR output is recorded only as proposal/finding until authorized confirmation and owner validation. |
-| `SCH-042` | Proposals/findings and citations retain the same workspace/object scope as source and intended target. |
-| `SCH-043` | Acceptance/rejection and resulting domain action are attributable through audit. |
-| `SCH-044` | Historical audit/provenance cannot disappear merely because membership is later removed or content becomes stale. |
+| `SCH-041` | AI/OCR output is recorded only as proposal/finding until authorized confirmation and owner validation.                |
+| `SCH-042` | Proposals/findings and citations retain the same workspace/object scope as source and intended target.                |
+| `SCH-043` | Acceptance/rejection and resulting domain action are attributable through audit.                                      |
+| `SCH-044` | Historical audit/provenance cannot disappear merely because membership is later removed or content becomes stale.     |
 
 ---
 
@@ -1304,35 +1307,35 @@ This section defines expected lookup and integrity needs, not a physical indexin
 
 Most business queries must start with `workspace_id`, and object-focused flows additionally with `object_id`. Future physical indexes or partition/security strategy must make tenant checks natural rather than optional filters.
 
-| Query family | Conceptual access key |
-| --- | --- |
-| Workspace objects and libraries | `workspace_id` plus lifecycle/status. |
-| Object documents/folders/schemes/sources | `workspace_id`, `object_id`, status/type. |
-| Document history | `workspace_id`, `document_id`, revision number/release time. |
-| Package status/history | `workspace_id`, `object_id`, `package_id`, build/snapshot time. |
-| Audit timeline | `workspace_id`, object/target, occurred time. |
+| Query family                             | Conceptual access key                                           |
+| ---------------------------------------- | --------------------------------------------------------------- |
+| Workspace objects and libraries          | `workspace_id` plus lifecycle/status.                           |
+| Object documents/folders/schemes/sources | `workspace_id`, `object_id`, status/type.                       |
+| Document history                         | `workspace_id`, `document_id`, revision number/release time.    |
+| Package status/history                   | `workspace_id`, `object_id`, `package_id`, build/snapshot time. |
+| Audit timeline                           | `workspace_id`, object/target, occurred time.                   |
 
 ### 23.2 Integrity-oriented uniqueness/lookups
 
-| Concern | Conceptual requirement |
-| --- | --- |
-| Membership duplication | Avoid multiple simultaneously active equivalent memberships for one user/workspace unless governance later permits it intentionally. |
-| Personal workspace creation | Registration flow identifies the user's baseline personal workspace and Owner membership consistently. |
-| Invite token resolution | Efficient secure lookup by token verifier/reference and validity state, never by trusted URL role fields. |
-| Folder hierarchy | Efficient parent/children/order traversal and cycle-safe move validation within object tree. |
-| Document numbering | Check uniqueness/collision according to later ratified numbering scope and document lifecycle. |
-| Template immutability | Find usages of a version before any attempted mutation. |
-| File retention | Find released revisions/package snapshots referencing an original before replacement/delete action. |
+| Concern                     | Conceptual requirement                                                                                                               |
+| --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| Membership duplication      | Avoid multiple simultaneously active equivalent memberships for one user/workspace unless governance later permits it intentionally. |
+| Personal workspace creation | Registration flow identifies the user's baseline personal workspace and Owner membership consistently.                               |
+| Invite token resolution     | Efficient secure lookup by token verifier/reference and validity state, never by trusted URL role fields.                            |
+| Folder hierarchy            | Efficient parent/children/order traversal and cycle-safe move validation within object tree.                                         |
+| Document numbering          | Check uniqueness/collision according to later ratified numbering scope and document lifecycle.                                       |
+| Template immutability       | Find usages of a version before any attempted mutation.                                                                              |
+| File retention              | Find released revisions/package snapshots referencing an original before replacement/delete action.                                  |
 
 ### 23.3 Projection, processing and build lookups
 
-| Concern | Conceptual access path |
-| --- | --- |
-| Registry calculation | Resolve scope to documents revisions, evidence, schemes, drawing sets and override items. |
-| Package invalidation | Locate snapshots depending on changed revision/file/template/override or output-visible object snapshot. |
-| AI review queue | Find pending/stale proposals/findings by workspace/object/source/status. |
-| Project provenance | Find citations and confirmed target relations for one source file. |
-| Generated artifact freshness | Locate artifacts from source revision/snapshot/template and mark stale current usage. |
+| Concern                      | Conceptual access path                                                                                   |
+| ---------------------------- | -------------------------------------------------------------------------------------------------------- |
+| Registry calculation         | Resolve scope to documents revisions, evidence, schemes, drawing sets and override items.                |
+| Package invalidation         | Locate snapshots depending on changed revision/file/template/override or output-visible object snapshot. |
+| AI review queue              | Find pending/stale proposals/findings by workspace/object/source/status.                                 |
+| Project provenance           | Find citations and confirmed target relations for one source file.                                       |
+| Generated artifact freshness | Locate artifacts from source revision/snapshot/template and mark stale current usage.                    |
 
 ### 23.4 Search intentionally deferred
 
@@ -1345,8 +1348,9 @@ Full-text/search indexes, OCR text indexing and cross-entity search UX are not s
 Schema V1 establishes conceptual storage coverage for the responsible first product architecture:
 
 - `Workspace`, `User`, `Membership` and stored opaque-token `Invite` boundary;
-- `Object`, `EngineeringSystem`, separate `FolderTree` and folder placements;
-- global company/representative libraries, object-template assignments,
+- `Object`, `DocumentationSection`, separate section-scoped `FolderTree` and
+  folder placements;
+- global company/representative libraries, section-template assignments,
   complete manual snapshots and released participant/output snapshots;
 - object-owned `ProjectDrawingSet`;
 - typed `Document` identity, structured content, validation, locks, autosave and immutable released revisions;
@@ -1379,7 +1383,7 @@ The following are explicitly deferred beyond Database Schema V1:
 - independent approval/version lifecycle for `ProjectDrawingSet`;
 - evidence/scheme/source-file replacement, supersession, retention and legal hold policy;
 - complete document status/approval/signature/ЭЦП workflow;
-- fine-grained object/folder assignments, original-download permissions, support access and commercial entitlements;
+- fine-grained object/section/folder assignments, original-download permissions, support access and commercial entitlements;
 - multi-use invitation first-scope decision, ownership transfer/recovery and cross-workspace copy/export;
 - AI/OCR provider, processing jurisdiction, extraction implementation, privacy consent and real-content processing;
 - CAD/BIM/DWG/DXF integration, legacy document import, full-text search and public API;

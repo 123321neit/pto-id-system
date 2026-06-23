@@ -19,6 +19,12 @@ outputs freeze their exact resolved values separately. Statements below about
 snapshots must be read in that manual/released-output sense; linking an entity
 to an active act does not itself create the canonical working snapshot.
 
+Update 2026-06-23: ADR 0008 supersedes object-level template scope for future
+implementation. Where this ADR says object template as the live working link,
+future implementation should read `SectionTemplate` / `настройки шаблона
+раздела`. Global reusable libraries remain global; section templates store the
+section-specific assignments and links.
+
 ## Context
 
 PTO ID System reuses certificates, organizations and representatives across objects, acts, registries and packages. Earlier conceptual documents already separated structured source data, file-backed evidence, object bindings, typed documents and immutable released outputs, but the reusable boundaries for representatives, organizations and certificates needed a precise rule.

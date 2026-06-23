@@ -5,7 +5,7 @@ Purpose: typed document boundary.
 Owns:
 
 - typed documents;
-- folder-scoped document creation context reads;
+- section/folder-scoped document creation context reads;
 - working and released revision boundaries;
 - finalization lifecycle boundaries;
 - document-source facts that later feed registry, package, and artifact flows.
@@ -22,8 +22,9 @@ Forbidden responsibilities:
 
 Current status: architecture skeleton plus one framework-free, query-only
 `readDocumentCreationContext` application contract. That contract requires an
-explicit allowed workspace access decision before object/folder lookup, supports
-user-defined ID folders, returns approved document types, current
-`ObjectTemplate` summary, live linked resolution chain and proposal-only
-numbering. It does not create a draft, reserve a number, expose HTTP, persist
-data, or implement production AOSR behavior.
+explicit allowed workspace access decision before object/section/folder lookup,
+supports user-defined documentation sections and ID folders, returns approved
+document types, current `SectionTemplate` summary, live linked resolution chain,
+section/folder package scope and proposal-only numbering. It does not create a
+draft, reserve a number, expose HTTP, persist data, or implement production
+AOSR behavior.

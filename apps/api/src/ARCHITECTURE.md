@@ -10,7 +10,7 @@ uploads, package generation, AI/OCR, or domain behavior are introduced.
 | Module           | Owns                                                                                                                                                              | Must not own                                                                                                                                                                                            |
 | ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `workspace`      | Workspace boundary, current actor resolution boundary, admin-path system admin marker boundary, owned workspace owner-check boundary, tenant isolation contracts. | Business documents, evidence, registry rows, generated artifacts, provider adapters, login/session implementation, admin routes, support tenant browsing, business access bypasses, share codes/grants. |
-| `documents`      | Typed documents, folder-scoped document creation context, revisions, and finalization lifecycle boundaries.                                                       | Generated artifacts, package snapshots, certificate originals, executive scheme originals, persistence adapters, transport routes.                                                                      |
+| `documents`      | Typed documents, section/folder-scoped document creation context, revisions, and finalization lifecycle boundaries.                                               | Generated artifacts, package snapshots, certificate originals, executive scheme originals, persistence adapters, transport routes.                                                                      |
 | `evidence`       | Certificates, executive schemes, and file-backed evidence boundaries.                                                                                             | Generated package ownership, typed document source data, registry source facts.                                                                                                                         |
 | `registry`       | Derived registry projections and presentation-only override boundaries.                                                                                           | Source-of-truth fields, document/evidence mutation, package snapshots.                                                                                                                                  |
 | `packages`       | Package build boundary, snapshots, generated artifact ownership, async orchestration contracts.                                                                   | Source document ownership, evidence originals, registry source facts, synchronous package execution.                                                                                                    |
@@ -104,9 +104,10 @@ optional `SYSTEM_ADMIN_ACTOR_ID` config key plus a framework-free workspace
 workspace baseline adds only a TypeScript primitive and owner-only access
 utilities that deny with `NOT_FOUND_OR_NOT_AUTHORIZED`. The documents slice adds
 only a framework-free, query-only `readDocumentCreationContext` contract for
-future folder-scoped document creation reads, with explicit
+future section/folder-scoped document creation reads, with explicit
 access-decision-before-lookup behavior, approved document types,
-`ObjectTemplate` summary and proposal-only numbering. Identity, admin marker
+`SectionTemplate` summary, section/folder package scope and proposal-only
+numbering. Identity, admin marker
 and owned workspace checks do not grant share access, business access bypasses
 or admin support browsing. This status does not implement AOSR, domain Prisma
 models, migrations, CRUD APIs, login/register/session auth, admin routes, admin

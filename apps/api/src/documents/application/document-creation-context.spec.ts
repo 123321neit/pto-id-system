@@ -4,18 +4,19 @@ import {
   createApprovedDocumentTypeId,
   createDocumentFolderId,
   createDocumentObjectId,
+  createDocumentSectionId,
   createDocumentWorkspaceId,
   readDocumentCreationContext,
   type DocumentCreationContextDenialReason,
-  type DocumentCreationObjectWorkspaceRead,
   type DocumentCreationContextReader,
+  type DocumentCreationSectionWorkspaceRead,
   type DocumentCreationWorkspaceAccessDecision,
   type DocumentWorkspaceId,
 } from './document-creation-context.js';
 
 describe('document creation context contract', () => {
-  it('denies a non-owner before reading object or folder details', () => {
-    const { readObjectWorkspace, reader } = createReader(
+  it('denies a non-owner before reading object, section, or folder details', () => {
+    const { readSectionWorkspace, reader } = createReader(
       createDocumentWorkspaceId('workspace_alpha'),
     );
 
@@ -24,6 +25,7 @@ describe('document creation context contract', () => {
       objectId: createDocumentObjectId('object_secret'),
       reader,
       requestedDocumentTypeId: createApprovedDocumentTypeId('AOSR'),
+      sectionId: createDocumentSectionId('section_secret'),
       workspaceAccess: denyWorkspaceAccess(),
     });
 
@@ -31,10 +33,10 @@ describe('document creation context contract', () => {
       reason: 'NOT_FOUND_OR_NOT_AUTHORIZED',
       status: 'denied',
     });
-    expect(readObjectWorkspace).not.toHaveBeenCalled();
+    expect(readSectionWorkspace).not.toHaveBeenCalled();
   });
 
-  it('returns a query-only context for a user-defined ID folder', () => {
+  it('returns a query-only context for a user-defined section and ID folder', () => {
     const workspaceId = createDocumentWorkspaceId('workspace_alpha');
     const { reader } = createReader(workspaceId);
 
@@ -43,6 +45,7 @@ describe('document creation context contract', () => {
       objectId: createDocumentObjectId('object_main'),
       reader,
       requestedDocumentTypeId: createApprovedDocumentTypeId('AOSR'),
+      sectionId: createDocumentSectionId('section_ventilation'),
       workspaceAccess: allowWorkspaceAccess(workspaceId),
     });
 
@@ -52,8 +55,13 @@ describe('document creation context contract', () => {
       return;
     }
 
+    expect(result.context.section).toEqual({
+      sectionId: 'section_ventilation',
+      title: 'Вентиляция',
+    });
     expect(result.context.folder).toEqual({
       folderId: 'folder_vent_camera_a',
+      sectionId: 'section_ventilation',
       title: 'Пусконаладка / венткамера A',
     });
     expect(result.context.selectedDocumentType).toEqual({
@@ -64,9 +72,13 @@ describe('document creation context contract', () => {
     });
     expect(result.context.liveResolutionChain).toEqual([
       'global_libraries',
-      'object_template',
+      'section_template',
       'linked_working_document',
     ]);
+    expect(result.context.idPackageScope).toEqual({
+      finalId: 'section',
+      intermediateId: 'folder',
+    });
     expect(result.context.queryEffects).toEqual({
       createsDraft: false,
       mutatesSequence: false,
@@ -75,7 +87,7 @@ describe('document creation context contract', () => {
     expect(result.context.actions).toEqual(['select_document_type', 'create_document']);
   });
 
-  it('proposes the next number inside the selected folder without reserving it', () => {
+  it('proposes the next number inside the selected section folder without reserving it', () => {
     const workspaceId = createDocumentWorkspaceId('workspace_alpha');
     const { reader } = createReader(workspaceId);
 
@@ -84,6 +96,7 @@ describe('document creation context contract', () => {
       objectId: createDocumentObjectId('object_main'),
       reader,
       requestedDocumentTypeId: createApprovedDocumentTypeId('AOSR'),
+      sectionId: createDocumentSectionId('section_ventilation'),
       workspaceAccess: allowWorkspaceAccess(workspaceId),
     });
 
@@ -102,15 +115,16 @@ describe('document creation context contract', () => {
     });
   });
 
-  it('does not treat another arbitrary folder as a fixed month enum or same numbering scope', () => {
+  it('keeps another section independent even when it has folders with similar names', () => {
     const workspaceId = createDocumentWorkspaceId('workspace_alpha');
     const { reader } = createReader(workspaceId);
 
     const result = readDocumentCreationContext({
-      folderId: createDocumentFolderId('folder_roof_stage'),
+      folderId: createDocumentFolderId('folder_heating_stage_1'),
       objectId: createDocumentObjectId('object_main'),
       reader,
       requestedDocumentTypeId: createApprovedDocumentTypeId('AOSR'),
+      sectionId: createDocumentSectionId('section_heating'),
       workspaceAccess: allowWorkspaceAccess(workspaceId),
     });
 
@@ -120,19 +134,22 @@ describe('document creation context contract', () => {
       return;
     }
 
-    expect(result.context.folder.title).toBe('Кровля — этап 2');
-    expect(result.context.numberingProposal?.formattedNumber).toBe('ОВ-8');
+    expect(result.context.section.title).toBe('Отопление');
+    expect(result.context.folder.title).toBe('Этап 1');
+    expect(result.context.sectionTemplate.sectionTemplateId).toBe('section_template_heating');
+    expect(result.context.numberingProposal?.formattedNumber).toBe('ОТ-8');
   });
 
-  it('denies a missing folder with leakage-safe vocabulary', () => {
+  it('denies a folder that belongs to another section with leakage-safe vocabulary', () => {
     const workspaceId = createDocumentWorkspaceId('workspace_alpha');
     const { reader } = createReader(workspaceId);
 
     expect(
       readDocumentCreationContext({
-        folderId: createDocumentFolderId('folder_not_existing'),
+        folderId: createDocumentFolderId('folder_heating_stage_1'),
         objectId: createDocumentObjectId('object_main'),
         reader,
+        sectionId: createDocumentSectionId('section_ventilation'),
         workspaceAccess: allowWorkspaceAccess(workspaceId),
       }),
     ).toEqual({
@@ -159,86 +176,146 @@ function denyWorkspaceAccess(): DocumentCreationWorkspaceAccessDecision {
 }
 
 function createReader(workspaceId: DocumentWorkspaceId): {
-  readonly readObjectWorkspace: ReturnType<
-    typeof vi.fn<DocumentCreationContextReader['readObjectWorkspace']>
+  readonly readSectionWorkspace: ReturnType<
+    typeof vi.fn<DocumentCreationContextReader['readSectionWorkspace']>
   >;
   readonly reader: DocumentCreationContextReader;
 } {
-  const objectWorkspace: DocumentCreationObjectWorkspaceRead = {
-    approvedDocumentTypes: [
-      {
-        documentTypeId: createApprovedDocumentTypeId('AOSR'),
-        lifecycle: 'approved',
-        registryCode: 'Акт',
-        title: 'АОСР',
+  const sectionWorkspaces: readonly DocumentCreationSectionWorkspaceRead[] = [
+    {
+      approvedDocumentTypes: createApprovedDocumentTypes(),
+      existingDocumentNumbers: [
+        {
+          automaticSequence: 1,
+          documentTypeId: createApprovedDocumentTypeId('AOSR'),
+          folderId: createDocumentFolderId('folder_vent_camera_a'),
+          sectionId: createDocumentSectionId('section_ventilation'),
+        },
+        {
+          automaticSequence: 2,
+          documentTypeId: createApprovedDocumentTypeId('AOSR'),
+          folderId: createDocumentFolderId('folder_vent_camera_a'),
+          sectionId: createDocumentSectionId('section_ventilation'),
+        },
+        {
+          automaticSequence: null,
+          documentTypeId: createApprovedDocumentTypeId('AOSR'),
+          folderId: createDocumentFolderId('folder_vent_camera_a'),
+          sectionId: createDocumentSectionId('section_ventilation'),
+        },
+      ],
+      folders: [
+        {
+          folderId: createDocumentFolderId('folder_vent_camera_a'),
+          sectionId: createDocumentSectionId('section_ventilation'),
+          title: 'Пусконаладка / венткамера A',
+        },
+        {
+          folderId: createDocumentFolderId('folder_vent_floor_2'),
+          sectionId: createDocumentSectionId('section_ventilation'),
+          title: 'Этаж 2',
+        },
+      ],
+      numberingPolicy: {
+        nextSequenceMinimum: 1,
+        prefix: 'ОВ-',
+        scope: 'folder',
+        suffix: '',
       },
-      {
-        documentTypeId: createApprovedDocumentTypeId('TEST_ACT'),
-        lifecycle: 'deferred',
-        registryCode: 'ТА',
-        title: 'Акт испытаний',
+      object: createObject(workspaceId),
+      section: {
+        objectId: createDocumentObjectId('object_main'),
+        sectionId: createDocumentSectionId('section_ventilation'),
+        title: 'Вентиляция',
+        workspaceId,
       },
-    ],
-    existingDocumentNumbers: [
-      {
-        automaticSequence: 1,
-        documentTypeId: createApprovedDocumentTypeId('AOSR'),
-        folderId: createDocumentFolderId('folder_vent_camera_a'),
+      sectionTemplate: {
+        organizationAssignmentCount: 2,
+        repeatedTextKeys: ['projectDocumentation', 'complianceText', 'copies'],
+        representativeAssignmentCount: 4,
+        sectionTemplateId: 'section_template_ventilation',
+        version: 12,
       },
-      {
-        automaticSequence: 2,
-        documentTypeId: createApprovedDocumentTypeId('AOSR'),
-        folderId: createDocumentFolderId('folder_vent_camera_a'),
-      },
-      {
-        automaticSequence: 7,
-        documentTypeId: createApprovedDocumentTypeId('AOSR'),
-        folderId: createDocumentFolderId('folder_roof_stage'),
-      },
-      {
-        automaticSequence: null,
-        documentTypeId: createApprovedDocumentTypeId('AOSR'),
-        folderId: createDocumentFolderId('folder_vent_camera_a'),
-      },
-    ],
-    folders: [
-      {
-        folderId: createDocumentFolderId('folder_vent_camera_a'),
-        title: 'Пусконаладка / венткамера A',
-      },
-      {
-        folderId: createDocumentFolderId('folder_roof_stage'),
-        title: 'Кровля — этап 2',
-      },
-    ],
-    numberingPolicy: {
-      nextSequenceMinimum: 1,
-      prefix: 'ОВ-',
-      scope: 'folder',
-      suffix: '',
     },
-    object: {
-      objectId: createDocumentObjectId('object_main'),
-      title: 'ЖК Северный / корпус 2',
-      workspaceId,
+    {
+      approvedDocumentTypes: createApprovedDocumentTypes(),
+      existingDocumentNumbers: [
+        {
+          automaticSequence: 7,
+          documentTypeId: createApprovedDocumentTypeId('AOSR'),
+          folderId: createDocumentFolderId('folder_heating_stage_1'),
+          sectionId: createDocumentSectionId('section_heating'),
+        },
+      ],
+      folders: [
+        {
+          folderId: createDocumentFolderId('folder_heating_stage_1'),
+          sectionId: createDocumentSectionId('section_heating'),
+          title: 'Этап 1',
+        },
+      ],
+      numberingPolicy: {
+        nextSequenceMinimum: 1,
+        prefix: 'ОТ-',
+        scope: 'section',
+        suffix: '',
+      },
+      object: createObject(workspaceId),
+      section: {
+        objectId: createDocumentObjectId('object_main'),
+        sectionId: createDocumentSectionId('section_heating'),
+        title: 'Отопление',
+        workspaceId,
+      },
+      sectionTemplate: {
+        organizationAssignmentCount: 2,
+        repeatedTextKeys: ['projectDocumentation', 'complianceText', 'copies'],
+        representativeAssignmentCount: 3,
+        sectionTemplateId: 'section_template_heating',
+        version: 4,
+      },
     },
-    objectTemplate: {
-      objectTemplateId: 'object_template_main',
-      organizationAssignmentCount: 2,
-      repeatedTextKeys: ['projectDocumentation', 'complianceText', 'copies'],
-      representativeAssignmentCount: 4,
-      version: 12,
-    },
-  };
+  ];
 
-  const readObjectWorkspace = vi.fn<DocumentCreationContextReader['readObjectWorkspace']>(
-    ({ objectId }) => (objectId === objectWorkspace.object.objectId ? objectWorkspace : null),
+  const readSectionWorkspace = vi.fn<DocumentCreationContextReader['readSectionWorkspace']>(
+    ({ objectId, sectionId }) =>
+      sectionWorkspaces.find(
+        (workspace) =>
+          workspace.object.objectId === objectId && workspace.section.sectionId === sectionId,
+      ) ?? null,
   );
 
   return {
-    readObjectWorkspace,
+    readSectionWorkspace,
     reader: {
-      readObjectWorkspace,
+      readSectionWorkspace,
     },
+  };
+}
+
+function createApprovedDocumentTypes(): DocumentCreationSectionWorkspaceRead['approvedDocumentTypes'] {
+  return [
+    {
+      documentTypeId: createApprovedDocumentTypeId('AOSR'),
+      lifecycle: 'approved',
+      registryCode: 'Акт',
+      title: 'АОСР',
+    },
+    {
+      documentTypeId: createApprovedDocumentTypeId('TEST_ACT'),
+      lifecycle: 'deferred',
+      registryCode: 'ТА',
+      title: 'Акт испытаний',
+    },
+  ];
+}
+
+function createObject(
+  workspaceId: DocumentWorkspaceId,
+): DocumentCreationSectionWorkspaceRead['object'] {
+  return {
+    objectId: createDocumentObjectId('object_main'),
+    title: 'ЖК Северный / корпус 2',
+    workspaceId,
   };
 }

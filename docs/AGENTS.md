@@ -15,8 +15,9 @@
 9. `docs/adr/0005-modular-monolith-and-bounded-contexts.md`
 10. `docs/adr/0006-global-reusable-libraries-and-act-snapshots.md`
 11. `docs/adr/0007-document-defaults-suggestions-and-controlled-updates.md`
-12. `docs/samples/registry-ventilation-example.md`
-13. `docs/samples/aosr-example-analysis.md`
+12. `docs/adr/0008-section-scoped-id-and-section-templates.md`
+13. `docs/samples/registry-ventilation-example.md`
+14. `docs/samples/aosr-example-analysis.md`
 
 ---
 
@@ -41,14 +42,20 @@
 17. Не делать object-owned certificate/organization/representative libraries.
 18. Не принимать free-text signatories, organizations or certificates as final act data.
 19. Разрешать изменениям глобальных reusable libraries обновлять только active
-    `linked` acts через `ObjectTemplate`; не позволять им менять manual acts,
+    `linked` acts через `SectionTemplate`; не позволять им менять manual acts,
     released revisions или issued packages.
 20. Не копировать template-owned defaults в каждый linked act и не создавать
     partial overrides: working act либо полностью `linked`, либо полностью
     `manual` с одним complete snapshot.
 21. Не превращать предложенную или автоматическую нумерацию в обязательное ограничение.
 22. Не трактовать папки ИД как фиксированный набор месяцев или периодов:
-    пользователь задаёт произвольное имя папки, а список папок принадлежит объекту.
+    пользователь задаёт произвольное имя папки, а список папок принадлежит
+    выбранному разделу ИД.
+23. Не проектировать будущий рабочий шаблон актов как object-level
+    `ObjectTemplate`: ADR 0008 переносит его на `SectionTemplate` /
+    `настройки шаблона раздела`.
+24. Не собирать итоговую ИД по объекту по умолчанию: canonical final ID scope
+    is one user-defined documentation section.
 
 ---
 
@@ -70,7 +77,7 @@
 Текущий этап:
 
 ```text
-First allowed infrastructure/bootstrap scaffold accepted; canonical ADR baseline accepted; backend module architecture skeleton introduced; first technical frontend-backend status slice introduced; database foundation technical slice introduced; object storage foundation technical slice introduced; auth sharing implementation plan added; user identity skeleton introduced; global system admin marker introduced; owned workspace baseline introduced; future ObjectTemplate backend contract documented; document creation context backend contract slice introduced
+First allowed infrastructure/bootstrap scaffold accepted; canonical ADR baseline accepted; backend module architecture skeleton introduced; first technical frontend-backend status slice introduced; database foundation technical slice introduced; object storage foundation technical slice introduced; auth sharing implementation plan added; user identity skeleton introduced; global system admin marker introduced; owned workspace baseline introduced; future SectionTemplate backend contract documented; document creation context backend contract slice introduced; ADR 0008 section-scoped ID accepted
 ```
 
 Разрешённый scaffold ограничен:
@@ -120,8 +127,9 @@ First allowed infrastructure/bootstrap scaffold accepted; canonical ADR baseline
 - document creation context backend contract slice:
   framework-free `documents` application read contract for
   `read_document_creation_context`. It requires an explicit allowed workspace
-  access decision before object/folder lookup, supports user-defined ID folders,
-  approved document type reads, current `ObjectTemplate` summary and
+  access decision before object/section/folder lookup, supports user-defined
+  documentation sections, user-defined ID folders, approved document type
+  reads, current `SectionTemplate` summary, section/folder package scope and
   proposal-only numbering. It has no Nest controller, HTTP route, DTO
   serialization, OpenAPI, Prisma model/schema, migration, repository,
   persistence adapter, draft creation, number reservation or production document
@@ -231,7 +239,7 @@ Privacy/data-processing policy, access to project originals and concrete AI proc
 
 - editable-through-revision `final` documents и immutable historical revisions;
 - `Certificate`/`ExecutiveScheme` lifecycles и file-backed evidence protection;
-- object/folder numbering, renumber, move and folder-clone strategies;
+- section/folder numbering, renumber, move and folder-clone strategies;
 - `ERROR`/`WARNING` gates и certificate validation by document date;
 - presentation-only `RegistryOverride`;
 - async deterministic package snapshots и dependency manifest;
@@ -243,8 +251,9 @@ Privacy/data-processing policy, access to project originals and concrete AI proc
 - modular monolith first и domain-first application modules;
 - explicit command families без CRUD-first API;
 - UI-oriented read models для АОСР, сертификатов, схем, реестра, комплекта и AI review;
-- future `ObjectTemplate`, user-defined ID folders, folder-scoped document
-  creation, numbering proposal and linked/manual АОСР command boundaries;
+- future `SectionTemplate`, user-defined sections, user-defined ID folders,
+  section/folder-scoped document creation, numbering proposal and linked/manual
+  АОСР command boundaries;
 - atomic revision/snapshot boundaries, eventual derived work, optimistic versioning and idempotency;
 - backend-authoritative validation, workspace authorization и async package/artifact/AI flows.
 
@@ -252,9 +261,9 @@ Privacy/data-processing policy, access to project originals and concrete AI proc
 
 - common command envelope, results, named errors and async operation outcome;
 - expected-version and idempotency rules для mutable/dangerous commands;
-- `ObjectTemplate` command/read contracts for repeated object-level print
-  values, global-library assignments, manual snapshot transition and folder
-  creation context;
+- `SectionTemplate` command/read contracts for repeated section-level print
+  values, global-library assignments, manual snapshot transition, template
+  copy and section/folder creation context;
 - typed document, folder/numbering, evidence, registry, package, artifact, AI/OCR and invite command semantics;
 - screen-specific read models and validation finding contract;
 - workspace/object authorization scope and leakage protection.
@@ -291,7 +300,7 @@ Privacy/data-processing policy, access to project originals and concrete AI proc
 - Foreman active permissions are blocked without separate approval;
 - first AOSR template participant requirements must not be hardcoded before template review.
 
-Открытыми остаются exact first AOSR template baseline/participant requirements, retention/privacy/share-grant details, physical migrations/ORM schema/OpenAPI and production implementation. Зафиксированный ObjectTemplate contract now has only one narrow framework-free `read_document_creation_context` application slice. It must not be interpreted as approval to implement routes, controllers, DTO serialization, OpenAPI, Prisma/domain schema, migrations, repositories, queues, storage, renderer, draft creation, number reservation or persistence mapping.
+Открытыми остаются exact first AOSR template baseline/participant requirements, retention/privacy/share-grant details, physical migrations/ORM schema/OpenAPI and production implementation. Зафиксированный SectionTemplate contract now has only one narrow framework-free `read_document_creation_context` application slice. It must not be interpreted as approval to implement routes, controllers, DTO serialization, OpenAPI, Prisma/domain schema, migrations, repositories, queues, storage, renderer, draft creation, number reservation or persistence mapping.
 
 Следующий отдельный implementation task должен проверяться против:
 

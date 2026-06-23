@@ -14,6 +14,10 @@ export type DocumentObjectId = string & {
   readonly __documentObjectId: 'DocumentObjectId';
 };
 
+export type DocumentSectionId = string & {
+  readonly __documentSectionId: 'DocumentSectionId';
+};
+
 export type DocumentWorkspaceId = string & {
   readonly __documentWorkspaceId: 'DocumentWorkspaceId';
 };
@@ -30,6 +34,7 @@ export type DocumentCreationWorkspaceAccessDecision =
 
 export interface UserDefinedDocumentFolder {
   readonly folderId: DocumentFolderId;
+  readonly sectionId: DocumentSectionId;
   readonly title: string;
 }
 
@@ -40,18 +45,18 @@ export interface ApprovedDocumentType {
   readonly title: string;
 }
 
-export interface ObjectTemplateCreationSummary {
-  readonly objectTemplateId: string;
+export interface SectionTemplateCreationSummary {
   readonly organizationAssignmentCount: number;
   readonly repeatedTextKeys: readonly string[];
   readonly representativeAssignmentCount: number;
+  readonly sectionTemplateId: string;
   readonly version: number;
 }
 
 export interface DocumentNumberingPolicy {
   readonly nextSequenceMinimum: number;
   readonly prefix: string;
-  readonly scope: 'folder' | 'object';
+  readonly scope: 'folder' | 'section';
   readonly suffix: string;
 }
 
@@ -59,9 +64,10 @@ export interface ExistingDocumentNumber {
   readonly automaticSequence: number | null;
   readonly documentTypeId: ApprovedDocumentTypeId;
   readonly folderId: DocumentFolderId;
+  readonly sectionId: DocumentSectionId;
 }
 
-export interface DocumentCreationObjectWorkspaceRead {
+export interface DocumentCreationSectionWorkspaceRead {
   readonly approvedDocumentTypes: readonly ApprovedDocumentType[];
   readonly existingDocumentNumbers: readonly ExistingDocumentNumber[];
   readonly folders: readonly UserDefinedDocumentFolder[];
@@ -71,14 +77,21 @@ export interface DocumentCreationObjectWorkspaceRead {
     readonly title: string;
     readonly workspaceId: DocumentWorkspaceId;
   };
-  readonly objectTemplate: ObjectTemplateCreationSummary;
+  readonly section: {
+    readonly objectId: DocumentObjectId;
+    readonly sectionId: DocumentSectionId;
+    readonly title: string;
+    readonly workspaceId: DocumentWorkspaceId;
+  };
+  readonly sectionTemplate: SectionTemplateCreationSummary;
 }
 
 export interface DocumentCreationContextReader {
-  readObjectWorkspace(input: {
+  readSectionWorkspace(input: {
     readonly objectId: DocumentObjectId;
+    readonly sectionId: DocumentSectionId;
     readonly workspaceId: DocumentWorkspaceId;
-  }): DocumentCreationObjectWorkspaceRead | null;
+  }): DocumentCreationSectionWorkspaceRead | null;
 }
 
 export interface ReadDocumentCreationContextInput {
@@ -86,6 +99,7 @@ export interface ReadDocumentCreationContextInput {
   readonly objectId: DocumentObjectId;
   readonly reader: DocumentCreationContextReader;
   readonly requestedDocumentTypeId?: ApprovedDocumentTypeId;
+  readonly sectionId: DocumentSectionId;
   readonly workspaceAccess: DocumentCreationWorkspaceAccessDecision;
 }
 
@@ -101,9 +115,13 @@ export interface DocumentCreationContextReadModel {
   readonly actions: readonly ('create_document' | 'select_document_type')[];
   readonly approvedDocumentTypes: readonly ApprovedDocumentType[];
   readonly folder: UserDefinedDocumentFolder;
+  readonly idPackageScope: {
+    readonly finalId: 'section';
+    readonly intermediateId: 'folder';
+  };
   readonly liveResolutionChain: readonly [
     'global_libraries',
-    'object_template',
+    'section_template',
     'linked_working_document',
   ];
   readonly numberingProposal: DocumentCreationNumberingProposal | null;
@@ -111,12 +129,16 @@ export interface DocumentCreationContextReadModel {
     readonly objectId: DocumentObjectId;
     readonly title: string;
   };
-  readonly objectTemplate: ObjectTemplateCreationSummary;
   readonly queryEffects: {
     readonly createsDraft: false;
     readonly mutatesSequence: false;
     readonly reservesNumber: false;
   };
+  readonly section: {
+    readonly sectionId: DocumentSectionId;
+    readonly title: string;
+  };
+  readonly sectionTemplate: SectionTemplateCreationSummary;
   readonly selectedDocumentType: ApprovedDocumentType | null;
 }
 
@@ -145,6 +167,10 @@ export function createDocumentObjectId(value: string): DocumentObjectId {
   return createNonEmptyId(value, 'Document object id') as DocumentObjectId;
 }
 
+export function createDocumentSectionId(value: string): DocumentSectionId {
+  return createNonEmptyId(value, 'Document section id') as DocumentSectionId;
+}
+
 export function createDocumentWorkspaceId(value: string): DocumentWorkspaceId {
   return createNonEmptyId(value, 'Document workspace id') as DocumentWorkspaceId;
 }
@@ -156,28 +182,35 @@ export function readDocumentCreationContext(
     return denyDocumentCreationContext();
   }
 
-  const objectWorkspace = input.reader.readObjectWorkspace({
+  const sectionWorkspace = input.reader.readSectionWorkspace({
     objectId: input.objectId,
+    sectionId: input.sectionId,
     workspaceId: input.workspaceAccess.workspaceId,
   });
 
-  if (objectWorkspace?.object.workspaceId !== input.workspaceAccess.workspaceId) {
+  if (sectionWorkspace?.object.workspaceId !== input.workspaceAccess.workspaceId) {
     return denyDocumentCreationContext();
   }
 
-  if (objectWorkspace.object.objectId !== input.objectId) {
+  if (
+    sectionWorkspace.object.objectId !== input.objectId ||
+    sectionWorkspace.section.objectId !== input.objectId ||
+    sectionWorkspace.section.sectionId !== input.sectionId ||
+    sectionWorkspace.section.workspaceId !== input.workspaceAccess.workspaceId
+  ) {
     return denyDocumentCreationContext();
   }
 
-  const folder = objectWorkspace.folders.find(
-    (candidateFolder) => candidateFolder.folderId === input.folderId,
+  const folder = sectionWorkspace.folders.find(
+    (candidateFolder) =>
+      candidateFolder.folderId === input.folderId && candidateFolder.sectionId === input.sectionId,
   );
 
   if (folder === undefined) {
     return denyDocumentCreationContext();
   }
 
-  const approvedDocumentTypes = objectWorkspace.approvedDocumentTypes.filter(
+  const approvedDocumentTypes = sectionWorkspace.approvedDocumentTypes.filter(
     (documentType) => documentType.lifecycle === 'approved',
   );
   const selectedDocumentType =
@@ -203,26 +236,35 @@ export function readDocumentCreationContext(
             : ['select_document_type', 'create_document'],
       approvedDocumentTypes,
       folder,
-      liveResolutionChain: ['global_libraries', 'object_template', 'linked_working_document'],
+      idPackageScope: {
+        finalId: 'section',
+        intermediateId: 'folder',
+      },
+      liveResolutionChain: ['global_libraries', 'section_template', 'linked_working_document'],
       numberingProposal:
         proposalDocumentType === null
           ? null
           : createNumberingProposal({
               documentTypeId: proposalDocumentType.documentTypeId,
-              existingNumbers: objectWorkspace.existingDocumentNumbers,
+              existingNumbers: sectionWorkspace.existingDocumentNumbers,
               folderId: folder.folderId,
-              policy: objectWorkspace.numberingPolicy,
+              policy: sectionWorkspace.numberingPolicy,
+              sectionId: input.sectionId,
             }),
       object: {
-        objectId: objectWorkspace.object.objectId,
-        title: objectWorkspace.object.title,
+        objectId: sectionWorkspace.object.objectId,
+        title: sectionWorkspace.object.title,
       },
-      objectTemplate: objectWorkspace.objectTemplate,
       queryEffects: {
         createsDraft: false,
         mutatesSequence: false,
         reservesNumber: false,
       },
+      section: {
+        sectionId: sectionWorkspace.section.sectionId,
+        title: sectionWorkspace.section.title,
+      },
+      sectionTemplate: sectionWorkspace.sectionTemplate,
       selectedDocumentType,
     },
     status: 'allowed',
@@ -234,12 +276,14 @@ function createNumberingProposal(input: {
   readonly existingNumbers: readonly ExistingDocumentNumber[];
   readonly folderId: DocumentFolderId;
   readonly policy: DocumentNumberingPolicy;
+  readonly sectionId: DocumentSectionId;
 }): DocumentCreationNumberingProposal {
   const existingSequences = input.existingNumbers
     .filter((existingNumber) => existingNumber.documentTypeId === input.documentTypeId)
+    .filter((existingNumber) => existingNumber.sectionId === input.sectionId)
     .filter(
       (existingNumber) =>
-        input.policy.scope === 'object' || existingNumber.folderId === input.folderId,
+        input.policy.scope === 'section' || existingNumber.folderId === input.folderId,
     )
     .map((existingNumber) => existingNumber.automaticSequence)
     .filter((sequence): sequence is number => sequence !== null);

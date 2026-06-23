@@ -10,6 +10,14 @@ Accepted.
 
 This ADR supersedes the 2026-06-16 decision that treated printable object defaults as document-owned copies after creation. The previous rule protected historical output, but it made ordinary working acts stale too early and encouraged partial field-level overrides. The accepted model is now explicit: working acts can stay live-linked until the user chooses a full manual snapshot, while issued packages remain frozen separately.
 
+Amendment, 2026-06-23: ADR 0008 supersedes the object-level template scope for
+future implementation. Where this ADR says `ObjectTemplate`, future
+implementation should read `SectionTemplate` / `настройки шаблона раздела`:
+linked acts resolve through
+`global libraries -> SectionTemplate -> linked act`, and final ID is section
+scoped. The linked/manual/released snapshot rules in this ADR remain
+authoritative.
+
 This ADR does not introduce Prisma schema, migrations, API routes, backend behavior, auth, uploads, OCR/AI, DOCX/PDF/ZIP generation or production package release implementation. The current frontend mock may implement the model in memory only.
 
 ## Context

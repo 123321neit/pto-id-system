@@ -6,9 +6,9 @@
 
 # MASTER CONTEXT / SOURCE OF TRUTH
 
-# VERSION: 2026-06-23-DOCUMENT-CREATION-CONTEXT-BACKEND-SLICE
+# VERSION: 2026-06-23-SECTION-SCOPED-ID-AND-SECTION-TEMPLATE
 
-# STATUS: FIRST ALLOWED INFRASTRUCTURE BOOTSTRAP SCAFFOLD; CANONICAL ADR BASELINE ACCEPTED; BACKEND MODULE ARCHITECTURE SKELETON INTRODUCED; FIRST TECHNICAL FRONTEND-BACKEND STATUS SLICE INTRODUCED; DATABASE FOUNDATION TECHNICAL SLICE INTRODUCED; OBJECT STORAGE FOUNDATION TECHNICAL SLICE INTRODUCED; AUTH SHARING IMPLEMENTATION PLAN ADDED; USER IDENTITY SKELETON INTRODUCED; GLOBAL SYSTEM ADMIN MARKER INTRODUCED; OWNED WORKSPACE BASELINE INTRODUCED; FIRST MOCK AOSR DEMO UI SLICE INTRODUCED; MOCK AOSR CONFIGURABLE OBJECT HEADER ORGANIZATIONS AND REPRESENTATIVE LIBRARY INTRODUCED; MOCK AOSR DEMO UX/PREVIEW REFINED; MOCK APP SHELL AND OBJECT DASHBOARD INTRODUCED; FRONTEND-ONLY MOCK REPRESENTATIVES/ORGANIZATIONS MANAGEMENT PAGE INTRODUCED; FRONTEND-ONLY MOCK CERTIFICATE LIBRARY PAGE INTRODUCED; STAGE 5 MOCK AOSR WORKSPACE UX STABILIZED; AOSR EDITOR UX CLEANUP INTRODUCED; AOSR WORKSPACE DRAWER UX INTRODUCED; FRONTEND-ONLY MOCK OBJECT DOCUMENT LIBRARY INTRODUCED; AOSR WORKSPACE APPLICATIONS UX CLEANUP INTRODUCED; FRONTEND-ONLY MOCK OBJECT COMPLIANCE DEFAULTS AND ACT OVERRIDES INTRODUCED; FRONTEND-ONLY MOCK OBJECT WORKSPACE VISUAL PASS INTRODUCED; FRONTEND-ONLY MOCK OBJECT WORKSPACE SHELL INTRODUCED; AOSR DOCUMENT PREVIEW DRAWER UX INTRODUCED; AOSR DOCUMENT PREVIEW PAGE VISUALIZATION REFINED; FRONTEND-ONLY OBJECT DOCUMENT WORKSPACE INTRODUCED; FRONTEND-ONLY OBJECT CERTIFICATE WORKSPACE INTRODUCED; FRONTEND-ONLY ID REGISTRY V1 INTRODUCED; FRONTEND-ONLY FINAL ID PACKAGE MOCK INTRODUCED; FRONTEND-ONLY ACT TYPE METADATA PREP INTRODUCED; AOSR READINESS PANEL V1 INTRODUCED; FINAL PACKAGE READINESS V1 INTRODUCED; FRONTEND-ONLY OBJECT WORKSPACE UX HIERARCHY POLISH INTRODUCED; FRONTEND-ONLY OBJECT OVERVIEW AND GLOBAL CERTIFICATE ARCHITECTURE UX CORRECTION INTRODUCED; GLOBAL REUSABLE LIBRARIES AND ACT SNAPSHOTS ADR ACCEPTED; FRONTEND-ONLY PERIOD-FIRST OBJECT WORKSPACE MOCK INTRODUCED; FRONTEND-ONLY PERIOD-SCOPED AOSR CREATION MOCK INTRODUCED; FRONTEND-ONLY AOSR MANUAL NUMBER OVERRIDE MOCK INTRODUCED; FRONTEND-ONLY OBJECT WORKSPACE PREMIUM UX POLISH INTRODUCED; FRONTEND-ONLY GENERATED ID PACKAGE VIEWS UX INTRODUCED; FRONTEND-ONLY PRINT-ORDER AOSR EDITOR UX INTRODUCED; FRONTEND-ONLY UX OVERLOAD CLEANUP INTRODUCED; FRONTEND-ONLY RADICAL UX CLEANUP INTRODUCED; FRONTEND-ONLY PERIOD DOCUMENT UX CLEANUP INTRODUCED; FRONTEND-ONLY DOCUMENT DEFAULT PARAMETERS AND DOCUMENT-OWNED AOSR TEXTS INTRODUCED; FRONTEND-ONLY AOSR PRINTABLE DEFAULT SNAPSHOTS EXTENDED; LIVE OBJECT TEMPLATE LINKS AND MANUAL ACT SNAPSHOTS ACCEPTED; FRONTEND-ONLY OBJECT TEMPLATE UX SUMMARY INTRODUCED; FUTURE OBJECT TEMPLATE BACKEND CONTRACT DOCUMENTED; DOCUMENT CREATION CONTEXT BACKEND CONTRACT SLICE INTRODUCED
+# STATUS: FIRST ALLOWED INFRASTRUCTURE BOOTSTRAP SCAFFOLD; CANONICAL ADR BASELINE ACCEPTED; BACKEND MODULE ARCHITECTURE SKELETON INTRODUCED; FIRST TECHNICAL FRONTEND-BACKEND STATUS SLICE INTRODUCED; DATABASE FOUNDATION TECHNICAL SLICE INTRODUCED; OBJECT STORAGE FOUNDATION TECHNICAL SLICE INTRODUCED; AUTH SHARING IMPLEMENTATION PLAN ADDED; USER IDENTITY SKELETON INTRODUCED; GLOBAL SYSTEM ADMIN MARKER INTRODUCED; OWNED WORKSPACE BASELINE INTRODUCED; FIRST MOCK AOSR DEMO UI SLICE INTRODUCED; MOCK AOSR CONFIGURABLE OBJECT HEADER ORGANIZATIONS AND REPRESENTATIVE LIBRARY INTRODUCED; MOCK AOSR DEMO UX/PREVIEW REFINED; MOCK APP SHELL AND OBJECT DASHBOARD INTRODUCED; FRONTEND-ONLY MOCK REPRESENTATIVES/ORGANIZATIONS MANAGEMENT PAGE INTRODUCED; FRONTEND-ONLY MOCK CERTIFICATE LIBRARY PAGE INTRODUCED; STAGE 5 MOCK AOSR WORKSPACE UX STABILIZED; AOSR EDITOR UX CLEANUP INTRODUCED; AOSR WORKSPACE DRAWER UX INTRODUCED; FRONTEND-ONLY MOCK OBJECT DOCUMENT LIBRARY INTRODUCED; AOSR WORKSPACE APPLICATIONS UX CLEANUP INTRODUCED; FRONTEND-ONLY MOCK OBJECT COMPLIANCE DEFAULTS AND ACT OVERRIDES INTRODUCED; FRONTEND-ONLY MOCK OBJECT WORKSPACE VISUAL PASS INTRODUCED; FRONTEND-ONLY MOCK OBJECT WORKSPACE SHELL INTRODUCED; AOSR DOCUMENT PREVIEW DRAWER UX INTRODUCED; AOSR DOCUMENT PREVIEW PAGE VISUALIZATION REFINED; FRONTEND-ONLY OBJECT DOCUMENT WORKSPACE INTRODUCED; FRONTEND-ONLY OBJECT CERTIFICATE WORKSPACE INTRODUCED; FRONTEND-ONLY ID REGISTRY V1 INTRODUCED; FRONTEND-ONLY FINAL ID PACKAGE MOCK INTRODUCED; FRONTEND-ONLY ACT TYPE METADATA PREP INTRODUCED; AOSR READINESS PANEL V1 INTRODUCED; FINAL PACKAGE READINESS V1 INTRODUCED; FRONTEND-ONLY OBJECT WORKSPACE UX HIERARCHY POLISH INTRODUCED; FRONTEND-ONLY OBJECT OVERVIEW AND GLOBAL CERTIFICATE ARCHITECTURE UX CORRECTION INTRODUCED; GLOBAL REUSABLE LIBRARIES AND ACT SNAPSHOTS ADR ACCEPTED; FRONTEND-ONLY PERIOD-FIRST OBJECT WORKSPACE MOCK INTRODUCED; FRONTEND-ONLY PERIOD-SCOPED AOSR CREATION MOCK INTRODUCED; FRONTEND-ONLY AOSR MANUAL NUMBER OVERRIDE MOCK INTRODUCED; FRONTEND-ONLY OBJECT WORKSPACE PREMIUM UX POLISH INTRODUCED; FRONTEND-ONLY GENERATED ID PACKAGE VIEWS UX INTRODUCED; FRONTEND-ONLY PRINT-ORDER AOSR EDITOR UX INTRODUCED; FRONTEND-ONLY UX OVERLOAD CLEANUP INTRODUCED; FRONTEND-ONLY RADICAL UX CLEANUP INTRODUCED; FRONTEND-ONLY PERIOD DOCUMENT UX CLEANUP INTRODUCED; FRONTEND-ONLY DOCUMENT DEFAULT PARAMETERS AND DOCUMENT-OWNED AOSR TEXTS INTRODUCED; FRONTEND-ONLY AOSR PRINTABLE DEFAULT SNAPSHOTS EXTENDED; LIVE OBJECT TEMPLATE LINKS AND MANUAL ACT SNAPSHOTS ACCEPTED; FRONTEND-ONLY OBJECT TEMPLATE UX SUMMARY INTRODUCED; FUTURE SECTION TEMPLATE BACKEND CONTRACT DOCUMENTED; DOCUMENT CREATION CONTEXT BACKEND CONTRACT SLICE INTRODUCED; ADR 0008 SECTION-SCOPED ID ACCEPTED
 
 # LANGUAGE: RU
 
@@ -31,7 +31,7 @@
 Текущая стадия проекта:
 
 ```text
-FIRST ALLOWED INFRASTRUCTURE BOOTSTRAP SCAFFOLD; CANONICAL ADR BASELINE ACCEPTED; BACKEND MODULE ARCHITECTURE SKELETON INTRODUCED; FIRST TECHNICAL FRONTEND-BACKEND STATUS SLICE INTRODUCED; DATABASE FOUNDATION TECHNICAL SLICE INTRODUCED; OBJECT STORAGE FOUNDATION TECHNICAL SLICE INTRODUCED; AUTH SHARING IMPLEMENTATION PLAN ADDED; USER IDENTITY SKELETON INTRODUCED; GLOBAL SYSTEM ADMIN MARKER INTRODUCED; OWNED WORKSPACE BASELINE INTRODUCED; FIRST MOCK AOSR DEMO UI SLICE INTRODUCED; MOCK AOSR CONFIGURABLE OBJECT HEADER ORGANIZATIONS AND REPRESENTATIVE LIBRARY INTRODUCED; MOCK AOSR DEMO UX/PREVIEW REFINED; MOCK APP SHELL AND OBJECT DASHBOARD INTRODUCED; FRONTEND-ONLY MOCK REPRESENTATIVES/ORGANIZATIONS MANAGEMENT PAGE INTRODUCED; FRONTEND-ONLY MOCK CERTIFICATE LIBRARY PAGE INTRODUCED; STAGE 5 MOCK AOSR WORKSPACE UX STABILIZED; AOSR EDITOR UX CLEANUP INTRODUCED; AOSR WORKSPACE DRAWER UX INTRODUCED; FRONTEND-ONLY MOCK OBJECT DOCUMENT LIBRARY INTRODUCED; AOSR WORKSPACE APPLICATIONS UX CLEANUP INTRODUCED; FRONTEND-ONLY MOCK OBJECT COMPLIANCE DEFAULTS AND ACT OVERRIDES INTRODUCED; FRONTEND-ONLY MOCK OBJECT WORKSPACE VISUAL PASS INTRODUCED; FRONTEND-ONLY MOCK OBJECT WORKSPACE SHELL INTRODUCED; AOSR DOCUMENT PREVIEW DRAWER UX INTRODUCED; AOSR DOCUMENT PREVIEW PAGE VISUALIZATION REFINED; FRONTEND-ONLY OBJECT DOCUMENT WORKSPACE INTRODUCED; FRONTEND-ONLY OBJECT CERTIFICATE WORKSPACE INTRODUCED; FRONTEND-ONLY ID REGISTRY V1 INTRODUCED; FRONTEND-ONLY FINAL ID PACKAGE MOCK INTRODUCED; FRONTEND-ONLY ACT TYPE METADATA PREP INTRODUCED; AOSR READINESS PANEL V1 INTRODUCED; FINAL PACKAGE READINESS V1 INTRODUCED; FRONTEND-ONLY OBJECT WORKSPACE UX HIERARCHY POLISH INTRODUCED; FRONTEND-ONLY OBJECT OVERVIEW AND GLOBAL CERTIFICATE ARCHITECTURE UX CORRECTION INTRODUCED; GLOBAL REUSABLE LIBRARIES AND ACT SNAPSHOTS ADR ACCEPTED; FRONTEND-ONLY PERIOD-FIRST OBJECT WORKSPACE MOCK INTRODUCED; FRONTEND-ONLY PERIOD-SCOPED AOSR CREATION MOCK INTRODUCED; FRONTEND-ONLY AOSR MANUAL NUMBER OVERRIDE MOCK INTRODUCED; FRONTEND-ONLY OBJECT WORKSPACE PREMIUM UX POLISH INTRODUCED; FRONTEND-ONLY GENERATED ID PACKAGE VIEWS UX INTRODUCED; FRONTEND-ONLY PRINT-ORDER AOSR EDITOR UX INTRODUCED; FRONTEND-ONLY UX OVERLOAD CLEANUP INTRODUCED; FRONTEND-ONLY RADICAL UX CLEANUP INTRODUCED; FRONTEND-ONLY PERIOD DOCUMENT UX CLEANUP INTRODUCED; FRONTEND-ONLY DOCUMENT DEFAULT PARAMETERS AND DOCUMENT-OWNED AOSR TEXTS INTRODUCED; FRONTEND-ONLY AOSR PRINTABLE DEFAULT SNAPSHOTS EXTENDED; LIVE OBJECT TEMPLATE LINKS AND MANUAL ACT SNAPSHOTS ACCEPTED; FRONTEND-ONLY OBJECT TEMPLATE UX SUMMARY INTRODUCED; FUTURE OBJECT TEMPLATE BACKEND CONTRACT DOCUMENTED; DOCUMENT CREATION CONTEXT BACKEND CONTRACT SLICE INTRODUCED
+FIRST ALLOWED INFRASTRUCTURE BOOTSTRAP SCAFFOLD; CANONICAL ADR BASELINE ACCEPTED; BACKEND MODULE ARCHITECTURE SKELETON INTRODUCED; FIRST TECHNICAL FRONTEND-BACKEND STATUS SLICE INTRODUCED; DATABASE FOUNDATION TECHNICAL SLICE INTRODUCED; OBJECT STORAGE FOUNDATION TECHNICAL SLICE INTRODUCED; AUTH SHARING IMPLEMENTATION PLAN ADDED; USER IDENTITY SKELETON INTRODUCED; GLOBAL SYSTEM ADMIN MARKER INTRODUCED; OWNED WORKSPACE BASELINE INTRODUCED; FIRST MOCK AOSR DEMO UI SLICE INTRODUCED; MOCK AOSR CONFIGURABLE OBJECT HEADER ORGANIZATIONS AND REPRESENTATIVE LIBRARY INTRODUCED; MOCK AOSR DEMO UX/PREVIEW REFINED; MOCK APP SHELL AND OBJECT DASHBOARD INTRODUCED; FRONTEND-ONLY MOCK REPRESENTATIVES/ORGANIZATIONS MANAGEMENT PAGE INTRODUCED; FRONTEND-ONLY MOCK CERTIFICATE LIBRARY PAGE INTRODUCED; STAGE 5 MOCK AOSR WORKSPACE UX STABILIZED; AOSR EDITOR UX CLEANUP INTRODUCED; AOSR WORKSPACE DRAWER UX INTRODUCED; FRONTEND-ONLY MOCK OBJECT DOCUMENT LIBRARY INTRODUCED; AOSR WORKSPACE APPLICATIONS UX CLEANUP INTRODUCED; FRONTEND-ONLY MOCK OBJECT COMPLIANCE DEFAULTS AND ACT OVERRIDES INTRODUCED; FRONTEND-ONLY MOCK OBJECT WORKSPACE VISUAL PASS INTRODUCED; FRONTEND-ONLY MOCK OBJECT WORKSPACE SHELL INTRODUCED; AOSR DOCUMENT PREVIEW DRAWER UX INTRODUCED; AOSR DOCUMENT PREVIEW PAGE VISUALIZATION REFINED; FRONTEND-ONLY OBJECT DOCUMENT WORKSPACE INTRODUCED; FRONTEND-ONLY OBJECT CERTIFICATE WORKSPACE INTRODUCED; FRONTEND-ONLY ID REGISTRY V1 INTRODUCED; FRONTEND-ONLY FINAL ID PACKAGE MOCK INTRODUCED; FRONTEND-ONLY ACT TYPE METADATA PREP INTRODUCED; AOSR READINESS PANEL V1 INTRODUCED; FINAL PACKAGE READINESS V1 INTRODUCED; FRONTEND-ONLY OBJECT WORKSPACE UX HIERARCHY POLISH INTRODUCED; FRONTEND-ONLY OBJECT OVERVIEW AND GLOBAL CERTIFICATE ARCHITECTURE UX CORRECTION INTRODUCED; GLOBAL REUSABLE LIBRARIES AND ACT SNAPSHOTS ADR ACCEPTED; FRONTEND-ONLY PERIOD-FIRST OBJECT WORKSPACE MOCK INTRODUCED; FRONTEND-ONLY PERIOD-SCOPED AOSR CREATION MOCK INTRODUCED; FRONTEND-ONLY AOSR MANUAL NUMBER OVERRIDE MOCK INTRODUCED; FRONTEND-ONLY OBJECT WORKSPACE PREMIUM UX POLISH INTRODUCED; FRONTEND-ONLY GENERATED ID PACKAGE VIEWS UX INTRODUCED; FRONTEND-ONLY PRINT-ORDER AOSR EDITOR UX INTRODUCED; FRONTEND-ONLY UX OVERLOAD CLEANUP INTRODUCED; FRONTEND-ONLY RADICAL UX CLEANUP INTRODUCED; FRONTEND-ONLY PERIOD DOCUMENT UX CLEANUP INTRODUCED; FRONTEND-ONLY DOCUMENT DEFAULT PARAMETERS AND DOCUMENT-OWNED AOSR TEXTS INTRODUCED; FRONTEND-ONLY AOSR PRINTABLE DEFAULT SNAPSHOTS EXTENDED; LIVE OBJECT TEMPLATE LINKS AND MANUAL ACT SNAPSHOTS ACCEPTED; FRONTEND-ONLY OBJECT TEMPLATE UX SUMMARY INTRODUCED; FUTURE SECTION TEMPLATE BACKEND CONTRACT DOCUMENTED; DOCUMENT CREATION CONTEXT BACKEND CONTRACT SLICE INTRODUCED; ADR 0008 SECTION-SCOPED ID ACCEPTED
 ```
 
 Проект принял первый явно разрешённый infrastructure/bootstrap scaffold,
@@ -52,27 +52,45 @@ Canonical ADR baseline accepted. Authoritative ADR references:
 - `docs/adr/0005-modular-monolith-and-bounded-contexts.md`
 - `docs/adr/0006-global-reusable-libraries-and-act-snapshots.md`
 - `docs/adr/0007-document-defaults-suggestions-and-controlled-updates.md`
+- `docs/adr/0008-section-scoped-id-and-section-templates.md`
 
 Future implementation must comply with these ADRs. They consolidate existing accepted decisions only and do not permit production feature coding.
 
-Current object-template authority, clarified 2026-06-22:
+Current section-template authority, clarified 2026-06-23:
 
 ```text
-global libraries -> ObjectTemplate -> linked working act -> resolved printState
+Object -> DocumentationSection -> SectionTemplate -> linked working act -> resolved printState
+                                ^
+global libraries ----------------+
                                          |
                                          +-> explicit manual switch -> one complete manualTemplateSnapshot
 
 release -> immutable DocumentRevisionSnapshot
-package build/release -> immutable PackageSnapshot
+section final ID package build/release -> immutable PackageSnapshot
 ```
 
 ADR 0007 is authoritative whenever older sections or historical log entries
 describe object defaults copied into every act, object-owned company snapshots
 as the normal working source, temporary act-only representatives or partial
 document overrides. Those older passages preserve chronology only. They must
-not be used to design production storage/API behavior.
+not be used to design production storage/API behavior. ADR 0008 supersedes the
+object-level template scope: future implementation uses `SectionTemplate` /
+`настройки шаблона раздела`.
 
-Current object-template UX, clarified 2026-06-23:
+Current section/folder terminology, clarified 2026-06-23:
+
+```text
+Object -> user-defined documentation sections -> user-defined ID folders -> documents
+Section -> one folder -> intermediate ID
+Section -> all folders -> final ID
+```
+
+Section names and folder names are user-defined. `Вентиляция`, `Отопление`,
+`Водоснабжение`, `ОВ`, `ВК`, `Система В1` and similar names may be suggestions
+or examples, never a fixed enum. Final ID is section-scoped by default, not
+object-wide.
+
+Historical object-template UX, superseded for future implementation by ADR 0008:
 
 - `Шаблон объекта` is still a frontend-only in-memory mock panel, not
   production persistence.
@@ -82,17 +100,22 @@ Current object-template UX, clarified 2026-06-23:
   `global library -> object-template assignment -> linked act`.
 - This UX layer does not add backend/API routes, Prisma schema, migrations,
   storage, document generation or production template lifecycle behavior.
+  Future UI wording should use `Настройки шаблона раздела`.
 
-Current future backend contract, clarified 2026-06-23:
+Current future backend contract, clarified 2026-06-23 and amended by ADR 0008:
 
 - `docs/14-backend-api-architecture-v1.md` and
   `docs/15-api-command-readmodel-contracts-v1.md` now define the conceptual
-  application contract for `ObjectTemplate`, user-defined ID folders,
-  folder-scoped document creation, object/folder numbering proposals and
-  strict linked/manual AOSR behavior.
+  application contract for `SectionTemplate`, user-defined documentation
+  sections, user-defined ID folders, section/folder-scoped document creation,
+  section/folder numbering proposals and strict linked/manual AOSR behavior.
 - Future commands must preserve
-  `global libraries -> ObjectTemplate -> linked working act`; linked acts do
+  `global libraries -> SectionTemplate -> linked working act`; linked acts do
   not store copied template-owned defaults.
+- `copy_section_template_to_section` copies repeated texts, numbering policy and
+  global-library assignment links into another section in the same object or
+  another object; it does not copy folders, documents, released outputs, manual
+  snapshots, generated artifacts or library records themselves.
 - Manual mode is one explicit whole-act transition to a complete
   `manualTemplateSnapshot`; partial template-field overrides remain invalid.
 - `read_document_creation_context` is query-only and does not create a draft or
@@ -109,26 +132,20 @@ Current document creation context backend slice, clarified 2026-06-23:
   the first framework-free, query-only application contract for
   `read_document_creation_context`.
 - The slice requires an explicit allowed workspace access decision before any
-  object/folder lookup and returns leakage-safe `NOT_FOUND_OR_NOT_AUTHORIZED`
-  denials.
-- It supports arbitrary user-defined ID folder names, approved document type
-  reads, current `ObjectTemplate` summary, live resolution chain and
-  proposal-only numbering.
+  object/section/folder lookup and returns leakage-safe
+  `NOT_FOUND_OR_NOT_AUTHORIZED` denials.
+- It supports arbitrary user-defined section and ID folder names, approved
+  document type reads, current `SectionTemplate` summary, live resolution chain,
+  section/folder package scope and proposal-only numbering.
 - It does not create drafts, reserve numbers, mutate sequences or persist data.
 - It does not add Nest controllers, HTTP routes, OpenAPI, DTO serialization,
   Prisma schema/models, migrations, repositories, persistence adapters, queues,
   storage, renderer or production AOSR behavior.
 
-Current folder terminology, clarified 2026-06-22:
-
-```text
-Object -> user-defined ID folders -> documents -> derived folder registry/intermediate ID
-Object -> all folders -> final registry/final ID
-```
-
-Older `period-first`, `Period`, `Сентябрь 2026` and `Октябрь 2026` passages
-preserve frontend history or seeded demo examples. They do not constrain folder
-names to months and must not become a fixed production enum/taxonomy.
+Older `period-first`, `Period`, `Сентябрь 2026`, `Октябрь 2026` and object-wide
+final ID passages preserve frontend history or seeded demo examples. They do
+not constrain folder names to months and must not become a fixed production
+enum/taxonomy.
 
 MVP access amendment accepted:
 
@@ -2580,17 +2597,17 @@ docs/18-initial-repository-bootstrap-and-development-rules-v1.md
 
 ### 44.2 Project and organization context
 
-| Сущность / концепт       | Назначение                                                                                   | Source of truth / связи                                                                                                                                       |
-| ------------------------ | -------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `Object` / `Project`     | Строительный объект, основной пользовательский контейнер                                     | Владеет настройками и ссылками, но не должен содержать все документы как giant aggregate.                                                                     |
-| `EngineeringSystem`      | Раздел или система: ОВиК, ВК, вентиляция, отопление, водоснабжение, канализация              | Связан с объектом, работами, документами и схемами.                                                                                                           |
-| `FolderTree` / `Folder`  | Самостоятельный object-scoped aggregate и его business collection nodes                      | Draft baseline `docs/09-aggregate-boundaries-and-invariants.md`: владеет hierarchy/placement, move, duplicate и soft delete; не владеет lifecycle документов. |
-| `CompanyProfile`         | Переиспользуемая карточка компании внутри tenant                                             | Может меняться для будущих объектов; не должна ретроспективно менять исторические документы.                                                                  |
+| Сущность / концепт                       | Назначение                                                                                   | Source of truth / связи                                                                                                                                       |
+| ---------------------------------------- | -------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Object` / `Project`                     | Строительный объект, основной пользовательский контейнер                                     | Владеет настройками и ссылками, но не должен содержать все документы как giant aggregate.                                                                     |
+| `EngineeringSystem`                      | Раздел или система: ОВиК, ВК, вентиляция, отопление, водоснабжение, канализация              | Связан с объектом, работами, документами и схемами.                                                                                                           |
+| `FolderTree` / `Folder`                  | Самостоятельный object-scoped aggregate и его business collection nodes                      | Draft baseline `docs/09-aggregate-boundaries-and-invariants.md`: владеет hierarchy/placement, move, duplicate и soft delete; не владеет lifecycle документов. |
+| `CompanyProfile`                         | Переиспользуемая карточка компании внутри tenant                                             | Может меняться для будущих объектов; не должна ретроспективно менять исторические документы.                                                                  |
 | `ObjectTemplate` organization assignment | Ссылка на глобальную компанию и object-specific display context                              | Active linked acts resolve current library values; manual/released boundaries freeze exact output.                                                            |
-| `Representative`         | Глобальная карточка представителя/подписанта                                                 | Object-specific assignments store role, position, authority, organization relation and order; linked acts resolve live, manual/released states freeze output. |
-| `RegistrySignerSnapshot` | Выбранный подписант конкретного реестра                                                      | Подписант реестра может отличаться от подписантов актов.                                                                                                      |
-| `ProjectDrawingSet`      | Комплект рабочих чертежей, по которым выполняются работы                                     | Draft baseline: owned entity в `ObjectDocumentationContext`; не является исполнительной схемой; участвует в АОСР и блоке реестра.                             |
-| `ProjectSourceFile`      | Загруженный project source material: PDF, drawing, specification или future supported source | Принадлежит конкретным `Workspace` и `Object`; служит provenance/reference context, но не становится единственным source of truth.                            |
+| `Representative`                         | Глобальная карточка представителя/подписанта                                                 | Object-specific assignments store role, position, authority, organization relation and order; linked acts resolve live, manual/released states freeze output. |
+| `RegistrySignerSnapshot`                 | Выбранный подписант конкретного реестра                                                      | Подписант реестра может отличаться от подписантов актов.                                                                                                      |
+| `ProjectDrawingSet`                      | Комплект рабочих чертежей, по которым выполняются работы                                     | Draft baseline: owned entity в `ObjectDocumentationContext`; не является исполнительной схемой; участвует в АОСР и блоке реестра.                             |
+| `ProjectSourceFile`                      | Загруженный project source material: PDF, drawing, specification или future supported source | Принадлежит конкретным `Workspace` и `Object`; служит provenance/reference context, но не становится единственным source of truth.                            |
 
 ### 44.3 Work and documentation aggregates
 
@@ -2746,15 +2763,15 @@ Registry = derived projection, never source of truth
 
 ### 46.2 Projection blocks and data ownership
 
-| Блок реестра                   | Source data                                        | Что нельзя делать                                                          |
-| ------------------------------ | -------------------------------------------------- | -------------------------------------------------------------------------- |
-| Шапка объекта                  | `Object`, default parameters / object metadata     | Не хранить единственную копию объекта в тексте реестра.                    |
+| Блок реестра                   | Source data                                                                            | Что нельзя делать                                                                       |
+| ------------------------------ | -------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| Шапка объекта                  | `Object`, default parameters / object metadata                                         | Не хранить единственную копию объекта в тексте реестра.                                 |
 | Подрядчик/исполнители          | Current `ObjectTemplate` assignments or frozen released values, contract/work settings | Live projection may resolve current profile; historical package must use frozen output. |
-| Комплект рабочих чертежей      | `ProjectDrawingSet`                                | Не смешивать с `ExecutiveScheme`.                                          |
-| Сертификаты/документы качества | `Certificate Library`, act refs, package scope     | Не показывать номер без существующего файла library item.                  |
-| Акты                           | Typed `Document` aggregates                        | Не редактировать date/number/status только в строке проекции.              |
-| Исполнительные схемы           | `ExecutiveScheme`                                  | Не подменять metadata свободным текстом в реестре.                         |
-| Подписант                      | `RegistrySignerSnapshot` / selected representative | Не предполагать, что это всегда подписант акта.                            |
+| Комплект рабочих чертежей      | `ProjectDrawingSet`                                                                    | Не смешивать с `ExecutiveScheme`.                                                       |
+| Сертификаты/документы качества | `Certificate Library`, act refs, package scope                                         | Не показывать номер без существующего файла library item.                               |
+| Акты                           | Typed `Document` aggregates                                                            | Не редактировать date/number/status только в строке проекции.                           |
+| Исполнительные схемы           | `ExecutiveScheme`                                                                      | Не подменять metadata свободным текстом в реестре.                                      |
+| Подписант                      | `RegistrySignerSnapshot` / selected representative                                     | Не предполагать, что это всегда подписант акта.                                         |
 
 ### 46.3 Color logic of the real registry example
 
@@ -3014,7 +3031,7 @@ Initial Repository Bootstrap and Development Rules V1:
 10. Template version после использования immutable; изменившаяся форма создаёт новую версию.
 11. Package Builder является async и snapshot-based; rebuild вызывается изменением зависимостей.
 12. `Object` не должен стать giant aggregate.
-13. ObjectTemplate keeps live company/representative assignments; manual and released snapshots protect historical output from later library changes.
+13. SectionTemplate keeps live section-level company/representative assignments; manual and released snapshots protect historical output from later library changes.
 14. `ProjectDrawingSet` и `ExecutiveScheme` — разные понятия.
 15. AI/OCR — assistant only; никакого auto-approve критичных metadata.
 16. Исходные документы могут содержать чувствительные реквизиты; privacy и tenant isolation обязательны.
@@ -3035,7 +3052,7 @@ Initial Repository Bootstrap and Development Rules V1:
 31. Foreman active permissions must not be implemented without separate approval.
 32. Exact first AOSR participant requirements must not be hardcoded before template review.
 33. Infrastructure provider/server lock-in is forbidden: database, Redis, storage, public/download URLs, CORS, session secrets and app base URLs are config-driven; provider SDKs stay inside narrow infrastructure adapters.
-34. Canonical ADR baseline in `docs/adr/` is accepted: ADR 0006 defines global reusable libraries and explicit frozen output boundaries; ADR 0007 is authoritative for active linked/manual acts. All must be followed by future implementation work.
+34. Canonical ADR baseline in `docs/adr/` is accepted: ADR 0006 defines global reusable libraries and explicit frozen output boundaries; ADR 0007 is authoritative for active linked/manual acts; ADR 0008 is authoritative for section-scoped ID and `SectionTemplate`. All must be followed by future implementation work.
 35. `docs/19-sharing-and-access-model-v1.md` supersedes `docs/10-auth-workspace-rbac-model.md` for MVP implementation scope.
 36. `docs/20-auth-sharing-implementation-plan-v1.md` fixes auth/sharing implementation sequence; do not skip from docs to share grants, certificate-library sharing, Prisma models, migrations or API routes without separate phase-scoped approval.
 37. Phase 1 user identity skeleton is only `Actor` primitive plus current actor resolver utility/port; identity alone grants no workspace, document, certificate, package or file access.
@@ -3048,13 +3065,15 @@ Initial Repository Bootstrap and Development Rules V1:
     migrations, routes/controllers, frontend UI, share codes/grants, admin
     support tenant browsing or business feature implementation.
 40. Certificates, organizations and representatives are global reusable
-    user-level libraries. Objects store assignments/links. Active `linked` acts
-    resolve them live; `manual` acts and released outputs use explicit snapshots.
-41. Object-level reusable data lives in `ObjectTemplate`. A working act is
-    either fully `linked` to that template or fully `manual` with one complete
-    snapshot; partial template-field overrides are forbidden.
+    user-level libraries. Section templates store assignments/links. Active
+    `linked` acts resolve them live; `manual` acts and released outputs use
+    explicit snapshots.
+41. Section-level reusable data lives in `SectionTemplate` /
+    `настройки шаблона раздела`. A working act is either fully `linked` to that
+    template or fully `manual` with one complete snapshot; partial
+    template-field overrides are forbidden.
 42. Work contractor, additional information and copy count are repeated
-    `ObjectTemplate` data. Linked act UI collapses template-owned sections by
+    section-template data. Linked act UI collapses template-owned sections by
     default and requires the explicit whole-act manual switch before editing.
 
 ---
@@ -3080,7 +3099,7 @@ Initial Repository Bootstrap and Development Rules V1:
 | Как должен ощущаться интерфейс?                                              | Пользователь работает с комплектом ИД, а не с CRM-таблицей.                                                                                                                                                                                                                                                                                                                                                                                                                                       | UX document-centric, complexity structured model скрывается.                                                                                                                                                                                                                                                   |
 | Каково назначение OCR/AI?                                                    | Assistant only.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   | Извлечённые metadata активируются только после пользовательского подтверждения.                                                                                                                                                                                                                                |
 | Можно ли использовать загруженный проект для AI-assisted ИД и поиска ошибок? | Да, как Workspace/Object-scoped source material с proposals-only workflow.                                                                                                                                                                                                                                                                                                                                                                                                                        | Structured data остаются source of truth; extracted data/links/findings требуют user confirmation, traceability and audit.                                                                                                                                                                                     |
-| Где хранить данные компании для объекта и акта?                              | Current identity/requisites live in the global library; object-specific assignment/display context lives in `ObjectTemplate`; manual/released boundaries store exact resolved snapshots.                                                                                                                                                                                                                                                | Library corrections update active linked acts but never rewrite manual acts or released revisions/packages.                                                                                                                                                                                                    |
+| Где хранить данные компании для объекта и акта?                              | Current identity/requisites live in the global library; object-specific assignment/display context lives in `ObjectTemplate`; manual/released boundaries store exact resolved snapshots.                                                                                                                                                                                                                                                                                                          | Library corrections update active linked acts but never rewrite manual acts or released revisions/packages.                                                                                                                                                                                                    |
 | Может ли Object владеть всем сразу?                                          | Нет.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              | Требуются отдельные aggregates/contexts для documents, certificates, schemes, templates и packages.                                                                                                                                                                                                            |
 | Какая стадия проекта сейчас?                                                 | Infrastructure scaffold accepted; canonical ADR baseline accepted; backend module skeleton, technical status slice, database foundation technical slice, object storage foundation technical slice, auth sharing implementation plan, Phase 1 user identity skeleton, Phase 2 global system admin marker, Phase 3 owned workspace baseline, ADR 0006 global reusable libraries and ADR 0007 document default parameters introduced; feature coding still blocked beyond explicitly scoped slices. | Следующий implementation step требует отдельного явного задания и проверки against project memory, accepted ADRs in `docs/adr/` and `docs/20` when auth/sharing is involved.                                                                                                                                   |
 | Кто является пользователем SaaS?                                             | Физическое лицо с одним аккаунтом и owned working context.                                                                                                                                                                                                                                                                                                                                                                                                                                        | Пользователь может работать сам и подключаться к чужим resources через share grants.                                                                                                                                                                                                                           |
@@ -5086,6 +5105,50 @@ delete/move/reorder lifecycle or generation was introduced.
 - no DOCX/PDF/ZIP generation;
 - no production AOSR, registry, package or numbering business logic.
 
+### 2026-06-23 — Section-scoped ID and section templates accepted
+
+- Статус: `ADR 0008 section-scoped ID accepted`
+- Описание: corrected the hierarchy so sections sit between object and ID
+  folders, and moved live template settings from object scope to section scope.
+
+Добавлено/уточнено:
+
+- canonical hierarchy is now
+  `Object -> DocumentationSection -> ID folders -> documents`;
+- `DocumentationSection` is user-defined: `Вентиляция`, `Отопление`,
+  `Водоснабжение`, `ОВ`, `ВК`, `Система В1` and similar names are examples, not
+  enum values;
+- intermediate ID is derived from one folder inside one section;
+- final ID is derived from one section across that section's folders;
+- the UI-facing template is `Настройки шаблона раздела`;
+- future implementation term is `SectionTemplate`, not `ObjectTemplate`;
+- linked acts resolve template-owned data through
+  `global libraries -> SectionTemplate -> linked act`;
+- section template settings may be copied into another section in the same
+  object or another object;
+- template copy includes repeated texts, numbering policy, global-library
+  assignment links, labels/order/groups/subscripts;
+- template copy does not copy folders, documents, drafts, released revisions,
+  manual snapshots, issued packages, generated artifacts or global library
+  records themselves;
+- `readDocumentCreationContext` backend contract slice now reads
+  object/section/folder context and returns `SectionTemplate` summary plus
+  section/folder package scope.
+
+Что не было введено:
+
+- no frontend section UI;
+- no Nest controller or HTTP route;
+- no OpenAPI or DTO serialization;
+- no Prisma schema/model changes;
+- no migrations;
+- no repository or persistence adapter;
+- no template-copy persistence implementation;
+- no draft creation;
+- no number reservation or sequence mutation;
+- no production AOSR/document creation behavior;
+- no uploads, storage, renderer, queues or generation.
+
 ### 2026-06-23 — Document creation context backend contract slice introduced
 
 - Статус: `Documents backend application-contract slice only`
@@ -5097,15 +5160,15 @@ delete/move/reorder lifecycle or generation was introduced.
 - added `apps/api/src/documents/application/document-creation-context.ts`;
 - added a `documentCreationContextReadPort` boundary token for future wiring;
 - the read contract requires an explicit allowed workspace access decision
-  before object/folder lookup;
+  before object/section/folder lookup;
 - non-owner/missing/wrong-scope reads return leakage-safe
   `NOT_FOUND_OR_NOT_AUTHORIZED`;
-- the read model accepts user-defined ID folders and does not treat folder names
-  as month/period enum values;
-- the read model returns approved document types, selected folder, current
-  `ObjectTemplate` summary, live resolution chain
-  `global_libraries -> object_template -> linked_working_document` and
-  proposal-only numbering;
+- the read model accepts user-defined sections and ID folders and does not treat
+  section/folder names as fixed enum values;
+- the read model returns approved document types, selected section/folder,
+  current `SectionTemplate` summary, live resolution chain
+  `global_libraries -> section_template -> linked_working_document`,
+  section/folder package scope and proposal-only numbering;
 - focused backend tests cover access-decision-before-lookup behavior, arbitrary
   folders, folder-scoped proposal numbering, no reservation and leakage-safe
   missing folder denial.

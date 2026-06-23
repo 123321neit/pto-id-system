@@ -5,7 +5,7 @@ Web-система автоматизации исполнительной до�
 Текущий статус:
 
 ```text
-FIRST ALLOWED INFRASTRUCTURE BOOTSTRAP SCAFFOLD ACCEPTED; CANONICAL ADR BASELINE ACCEPTED; BACKEND MODULE ARCHITECTURE SKELETON INTRODUCED; FIRST TECHNICAL FRONTEND-BACKEND STATUS SLICE INTRODUCED; DATABASE FOUNDATION TECHNICAL SLICE INTRODUCED; OBJECT STORAGE FOUNDATION TECHNICAL SLICE INTRODUCED; AUTH SHARING IMPLEMENTATION PLAN ADDED; USER IDENTITY SKELETON INTRODUCED; GLOBAL SYSTEM ADMIN MARKER INTRODUCED; OWNED WORKSPACE BASELINE INTRODUCED; FIRST MOCK AOSR DEMO UI SLICE INTRODUCED; MOCK AOSR DEMO UX/PREVIEW REFINED; MOCK APP SHELL AND OBJECT DASHBOARD INTRODUCED; FRONTEND-ONLY MOCK REPRESENTATIVES/ORGANIZATIONS MANAGEMENT PAGE INTRODUCED; FRONTEND-ONLY MOCK CERTIFICATE LIBRARY PAGE INTRODUCED; STAGE 5 MOCK AOSR WORKSPACE UX STABILIZED; AOSR EDITOR UX CLEANUP INTRODUCED; AOSR WORKSPACE DRAWER UX INTRODUCED; FRONTEND-ONLY MOCK OBJECT DOCUMENT LIBRARY INTRODUCED; AOSR WORKSPACE APPLICATIONS UX CLEANUP INTRODUCED; FRONTEND-ONLY MOCK OBJECT COMPLIANCE DEFAULTS AND ACT OVERRIDES INTRODUCED; FRONTEND-ONLY MOCK OBJECT WORKSPACE VISUAL PASS INTRODUCED; FRONTEND-ONLY MOCK OBJECT WORKSPACE SHELL INTRODUCED; AOSR DOCUMENT PREVIEW DRAWER UX INTRODUCED; AOSR DOCUMENT PREVIEW PAGE VISUALIZATION REFINED; FRONTEND-ONLY OBJECT DOCUMENT WORKSPACE INTRODUCED; FRONTEND-ONLY OBJECT CERTIFICATE WORKSPACE INTRODUCED; FRONTEND-ONLY ID REGISTRY V1 INTRODUCED; FRONTEND-ONLY FINAL ID PACKAGE MOCK INTRODUCED; FRONTEND-ONLY ACT TYPE METADATA PREP INTRODUCED; AOSR READINESS PANEL V1 INTRODUCED; FINAL PACKAGE READINESS V1 INTRODUCED; FRONTEND-ONLY OBJECT WORKSPACE UX HIERARCHY POLISH INTRODUCED; FRONTEND-ONLY OBJECT OVERVIEW AND GLOBAL CERTIFICATE ARCHITECTURE UX CORRECTION INTRODUCED; GLOBAL REUSABLE LIBRARIES AND ACT SNAPSHOTS ADR ACCEPTED; FRONTEND-ONLY PERIOD-FIRST OBJECT WORKSPACE MOCK INTRODUCED; FRONTEND-ONLY PERIOD-SCOPED AOSR CREATION MOCK INTRODUCED; FRONTEND-ONLY AOSR MANUAL NUMBER OVERRIDE MOCK INTRODUCED; FRONTEND-ONLY OBJECT WORKSPACE PREMIUM UX POLISH INTRODUCED; FRONTEND-ONLY GENERATED ID PACKAGE VIEWS UX INTRODUCED; FRONTEND-ONLY PRINT-ORDER AOSR EDITOR UX INTRODUCED; FRONTEND-ONLY UX OVERLOAD CLEANUP INTRODUCED; FRONTEND-ONLY RADICAL UX CLEANUP INTRODUCED; FRONTEND-ONLY PERIOD DOCUMENT UX CLEANUP INTRODUCED; FRONTEND-ONLY DOCUMENT DEFAULT PARAMETERS AND DOCUMENT-OWNED AOSR TEXTS INTRODUCED; FRONTEND-ONLY AOSR PRINTABLE DEFAULT SNAPSHOTS EXTENDED; FRONTEND-ONLY OBJECT TEMPLATE UX SUMMARY INTRODUCED; FUTURE OBJECT TEMPLATE BACKEND CONTRACT DOCUMENTED; DOCUMENT CREATION CONTEXT BACKEND CONTRACT SLICE INTRODUCED
+FIRST ALLOWED INFRASTRUCTURE BOOTSTRAP SCAFFOLD ACCEPTED; CANONICAL ADR BASELINE ACCEPTED; BACKEND MODULE ARCHITECTURE SKELETON INTRODUCED; FIRST TECHNICAL FRONTEND-BACKEND STATUS SLICE INTRODUCED; DATABASE FOUNDATION TECHNICAL SLICE INTRODUCED; OBJECT STORAGE FOUNDATION TECHNICAL SLICE INTRODUCED; AUTH SHARING IMPLEMENTATION PLAN ADDED; USER IDENTITY SKELETON INTRODUCED; GLOBAL SYSTEM ADMIN MARKER INTRODUCED; OWNED WORKSPACE BASELINE INTRODUCED; FIRST MOCK AOSR DEMO UI SLICE INTRODUCED; MOCK AOSR DEMO UX/PREVIEW REFINED; MOCK APP SHELL AND OBJECT DASHBOARD INTRODUCED; FRONTEND-ONLY MOCK REPRESENTATIVES/ORGANIZATIONS MANAGEMENT PAGE INTRODUCED; FRONTEND-ONLY MOCK CERTIFICATE LIBRARY PAGE INTRODUCED; STAGE 5 MOCK AOSR WORKSPACE UX STABILIZED; AOSR EDITOR UX CLEANUP INTRODUCED; AOSR WORKSPACE DRAWER UX INTRODUCED; FRONTEND-ONLY MOCK OBJECT DOCUMENT LIBRARY INTRODUCED; AOSR WORKSPACE APPLICATIONS UX CLEANUP INTRODUCED; FRONTEND-ONLY MOCK OBJECT COMPLIANCE DEFAULTS AND ACT OVERRIDES INTRODUCED; FRONTEND-ONLY MOCK OBJECT WORKSPACE VISUAL PASS INTRODUCED; FRONTEND-ONLY MOCK OBJECT WORKSPACE SHELL INTRODUCED; AOSR DOCUMENT PREVIEW DRAWER UX INTRODUCED; AOSR DOCUMENT PREVIEW PAGE VISUALIZATION REFINED; FRONTEND-ONLY OBJECT DOCUMENT WORKSPACE INTRODUCED; FRONTEND-ONLY OBJECT CERTIFICATE WORKSPACE INTRODUCED; FRONTEND-ONLY ID REGISTRY V1 INTRODUCED; FRONTEND-ONLY FINAL ID PACKAGE MOCK INTRODUCED; FRONTEND-ONLY ACT TYPE METADATA PREP INTRODUCED; AOSR READINESS PANEL V1 INTRODUCED; FINAL PACKAGE READINESS V1 INTRODUCED; FRONTEND-ONLY OBJECT WORKSPACE UX HIERARCHY POLISH INTRODUCED; FRONTEND-ONLY OBJECT OVERVIEW AND GLOBAL CERTIFICATE ARCHITECTURE UX CORRECTION INTRODUCED; GLOBAL REUSABLE LIBRARIES AND ACT SNAPSHOTS ADR ACCEPTED; FRONTEND-ONLY PERIOD-FIRST OBJECT WORKSPACE MOCK INTRODUCED; FRONTEND-ONLY PERIOD-SCOPED AOSR CREATION MOCK INTRODUCED; FRONTEND-ONLY AOSR MANUAL NUMBER OVERRIDE MOCK INTRODUCED; FRONTEND-ONLY OBJECT WORKSPACE PREMIUM UX POLISH INTRODUCED; FRONTEND-ONLY GENERATED ID PACKAGE VIEWS UX INTRODUCED; FRONTEND-ONLY PRINT-ORDER AOSR EDITOR UX INTRODUCED; FRONTEND-ONLY UX OVERLOAD CLEANUP INTRODUCED; FRONTEND-ONLY RADICAL UX CLEANUP INTRODUCED; FRONTEND-ONLY PERIOD DOCUMENT UX CLEANUP INTRODUCED; FRONTEND-ONLY DOCUMENT DEFAULT PARAMETERS AND DOCUMENT-OWNED AOSR TEXTS INTRODUCED; FRONTEND-ONLY AOSR PRINTABLE DEFAULT SNAPSHOTS EXTENDED; FRONTEND-ONLY OBJECT TEMPLATE UX SUMMARY INTRODUCED; FUTURE SECTION TEMPLATE BACKEND CONTRACT DOCUMENTED; DOCUMENT CREATION CONTEXT BACKEND CONTRACT SLICE INTRODUCED; ADR 0008 SECTION-SCOPED ID ACCEPTED
 ```
 
 В репозитории принят первый разрешённый scaffold. Это только infrastructure/bootstrap
@@ -19,49 +19,56 @@ entry points where they competed with the main path, keeps global reusable
 libraries in global navigation, and treats Object Overview as a start/continue
 surface rather than a dashboard of equal-weight options.
 
-Folder document UX: an ID folder contains documents of many future types and
-has a user-defined name. `Создать документ` is the universal entry point; AOSR is
-only the first implemented document type, while future types stay disabled as
-`скоро`. Folder registry and intermediate ID are derived from folder documents.
-The mock supports an empty object and explicit creation of the first folder.
+Section/folder document UX: an object contains user-defined documentation
+sections such as `Вентиляция`, `Отопление`, `ВК` or any user name. A section
+contains user-defined ID folders, and a folder contains documents of many future
+types. `Создать документ` is the universal entry point; AOSR is only the first
+implemented document type, while future types stay disabled as `скоро`. Folder
+registry and intermediate ID are derived from folder documents. Final ID is
+derived by section, not by the whole object by default.
 
-Live object template principle: reusable counterparties and signatories are
-global live libraries, while `ObjectTemplate` stores their ids, object-specific
+Live section template principle: reusable counterparties and signatories are
+global live libraries, while `SectionTemplate` stores their ids, section-specific
 labels, grouping, order and subscripts. Linked acts resolve current printable
-data through `libraries -> ObjectTemplate -> printState`; manual acts use one
+data through `libraries -> SectionTemplate -> printState`; manual acts use one
 complete `manualTemplateSnapshot`. There are no partial template-field
-overrides. The UI calls these object-level live values `Шаблон объекта`.
+overrides. The UI calls these section-level live values
+`Настройки шаблона раздела`.
 Representative groups are real groups with independent ids and any number of
 members. `AosrPrintState.document` keeps raw `number` and `date`; renderers add
 `№` and date formatting. The work contractor, additional information and copy
-count are repeated object-template data. In the act editor all template-owned
+count are repeated section-template data. In the act editor all template-owned
 sections are collapsed by default; users can expand them to verify values and
 must explicitly switch the whole act to manual mode before changing them.
 
-Object template UX summary: the frontend mock now opens `Шаблон объекта` with a
-compact summary of the live chain, organization blocks, representative groups
-and numbering rule before detailed editing. Organization and representative
-sections explain the global-library-to-object-template assignment flow. This is
-UX copy/layout only and does not add backend/API, persistence, Prisma schema,
-migrations or production template behavior.
+Section template UX summary: the accepted future UI should open
+`Настройки шаблона раздела` with a compact summary of the live chain,
+organization blocks, representative groups and numbering rule before detailed
+editing. Organization and representative sections explain the
+global-library-to-section-template assignment flow. Section template settings
+may be copied into another section in the same object or another object by
+copying repeated texts, numbering policy and library links/assignments, without
+copying documents, folders, released outputs or library records themselves.
 
 Future backend contract: `docs/14-backend-api-architecture-v1.md` and
 `docs/15-api-command-readmodel-contracts-v1.md` now document the future command
-and read-model contract for `ObjectTemplate`, user-defined ID folders,
-folder-scoped document creation, object/folder numbering proposals and strict
-linked/manual AOSR behavior. This is documentation only and does not add API
-routes, OpenAPI, Prisma schema, migrations, repositories, persistence, queues,
-storage, renderer or production backend code.
+and read-model contract for `SectionTemplate`, user-defined documentation
+sections, user-defined ID folders, section/folder-scoped document creation,
+section/folder numbering proposals, template copy and strict linked/manual AOSR
+behavior. This is documentation only and does not add API routes, OpenAPI,
+Prisma schema, migrations, repositories, persistence, queues, storage, renderer
+or production backend code.
 
 Document creation context backend slice: the `documents` backend module now has
 a framework-free, query-only `readDocumentCreationContext` application contract
 for the future `Создать документ` selector. It requires an explicit allowed
-workspace access decision before object/folder lookup, accepts arbitrary
-user-defined ID folders, returns approved document types, current
-`ObjectTemplate` summary, live resolution chain and proposal-only numbering. It
-adds no Nest controller, HTTP route, OpenAPI, DTO serialization, Prisma
-schema/model, migration, repository, persistence adapter, draft creation, number
-reservation or production document storage.
+workspace access decision before object/section/folder lookup, accepts
+arbitrary user-defined sections and ID folders, returns approved document types,
+current `SectionTemplate` summary, live resolution chain, section/folder package
+scope and proposal-only numbering. It adds no Nest controller, HTTP route,
+OpenAPI, DTO serialization, Prisma schema/model, migration, repository,
+persistence adapter, draft creation, number reservation or production document
+storage.
 
 The first technical vertical slice now proves that the React shell can call the
 NestJS technical `/health` endpoint through `VITE_API_BASE_URL` and consume the
@@ -311,14 +318,15 @@ Prisma/schema/migrations, uploads, OCR/AI, generation or production business
 logic was added.
 
 ADR 0006 records the reusable entity rule: certificates, organizations and
-representatives are global user-level libraries. Objects store assignments and
-links to those entities. ADR 0007 clarifies the working model: active linked
-acts resolve counterparty/signatory data live through `ObjectTemplate`; an
-explicit whole-act switch creates one complete manual snapshot; released
-revisions/packages freeze exact output separately. Certificate use remains an
-explicit relation to global file-backed evidence, with exact identity, values
-and file provenance frozen for release. Direct free-text signatories,
-organizations and certificates are not valid final sources.
+representatives are global user-level libraries. Sections store template
+assignments and links to those entities through `SectionTemplate` /
+`настройки шаблона раздела`. ADR 0007 clarifies the working model: active
+linked acts resolve counterparty/signatory data live through the current section
+template; an explicit whole-act switch creates one complete manual snapshot;
+released revisions/packages freeze exact output separately. Certificate use
+remains an explicit relation to global file-backed evidence, with exact
+identity, values and file provenance frozen for release. Direct free-text
+signatories, organizations and certificates are not valid final sources.
 
 The frontend-only demo wording creates/selects a global representative and
 assigns that representative to the object before act use. The later ADR 0007
@@ -623,11 +631,12 @@ Scaffold включает:
   owner-only access utilities and tests, with no persistence, Prisma model,
   migrations, routes/controllers, frontend UI, sharing, grants or admin bypass.
 - document creation context backend contract slice: framework-free
-  `documents` application read contract for user-defined folder creation
-  context, approved document types, `ObjectTemplate` summary and proposal-only
-  numbering, with access-decision-before-lookup tests and no Nest controller,
-  route, OpenAPI, Prisma model, migration, repository, persistence, draft
-  creation or number reservation.
+  `documents` application read contract for user-defined section/folder
+  creation context, approved document types, `SectionTemplate` summary,
+  section/folder package scope and proposal-only numbering, with
+  access-decision-before-lookup tests and no Nest controller, route, OpenAPI,
+  Prisma model, migration, repository, persistence, draft creation or number
+  reservation.
 - first mock AOSR demo UI slice: frontend-only Russian React screen with
   in-memory demo workspace/drafts, object-level defaults, current-act fields,
   mock representative/certificate-library selections, final derived
@@ -639,14 +648,15 @@ Scaffold включает:
   representative/organization management page, recent documents and in-memory
   dashboard -> object workspace navigation, with no backend, persistence, auth,
   uploads, generation, share codes/grants or business logic.
-- frontend-only live object template: linked AOSR drafts resolve object-owned
+- frontend-only live template history: linked AOSR drafts previously resolved
   printable data from `ObjectTemplate` and global counterparty/signatory
-  libraries; manual drafts use a complete snapshot with no partial overrides;
-  selected certificates/object documents keep current mock printable copies
-  only for frontend compatibility, while the future production contract keeps
-  explicit evidence relations and freezes exact provenance on release; no
-  backend, persistence, Prisma/schema/migration, auth, uploads, generation or
-  production business logic is implied.
+  libraries; ADR 0008 supersedes that future implementation scope with
+  `SectionTemplate` / `настройки шаблона раздела`. Manual drafts use a complete
+  snapshot with no partial overrides; selected certificates/object documents
+  keep current mock printable copies only for frontend compatibility, while the
+  future production contract keeps explicit evidence relations and freezes exact
+  provenance on release; no backend, persistence, Prisma/schema/migration, auth,
+  uploads, generation or production business logic is implied.
 - frontend-only object document workspace: object-level document registry UI
   with mock filters, summary counts, AOSR usage labels and local in-memory
   creation, sharing the demo object document source with the AOSR point 4 drawer
