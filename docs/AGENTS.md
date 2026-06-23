@@ -70,7 +70,7 @@
 Текущий этап:
 
 ```text
-First allowed infrastructure/bootstrap scaffold accepted; canonical ADR baseline accepted; backend module architecture skeleton introduced; first technical frontend-backend status slice introduced; database foundation technical slice introduced; object storage foundation technical slice introduced; auth sharing implementation plan added; user identity skeleton introduced; global system admin marker introduced; owned workspace baseline introduced; future ObjectTemplate backend contract documented
+First allowed infrastructure/bootstrap scaffold accepted; canonical ADR baseline accepted; backend module architecture skeleton introduced; first technical frontend-backend status slice introduced; database foundation technical slice introduced; object storage foundation technical slice introduced; auth sharing implementation plan added; user identity skeleton introduced; global system admin marker introduced; owned workspace baseline introduced; future ObjectTemplate backend contract documented; document creation context backend contract slice introduced
 ```
 
 Разрешённый scaffold ограничен:
@@ -117,6 +117,15 @@ First allowed infrastructure/bootstrap scaffold accepted; canonical ADR baseline
   `NOT_FOUND_OR_NOT_AUTHORIZED`; no Prisma model, migration, route/controller,
   frontend UI, share code, share grant, RBAC matrix or system-admin bypass is
   implemented.
+- document creation context backend contract slice:
+  framework-free `documents` application read contract for
+  `read_document_creation_context`. It requires an explicit allowed workspace
+  access decision before object/folder lookup, supports user-defined ID folders,
+  approved document type reads, current `ObjectTemplate` summary and
+  proposal-only numbering. It has no Nest controller, HTTP route, DTO
+  serialization, OpenAPI, Prisma model/schema, migration, repository,
+  persistence adapter, draft creation, number reservation or production document
+  storage.
 
 The technical status, database foundation and object storage foundation slices are not product
 implementation. They must not be expanded into domain readiness, АОСР,
@@ -282,7 +291,7 @@ Privacy/data-processing policy, access to project originals and concrete AI proc
 - Foreman active permissions are blocked without separate approval;
 - first AOSR template participant requirements must not be hardcoded before template review.
 
-Открытыми остаются exact first AOSR template baseline/participant requirements, retention/privacy/share-grant details, physical migrations/ORM schema/OpenAPI and production implementation. Зафиксированный ObjectTemplate contract is documentation-only and must not be interpreted as approval to implement routes, controllers, DTOs, OpenAPI, Prisma/domain schema, migrations, repositories, queues, storage, renderer or persistence mapping.
+Открытыми остаются exact first AOSR template baseline/participant requirements, retention/privacy/share-grant details, physical migrations/ORM schema/OpenAPI and production implementation. Зафиксированный ObjectTemplate contract now has only one narrow framework-free `read_document_creation_context` application slice. It must not be interpreted as approval to implement routes, controllers, DTO serialization, OpenAPI, Prisma/domain schema, migrations, repositories, queues, storage, renderer, draft creation, number reservation or persistence mapping.
 
 Следующий отдельный implementation task должен проверяться против:
 

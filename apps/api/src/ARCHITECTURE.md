@@ -10,7 +10,7 @@ uploads, package generation, AI/OCR, or domain behavior are introduced.
 | Module           | Owns                                                                                                                                                              | Must not own                                                                                                                                                                                            |
 | ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `workspace`      | Workspace boundary, current actor resolution boundary, admin-path system admin marker boundary, owned workspace owner-check boundary, tenant isolation contracts. | Business documents, evidence, registry rows, generated artifacts, provider adapters, login/session implementation, admin routes, support tenant browsing, business access bypasses, share codes/grants. |
-| `documents`      | Typed documents, revisions, and finalization lifecycle boundaries.                                                                                                | Generated artifacts, package snapshots, certificate originals, executive scheme originals.                                                                                                              |
+| `documents`      | Typed documents, folder-scoped document creation context, revisions, and finalization lifecycle boundaries.                                                       | Generated artifacts, package snapshots, certificate originals, executive scheme originals, persistence adapters, transport routes.                                                                      |
 | `evidence`       | Certificates, executive schemes, and file-backed evidence boundaries.                                                                                             | Generated package ownership, typed document source data, registry source facts.                                                                                                                         |
 | `registry`       | Derived registry projections and presentation-only override boundaries.                                                                                           | Source-of-truth fields, document/evidence mutation, package snapshots.                                                                                                                                  |
 | `packages`       | Package build boundary, snapshots, generated artifact ownership, async orchestration contracts.                                                                   | Source document ownership, evidence originals, registry source facts, synchronous package execution.                                                                                                    |
@@ -91,9 +91,9 @@ behavior, repositories, or OpenAPI contracts.
 ## Current Status
 
 This is an architecture skeleton plus technical database, object storage, Phase
-1 user identity skeleton, Phase 2 global system admin marker, and Phase 3 owned
-workspace baseline foundation
-only. It introduces canonical backend
+1 user identity skeleton, Phase 2 global system admin marker, Phase 3 owned
+workspace baseline foundation and one narrow documents application-contract
+slice only. It introduces canonical backend
 module boundaries, placeholder tokens/ports, import
 guardrails, Prisma generation wiring, an empty Prisma schema, and a technical
 database health adapter plus a config-only technical object storage health
@@ -102,10 +102,15 @@ workspace current actor resolver utility/port. The admin marker adds only an
 optional `SYSTEM_ADMIN_ACTOR_ID` config key plus a framework-free workspace
 `admin-path` utility for identifying the one configured active actor. The owned
 workspace baseline adds only a TypeScript primitive and owner-only access
-utilities that deny with `NOT_FOUND_OR_NOT_AUTHORIZED`. Identity, admin marker
+utilities that deny with `NOT_FOUND_OR_NOT_AUTHORIZED`. The documents slice adds
+only a framework-free, query-only `readDocumentCreationContext` contract for
+future folder-scoped document creation reads, with explicit
+access-decision-before-lookup behavior, approved document types,
+`ObjectTemplate` summary and proposal-only numbering. Identity, admin marker
 and owned workspace checks do not grant share access, business access bypasses
 or admin support browsing. This status does not implement AOSR, domain Prisma
 models, migrations, CRUD APIs, login/register/session auth, admin routes, admin
 UI, support tenant browsing, share codes, share grants, uploads, downloads, file
 metadata, package generation, AI/OCR, repositories, use cases, queue jobs,
-validation rules, or business logic.
+validation rules, transport routes, draft creation, number reservation,
+persistence mapping, or production business logic.

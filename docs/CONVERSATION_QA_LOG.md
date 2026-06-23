@@ -1246,3 +1246,37 @@ A: Нужно зафиксировать conceptual command/read-model contract 
 Это документационный backend-contract step only. Он не добавляет routes,
 controllers, OpenAPI, DTO, Prisma/schema/migrations, SQL, repositories,
 persistence, queues, file storage, renderer or production backend code.
+
+---
+
+## 48. First backend slice for document creation context
+
+### Q: Что именно вошло в пункт 5 после фиксации backend contract?
+
+A: Вошёл первый узкий framework-free backend application slice для
+`read_document_creation_context`.
+
+Реализовано:
+
+- `apps/api/src/documents/application/document-creation-context.ts`;
+- focused backend tests for the creation-context contract;
+- explicit access-decision-before-object/folder-lookup behavior;
+- leakage-safe `NOT_FOUND_OR_NOT_AUTHORIZED` denial;
+- support for arbitrary user-defined ID folder names;
+- approved document type read model;
+- selected folder and current `ObjectTemplate` summary;
+- live chain `global_libraries -> object_template -> linked_working_document`;
+- proposal-only next number with no reservation and no sequence mutation;
+- `documentCreationContextReadPort` token for future canonical wiring.
+
+Не реализовано:
+
+- Nest controller / HTTP route;
+- OpenAPI / DTO serialization;
+- Prisma schema/model/migration;
+- repository or persistence adapter;
+- draft creation;
+- number reservation;
+- frontend integration;
+- production AOSR/document creation behavior;
+- uploads, storage, queues, renderer or generation.
