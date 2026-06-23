@@ -489,6 +489,117 @@ button {
   gap: 18px;
 }
 
+.object-folders__topline {
+  display: flex;
+  gap: 18px;
+  align-items: start;
+  justify-content: space-between;
+}
+
+.object-folder-create-panel {
+  display: grid;
+  grid-template-columns: minmax(220px, 0.7fr) minmax(260px, 1fr) auto;
+  gap: 18px;
+  align-items: end;
+  border: 1px solid #bfd7fb;
+  border-radius: 8px;
+  background: #f8fbff;
+  padding: 18px;
+}
+
+.object-folder-create-panel > div:first-child,
+.object-folder-create-panel label {
+  display: grid;
+  gap: 6px;
+}
+
+.object-folder-create-panel h3,
+.object-folders__empty h3 {
+  color: #172033;
+  font-size: 1rem;
+  line-height: 1.35;
+}
+
+.object-folder-create-panel p,
+.object-folders__empty p,
+.object-folders__empty-copy {
+  margin: 0;
+  color: #596a78;
+  font-size: 0.86rem;
+  line-height: 1.5;
+}
+
+.object-folder-create-panel label {
+  color: #172033;
+  font-size: 0.82rem;
+  font-weight: 820;
+}
+
+.object-folder-create-panel input {
+  width: 100%;
+  border: 1px solid #a8c4e7;
+  border-radius: 8px;
+  background: #ffffff;
+  padding: 10px 11px;
+  color: #172033;
+  font: inherit;
+}
+
+.object-folder-create-panel__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.object-folders__empty {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  border: 1px dashed #b9cadb;
+  border-radius: 8px;
+  background: #fbfdff;
+  padding: 24px;
+}
+
+.object-folders__empty > span {
+  display: grid;
+  width: 42px;
+  height: 42px;
+  flex: 0 0 42px;
+  place-items: center;
+  border-radius: 8px;
+  background: #e9f2fb;
+  color: #285a99;
+  font-weight: 900;
+}
+
+.object-folders__empty > div {
+  display: grid;
+  gap: 4px;
+}
+
+.object-period-panel__empty {
+  display: grid;
+  gap: 5px;
+  border: 1px dashed #c2d2e2;
+  border-radius: 8px;
+  background: #fbfdff;
+  padding: 18px;
+}
+
+.object-period-panel__empty strong {
+  color: #172033;
+  font-size: 0.9rem;
+}
+
+.object-period-panel__empty p {
+  margin: 0;
+  color: #596a78;
+  font-size: 0.84rem;
+  line-height: 1.5;
+}
+
 .object-folders__heading p:not(.section-kicker) {
   max-width: 720px;
   color: #516064;
@@ -4895,6 +5006,10 @@ h3 {
     grid-template-columns: 1fr;
   }
 
+  .object-folder-create-panel {
+    grid-template-columns: 1fr;
+  }
+
   .object-overview__period-folders button {
     grid-template-columns: 42px minmax(0, 1fr) repeat(3, minmax(66px, 0.28fr));
   }
@@ -4985,6 +5100,14 @@ h3 {
 
   .object-folder-row__action {
     text-align: left;
+  }
+
+  .object-folders__topline {
+    display: grid;
+  }
+
+  .object-folder-create-panel__actions {
+    justify-content: flex-start;
   }
 
   .object-workspace-nav__subitem {

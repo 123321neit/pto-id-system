@@ -10,7 +10,7 @@
 
 Источник архитектурных принципов: `docs/PROJECT_MEMORY.md`.
 
-Основание модели: `docs/06-data-model-v1.md`, `docs/09-aggregate-boundaries-and-invariants.md`, `docs/10-auth-workspace-rbac-model.md`, `docs/11-ai-project-ingestion-and-assistance-model.md`, `docs/12-database-schema-v1.md`, `docs/14-backend-api-architecture-v1.md`, `docs/15-api-command-readmodel-contracts-v1.md`, `docs/16-mvp-scope-and-first-forms-v1.md`, `docs/18-initial-repository-bootstrap-and-development-rules-v1.md`, canonical ADR 0001-0005.
+Основание модели: `docs/06-data-model-v1.md`, `docs/09-aggregate-boundaries-and-invariants.md`, `docs/10-auth-workspace-rbac-model.md`, `docs/11-ai-project-ingestion-and-assistance-model.md`, `docs/12-database-schema-v1.md`, `docs/14-backend-api-architecture-v1.md`, `docs/15-api-command-readmodel-contracts-v1.md`, `docs/16-mvp-scope-and-first-forms-v1.md`, `docs/18-initial-repository-bootstrap-and-development-rules-v1.md`, canonical ADR 0001-0007.
 
 ---
 

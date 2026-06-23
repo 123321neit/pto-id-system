@@ -15,6 +15,7 @@ import type { MockObjectCard } from './mock-dashboard.js';
 import { getProposedDemoDocumentNumberDetails } from './object-document-numbering.js';
 import {
   addDemoObjectPeriodDraft,
+  createDemoObjectPeriod,
   demoObjectPeriods,
   getDemoObjectPeriodById,
   getDemoObjectPeriodDrafts,
@@ -52,45 +53,61 @@ export function ObjectWorkspacePage({
   onBackToObjects,
 }: ObjectWorkspacePageProps): React.JSX.Element {
   const [activeSection, setActiveSection] = useState<ObjectWorkspaceSection>('overview');
-  const [drafts, setDrafts] = useState<readonly DemoAosrDraft[]>(demoAosrWorkspace.drafts);
+  const hasDemoContent = object.workspaceSeed === 'demo-content';
+  const [drafts, setDrafts] = useState<readonly DemoAosrDraft[]>(
+    hasDemoContent ? demoAosrWorkspace.drafts : [],
+  );
   const [objectDefaults, setObjectDefaults] = useState<DemoAosrObjectDefaults>(
     demoAosrWorkspace.objectDefaults,
   );
-  const [periods, setPeriods] = useState<DemoObjectPeriods>(demoObjectPeriods);
-  const [selectedPeriodId, setSelectedPeriodId] = useState<DemoObjectPeriodId>('period-2026-09');
-  const [selectedDraftId, setSelectedDraftId] = useState(demoAosrWorkspace.drafts[0]?.id ?? '');
+  const [periods, setPeriods] = useState<DemoObjectPeriods>(
+    hasDemoContent ? demoObjectPeriods : [],
+  );
+  const [selectedPeriodId, setSelectedPeriodId] = useState<DemoObjectPeriodId | null>(
+    hasDemoContent ? (demoObjectPeriods[0]?.id ?? null) : null,
+  );
+  const [selectedDraftId, setSelectedDraftId] = useState(
+    hasDemoContent ? (demoAosrWorkspace.drafts[0]?.id ?? '') : '',
+  );
   const [createdAosrDraftCount, setCreatedAosrDraftCount] = useState(1);
+  const [createdFolderCount, setCreatedFolderCount] = useState(1);
   const [isCreateDocumentPanelOpen, setCreateDocumentPanelOpen] = useState(false);
+  const [isCreateFolderPanelOpen, setCreateFolderPanelOpen] = useState(false);
   const [documentNumberInput, setDocumentNumberInput] = useState('');
+  const [folderNameInput, setFolderNameInput] = useState('');
   const [settingsOpenRequest, setSettingsOpenRequest] = useState(0);
   const isAosrVisible = activeSection === 'aosr' || activeSection === 'settings';
-  const selectedPeriod = getDemoObjectPeriodById(selectedPeriodId, periods);
-  const selectedPeriodDrafts = getDemoObjectPeriodDrafts(selectedPeriod, drafts);
-  const proposedAosrNumberDetails = useMemo(
-    () =>
-      getProposedDemoDocumentNumberDetails({
-        documentTypeId: 'aosr',
-        drafts,
-        periodId: selectedPeriodId,
-        periods,
-        setting: {
-          documentTypeId: 'aosr',
-          prefix: objectDefaults.objectTemplate.numberingPrefix,
-          scope: objectDefaults.objectTemplate.numberingScope,
-          suffix: objectDefaults.objectTemplate.numberingSuffix,
-          template: '{prefix}{number}{suffix}',
-        },
-      }),
-    [
+  const selectedPeriod =
+    selectedPeriodId === null ? undefined : getDemoObjectPeriodById(selectedPeriodId, periods);
+  const selectedPeriodDrafts =
+    selectedPeriod === undefined ? [] : getDemoObjectPeriodDrafts(selectedPeriod, drafts);
+  const proposedAosrNumberDetails = useMemo(() => {
+    if (selectedPeriodId === null) {
+      return undefined;
+    }
+
+    return getProposedDemoDocumentNumberDetails({
+      documentTypeId: 'aosr',
       drafts,
-      objectDefaults.objectTemplate.numberingPrefix,
-      objectDefaults.objectTemplate.numberingScope,
-      objectDefaults.objectTemplate.numberingSuffix,
+      periodId: selectedPeriodId,
       periods,
-      selectedPeriodId,
-    ],
-  );
-  const proposedAosrNumber = proposedAosrNumberDetails.renderedNumber;
+      setting: {
+        documentTypeId: 'aosr',
+        prefix: objectDefaults.objectTemplate.numberingPrefix,
+        scope: objectDefaults.objectTemplate.numberingScope,
+        suffix: objectDefaults.objectTemplate.numberingSuffix,
+        template: '{prefix}{number}{suffix}',
+      },
+    });
+  }, [
+    drafts,
+    objectDefaults.objectTemplate.numberingPrefix,
+    objectDefaults.objectTemplate.numberingScope,
+    objectDefaults.objectTemplate.numberingSuffix,
+    periods,
+    selectedPeriodId,
+  ]);
+  const proposedAosrNumber = proposedAosrNumberDetails?.renderedNumber ?? '';
 
   useEffect(() => {
     if (isCreateDocumentPanelOpen) {
@@ -99,24 +116,64 @@ export function ObjectWorkspacePage({
   }, [isCreateDocumentPanelOpen, proposedAosrNumber]);
 
   const openCreateDocumentPanel = (): void => {
+    if (selectedPeriod === undefined) {
+      return;
+    }
+
     setDocumentNumberInput(proposedAosrNumber);
     setCreateDocumentPanelOpen(true);
   };
 
-  const openPeriod = (periodId: DemoObjectPeriodId): void => {
+  const openCreateFolderPanel = (): void => {
     setCreateDocumentPanelOpen(false);
-    setSelectedPeriodId(periodId);
-    const period = getDemoObjectPeriodById(periodId, periods);
-    setSelectedDraftId(period.draftIds[0] ?? drafts[0]?.id ?? '');
+    setFolderNameInput('');
+    setCreateFolderPanelOpen(true);
+    setActiveSection('folders');
+  };
+
+  const createFolder = (): void => {
+    const folderName = folderNameInput.trim();
+
+    if (folderName === '') {
+      return;
+    }
+
+    const folder = createDemoObjectPeriod(
+      `folder-created-${String(createdFolderCount)}`,
+      folderName,
+    );
+
+    setPeriods((currentPeriods) => [...currentPeriods, folder]);
+    setSelectedPeriodId(folder.id);
+    setSelectedDraftId('');
+    setCreatedFolderCount((currentCount) => currentCount + 1);
+    setCreateFolderPanelOpen(false);
+    setFolderNameInput('');
     setActiveSection('period');
   };
 
-  const openAosr = (periodId: DemoObjectPeriodId = selectedPeriodId, draftId?: string): void => {
+  const openPeriod = (periodId: DemoObjectPeriodId): void => {
+    setCreateDocumentPanelOpen(false);
+    setCreateFolderPanelOpen(false);
+    setSelectedPeriodId(periodId);
+    const period = getDemoObjectPeriodById(periodId, periods);
+    setSelectedDraftId(period.draftIds[0] ?? '');
+    setActiveSection('period');
+  };
+
+  const openAosr = (
+    periodId: DemoObjectPeriodId | null = selectedPeriodId,
+    draftId?: string,
+  ): void => {
+    if (periodId === null) {
+      return;
+    }
+
     const period = getDemoObjectPeriodById(periodId, periods);
 
     setCreateDocumentPanelOpen(false);
     setSelectedPeriodId(periodId);
-    setSelectedDraftId(draftId ?? period.draftIds[0] ?? drafts[0]?.id ?? '');
+    setSelectedDraftId(draftId ?? period.draftIds[0] ?? '');
     setActiveSection('aosr');
   };
 
@@ -127,6 +184,10 @@ export function ObjectWorkspacePage({
   };
 
   const createAosrDraft = (): void => {
+    if (selectedPeriodId === null || proposedAosrNumberDetails === undefined) {
+      return;
+    }
+
     const usesAutomaticNumber = documentNumberInput === proposedAosrNumber;
     const draft = createEmptyDemoAosrDraft({
       actNumber: documentNumberInput,
@@ -152,6 +213,7 @@ export function ObjectWorkspacePage({
 
   const openObjectSettings = (): void => {
     setCreateDocumentPanelOpen(false);
+    setCreateFolderPanelOpen(false);
     setActiveSection('settings');
     setSettingsOpenRequest((currentRequest) => currentRequest + 1);
   };
@@ -184,6 +246,7 @@ export function ObjectWorkspacePage({
               aria-label="Обзор"
               onClick={() => {
                 setCreateDocumentPanelOpen(false);
+                setCreateFolderPanelOpen(false);
                 setActiveSection('overview');
               }}
               type="button"
@@ -208,6 +271,7 @@ export function ObjectWorkspacePage({
               }
               onClick={() => {
                 setCreateDocumentPanelOpen(false);
+                setCreateFolderPanelOpen(false);
                 setActiveSection('folders');
               }}
               type="button"
@@ -220,7 +284,7 @@ export function ObjectWorkspacePage({
                 <small>Все рабочие папки</small>
               </span>
             </button>
-            {demoObjectPeriods.map((period) => (
+            {periods.map((period) => (
               <button
                 aria-label={period.name}
                 aria-current={
@@ -260,6 +324,7 @@ export function ObjectWorkspacePage({
               aria-label="Открыть документы объекта"
               onClick={() => {
                 setCreateDocumentPanelOpen(false);
+                setCreateFolderPanelOpen(false);
                 setActiveSection('documents');
               }}
               type="button"
@@ -277,6 +342,7 @@ export function ObjectWorkspacePage({
               aria-label="Печать итоговой ИД"
               onClick={() => {
                 setCreateDocumentPanelOpen(false);
+                setCreateFolderPanelOpen(false);
                 setActiveSection('final-package');
               }}
               type="button"
@@ -315,16 +381,29 @@ export function ObjectWorkspacePage({
             drafts={drafts}
             periods={periods}
             selectedPeriod={selectedPeriod}
+            onCreateFolder={openCreateFolderPanel}
             onOpenDraft={openDraft}
             onOpenPeriod={openPeriod}
           />
         ) : null}
 
         {activeSection === 'folders' ? (
-          <ObjectFoldersPage drafts={drafts} periods={periods} onOpenPeriod={openPeriod} />
+          <ObjectFoldersPage
+            drafts={drafts}
+            folderName={folderNameInput}
+            isCreateFolderPanelOpen={isCreateFolderPanelOpen}
+            periods={periods}
+            onChangeFolderName={setFolderNameInput}
+            onCloseCreateFolderPanel={() => {
+              setCreateFolderPanelOpen(false);
+            }}
+            onCreateFolder={createFolder}
+            onOpenCreateFolderPanel={openCreateFolderPanel}
+            onOpenPeriod={openPeriod}
+          />
         ) : null}
 
-        {activeSection === 'period' ? (
+        {activeSection === 'period' && selectedPeriod !== undefined ? (
           <ObjectPeriodPage
             drafts={selectedPeriodDrafts}
             documentNumber={documentNumberInput}
@@ -347,11 +426,11 @@ export function ObjectWorkspacePage({
           />
         ) : null}
 
-        {activeSection === 'periodic-package' ? (
+        {activeSection === 'periodic-package' && selectedPeriod !== undefined ? (
           <ObjectPeriodicPackagePage drafts={drafts} period={selectedPeriod} />
         ) : null}
 
-        {isAosrVisible ? (
+        {isAosrVisible && (selectedPeriod !== undefined || activeSection === 'settings') ? (
           <DemoAosrWorkspacePage
             drafts={drafts}
             initialSelectedDraftId={selectedDraftId}
@@ -359,11 +438,11 @@ export function ObjectWorkspacePage({
             objectDefaults={objectDefaults}
             onDraftsChange={setDrafts}
             onObjectDefaultsChange={setObjectDefaults}
-            periodName={selectedPeriod.name}
+            periodName={selectedPeriod?.name}
             settingsOpenRequest={settingsOpenRequest}
-            visibleDraftIds={selectedPeriod.draftIds}
+            visibleDraftIds={selectedPeriod?.draftIds ?? []}
             onObjectSettingsClosed={() => {
-              setActiveSection('aosr');
+              setActiveSection(selectedPeriod === undefined ? 'overview' : 'aosr');
             }}
           />
         ) : null}
@@ -426,7 +505,8 @@ function getSectionBreadcrumb(section: ObjectWorkspaceSection): string {
 interface ObjectOverviewProps {
   readonly drafts: readonly DemoAosrDraft[];
   readonly periods: readonly DemoObjectPeriod[];
-  readonly selectedPeriod: DemoObjectPeriod;
+  readonly selectedPeriod: DemoObjectPeriod | undefined;
+  readonly onCreateFolder: () => void;
   readonly onOpenDraft: (draft: DemoAosrDraft) => void;
   readonly onOpenPeriod: (periodId: DemoObjectPeriodId) => void;
 }
@@ -435,6 +515,7 @@ function ObjectOverview({
   drafts,
   periods,
   selectedPeriod,
+  onCreateFolder,
   onOpenDraft,
   onOpenPeriod,
 }: ObjectOverviewProps): React.JSX.Element {
@@ -445,57 +526,85 @@ function ObjectOverview({
         <h2 id="object-overview-title">Обзор объекта</h2>
       </div>
 
-      <section className="object-overview__focus" aria-labelledby="overview-focus-title">
-        <div className="object-overview__focus-main">
-          <p className="section-kicker">Продолжить работу</p>
-          <h3 id="overview-focus-title">{selectedPeriod.name}</h3>
-          <p>Рабочая папка с документами и автоматически сформированным реестром.</p>
-        </div>
-        <div className="object-overview__focus-actions">
-          <button
-            className="compact-toggle"
-            onClick={() => {
-              onOpenPeriod(selectedPeriod.id);
-            }}
-            type="button"
-          >
-            Открыть папку
-          </button>
-        </div>
-      </section>
+      {selectedPeriod === undefined ? (
+        <section
+          className="object-overview__focus object-overview__focus--empty"
+          aria-labelledby="overview-focus-title"
+        >
+          <div className="object-overview__focus-main">
+            <p className="section-kicker">Начало работы</p>
+            <h3 id="overview-focus-title">Создайте первую папку ИД</h3>
+            <p>Папка объединяет документы, её производный реестр и промежуточный комплект ИД.</p>
+          </div>
+          <div className="object-overview__focus-actions">
+            <button
+              className="action-button action-button--primary"
+              onClick={onCreateFolder}
+              type="button"
+            >
+              Создать папку
+            </button>
+          </div>
+        </section>
+      ) : (
+        <section className="object-overview__focus" aria-labelledby="overview-focus-title">
+          <div className="object-overview__focus-main">
+            <p className="section-kicker">Продолжить работу</p>
+            <h3 id="overview-focus-title">{selectedPeriod.name}</h3>
+            <p>Рабочая папка с документами и автоматически сформированным реестром.</p>
+          </div>
+          <div className="object-overview__focus-actions">
+            <button
+              className="compact-toggle"
+              onClick={() => {
+                onOpenPeriod(selectedPeriod.id);
+              }}
+              type="button"
+            >
+              Открыть папку
+            </button>
+          </div>
+        </section>
+      )}
 
       <section className="object-overview__panel" aria-labelledby="overview-recent-documents-title">
         <div className="object-overview__panel-heading">
           <p className="section-kicker">Недавние документы</p>
           <h3 id="overview-recent-documents-title">Последние документы</h3>
         </div>
-        <ul className="object-overview__recent-list object-overview__recent-list--wide">
-          {drafts.map((draft) => {
-            const period = getDemoObjectPeriodForDraftId(draft.id, periods);
+        {drafts.length === 0 ? (
+          <p className="object-folders__empty-copy">
+            Документы появятся здесь после создания первой папки.
+          </p>
+        ) : (
+          <ul className="object-overview__recent-list object-overview__recent-list--wide">
+            {drafts.map((draft) => {
+              const period = getDemoObjectPeriodForDraftId(draft.id, periods);
 
-            return (
-              <li key={draft.id}>
-                <button
-                  onClick={() => {
-                    onOpenDraft(draft);
-                  }}
-                  type="button"
-                >
-                  <span>
-                    <strong>{getDocumentDisplayNumber(draft.actNumber)}</strong>
-                    <small>
-                      {period.name} / {aosrActType.title}
-                    </small>
-                  </span>
-                  <span>
-                    <small>Открыть</small>
-                    <strong aria-hidden="true">→</strong>
-                  </span>
-                </button>
-              </li>
-            );
-          })}
-        </ul>
+              return (
+                <li key={draft.id}>
+                  <button
+                    onClick={() => {
+                      onOpenDraft(draft);
+                    }}
+                    type="button"
+                  >
+                    <span>
+                      <strong>{getDocumentDisplayNumber(draft.actNumber)}</strong>
+                      <small>
+                        {period.name} / {aosrActType.title}
+                      </small>
+                    </span>
+                    <span>
+                      <small>Открыть</small>
+                      <strong aria-hidden="true">→</strong>
+                    </span>
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        )}
       </section>
     </section>
   );
@@ -503,51 +612,122 @@ function ObjectOverview({
 
 interface ObjectFoldersPageProps {
   readonly drafts: readonly DemoAosrDraft[];
+  readonly folderName: string;
+  readonly isCreateFolderPanelOpen: boolean;
   readonly periods: readonly DemoObjectPeriod[];
+  readonly onChangeFolderName: (value: string) => void;
+  readonly onCloseCreateFolderPanel: () => void;
+  readonly onCreateFolder: () => void;
+  readonly onOpenCreateFolderPanel: () => void;
   readonly onOpenPeriod: (periodId: DemoObjectPeriodId) => void;
 }
 
 function ObjectFoldersPage({
   drafts,
+  folderName,
+  isCreateFolderPanelOpen,
   periods,
+  onChangeFolderName,
+  onCloseCreateFolderPanel,
+  onCreateFolder,
+  onOpenCreateFolderPanel,
   onOpenPeriod,
 }: ObjectFoldersPageProps): React.JSX.Element {
   return (
     <section className="object-folders" aria-labelledby="object-folders-title">
-      <div className="object-folders__heading">
-        <p className="section-kicker">Промежуточная исполнительная документация</p>
-        <h2 id="object-folders-title">Папки ИД</h2>
-        <p>Все рабочие папки объекта. Внутри каждой находятся документы и её реестр.</p>
+      <div className="object-folders__topline">
+        <div className="object-folders__heading">
+          <p className="section-kicker">Промежуточная исполнительная документация</p>
+          <h2 id="object-folders-title">Папки ИД</h2>
+          <p>Создавайте столько рабочих папок, сколько нужно объекту, и называйте их свободно.</p>
+        </div>
+        <button
+          className="action-button action-button--primary"
+          onClick={onOpenCreateFolderPanel}
+          type="button"
+        >
+          Создать папку
+        </button>
       </div>
 
-      <div className="object-folder-directory" aria-label="Все папки ИД">
-        {periods.map((period) => {
-          const periodDrafts = getDemoObjectPeriodDrafts(period, drafts);
-
-          return (
-            <button
-              className="object-folder-row"
-              key={period.id}
-              onClick={() => {
-                onOpenPeriod(period.id);
+      {isCreateFolderPanelOpen ? (
+        <form
+          className="object-folder-create-panel"
+          aria-label="Создать папку ИД"
+          onSubmit={(event) => {
+            event.preventDefault();
+            onCreateFolder();
+          }}
+        >
+          <div>
+            <p className="section-kicker">Новая папка</p>
+            <h3>Как назвать папку?</h3>
+            <p>Например: «Монтаж вентиляции», «Сентябрь 2026» или «Этап 1».</p>
+          </div>
+          <label>
+            Название папки
+            <input
+              autoFocus
+              onChange={(event) => {
+                onChangeFolderName(event.currentTarget.value);
               }}
-              type="button"
-            >
-              <span className="object-folder-row__icon" aria-hidden="true">
-                ▣
-              </span>
-              <span className="object-folder-row__main">
-                <strong>{period.name}</strong>
-                <small>Промежуточная исполнительная документация</small>
-              </span>
-              <span className="object-folder-row__count">
-                {periodDrafts.length} {getDocumentCountLabel(periodDrafts.length)}
-              </span>
-              <span className="object-folder-row__action">Открыть</span>
+              placeholder="Введите произвольное название"
+              value={folderName}
+            />
+          </label>
+          <div className="object-folder-create-panel__actions">
+            <button className="compact-toggle" onClick={onCloseCreateFolderPanel} type="button">
+              Отмена
             </button>
-          );
-        })}
-      </div>
+            <button
+              className="action-button action-button--primary"
+              disabled={folderName.trim() === ''}
+              type="submit"
+            >
+              Создать и открыть
+            </button>
+          </div>
+        </form>
+      ) : null}
+
+      {periods.length === 0 ? (
+        <section className="object-folders__empty" aria-label="Папок ИД пока нет">
+          <span aria-hidden="true">▣</span>
+          <div>
+            <h3>Папок ИД пока нет</h3>
+            <p>Создайте первую папку, затем добавьте в неё нужные документы.</p>
+          </div>
+        </section>
+      ) : (
+        <div className="object-folder-directory" aria-label="Все папки ИД">
+          {periods.map((period) => {
+            const periodDrafts = getDemoObjectPeriodDrafts(period, drafts);
+
+            return (
+              <button
+                className="object-folder-row"
+                key={period.id}
+                onClick={() => {
+                  onOpenPeriod(period.id);
+                }}
+                type="button"
+              >
+                <span className="object-folder-row__icon" aria-hidden="true">
+                  ▣
+                </span>
+                <span className="object-folder-row__main">
+                  <strong>{period.name}</strong>
+                  <small>Промежуточная исполнительная документация</small>
+                </span>
+                <span className="object-folder-row__count">
+                  {periodDrafts.length} {getDocumentCountLabel(periodDrafts.length)}
+                </span>
+                <span className="object-folder-row__action">Открыть</span>
+              </button>
+            );
+          })}
+        </div>
+      )}
     </section>
   );
 }
@@ -744,31 +924,38 @@ function ObjectPeriodPage({
             <p className="section-kicker">Состав папки</p>
             <h3 id="period-documents-title">Документы</h3>
           </div>
-          <ul className="object-overview__recent-list object-overview__recent-list--wide">
-            {drafts.map((draft) => (
-              <li key={draft.id}>
-                <button
-                  onClick={() => {
-                    onOpenAosr(draft.id);
-                  }}
-                  type="button"
-                >
-                  <span>
-                    <strong>{getDocumentDisplayNumber(draft.actNumber)}</strong>
-                    <small>{aosrActType.title}</small>
-                  </span>
-                  <span>
-                    <small>Дата документа</small>
-                    <strong>{draft.actDate}</strong>
-                  </span>
-                  <span>
-                    <small>Открыть</small>
-                    <strong aria-hidden="true">→</strong>
-                  </span>
-                </button>
-              </li>
-            ))}
-          </ul>
+          {drafts.length === 0 ? (
+            <div className="object-period-panel__empty">
+              <strong>В этой папке пока нет документов</strong>
+              <p>Создайте первый документ — он сразу появится в составе папки и её реестре.</p>
+            </div>
+          ) : (
+            <ul className="object-overview__recent-list object-overview__recent-list--wide">
+              {drafts.map((draft) => (
+                <li key={draft.id}>
+                  <button
+                    onClick={() => {
+                      onOpenAosr(draft.id);
+                    }}
+                    type="button"
+                  >
+                    <span>
+                      <strong>{getDocumentDisplayNumber(draft.actNumber)}</strong>
+                      <small>{aosrActType.title}</small>
+                    </span>
+                    <span>
+                      <small>Дата документа</small>
+                      <strong>{draft.actDate}</strong>
+                    </span>
+                    <span>
+                      <small>Открыть</small>
+                      <strong aria-hidden="true">→</strong>
+                    </span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
         </section>
 
         <div className="object-period-generated-views" aria-label="Сформированные представления">

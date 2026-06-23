@@ -10,7 +10,7 @@
 
 Источник архитектурных принципов: `docs/PROJECT_MEMORY.md`.
 
-Основание модели: `docs/06-data-model-v1.md`, `docs/07-aosr-domain-specification.md`, `docs/08-document-types-catalog.md`, `docs/09-aggregate-boundaries-and-invariants.md`, `docs/10-auth-workspace-rbac-model.md`, `docs/11-ai-project-ingestion-and-assistance-model.md`, ADR 0001-0005.
+Основание модели: `docs/06-data-model-v1.md`, `docs/07-aosr-domain-specification.md`, `docs/08-document-types-catalog.md`, `docs/09-aggregate-boundaries-and-invariants.md`, `docs/10-auth-workspace-rbac-model.md`, `docs/11-ai-project-ingestion-and-assistance-model.md`, ADR 0001-0007.
 
 Access amendment note, 2026-05-29:
 
@@ -19,6 +19,18 @@ docs/19-sharing-and-access-model-v1.md supersedes the membership/RBAC table fami
 ```
 
 The conceptual schema below remains historical V1 context where it describes tenant isolation, opaque invite-token safety, auditability and no cross-workspace references. Future physical schema work for MVP access must use owner-based `OwnedWorkspace`, share codes, share grants and grant capabilities from `docs/19`, not the `Membership` role matrix described here.
+
+Object-template amendment note, 2026-06-22:
+
+```text
+ADR 0007 supersedes snapshot/default table assumptions for active working acts.
+```
+
+No physical schema may be derived directly from legacy `ObjectCompanySnapshot`
+or representative-default rows in this document. Future schema must model
+global reusable libraries, `ObjectTemplate` references, linked/manual act mode,
+one complete manual snapshot and separate immutable released revision/package
+snapshots. That physical contract remains a later explicit task.
 
 ---
 
@@ -1325,7 +1337,8 @@ Schema V1 establishes conceptual storage coverage for the responsible first prod
 
 - `Workspace`, `User`, `Membership` and stored opaque-token `Invite` boundary;
 - `Object`, `EngineeringSystem`, separate `FolderTree` and folder placements;
-- `CompanyProfile`, object company snapshots, representative defaults and released participant snapshots;
+- global company/representative libraries, object-template assignments,
+  complete manual snapshots and released participant/output snapshots;
 - object-owned `ProjectDrawingSet`;
 - typed `Document` identity, structured content, validation, locks, autosave and immutable released revisions;
 - full structured `AOSR` payload, material usages and explicit evidence/scheme links;

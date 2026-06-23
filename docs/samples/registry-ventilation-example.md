@@ -59,7 +59,8 @@
 
 Этот блок должен собираться из:
 
-- ObjectCompanySnapshot;
+- current `ObjectTemplate` organization assignments for working projection, or
+  exact frozen values from a released revision/package for historical output;
 - object-level contract settings;
 - work type settings;
 - SRO/license fields;
@@ -229,7 +230,7 @@ ExecutiveScheme = file + structured metadata.
 Signer block должен собираться из:
 
 - RegistrySignerSnapshot;
-- ObjectCompanySnapshot;
+- resolved organization/representative library assignment;
 - selected representative.
 
 Подписант реестра может отличаться от подписантов актов.
@@ -255,9 +256,11 @@ Signer block должен собираться из:
 Правильная модель:
 
 ```text
-Object + ObjectCompanySnapshot + ProjectDrawingSet + Certificates + Documents + ExecutiveSchemes + RegistryOverrides
+Object + ObjectTemplate assignments + ProjectDrawingSet + Certificates + released/current Documents + ExecutiveSchemes + RegistryOverrides
 → Registry Projection
 → DOCX/PDF Registry Artifact
 ```
 
 Реестр всегда должен быть пересобираемым.
+Historical registry/package output must use frozen released dependencies rather
+than re-resolving current library values.

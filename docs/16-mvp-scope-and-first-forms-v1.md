@@ -10,7 +10,7 @@
 
 Источник архитектурных принципов: `docs/PROJECT_MEMORY.md`.
 
-Основание: `docs/07-aosr-domain-specification.md`, `docs/08-document-types-catalog.md`, `docs/12-database-schema-v1.md`, `docs/13-domain-lifecycle-immutability-validation-v1.md`, `docs/14-backend-api-architecture-v1.md`, `docs/15-api-command-readmodel-contracts-v1.md`, ADR 0001-0005, sample analyses.
+Основание: `docs/07-aosr-domain-specification.md`, `docs/08-document-types-catalog.md`, `docs/12-database-schema-v1.md`, `docs/13-domain-lifecycle-immutability-validation-v1.md`, `docs/14-backend-api-architecture-v1.md`, `docs/15-api-command-readmodel-contracts-v1.md`, ADR 0001-0007, sample analyses.
 
 Access amendment note, 2026-05-29:
 
@@ -19,6 +19,14 @@ docs/19-sharing-and-access-model-v1.md supersedes the collaboration/RBAC section
 ```
 
 MVP collaboration must use owner-based workspace/certificate-library sharing, share codes and explicit grant capabilities. The role/membership wording below is updated to reflect that decision.
+
+Object-template amendment note, 2026-06-22:
+
+MVP working AOSR must follow ADR 0007: linked acts resolve template-owned data
+through global reusable libraries and `ObjectTemplate`; only an explicit mode
+switch creates one complete manual snapshot; finalization captures a separate
+immutable released revision snapshot. Legacy default/override wording below
+must not be implemented as partial document overrides.
 
 Этот документ фиксирует первый реалистичный product scope PTO ID System. Он не является техническим заданием на код, SQL, API, OpenAPI, ORM, frontend scaffold, deployment или выбор стека.
 
@@ -192,7 +200,7 @@ The following fields are required before an AOSR can become `final` in MVP:
 | Work | non-empty work description, engineering system/discipline, rendered location, execution period, acceptance/conclusion text. |
 | Location | at least one meaningful location representation: axes, elevation, floor/zone, room/section or explicit rendered location text. |
 | Project basis | at least one project/reference basis line; preferred source is `ProjectDrawingSet`. |
-| Participants | required participant snapshots for the selected MVP AOSR form, including role, organization, position, name, authority/caption and display order. |
+| Participants | required resolved participants for the selected MVP AOSR form, including role, organization, position, name, authority/caption and display order; finalization freezes them in the released revision snapshot. |
 | Template | selected usable AOSR `TemplateVersion` for generated output. |
 | Certificates | every printed quality-document number/reference must point to a confirmed certificate library item with retained physical original file. |
 | Schemes | every printed/attached scheme reference must point to an `ExecutiveScheme` with retained physical original file. |
@@ -251,7 +259,14 @@ MVP supports the standard AOSR participant structure from the sample analysis:
 - representative of construction control of the person who performed the works;
 - other representatives participating in inspection.
 
-For first delivery, the product should avoid a heavy organization directory. It needs enough object-level defaults and document-level overrides to produce a valid AOSR:
+For first delivery, the product needs focused reusable libraries rather than a
+heavy organization-management subsystem. Global organization and representative
+records feed object-specific assignments in `ObjectTemplate`. A linked act
+resolves those assignments live. If one act must differ, the user explicitly
+switches the whole template-owned section to `manual`; partial document-level
+overrides are forbidden.
+
+The participant contract must support:
 
 - participant role;
 - organization;
@@ -342,7 +357,7 @@ MVP AOSR validation must include:
 
 | Severity | MVP examples |
 | --- | --- |
-| `ERROR` | Missing object/date/number/work description/rendered location; missing required participant snapshot for accepted template; printed certificate reference without file-backed certificate; printed scheme attachment without file-backed scheme; numbering collision; missing usable template. |
+| `ERROR` | Missing object/date/number/work description/rendered location; missing required resolved participant data for accepted template at finalization; printed certificate reference without file-backed certificate; printed scheme attachment without file-backed scheme; numbering collision; missing usable template. |
 | `WARNING` | Certificate expired relative to AOSR date; material-certificate applicability unclear; optional scheme absent where often expected but not required; execution period looks inconsistent with document date; current output stale after edits. |
 | `INFO` | Certificate expired today but was valid on historical document date; evidence reused by other acts; newer template exists; previous revision remains in historical package. |
 

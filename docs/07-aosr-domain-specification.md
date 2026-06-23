@@ -10,7 +10,20 @@
 
 Источник архитектурных принципов: `docs/PROJECT_MEMORY.md`.
 
-Основание модели: `docs/06-data-model-v1.md`, ADR 0001-0005, `docs/samples/aosr-example-analysis.md`, `docs/samples/registry-ventilation-example.md`.
+Основание модели: `docs/06-data-model-v1.md`, ADR 0001-0007, `docs/samples/aosr-example-analysis.md`, `docs/samples/registry-ventilation-example.md`.
+
+Уточнение 2026-06-22:
+
+```text
+ADR 0007 имеет приоритет для active working acts.
+```
+
+Рабочий АОСР бывает либо `linked`, либо `manual`. `linked` разрешает
+template-owned данные через текущий `ObjectTemplate` и глобальные библиотеки;
+`manual` хранит один полный `manualTemplateSnapshot`. Participant/company
+snapshots, описанные ниже без отдельного qualifier, относятся к manual state
+или к released `DocumentRevisionSnapshot`, а не к обязательной копии в каждом
+активном акте.
 
 ---
 
@@ -41,6 +54,10 @@
 8. Package Builder является asynchronous и snapshot-based.
 9. `Object` предоставляет контекст, но не поглощает lifecycle АОСР как часть giant aggregate.
 10. OCR/AI может предлагать metadata, но не утверждает их автоматически.
+11. Active working AOSR follows ADR 0007: template data is either fully
+    `linked` through `ObjectTemplate` and global libraries or fully `manual`
+    through one complete snapshot; partial template-field overrides are
+    forbidden.
 
 ### 1.2 Status of detail in this document
 
@@ -105,7 +122,7 @@
 | From | To | Condition or effect |
 | --- | --- | --- |
 | New | `draft` | Создан typed document с `document_type = AOSR` в context одного объекта. |
-| `draft` | `final` | Пройдены blocking validation errors; фиксируются revision snapshot, representative snapshots и selected template version. |
+| `draft` | `final` | Пройдены blocking validation errors; фиксируется resolved revision snapshot, включая participant output и selected template version. |
 | `final` | `final` new revision | Любая содержательная правка выпуска оформляется следующей revision с повторной validation. |
 | `draft` / `final` | `archived` | Пользователь намеренно выводит акт из активного состава; детали разрешений остаются open. |
 | Active / archived | `deleted` | Только soft delete; historical links/snapshots нельзя уничтожить молча. |
@@ -134,7 +151,8 @@ Document(document_type = AOSR) owns AOSRPayload
 - structured AOSR payload;
 - validation findings соответствующей revision;
 - ссылками на связанные evidence entities;
-- snapshots представителей для опубликованной revision;
+- linked/manual template mode for working state and resolved participant output
+  snapshots for each published revision;
 - binding к `TemplateVersion`;
 - provenance generated artifacts.
 
@@ -145,10 +163,10 @@ Document(document_type = AOSR) owns AOSRPayload
 | Номер, дата, статус, revision | Owned by document | `Document` | Header and rendering inputs. |
 | Описание освидетельствуемой работы и решение о последующих работах | Owned typed payload | `AOSRPayload` | Содержательная часть акта. |
 | Размещение документа | Reference/placement | `Folder` context referenced by `Document` | Навигация; папка не владеет актом. |
-| Объект и инженерная система | Reference with required output values | `Object` / `EngineeringSystem`, with output snapshot where needed | Контекст акта и печатная шапка. |
-| Данные организаций на объекте | Snapshot source | `ObjectCompanySnapshot` | Устойчивые реквизиты для документа. |
+| Объект и инженерная система | Reference with required output values | `Object` / `EngineeringSystem`; exact rendered values freeze on release | Контекст акта и печатная шапка. |
+| Данные организаций на объекте | Live template assignment or frozen snapshot | Global organization library through `ObjectTemplate`; full manual/released snapshot where applicable | Linked acts receive current corrected values; historical output remains stable. |
 | Рабочая документация | Reference plus rendered values | `ProjectDrawingSet` / typed project references | Основание выполнения работ. |
-| Представители | Document snapshot | `DocumentRepresentativeSnapshot` originating from defaults/override | Фиксируется для revision. |
+| Представители | Live template assignment or frozen snapshot | Global representative library through `ObjectTemplate`; full manual/released snapshot where applicable | No partial overrides; resolved participants freeze for release. |
 | Материалы/оборудование | Typed usage data and optional references | `MaterialUsage`; `Material` catalog status remains open | Состав применённых позиций. |
 | Сертификаты | Reference to evidence aggregate | `Certificate` | Номер и metadata отображаются через evidence-backed link. |
 | Исполнительные схемы | Reference to evidence aggregate | `ExecutiveScheme` | Отображение/приложение, если предусмотрено актом. |
@@ -157,7 +175,11 @@ Document(document_type = AOSR) owns AOSRPayload
 
 ### 4.3 Boundary guardrail
 
-`Object` задаёт object context и snapshots, но не владеет внутренним состоянием всех АОСР. `Certificate`, `ExecutiveScheme`, `Template` и `Package` сохраняют самостоятельные lifecycle; АОСР ссылается на них и фиксирует необходимое состояние для выпуска.
+`Object` задаёт object context и `ObjectTemplate`, но не владеет внутренним
+состоянием всех АОСР. Active linked acts читают template-owned values через
+этот template; manual/released states фиксируют необходимые значения.
+`Certificate`, `ExecutiveScheme`, form `Template` и `Package` сохраняют
+самостоятельные lifecycle.
 
 ---
 
@@ -169,9 +191,9 @@ Document(document_type = AOSR) owns AOSRPayload
 
 | Block | Purpose | Primary data character |
 | --- | --- | --- |
-| Header | Идентифицирует акт и его контекст | Document-owned fields plus object references/snapshots. |
+| Header | Идентифицирует акт и его контекст | Document-owned fields plus linked/manual template resolution; released output freezes exact values. |
 | Work | Описывает скрытые работы и основания выполнения | AOSR typed data plus WorkItem/ProjectDrawingSet relations. |
-| Participants | Фиксирует стороны и представителей освидетельствования | Document snapshots based on object defaults/overrides. |
+| Participants | Фиксирует стороны и представителей освидетельствования | Linked object-template assignments or one full manual snapshot; released revision freezes resolved output. |
 | Materials | Описывает применённые материалы и оборудование | MaterialUsage typed data and optional catalog refs. |
 | Certificates | Подтверждает quality evidence | Links to file-backed `Certificate` aggregates. |
 | Executive schemes | Связывает фактические схемы/съёмки | Links to file-backed `ExecutiveScheme`. |
@@ -278,9 +300,9 @@ Work block отвечает на вопрос: какие именно скры�
 
 Точный обязательный набор сторон зависит от применимой формы и требований объекта и остаётся open question; спецификация требует типизированных ролей для тех участников, которые присутствуют.
 
-### 8.2 Participant snapshot contents
+### 8.2 Resolved participant output contents
 
-| Snapshot field | Meaning |
+| Output field | Meaning |
 | --- | --- |
 | Participant role | Семантическая роль в освидетельствовании. |
 | Organization displayed | Организация, от имени которой действует представитель. |
@@ -294,7 +316,17 @@ Work block отвечает на вопрос: какие именно скры�
 
 ### 8.3 Origin and ownership
 
-Представитель может происходить из global/tenant library, object defaults либо быть temporary representative конкретного акта. Однако released revision должна содержать `DocumentRepresentativeSnapshot`; изменение профиля или object default позднее не изменяет уже выпущенный акт.
+Canonical representative originates in the global user-level library. The
+object template stores an assignment/reference with object-specific role,
+group, order and captions. A linked act resolves the current library/template
+state. Creating a new person from the act flow first creates the global library
+record and object assignment; act-only free-text/temporary representative is
+not a valid final source.
+
+An explicit switch to manual mode captures the whole template-owned section,
+not a partial participant override. A released revision separately stores the
+resolved participant output so later library/template changes cannot rewrite
+the published act.
 
 ### 8.4 Display rules
 
@@ -586,8 +618,8 @@ Warnings не блокируют finalization по уже принятому bas
 
 | Color zone from AOSR analysis | Meaning in document | Source of truth | Domain entity/value | Snapshot/revision effect |
 | --- | --- | --- | --- | --- |
-| Yellow | Объектные данные и реквизиты | Object context / object-level snapshots | `Object`, applicable object/company values | Printed values used by final revision must be reproducible. |
-| Green | Представители и подписанты | Document participant snapshots derived from defaults/overrides | `DocumentRepresentativeSnapshot`, `AuthorityBasis`, `DisplayOrder` | Always fixed for released revision. |
+| Yellow | Объектные данные и реквизиты | `ObjectTemplate` for linked work; manual/released snapshot where applicable | `Object`, object-template values and frozen resolved output | Printed values used by final revision must be reproducible. |
+| Green | Представители и подписанты | Global library through `ObjectTemplate` for linked work; manual/released snapshot where applicable | Representative assignment, authority, caption and display order | Current values stay live only before manual/release freeze. |
 | Gray | Номер акта | Typed document field and numbering policy | `DocumentNumber` in `Document` | Number change after final is revision-relevant. |
 | Purple | Дата акта | Typed document field | `DocumentDate` in `Document` | Revision-relevant and base for certificate validity. |
 | Cyan | Переменные данные конкретного акта | AOSR structured payload and evidence links | `AOSRPayload`, `WorkItem`, `MaterialUsage`, `Certificate`, `ExecutiveScheme`, attachments | Content/evidence changes in final create new revision. |
@@ -660,17 +692,22 @@ Warnings не блокируют finalization по уже принятому bas
 | Chosen `TemplateVersion` | Воспроизводимость формы. |
 | Generated artifact provenance when produced | Связь output с содержимым и формой. |
 
-### 17.2 Live entity reads allowed before release
+### 17.2 Working resolution before release
 
-Во время создания `draft` допускается читать live entities для выбора и подсказки:
+До release working act resolves according to its explicit template mode:
 
-- current `Object` setup and defaults;
-- current company/representative profiles for selection;
+- linked act reads current `ObjectTemplate` and current global
+  company/representative libraries as its source, not only as a picker hint;
+- manual act reads the whole `manualTemplateSnapshot` captured by the explicit
+  mode switch and no longer consumes template/library updates;
 - current `Certificate` library metadata/files;
 - current `ExecutiveScheme` list;
 - available unused/new template versions.
 
-До выпуска эти live reads не заменяют requirement to capture released values/snapshots. После выпуска изменение live entity не должно молча переписывать released output.
+Individual act data remains editable in either mode and does not switch the
+mode. At release, the system captures exact resolved values/references in the
+immutable `DocumentRevisionSnapshot`. After release, a live entity change must
+not rewrite that released output.
 
 ### 17.3 Package snapshot relation
 
@@ -690,7 +727,7 @@ Warnings не блокируют finalization по уже принятому bas
 - добавление, удаление или изменение material usage;
 - добавление, удаление или изменение certificate relation либо отображаемых confirmed certificate values;
 - добавление, удаление или изменение linked scheme/attachment либо порядка/caption, отображаемых в акте;
-- изменение participant snapshot, role, authority basis, caption или display order;
+- изменение resolved/manual participant data, role, authority basis, caption or display order used by the new revision;
 - смена `TemplateVersion` для нового опубликованного представления;
 - изменение поля, влияющего на validation результата выпуска.
 
@@ -704,7 +741,8 @@ Warnings не блокируют finalization по уже принятому bas
 - пересчёт registry projection без изменения source AOSR;
 - `RegistryOverride`, меняющий только presentation registry/package, а не акт;
 - новая package build, включающая прежнюю AOSR revision;
-- изменение live profile, которое не применяется к snapshot/revision акта.
+- изменение live profile while no new released revision is created; linked
+  working preview may change, but historical revisions remain untouched.
 
 ### 18.3 Draft revision policy remains open
 

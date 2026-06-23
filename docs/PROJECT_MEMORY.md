@@ -6,7 +6,7 @@
 
 # MASTER CONTEXT / SOURCE OF TRUTH
 
-# VERSION: 2026-06-17-LIVE-OBJECT-TEMPLATE-LINKS
+# VERSION: 2026-06-22-DYNAMIC-FOLDER-MOCK
 
 # STATUS: FIRST ALLOWED INFRASTRUCTURE BOOTSTRAP SCAFFOLD; CANONICAL ADR BASELINE ACCEPTED; BACKEND MODULE ARCHITECTURE SKELETON INTRODUCED; FIRST TECHNICAL FRONTEND-BACKEND STATUS SLICE INTRODUCED; DATABASE FOUNDATION TECHNICAL SLICE INTRODUCED; OBJECT STORAGE FOUNDATION TECHNICAL SLICE INTRODUCED; AUTH SHARING IMPLEMENTATION PLAN ADDED; USER IDENTITY SKELETON INTRODUCED; GLOBAL SYSTEM ADMIN MARKER INTRODUCED; OWNED WORKSPACE BASELINE INTRODUCED; FIRST MOCK AOSR DEMO UI SLICE INTRODUCED; MOCK AOSR CONFIGURABLE OBJECT HEADER ORGANIZATIONS AND REPRESENTATIVE LIBRARY INTRODUCED; MOCK AOSR DEMO UX/PREVIEW REFINED; MOCK APP SHELL AND OBJECT DASHBOARD INTRODUCED; FRONTEND-ONLY MOCK REPRESENTATIVES/ORGANIZATIONS MANAGEMENT PAGE INTRODUCED; FRONTEND-ONLY MOCK CERTIFICATE LIBRARY PAGE INTRODUCED; STAGE 5 MOCK AOSR WORKSPACE UX STABILIZED; AOSR EDITOR UX CLEANUP INTRODUCED; AOSR WORKSPACE DRAWER UX INTRODUCED; FRONTEND-ONLY MOCK OBJECT DOCUMENT LIBRARY INTRODUCED; AOSR WORKSPACE APPLICATIONS UX CLEANUP INTRODUCED; FRONTEND-ONLY MOCK OBJECT COMPLIANCE DEFAULTS AND ACT OVERRIDES INTRODUCED; FRONTEND-ONLY MOCK OBJECT WORKSPACE VISUAL PASS INTRODUCED; FRONTEND-ONLY MOCK OBJECT WORKSPACE SHELL INTRODUCED; AOSR DOCUMENT PREVIEW DRAWER UX INTRODUCED; AOSR DOCUMENT PREVIEW PAGE VISUALIZATION REFINED; FRONTEND-ONLY OBJECT DOCUMENT WORKSPACE INTRODUCED; FRONTEND-ONLY OBJECT CERTIFICATE WORKSPACE INTRODUCED; FRONTEND-ONLY ID REGISTRY V1 INTRODUCED; FRONTEND-ONLY FINAL ID PACKAGE MOCK INTRODUCED; FRONTEND-ONLY ACT TYPE METADATA PREP INTRODUCED; AOSR READINESS PANEL V1 INTRODUCED; FINAL PACKAGE READINESS V1 INTRODUCED; FRONTEND-ONLY OBJECT WORKSPACE UX HIERARCHY POLISH INTRODUCED; FRONTEND-ONLY OBJECT OVERVIEW AND GLOBAL CERTIFICATE ARCHITECTURE UX CORRECTION INTRODUCED; GLOBAL REUSABLE LIBRARIES AND ACT SNAPSHOTS ADR ACCEPTED; FRONTEND-ONLY PERIOD-FIRST OBJECT WORKSPACE MOCK INTRODUCED; FRONTEND-ONLY PERIOD-SCOPED AOSR CREATION MOCK INTRODUCED; FRONTEND-ONLY AOSR MANUAL NUMBER OVERRIDE MOCK INTRODUCED; FRONTEND-ONLY OBJECT WORKSPACE PREMIUM UX POLISH INTRODUCED; FRONTEND-ONLY GENERATED ID PACKAGE VIEWS UX INTRODUCED; FRONTEND-ONLY PRINT-ORDER AOSR EDITOR UX INTRODUCED; FRONTEND-ONLY UX OVERLOAD CLEANUP INTRODUCED; FRONTEND-ONLY RADICAL UX CLEANUP INTRODUCED; FRONTEND-ONLY PERIOD DOCUMENT UX CLEANUP INTRODUCED; FRONTEND-ONLY DOCUMENT DEFAULT PARAMETERS AND DOCUMENT-OWNED AOSR TEXTS INTRODUCED; FRONTEND-ONLY AOSR PRINTABLE DEFAULT SNAPSHOTS EXTENDED; LIVE OBJECT TEMPLATE LINKS AND MANUAL ACT SNAPSHOTS ACCEPTED
 
@@ -54,6 +54,34 @@ Canonical ADR baseline accepted. Authoritative ADR references:
 - `docs/adr/0007-document-defaults-suggestions-and-controlled-updates.md`
 
 Future implementation must comply with these ADRs. They consolidate existing accepted decisions only and do not permit production feature coding.
+
+Current object-template authority, clarified 2026-06-22:
+
+```text
+global libraries -> ObjectTemplate -> linked working act -> resolved printState
+                                         |
+                                         +-> explicit manual switch -> one complete manualTemplateSnapshot
+
+release -> immutable DocumentRevisionSnapshot
+package build/release -> immutable PackageSnapshot
+```
+
+ADR 0007 is authoritative whenever older sections or historical log entries
+describe object defaults copied into every act, object-owned company snapshots
+as the normal working source, temporary act-only representatives or partial
+document overrides. Those older passages preserve chronology only. They must
+not be used to design production storage/API behavior.
+
+Current folder terminology, clarified 2026-06-22:
+
+```text
+Object -> user-defined ID folders -> documents -> derived folder registry/intermediate ID
+Object -> all folders -> final registry/final ID
+```
+
+Older `period-first`, `Period`, `Сентябрь 2026` and `Октябрь 2026` passages
+preserve frontend history or seeded demo examples. They do not constrain folder
+names to months and must not become a fixed production enum/taxonomy.
 
 MVP access amendment accepted:
 
@@ -199,7 +227,8 @@ in the act. No backend, persistence, Prisma/schema/migrations, routes,
 auth/session, uploads, file storage, OCR/AI, real DOCX/PDF generation, share
 codes/grants or production business logic were introduced.
 
-Stage: frontend-only mock object compliance defaults and act overrides. The
+Historical stage (superseded by ADR 0007 for active template-owned data):
+frontend-only mock object compliance defaults and act overrides. The
 default parameters dialog has a dedicated point 6 default text for
 `Соответствие работ предъявляемым требованиям`. ADR 0007 supersedes the earlier
 live-default behavior: current AOSR drafts own point 6 text after creation,
@@ -209,7 +238,8 @@ in-memory mock and does not add backend, persistence, Prisma/schema/migrations,
 routes/controllers, auth/session, uploads, file storage, OCR/AI, real
 DOCX/PDF generation, share codes/grants or production business logic.
 
-Stage: frontend-only AOSR printable default snapshots. The AOSR editor and
+Historical stage (superseded by ADR 0007 for active template-owned data):
+frontend-only AOSR printable default snapshots. The AOSR editor and
 preview were audited for remaining printable values that still read object
 defaults or libraries live. Current AOSR drafts now own the printed object name,
 under-title text, header organization blocks/order, project documentation text,
@@ -405,7 +435,8 @@ is created. Future UI settings may expose `ОВ-{n}`, `12-{n}-ОВ` and
 persistence, no Prisma/schema/migrations, no uploads, no OCR/AI, no
 DOCX/PDF/ZIP generation and no production numbering or AOSR business logic.
 
-Architecture decision accepted: global reusable libraries and act snapshots.
+Architecture decision accepted: global reusable libraries and explicit frozen
+snapshot boundaries.
 Certificates, organizations and representatives are global user-level reusable
 libraries. Objects do not own separate copies of these libraries. Objects store
 links, assignments or bindings to global entities and may carry object-specific
@@ -418,13 +449,14 @@ existing entity, or create a new entity from the search flow; a newly created
 entity is stored in the global library first and only then linked/assigned to
 the current object or act.
 
-When an organization, representative or certificate is included in an act, the
-act must store a snapshot of the required printed details: representative full
-name, position, organization, authority basis/order, role in the act,
-organization labels/requisites and certificate number/date/issuer/materials.
-Later edits to the global library must not silently change already formed acts.
-This can later be implemented through snapshots, versions or issued-document
-records, but historical print stability is mandatory.
+Active working acts do not automatically snapshot reusable data when a relation
+is added. A linked act resolves counterparty/signatory values through the
+current `ObjectTemplate` and libraries. An explicit whole-act manual switch
+creates one complete `manualTemplateSnapshot`. Released revisions and issued
+packages separately freeze exact resolved participant/company values and exact
+certificate identity, confirmed values and evidence-file provenance. Library
+corrections may update active linked work but cannot rewrite manual or released
+history.
 
 Certificates remain global. Objects do not own certificate libraries. Acts
 select materials/certificates from the global certificate library, and final ID
@@ -432,38 +464,39 @@ registries/packages derive used certificates from acts and deduplicate them by
 source certificate identity/provenance. This decision is recorded in
 `docs/adr/0006-global-reusable-libraries-and-act-snapshots.md`.
 
-Stage: frontend-only ADR 0006 demo wording alignment. Remaining AOSR signatory
-creation copy now follows the accepted global reusable library flow: create or
-select a global representative, assign that representative to the object, add
-the object assignment to the act, and store a printed snapshot for the act. The
-old act-only/temporary representative mental model was removed from the visible
-mock flow; in-memory demo storage is only a simplification and not a production
-snapshot/data-model implementation. Global organization and representative mock
-forms no longer use browser `required` blocking, because empty fields remain
-allowed and future print forms should render manual-fill lines. No backend/API,
-Prisma/schema/migrations, auth, uploads, OCR/AI, DOCX/PDF/ZIP generation,
-persistence or production business logic was introduced.
+Stage: historical frontend-only ADR 0006 wording alignment, later clarified by
+ADR 0007. The flow creates/selects a global representative and assigns that
+representative to the object before act use. The old act-only/temporary source
+was removed. The earlier wording about storing a snapshot immediately when
+adding the assignment is superseded: linked acts consume the assignment live;
+manual/released states freeze it only at their explicit boundaries. Empty
+fields remain allowed. No production snapshot/data model, backend/API,
+Prisma/schema/migrations, auth, uploads, OCR/AI, generation or persistence was
+introduced.
 
-Stage: frontend-only period-first object workspace mock. The opened object still
-lands on `Обзор`, but object navigation now uses `Периоды` as the primary path
-to documents. Mock periods such as `Сентябрь 2026` and `Октябрь 2026` contain
-documents, a period registry placeholder and a future period package
-placeholder. AOSR remains the only working document editor and opens through
-`Overview -> Period -> Document`, not as the top-level object destination.
-The overview owns object-wide counts, quick actions, recent periods, recent
+Stage: frontend-only dynamic folder-first object workspace mock. The opened
+object still lands on `Обзор`, but object navigation uses user-defined
+`Папки ИД` as the primary path to documents. Folder ids/names are dynamic in
+the in-memory model. `Сентябрь 2026` and `Октябрь 2026` remain seeded examples
+on the populated demo object only; a separate empty demo object supports
+`create first folder -> open folder -> create first document`. Each folder owns
+its document grouping and derives its registry/intermediate package view. AOSR
+remains the only working document editor and opens through
+`Overview -> Folder -> Document`, not as the top-level object destination.
+The overview owns object-wide counts, quick actions, recent folders, recent
 documents and the final ID shortcut. Repeated object-wide counters were removed
 from the embedded AOSR workspace/editor; the editor keeps document-specific
 context only. This is frontend mock UX only and adds no backend/API,
 Prisma/schema/migrations, persistence, auth, uploads, OCR/AI, DOCX/PDF/ZIP
 generation or production business logic.
 
-Future period-first object structure:
+Future folder-first object structure:
 
 ```text
 Object
 ├── Overview
-├── Periods
-│   ├── September 2026
+├── ID folders
+│   ├── User-defined folder
 │   │   ├── documents
 │   │   ├── registry
 │   │   └── package
@@ -474,8 +507,8 @@ Object
 └── Settings
 ```
 
-`Final ID` aggregates all periods. Period registry and period package are
-separate future concepts from the final object ID package.
+`Final ID` aggregates all folders. Folder registry and intermediate folder
+package are separate future concepts from the final object ID package.
 
 Initial frontend-only numbering helper:
 
@@ -820,9 +853,12 @@ DOCX, PDF, ZIP, печатные формы и итоговые комплект
 
 DOCX/PDF генерируются из данных. Редактирование generated DOCX вручную не должно становиться основным workflow.
 
-### 5.5 Object/company snapshot
+### 5.5 Live object template and frozen output
 
-Изменение карточки компании не должно менять старые объекты. При создании объекта данные компании копируются в ObjectCompanySnapshot.
+Глобальная карточка компании/представителя остаётся current reusable source.
+`ObjectTemplate` хранит assignment/reference и object-specific display context.
+Исправление карточки видно active linked acts. Один полный manual snapshot и
+released revision/package output остаются неизменными.
 
 ### 5.6 AI is assistant only
 
@@ -903,7 +939,11 @@ isolated workspace/tenant architecture
 
 Один пользователь может владеть своими данными и одновременно иметь accepted grants к чужим resources, но это не разрешает cross-workspace links, reuse или copy domain data без отдельной утверждённой политики.
 
-Workspace/project database — collaboration tenant when shared by owner grant, а `CompanyProfile` / `ObjectCompanySnapshot` — реквизиты сторон в документации; одно не даёт автоматически прав на другое. Архитектура должна с самого начала учитывать workspace/tenant boundary во всех ключевых сущностях.
+Workspace/project database — collaboration tenant when shared by owner grant, а
+`CompanyProfile` / `ObjectTemplate` assignments / released output snapshots —
+реквизиты сторон в документации; одно не даёт автоматически прав на другое.
+Архитектура должна с самого начала учитывать workspace/tenant boundary во всех
+ключевых сущностях.
 
 ---
 
@@ -937,12 +977,11 @@ Object — главный контейнер строительного прое
 
 Содержит/связывает:
 
-- параметры по умолчанию объекта;
+- `ObjectTemplate` data and library assignments;
 - папочную структуру;
 - numbering settings;
-- representatives bindings;
-- template bindings;
-- ObjectCompanySnapshot;
+- organization/representative assignments;
+- form template bindings;
 - документы;
 - исполнительные схемы;
 - package settings;
@@ -1438,9 +1477,10 @@ Object assignment может отличаться для одного и тог�
 Акт не должен хранить свободного temporary representative как final source of
 truth. Если нужного человека нет в поиске, пользователь создаёт новую карточку
 представителя в глобальной библиотеке from the search flow, затем назначает её
-объекту или акту. При включении в акт сохраняется snapshot печатных реквизитов,
-чтобы последующие изменения глобальной карточки не меняли уже сформированный
-акт.
+объекту. Active `linked` акт разрешает текущие значения через
+`ObjectTemplate`; explicit `manual` switch сохраняет один полный
+`manualTemplateSnapshot`; released revision отдельно фиксирует resolved
+печатные реквизиты.
 
 ---
 
@@ -1478,25 +1518,26 @@ CompanyProfile содержит:
 
 ---
 
-## 23. ObjectCompanySnapshot
+## 23. Global company library, ObjectTemplate and released output
 
-Критически важное решение.
+Критически важное решение, уточнённое ADR 0007.
 
-При создании объекта пользователь выбирает компанию из Company Profile Library.
-
-Данные компании копируются в ObjectCompanySnapshot:
+При настройке объекта пользователь выбирает компанию из global Company Profile
+Library. `ObjectTemplate` хранит ссылку/назначение и object-specific labels,
+order and contract/work context:
 
 ```text
-CompanyProfile → ObjectCompanySnapshot → Registry / Documents
+CompanyProfile -> ObjectTemplate assignment -> linked working act/current view
+                                      |-> explicit manual snapshot
+                                      |-> released revision/package snapshot
 ```
 
-Изменение карточки компании не должно менять старые объекты.
+Изменение карточки компании обновляет active linked resolution. Оно не меняет
+manual act и ранее выпущенные revision/package. Если через год у компании
+поменялся директор, активные linked акты могут показать исправленное значение,
+а старые выпущенные реестры и комплекты сохраняют прежнее.
 
-Причина: историческая неизменность исполнительной документации.
-
-Если через год у компании поменялся директор, старые реестры не должны пересобраться с новым директором.
-
-ObjectCompanySnapshot может включать:
+Resolved/frozen company output может включать:
 
 - название организации;
 - ИНН;
@@ -1515,11 +1556,14 @@ ObjectCompanySnapshot может включать:
 Global organization library and object assignments:
 
 - Organization is a global user-level reusable entity.
-- Object stores links/assignments and object-specific organization details for
-  headers, contract context, SRO, captions and printed requisites.
-- Acts use the object assignment where applicable and store printed snapshots.
-- Editing the global organization card later must not silently change already
-  formed acts or historical object/document snapshots.
+- `ObjectTemplate` stores links/assignments and object-specific organization
+  details for headers, contract context, SRO, captions and printed requisites.
+- Active linked acts resolve the current assignment/library values without an
+  automatic per-act template snapshot.
+- Explicit manual mode stores one complete template snapshot; released
+  revisions/packages freeze their exact resolved output separately.
+- Editing the global organization card may update active linked acts, but must
+  not change manual snapshots or historical released output.
 
 ---
 
@@ -1570,12 +1614,13 @@ Certificate fields:
 Сначала сертификат должен существовать физически.
 
 Certificate — global user-level reusable entity. Object не владеет отдельной
-certificate library. Acts select materials/certificates from the global
-certificate library; registries and final packages derive used certificates from
-acts and deduplicate them by source certificate identity/provenance. When a
-certificate is included in an act, the act stores required printed details in an
-output snapshot so later certificate-card corrections do not silently change
-already formed acts.
+certificate library. Acts keep explicit relations to materials/certificates
+from the global certificate library; registries and final packages derive used
+certificates from acts and deduplicate them by source identity/provenance.
+Certificate relations are independent of linked/manual template mode. Release
+freezes the exact evidence identity, confirmed rendered values and physical-file
+provenance so later certificate-card corrections do not rewrite historical
+output.
 
 ---
 
@@ -1738,7 +1783,7 @@ Registry = derived projection
 
 - Object;
 - Object settings;
-- ObjectCompanySnapshot;
+- current `ObjectTemplate` assignments or exact frozen released output values;
 - Certificate Library;
 - Act Documents;
 - Executive Schemes;
@@ -1775,7 +1820,10 @@ Registry = derived projection
 
 Источник:
 
-- ObjectCompanySnapshot.
+- current global company record resolved through `ObjectTemplate` for a live
+  working projection;
+- exact frozen resolved values from a released revision/package for historical
+  output.
 
 Поля:
 
@@ -1863,7 +1911,7 @@ Registry = derived projection
 Источник:
 
 - RegistrySignerSnapshot;
-- ObjectCompanySnapshot;
+- resolved organization assignment or frozen released output;
 - selected representative.
 
 Поля:
@@ -2491,8 +2539,8 @@ docs/18-initial-repository-bootstrap-and-development-rules-v1.md
 | `EngineeringSystem`      | Раздел или система: ОВиК, ВК, вентиляция, отопление, водоснабжение, канализация              | Связан с объектом, работами, документами и схемами.                                                                                                           |
 | `FolderTree` / `Folder`  | Самостоятельный object-scoped aggregate и его business collection nodes                      | Draft baseline `docs/09-aggregate-boundaries-and-invariants.md`: владеет hierarchy/placement, move, duplicate и soft delete; не владеет lifecycle документов. |
 | `CompanyProfile`         | Переиспользуемая карточка компании внутри tenant                                             | Может меняться для будущих объектов; не должна ретроспективно менять исторические документы.                                                                  |
-| `ObjectCompanySnapshot`  | Зафиксированные данные компании на объекте                                                   | Используется документами и реестром для исторически устойчивого рендера.                                                                                      |
-| `Representative`         | Глобальная карточка представителя/подписанта                                                 | Object-specific assignments store role, position, authority, organization relation and order; acts capture printed snapshots.                                 |
+| `ObjectTemplate` organization assignment | Ссылка на глобальную компанию и object-specific display context                              | Active linked acts resolve current library values; manual/released boundaries freeze exact output.                                                            |
+| `Representative`         | Глобальная карточка представителя/подписанта                                                 | Object-specific assignments store role, position, authority, organization relation and order; linked acts resolve live, manual/released states freeze output. |
 | `RegistrySignerSnapshot` | Выбранный подписант конкретного реестра                                                      | Подписант реестра может отличаться от подписантов актов.                                                                                                      |
 | `ProjectDrawingSet`      | Комплект рабочих чертежей, по которым выполняются работы                                     | Draft baseline: owned entity в `ObjectDocumentationContext`; не является исполнительной схемой; участвует в АОСР и блоке реестра.                             |
 | `ProjectSourceFile`      | Загруженный project source material: PDF, drawing, specification или future supported source | Принадлежит конкретным `Workspace` и `Object`; служит provenance/reference context, но не становится единственным source of truth.                            |
@@ -2654,7 +2702,7 @@ Registry = derived projection, never source of truth
 | Блок реестра                   | Source data                                        | Что нельзя делать                                                          |
 | ------------------------------ | -------------------------------------------------- | -------------------------------------------------------------------------- |
 | Шапка объекта                  | `Object`, default parameters / object metadata     | Не хранить единственную копию объекта в тексте реестра.                    |
-| Подрядчик/исполнители          | `ObjectCompanySnapshot`, contract/work settings    | Не подтягивать будущие изменения `CompanyProfile` в исторический комплект. |
+| Подрядчик/исполнители          | Current `ObjectTemplate` assignments or frozen released values, contract/work settings | Live projection may resolve current profile; historical package must use frozen output. |
 | Комплект рабочих чертежей      | `ProjectDrawingSet`                                | Не смешивать с `ExecutiveScheme`.                                          |
 | Сертификаты/документы качества | `Certificate Library`, act refs, package scope     | Не показывать номер без существующего файла library item.                  |
 | Акты                           | Typed `Document` aggregates                        | Не редактировать date/number/status только в строке проекции.              |
@@ -2919,7 +2967,7 @@ Initial Repository Bootstrap and Development Rules V1:
 10. Template version после использования immutable; изменившаяся форма создаёт новую версию.
 11. Package Builder является async и snapshot-based; rebuild вызывается изменением зависимостей.
 12. `Object` не должен стать giant aggregate.
-13. ObjectCompanySnapshot защищает исторические реквизиты объекта от будущих изменений карточки компании.
+13. ObjectTemplate keeps live company/representative assignments; manual and released snapshots protect historical output from later library changes.
 14. `ProjectDrawingSet` и `ExecutiveScheme` — разные понятия.
 15. AI/OCR — assistant only; никакого auto-approve критичных metadata.
 16. Исходные документы могут содержать чувствительные реквизиты; privacy и tenant isolation обязательны.
@@ -2940,7 +2988,7 @@ Initial Repository Bootstrap and Development Rules V1:
 31. Foreman active permissions must not be implemented without separate approval.
 32. Exact first AOSR participant requirements must not be hardcoded before template review.
 33. Infrastructure provider/server lock-in is forbidden: database, Redis, storage, public/download URLs, CORS, session secrets and app base URLs are config-driven; provider SDKs stay inside narrow infrastructure adapters.
-34. Canonical ADR baseline in `docs/adr/` is accepted: ADR 0006 adds the accepted global reusable libraries / act snapshots rule, and ADR 0007 adds the accepted document default parameters / proposal rule; all must be followed by future implementation work.
+34. Canonical ADR baseline in `docs/adr/` is accepted: ADR 0006 defines global reusable libraries and explicit frozen output boundaries; ADR 0007 is authoritative for active linked/manual acts. All must be followed by future implementation work.
 35. `docs/19-sharing-and-access-model-v1.md` supersedes `docs/10-auth-workspace-rbac-model.md` for MVP implementation scope.
 36. `docs/20-auth-sharing-implementation-plan-v1.md` fixes auth/sharing implementation sequence; do not skip from docs to share grants, certificate-library sharing, Prisma models, migrations or API routes without separate phase-scoped approval.
 37. Phase 1 user identity skeleton is only `Actor` primitive plus current actor resolver utility/port; identity alone grants no workspace, document, certificate, package or file access.
@@ -2985,7 +3033,7 @@ Initial Repository Bootstrap and Development Rules V1:
 | Как должен ощущаться интерфейс?                                              | Пользователь работает с комплектом ИД, а не с CRM-таблицей.                                                                                                                                                                                                                                                                                                                                                                                                                                       | UX document-centric, complexity structured model скрывается.                                                                                                                                                                                                                                                   |
 | Каково назначение OCR/AI?                                                    | Assistant only.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   | Извлечённые metadata активируются только после пользовательского подтверждения.                                                                                                                                                                                                                                |
 | Можно ли использовать загруженный проект для AI-assisted ИД и поиска ошибок? | Да, как Workspace/Object-scoped source material с proposals-only workflow.                                                                                                                                                                                                                                                                                                                                                                                                                        | Structured data остаются source of truth; extracted data/links/findings требуют user confirmation, traceability and audit.                                                                                                                                                                                     |
-| Где хранить данные компании на объекте?                                      | Через `ObjectCompanySnapshot`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                    | Изменение профиля компании не переписывает исторические документы объекта.                                                                                                                                                                                                                                     |
+| Где хранить данные компании для объекта и акта?                              | Current identity/requisites live in the global library; object-specific assignment/display context lives in `ObjectTemplate`; manual/released boundaries store exact resolved snapshots.                                                                                                                                                                                                                                                | Library corrections update active linked acts but never rewrite manual acts or released revisions/packages.                                                                                                                                                                                                    |
 | Может ли Object владеть всем сразу?                                          | Нет.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              | Требуются отдельные aggregates/contexts для documents, certificates, schemes, templates и packages.                                                                                                                                                                                                            |
 | Какая стадия проекта сейчас?                                                 | Infrastructure scaffold accepted; canonical ADR baseline accepted; backend module skeleton, technical status slice, database foundation technical slice, object storage foundation technical slice, auth sharing implementation plan, Phase 1 user identity skeleton, Phase 2 global system admin marker, Phase 3 owned workspace baseline, ADR 0006 global reusable libraries and ADR 0007 document default parameters introduced; feature coding still blocked beyond explicitly scoped slices. | Следующий implementation step требует отдельного явного задания и проверки against project memory, accepted ADRs in `docs/adr/` and `docs/20` when auth/sharing is involved.                                                                                                                                   |
 | Кто является пользователем SaaS?                                             | Физическое лицо с одним аккаунтом и owned working context.                                                                                                                                                                                                                                                                                                                                                                                                                                        | Пользователь может работать сам и подключаться к чужим resources через share grants.                                                                                                                                                                                                                           |
@@ -4304,8 +4352,9 @@ production domain/API/persistence work remain separate explicit tasks.
 - visible DEMO note states that object representatives are prefilled from the
   global mock library only for convenience, while the real system will require
   the user to choose/bind representatives for the object;
-- current-act signatory search is labelled as adding from the object base and
-  keeps the manual temporary representative flow;
+- current-act signatory search was labelled as adding from the object base and
+  historically kept a manual temporary representative flow; ADR 0007 later
+  restricts local manual editing to the explicit full manual snapshot;
 - material search copy says materials must be selected from the certificate
   library so certificates reach the act and applications;
 - existing unified mock store scenarios remain covered: added certificates
@@ -4488,6 +4537,57 @@ production domain/API/persistence work remain separate explicit tasks.
 - no production registry, package, certificate, object-document or AOSR
   business logic.
 
+### 2026-06-22 — Linked/manual architecture documentation aligned
+
+- Статус: `Documentation clarification only`
+- Описание: removed the remaining conflict between ADR 0006-era automatic act
+  snapshots and the authoritative ADR 0007 linked/manual working-act model.
+
+Уточнено:
+
+- global organization and representative libraries remain current reusable
+  sources;
+- `ObjectTemplate` stores assignments/references and object-specific display
+  context;
+- active linked acts resolve current template/library values and do not store
+  template snapshots;
+- an explicit whole-act manual switch creates one complete
+  `manualTemplateSnapshot`;
+- certificate use stays an explicit link to global file-backed evidence;
+- released document revisions and issued package outputs freeze exact resolved
+  values, identities and evidence provenance;
+- older object-default, temporary representative and automatic act-snapshot
+  passages are historical/superseded, not backend implementation guidance;
+- partial template-field overrides remain forbidden.
+
+Изменены только architecture/documentation files. UI, frontend behavior,
+backend/API, Prisma/schema/migrations, persistence and generation were not
+changed.
+
+### 2026-06-22 — Frontend-only dynamic ID folders
+
+- Статус: `Frontend mock folder creation only`
+- Описание: replaced the fixed two-period navigation assumption with a dynamic
+  in-memory folder flow while preserving the populated AOSR demo object.
+
+Добавлено/уточнено:
+
+- folder ids are open strings rather than a two-value month union;
+- object navigation and the folder directory render current folder state;
+- a dedicated empty demo object starts without folders or AOSR drafts;
+- overview and folder directory expose `Создать папку`;
+- the user enters an arbitrary non-empty folder name;
+- creation immediately opens the empty folder without silently creating a
+  document;
+- `Создать документ -> АОСР` then creates the first document inside that folder;
+- empty folder, empty document list and empty derived registry states are
+  explicit;
+- visible registry/package wording now says `папка`, not `период`;
+- seeded `Сентябрь 2026` / `Октябрь 2026` remain demo examples only.
+
+No backend/API, Prisma/schema/migrations, persistence/localStorage, folder
+delete/move/reorder lifecycle or generation was introduced.
+
 ### 2026-06-22 — Frontend-only object-template AOSR numbering
 
 - Статус: `Frontend mock automatic numbering only`
@@ -4583,7 +4683,8 @@ production domain/API/persistence work remain separate explicit tasks.
 - AOSR signatory creation now says `Создать представителя и назначение`;
 - submit action now says `Создать и добавить в акт`;
 - helper copy says production will create a global representative, an object
-  assignment and an act snapshot;
+  assignment and an act snapshot; the automatic-snapshot part is later
+  superseded by ADR 0007 for linked acts;
 - creating from the AOSR act form now stores the simplified in-memory object
   assignment before adding the assignment to the act;
 - the old visible mental model of a temporary act-only representative was
@@ -4629,8 +4730,8 @@ production domain/API/persistence work remain separate explicit tasks.
 - "create new" from search creates a global entity first, then assigns/links it
   to the current object or act;
 - acts store printed snapshots for included organizations, representatives and
-  certificates, so later global library edits do not silently change already
-  formed acts;
+  certificates; this original rule is superseded for active linked acts by ADR
+  0007 and now applies only at manual/released output boundaries;
 - registries and final packages derive used certificates from acts and
   deduplicate them by source certificate identity/provenance.
 
@@ -4982,7 +5083,9 @@ production domain/API/persistence work remain separate explicit tasks.
   groups with equal titles are not merged;
 - object-settings creation writes a global organization/signatory library item
   first and then stores its id in the object template;
-- manual representative creation remains local to the current act snapshot;
+- manual representative editing remains local only after the explicit whole-act
+  switch to `manualTemplateSnapshot`; linked acts cannot create an act-only
+  representative source;
 - at this checkpoint `workContractorName` was individual act data and was not
   inferred from a hardcoded counterparty role; this classification is
   superseded by the later 2026-06-20 repeated-template-data decision;

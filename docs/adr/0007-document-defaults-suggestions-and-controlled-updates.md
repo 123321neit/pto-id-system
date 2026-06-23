@@ -30,6 +30,12 @@ Issued ID packages are a separate concern. A released package must preserve a fr
 
 Reusable counterparty and signatory libraries are live current-data sources for active work.
 
+Certificates and other file-backed evidence are not template-owned data and do
+not participate in the linked/manual template-mode switch. A working act keeps
+explicit relations to global evidence items. A released revision/package must
+freeze the exact evidence identity, confirmed rendered values and physical-file
+provenance it used.
+
 An object template stores repeated object data and references library records. It does not copy full counterparty or signatory printable text as the normal source of truth. It may store object-specific labels, grouping, ordering and custom subscripts.
 
 An act has exactly two template modes:
@@ -291,6 +297,8 @@ The manual switch confirmation should say:
 - There is no hybrid state made of scattered per-field overrides.
 - The work contractor, additional information and copy count are template-owned because they repeat across the object's acts.
 - Individual act fields such as number, date, work description, periods, materials and applications remain editable in both modes and never imply manual template mode.
+- Certificate/object-document selections remain explicit act-owned relations;
+  their release provenance is frozen independently from template mode.
 - Preview and future DOCX/PDF generation must be routed through `AosrPrintState`.
 - Future backend/API commands should model `SwitchActTemplateModeToManual`, `ReturnActToObjectTemplate`, and object-template/library update flows explicitly.
 - Future issued packages must store frozen output snapshots and must not rely on live-linked working act state for historical documents.

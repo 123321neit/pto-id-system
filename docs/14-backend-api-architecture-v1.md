@@ -10,7 +10,7 @@
 
 Источник архитектурных принципов: `docs/PROJECT_MEMORY.md`.
 
-Основание: `docs/12-database-schema-v1.md`, `docs/13-domain-lifecycle-immutability-validation-v1.md`, ADR 0001-0005, анализ АОСР и реестра.
+Основание: `docs/12-database-schema-v1.md`, `docs/13-domain-lifecycle-immutability-validation-v1.md`, ADR 0001-0007, анализ АОСР и реестра.
 
 Access amendment note, 2026-05-29:
 
@@ -19,6 +19,15 @@ docs/19-sharing-and-access-model-v1.md supersedes role/membership RBAC for MVP i
 ```
 
 Backend/API access design for MVP must use owner-based sharing, share codes and explicit grant capabilities. Any command/read-model language below that assumes `Membership` roles is deferred historical context unless it matches the capability-grant model in `docs/19`.
+
+Object-template amendment note, 2026-06-22:
+
+Backend commands/read models for active acts must follow ADR 0007. Linked acts
+resolve template-owned data through global libraries and `ObjectTemplate`;
+manual acts own one complete snapshot; released revisions/packages freeze exact
+output separately. Older `adopt_company_snapshot` and
+`configure_representative_defaults` command names are noncanonical; exact
+physical template commands remain deferred to a separate backend contract task.
 
 Этот документ описывает backend как набор доменных application-модулей, команд, read models, validation и consistency boundaries. Он не является разрешением писать production code и не выбирает transport, framework, database, storage, job runner, renderer либо AI/OCR technology.
 
@@ -115,11 +124,11 @@ Backend/API Architecture V1 утверждает application-level форму с
 
 | Aspect | Definition |
 | --- | --- |
-| Responsibility | Рабочий контекст строительного объекта: объект, engineering systems, object company snapshots, representative defaults, project drawing sets, numbering/template defaults. |
-| Owns | Object identity/settings, `ObjectCompanySnapshot`, object-level bindings/defaults, `ProjectDrawingSet` как owned entity, applicable numbering configuration. |
+| Responsibility | Рабочий контекст строительного объекта: объект, engineering systems, `ObjectTemplate` assignments, project drawing sets and numbering/template settings. |
+| Owns | Object identity/settings, object-template references plus object-specific labels/groups/order/repeated texts, `ProjectDrawingSet` как owned entity and applicable numbering configuration. |
 | Does not own | Document revisions, evidence originals, исполнительные схемы, registry projection rows, package snapshots либо project-source AI proposals. |
-| Main commands | `create_object`, `update_object_context`, `adopt_company_snapshot`, `configure_representative_defaults`, `create_or_update_project_drawing_set`, `configure_numbering_policy`, `archive_object`. |
-| Main read models | Object dashboard header, object setup/settings view, company/representative defaults, drawing-set summary and readiness inputs. |
+| Main commands | `create_object`, `update_object_context`, future explicit object-template assignment commands, `create_or_update_project_drawing_set`, `configure_numbering_policy`, `archive_object`. Exact template commands are deferred to the dedicated backend contract step. |
+| Main read models | Object dashboard header, object template/settings view, resolved library assignments, drawing-set summary and readiness inputs. |
 
 ### 3.4 FolderTree
 

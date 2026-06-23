@@ -10,6 +10,7 @@ export interface MockObjectCard {
   readonly representativeCount: number;
   readonly updatedAtLabel: string;
   readonly summary: string;
+  readonly workspaceSeed: 'demo-content' | 'empty';
 }
 
 export interface MockRecentDocument {
@@ -34,6 +35,7 @@ export const mockObjectCards: readonly MockObjectCard[] = [
     summary: 'Демо-объект для проверки АОСР, сертификатов и подписантов.',
     title: 'Реконструкция поликлиники, демонстрационный проект',
     updatedAtLabel: 'сегодня',
+    workspaceSeed: 'demo-content',
   },
   {
     address: 'г. Екатеринбург, ул. Северная, 18',
@@ -47,6 +49,7 @@ export const mockObjectCards: readonly MockObjectCard[] = [
     summary: 'Жилой комплекс с несколькими очередями исполнительной документации.',
     title: 'Жилой комплекс "Северный"',
     updatedAtLabel: 'вчера',
+    workspaceSeed: 'demo-content',
   },
   {
     address: 'г. Екатеринбург, пр. Горизонт, 4',
@@ -60,6 +63,21 @@ export const mockObjectCards: readonly MockObjectCard[] = [
     summary: 'Торговый центр: подготовка актов и приложений по инженерным системам.',
     title: 'Торговый центр "Горизонт"',
     updatedAtLabel: '2 дня назад',
+    workspaceSeed: 'demo-content',
+  },
+  {
+    address: 'г. Екатеринбург, ул. Новая, 1',
+    aosrCount: 0,
+    documentsCount: 0,
+    id: 'object-empty-demo',
+    objectDocumentCount: 0,
+    representativeCount: 0,
+    status: 'active',
+    statusLabel: 'В работе',
+    summary: 'Пустой демо-объект для создания первой папки ИД и первого документа.',
+    title: 'Новый объект без папок ИД',
+    updatedAtLabel: 'только что',
+    workspaceSeed: 'empty',
   },
 ];
 

@@ -46,7 +46,7 @@ export function buildPeriodRegistryModel(
 
   return {
     description:
-      'Построен из текущих документов периода. Реестр не сохраняется, не блокируется и не закрывает период.',
+      'Построен из текущих документов папки. Реестр не сохраняется, не блокируется и не закрывает папку.',
     id: `period-registry-${period.id}`,
     rows: buildDerivedRegistryRows(
       periodDrafts.map((draft) => mapAosrDraftToRegistryDocument(draft, period.name)),
@@ -62,7 +62,7 @@ export function buildFinalRegistryModel(
 ): DerivedRegistryModel {
   return {
     description:
-      'Построен из документов всех периодов. Финальный реестр не сохраняется как сущность, не блокируется и не архивируется.',
+      'Построен из документов всех папок. Финальный реестр не сохраняется как сущность, не блокируется и не архивируется.',
     id: 'final-registry',
     rows: buildDerivedRegistryRows(
       drafts.map((draft) => {

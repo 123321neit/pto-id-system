@@ -10,7 +10,19 @@
 
 Источник архитектурных принципов: `docs/PROJECT_MEMORY.md`.
 
-Основание модели: `docs/06-data-model-v1.md`, `docs/07-aosr-domain-specification.md`, `docs/08-document-types-catalog.md`, ADR 0001-0005.
+Основание модели: `docs/06-data-model-v1.md`, `docs/07-aosr-domain-specification.md`, `docs/08-document-types-catalog.md`, ADR 0001-0007.
+
+Object-template amendment note, 2026-06-22:
+
+```text
+ADR 0007 supersedes object-owned/default snapshot wording for active working acts.
+```
+
+For active work, global counterparty/signatory libraries are referenced by
+`ObjectTemplate`; linked acts resolve them live, and manual acts use one complete
+snapshot. `ObjectCompanySnapshot` references below are retained as historical
+V1 terminology for frozen output context only and must not be implemented as
+the normal source for linked acts.
 
 ---
 
@@ -133,9 +145,9 @@ An aggregate enforces its own immediate invariants. Cross-aggregate completeness
 | Aggregate root / boundary | Status for pre-schema baseline | Owns | Does not own |
 | --- | --- | --- | --- |
 | `TenantContext` | Inherited isolation boundary | Permission/isolation context conceptually | Domain payload of every aggregate as nested state. |
-| `Object` | Inherited accepted root | Object identity, settings and object-owned snapshots/defaults | Documents, quality evidence originals, schemes, template versions or package snapshots. |
+| `Object` | Inherited accepted root | Object identity, settings and `ObjectTemplate` assignments/references | Documents, quality evidence originals, schemes, form template versions or package snapshots. |
 | `FolderTree` | **Boundary baseline: root** | Object-local folder hierarchy and placement organization | Content lifecycle/revisions of placed documents or evidence. |
-| `CompanyProfile` | Inherited accepted library root | Reusable current company profile | Existing object/document snapshots. |
+| `CompanyProfile` | Inherited accepted library root | Reusable current company profile | `ObjectTemplate`, linked acts and manual/released snapshots at their freeze boundaries. |
 | `Document` | Inherited accepted root | Typed act identity, payload, links, lifecycle and revisions | Certificate/scheme originals or package builds. |
 | `Certificate` | Inherited accepted root | Quality evidence original file and confirmed metadata | Document payload or registry row content. |
 | `ExecutiveScheme` | Inherited accepted root | As-built scheme original file and metadata | Project drawing set or document revisions. |
@@ -147,8 +159,8 @@ An aggregate enforces its own immediate invariants. Cross-aggregate completeness
 | Concept | Classification | Owner / reason |
 | --- | --- | --- |
 | `EngineeringSystem` | Owned object-domain entity/value set | Configured in `Object` context; its independent lifecycle is not established. |
-| `ObjectCompanySnapshot` | Snapshot/owned entity | Owned by `Object`; freezes company data used on the object. |
-| `ObjectRepresentativeBinding` | Owned entity | Defaults controlled by `Object`; released display values move into document snapshots. |
+| `ObjectCompanySnapshot` | Legacy frozen-output concept | Not the normal object/linked-act source; exact resolved company values belong to manual/released snapshots. |
+| `ObjectTemplate` company/representative assignments | Owned object-template entities | Reference global libraries and own object-specific labels, groups, order and context. |
 | `ProjectDrawingSet` | **Boundary baseline: owned entity** | Owned by `ObjectDocumentationContext`; no independent lifecycle established. |
 | `WorkItem` | **Boundary baseline: no root in V1** | Shared work aggregate is deferred; typed document owns its work statement in baseline. |
 | `MaterialUsage` | Document-owned typed entity in baseline | Describes material/equipment claimed by an act and evidence links. |
@@ -183,7 +195,10 @@ An aggregate enforces its own immediate invariants. Cross-aggregate completeness
 
 ### 4.4 Boundary decisions that remain outside this baseline
 
-`RepresentativeProfile`, reusable `Material` catalog and possible reusable `WorkItem` root remain candidates. This document specifies enough ownership to prevent premature storage decisions: released documents use their snapshots/typed entries even while reusable library boundaries are later refined.
+Reusable `Material` catalog and possible reusable `WorkItem` root remain
+candidates. Global representative/organization libraries and their
+`ObjectTemplate` assignments are accepted by ADR 0006/0007. Released documents
+use frozen resolved output; active linked acts use current references.
 
 ---
 
@@ -197,8 +212,8 @@ An aggregate enforces its own immediate invariants. Cross-aggregate completeness
 
 - object identity, name, address, status and object-level attributes;
 - configured disciplines/engineering systems needed to classify work;
-- `ObjectCompanySnapshot` values selected for the object;
-- object representative defaults/bindings;
+- `ObjectTemplate` assignments/references to global organizations and representatives;
+- object-specific labels, representative groups/order and repeated template texts;
 - object-level numbering and template-binding defaults where applicable;
 - `ObjectDocumentationContext`, including owned `ProjectDrawingSet` entries;
 - references to the separate folder tree and related roots.
@@ -223,7 +238,7 @@ The object is a context provider, not a consistency transaction enclosing every 
 | Change | Owned by `Object` | Document revision effect | Registry/package effect |
 | --- | --- | --- | --- |
 | Rename/update current object setting | Yes | Does not rewrite released documents; adopted output changes require new document revision where shown | Current registry/output using live setting becomes stale; package may require rebuild if included value changes. |
-| Create/update `ObjectCompanySnapshot` intentionally | Yes | Released revision remains unchanged unless a new document revision adopts it | New registry/package output using changed snapshot must rebuild. |
+| Update global library record or `ObjectTemplate` assignment | Through the owning library/template | Active linked acts resolve the change; manual/released revisions remain unchanged | Current derived view may change; released package changes only through a new revision/build. |
 | Configure engineering system/default | Yes | Does not silently rewrite released typed payload | Recalculate dependent current projections when displayed. |
 | Change `ProjectDrawingSet` owned entry | Yes | Existing released document snapshot/reference output not silently changed | Registry/package using current drawing block becomes stale. |
 
@@ -482,7 +497,7 @@ Every successful `PackageSnapshot` must fix:
 - certificate original/metadata lifecycle;
 - executive scheme original/metadata lifecycle;
 - used template version definitions;
-- object source settings or company snapshots;
+- object-template assignments/resolved company values used by the target output;
 - registry source rows as primary values.
 
 ### 11.5 Package invariants
@@ -649,7 +664,7 @@ Working drawing entries are object setup/documentation context: they describe co
 
 | Snapshot / captured value | Owner | Created for | Must preserve |
 | --- | --- | --- | --- |
-| `ObjectCompanySnapshot` | `Object` | Stable object company context | Requisites/authority/contract or SRO values used on object. |
+| Manual template snapshot | `Document` manual state | Whole-act template divergence | Fully resolved template-owned data; no partial overrides. |
 | Document output-relevant object values | `DocumentRevisionSnapshot` | Released act reproducibility | Rendered object/system/project context used in that revision. |
 | `DocumentRepresentativeSnapshot` | `DocumentRevisionSnapshot` | Released participants/signatures | Roles, names, organization, authority, captions and order. |
 | `DocumentRevisionSnapshot` | `Document` | Published/revisioned typed document state | Number/date, payload, relations, validation, template/output provenance. |
@@ -908,7 +923,7 @@ An exported current registry is a generated artifact. A registry output captured
 
 1. Should a reusable `WorkItem` aggregate be introduced later after shared closure/testing workflows are validated, and what triggers promotion from document-owned work statements?
 2. Does `ProjectDrawingSet` eventually require independent lifecycle/versioning/approval sufficient to promote it from object-owned entity?
-3. Should `RepresentativeProfile` be a standalone library aggregate in the first schema, or are object/document snapshots and limited defaults sufficient?
+3. What tenant/user scoping and deduplication rules should the accepted global `RepresentativeProfile` library use in the first physical schema?
 4. Is a reusable `Material`/equipment catalog required in MVP, or are document-owned `MaterialUsage` entries sufficient initially?
 
 ### 24.2 Documents and validation

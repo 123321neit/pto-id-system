@@ -112,7 +112,7 @@ export function buildIdPackageOverviewModel(
 
       return {
         id: `periodic-id-${period.id}`,
-        note: 'Реестр и периодическая ИД пересобираются из текущих документов периода, без закрытия периода и без архива.',
+        note: 'Реестр и промежуточная ИД пересобираются из текущих документов папки, без закрытия папки и без архива.',
         periodName: period.name,
         summary: buildIdPackageCompositionSummary(packageDrafts, objectDocuments, certificates),
         title: period.periodicIdTitle,
@@ -216,7 +216,7 @@ export function buildFinalPackageReadiness(
   const issues: string[] = [];
 
   if (summary.acts === 0) {
-    issues.push('Нет документов периода');
+    issues.push('Нет документов папки');
   }
 
   if (summary.certificates === 0) {

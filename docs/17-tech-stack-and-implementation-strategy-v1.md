@@ -10,7 +10,7 @@ Date fixed: 2026-05-28.
 
 Source of architectural principles: `docs/PROJECT_MEMORY.md`.
 
-Basis: `docs/12-database-schema-v1.md`, `docs/13-domain-lifecycle-immutability-validation-v1.md`, `docs/14-backend-api-architecture-v1.md`, `docs/15-api-command-readmodel-contracts-v1.md`, `docs/16-mvp-scope-and-first-forms-v1.md`, ADR 0001-0005.
+Basis: `docs/12-database-schema-v1.md`, `docs/13-domain-lifecycle-immutability-validation-v1.md`, `docs/14-backend-api-architecture-v1.md`, `docs/15-api-command-readmodel-contracts-v1.md`, `docs/16-mvp-scope-and-first-forms-v1.md`, ADR 0001-0007.
 
 This document chooses a practical implementation direction for the first MVP. It still does not permit production code, scaffold, migrations, ORM schema, OpenAPI, Docker, CI or deployment files.
 
@@ -1433,7 +1433,7 @@ Risks:
 Mitigation:
 
 - fast pickers;
-- object defaults and participant reuse;
+- linked `ObjectTemplate` assignments and participant reuse, with explicit whole-act manual mode;
 - contextual validation;
 - dismissible hints;
 - keyboard-friendly editing;

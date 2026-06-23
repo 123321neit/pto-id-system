@@ -8,7 +8,7 @@ Status: implementation planning document only.
 
 Date fixed: 2026-05-30.
 
-Source of authority: `docs/19-sharing-and-access-model-v1.md`, `docs/10-auth-workspace-rbac-model.md`, `docs/12-database-schema-v1.md`, `docs/14-backend-api-architecture-v1.md`, `docs/15-api-command-readmodel-contracts-v1.md`, `docs/18-initial-repository-bootstrap-and-development-rules-v1.md`, `apps/api/src/ARCHITECTURE.md`, and canonical ADR 0001-0005.
+Source of authority: `docs/19-sharing-and-access-model-v1.md`, `docs/10-auth-workspace-rbac-model.md`, `docs/12-database-schema-v1.md`, `docs/14-backend-api-architecture-v1.md`, `docs/15-api-command-readmodel-contracts-v1.md`, `docs/18-initial-repository-bootstrap-and-development-rules-v1.md`, `apps/api/src/ARCHITECTURE.md`, and canonical ADR 0001-0007.
 
 This document is not code, not a Prisma schema, not a migration plan to apply immediately, not an API route list, and not authorization to implement auth or sharing in this task.
 

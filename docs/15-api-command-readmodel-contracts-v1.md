@@ -10,7 +10,7 @@
 
 Источник архитектурных принципов: `docs/PROJECT_MEMORY.md`.
 
-Основание: `docs/12-database-schema-v1.md`, `docs/13-domain-lifecycle-immutability-validation-v1.md`, `docs/14-backend-api-architecture-v1.md`, ADR 0001-0005, анализ АОСР и реестра.
+Основание: `docs/12-database-schema-v1.md`, `docs/13-domain-lifecycle-immutability-validation-v1.md`, `docs/14-backend-api-architecture-v1.md`, ADR 0001-0007, анализ АОСР и реестра.
 
 Access amendment note, 2026-05-29:
 
@@ -19,6 +19,13 @@ docs/19-sharing-and-access-model-v1.md supersedes membership/RBAC command contra
 ```
 
 MVP command/read contracts for access must use owner-based sharing, share codes and explicit grant capabilities. Membership/role contract language below is deferred historical context unless a later non-MVP governance document reintroduces it.
+
+Object-template amendment note, 2026-06-22: working document contracts must
+expose strict `linked`/`manual` template mode under ADR 0007. Linked mode stores
+references and resolves current `ObjectTemplate`/library data; an explicit
+whole-act switch creates one complete manual snapshot; finalization freezes a
+separate immutable released output. Partial template-field overrides are not a
+valid command surface.
 
 Этот документ описывает семантику application contracts: какие намерения выражают команды, какие версии и idempotency expectations они используют, какие UI-oriented reads нужны пользователю и как выглядят validation/error/async outcomes. Он не является API transport specification и не разрешает начинать implementation.
 
@@ -194,9 +201,11 @@ These contracts apply to approved typed acts. `AOSR` is the fully modeled first 
 
 | Command | Intent and payload semantics | Result semantics | Version / idempotency / effects |
 | --- | --- | --- | --- |
-| `create_document` | Select approved `document_type`, one `object_id`, optional valid folder placement, initial structured working values, numbering intent/policy and applicable template choice/default reference. | New `document_id`, initial `DRAFT` working state/version, placement and initial draft findings. | Idempotency required when creation may be retried; validates scope/type; never creates released revision. |
-| `update_working_document` | Replace or edit owned typed working values: number/date, typed blocks, participants/snapshot candidates, project/material context and allowed working template choice. | Updated working version, autosave/save marker as later detailed, draft validation feedback and stale effects only if it is unpublished work after a final release. | Requires `expected_version`; draft may persist with findings; cannot mutate released revision. |
-| `finalize_document` | Request publication of exact current working content and selected applicable template/version context. | On success new immutable `document_revision_id`, `FINAL` state/latest released reference, captured validation summary and invalidated derived-current references. | Requires expected working version and idempotency key; authoritative finalization blocks on any relevant `ERROR`. |
+| `create_document` | Select approved `document_type`, one `object_id`, optional valid folder placement, initial act-owned structured values, numbering intent/policy and `ObjectTemplate`/form-template references. New acts start `linked` unless an explicit later policy says otherwise. | New `document_id`, initial `DRAFT` linked working state/version, placement and initial draft findings. | Idempotency required when creation may be retried; validates scope/type; never creates released revision or automatic template snapshot. |
+| `update_working_document` | Replace or edit act-owned typed working values: number/date, typed blocks, project/material/evidence context and allowed form-template choice. In linked mode, template-owned participant/company fields are read-only resolved data. | Updated working version, autosave/save marker as later detailed, draft validation feedback and stale effects only if it is unpublished work after a final release. | Requires `expected_version`; draft may persist with findings; cannot create partial template overrides or mutate released revision. |
+| `switch_document_template_mode_to_manual` | Explicitly resolve the complete current `ObjectTemplate`/library state and switch the whole template-owned section to manual. | Manual working version plus one complete `manualTemplateSnapshot`. | Requires expected working/template versions, confirmation and idempotency; never creates scattered per-field overrides. |
+| `return_document_to_object_template` | Explicitly discard the working manual template state and resume linked resolution from the current object template. | Linked working version and current resolved template context; released history remains unchanged. | Requires expected version and confirmation; must not mutate any prior released revision. |
+| `finalize_document` | Request publication of exact current act-owned content plus resolved linked or complete manual template context and selected form-template/version. | On success new immutable `document_revision_id`, exact resolved participant/company output and evidence provenance, `FINAL` state/latest released reference, captured validation summary and invalidated derived-current references. | Requires expected working version and idempotency key; authoritative finalization blocks on any relevant `ERROR`. |
 | `revise_document` | Begin an editable correction path for a `FINAL` document from an explicit latest released revision, optionally with reason. | New working revision context/version with `has_unpublished_changes`; former released revision remains exact history. | Requires lifecycle/version check and idempotency; marks affected current desired package/artifact suitability stale without changing historical snapshot. |
 | `publish_revised_document` | Publish corrected working revision after full finalization validation. | New immutable released revision as latest, prior revisions retained, findings and invalidations returned. | Requires expected working version and idempotency; same gate as initial finalization. |
 | `archive_document` | Remove a document from active work without deleting its released provenance. | Archived lifecycle/version and current-work impact. | Requires expected document lifecycle version and idempotency for retry; cannot remove historical package/revision references. |
@@ -300,9 +309,9 @@ Forbidden source-fact changes include document type/number/date/status/revision/
 
 Stale/invalidation rules:
 
-- A change to selected document released revision, evidence/scheme reference or metadata relevant to output, package order/scope, registry override/signer context, output-visible object snapshot or template choice makes an earlier current-use result unsuitable and requires a new build for current output.
+- A change to selected document released revision, evidence/scheme reference or metadata relevant to output, package order/scope, registry override/signer context, resolved object-template output or form-template choice makes an earlier current-use result unsuitable and requires a new build for current output.
 - A stale marker describes comparison with current desired configuration; it never rewrites the immutable manifest or bytes of a historical snapshot.
-- Build resolves exact revisions, physical original references, template versions, registry input/override version, object snapshots, ordering and validation provenance into the snapshot manifest.
+- Build resolves exact revisions, physical original references, form-template versions, registry input/override version, frozen released object/company values, ordering and validation provenance into the snapshot manifest.
 
 ---
 
@@ -379,7 +388,7 @@ Read models are composed views for real screens and decisions. Each read carries
 | Workspace switcher | Owned and connected workspace id/display kind/name/status, owner identity where relevant, effective grant capabilities and safe pending/connected indicators; no other workspace content leakage. |
 | Object dashboard | Object id/name/status/discipline context, document/folder/package counts, validation `ERROR`/`WARNING` counts, latest package freshness/build state, pending AI/source work and recent safe activity summary. |
 | Folder tree/document list | Folder hierarchy/order/status/version, selected-folder placement list, document type/number/date/lifecycle/latest revision/working-change marker, scheme/package representation, validation/stale badges and permitted commands. |
-| Document editor view | Document identity/type/status, working content and expected working version, latest released revision, typed block values, numbering/date, participant context, certificate/material/scheme links, selected template context, draft/final findings, unpublished/stale impacts and later lock/autosave state. |
+| Document editor view | Document identity/type/status, working content and expected working version, latest released revision, strict linked/manual template mode, resolved participant/company context with source provenance, certificate/material/scheme links, selected form-template context, draft/final findings, unpublished/stale impacts and later lock/autosave state. |
 | Certificate picker | Candidate certificate id/kind/confirmed metadata/file availability/status/supersession, matching material/coverage cues, applicability finding evaluated for current document date, usage summary and permission to attach/view. |
 | Executive scheme picker | Scheme identity/title/number/date/system/sheet metadata, physical-file availability, lifecycle/supersession/usage, same-object context, applicability findings and allowed attach action. |
 | Registry preview | Registry scope, source blocks/rows with provenance navigation, exact override version and signer context, ordering/hidden/note surface, validation/readiness and freshness/stale state; source facts route to owner screens. |

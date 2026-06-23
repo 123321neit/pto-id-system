@@ -40,9 +40,15 @@
 16. Не начинать auth/sharing implementation без phased sequence из `docs/20-auth-sharing-implementation-plan-v1.md`.
 17. Не делать object-owned certificate/organization/representative libraries.
 18. Не принимать free-text signatories, organizations or certificates as final act data.
-19. Не позволять изменениям глобальных reusable libraries молча менять уже сформированные акты.
-20. Не позволять изменениям параметров по умолчанию молча менять уже созданные документы.
+19. Разрешать изменениям глобальных reusable libraries обновлять только active
+    `linked` acts через `ObjectTemplate`; не позволять им менять manual acts,
+    released revisions или issued packages.
+20. Не копировать template-owned defaults в каждый linked act и не создавать
+    partial overrides: working act либо полностью `linked`, либо полностью
+    `manual` с одним complete snapshot.
 21. Не превращать предложенную или автоматическую нумерацию в обязательное ограничение.
+22. Не трактовать папки ИД как фиксированный набор месяцев или периодов:
+    пользователь задаёт произвольное имя папки, а список папок принадлежит объекту.
 
 ---
 

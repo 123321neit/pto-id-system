@@ -31,7 +31,7 @@ describe('App shell mock navigation', () => {
     expect(screen.getByText('Реконструкция поликлиники, демонстрационный проект')).toBeTruthy();
     expect(screen.getByText('Жилой комплекс "Северный"')).toBeTruthy();
     expect(screen.getByText('Торговый центр "Горизонт"')).toBeTruthy();
-    expect(screen.getAllByRole('button', { name: 'Открыть объект' })).toHaveLength(3);
+    expect(screen.getAllByRole('button', { name: 'Открыть объект' })).toHaveLength(4);
 
     const quickAccess = screen.getByLabelText('Быстрые разделы');
     expect(within(quickAccess).getByText('Библиотека сертификатов')).toBeTruthy();
@@ -64,6 +64,73 @@ describe('App shell mock navigation', () => {
 
     expect(screen.getByRole('heading', { name: 'Мои объекты' })).toBeTruthy();
     expect(screen.getByText('Реконструкция поликлиники, демонстрационный проект')).toBeTruthy();
+  });
+
+  it('creates the first arbitrary folder and first document in an empty object', async () => {
+    const user = userEvent.setup();
+
+    render(<App />);
+
+    const emptyObjectCard = screen
+      .getByRole('heading', { name: 'Новый объект без папок ИД' })
+      .closest('article');
+
+    if (emptyObjectCard === null) {
+      throw new Error('Карточка пустого демо-объекта не найдена.');
+    }
+
+    await user.click(within(emptyObjectCard).getByRole('button', { name: 'Открыть объект' }));
+
+    expect(screen.getByRole('heading', { name: 'Создайте первую папку ИД' })).toBeTruthy();
+    expect(screen.getByText('Документы появятся здесь после создания первой папки.')).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'Сентябрь 2026' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Октябрь 2026' })).toBeNull();
+
+    const objectNavigation = screen.getByRole('navigation', { name: 'Разделы объекта' });
+    await user.click(
+      within(objectNavigation).getByRole('button', { name: 'Открыть шаблон объекта' }),
+    );
+    const objectTemplateDialog = screen.getByRole('dialog', { name: 'Шаблон объекта' });
+    await user.click(within(objectTemplateDialog).getByRole('button', { name: 'Закрыть' }));
+    expect(screen.getByRole('heading', { name: 'Создайте первую папку ИД' })).toBeTruthy();
+
+    await user.click(screen.getByRole('button', { name: 'Создать папку' }));
+
+    const createFolderForm = screen.getByRole('form', { name: 'Создать папку ИД' });
+    const createFolderButton = within(createFolderForm).getByRole('button', {
+      name: 'Создать и открыть',
+    });
+    expect(createFolderButton.hasAttribute('disabled')).toBe(true);
+
+    await user.type(
+      within(createFolderForm).getByLabelText('Название папки'),
+      'Монтаж вентиляции — этап 1',
+    );
+    expect(createFolderButton.hasAttribute('disabled')).toBe(false);
+    await user.click(createFolderButton);
+
+    expect(screen.getByRole('heading', { name: 'Монтаж вентиляции — этап 1' })).toBeTruthy();
+    expect(screen.getByText('В этой папке пока нет документов')).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Создать документ' })).toBeTruthy();
+
+    await user.click(screen.getByRole('button', { name: 'Создать документ' }));
+    const createDocumentDialog = screen.getByRole('dialog', { name: 'Создать документ' });
+    expect(createDocumentDialog.textContent).toContain('Монтаж вентиляции — этап 1');
+    expect(createDocumentDialog.textContent).toContain('Предлагаемый номер: ОВ-1');
+    await user.click(within(createDocumentDialog).getByRole('button', { name: 'Создать АОСР' }));
+
+    expect(screen.getByRole('button', { name: /ОВ-1/u })).toBeTruthy();
+
+    expect(
+      within(objectNavigation).getByRole('button', { name: 'Монтаж вентиляции — этап 1' }),
+    ).toBeTruthy();
+
+    await user.click(within(objectNavigation).getByRole('button', { name: 'Папки ИД' }));
+    const folderDirectory = screen.getByLabelText('Все папки ИД');
+    const createdFolder = within(folderDirectory).getByRole('button', {
+      name: /Монтаж вентиляции — этап 1/u,
+    });
+    expect(createdFolder.textContent).toContain('1 документ');
   });
 
   it('creates an AOSR draft from a folder and updates derived object counts', async () => {
@@ -340,7 +407,7 @@ describe('App shell mock navigation', () => {
     const periodicRegistry = within(getSectionByHeading('Реестр папки'));
     expect(
       periodicRegistry.getByText(
-        'Построен из текущих документов периода. Реестр не сохраняется, не блокируется и не закрывает период.',
+        'Построен из текущих документов папки. Реестр не сохраняется, не блокируется и не закрывает папку.',
       ),
     ).toBeTruthy();
     expect(periodicRegistry.getByRole('columnheader', { name: '№' })).toBeTruthy();
@@ -538,7 +605,7 @@ describe('App shell mock navigation', () => {
     const finalRegistry = within(getSectionByHeading('Финальный реестр итоговой ИД'));
     expect(
       finalRegistry.getByText(
-        'Построен из документов всех периодов. Финальный реестр не сохраняется как сущность, не блокируется и не архивируется.',
+        'Построен из документов всех папок. Финальный реестр не сохраняется как сущность, не блокируется и не архивируется.',
       ),
     ).toBeTruthy();
     expect(finalRegistry.getByText('ОВ-1')).toBeTruthy();
@@ -738,7 +805,7 @@ describe('App shell mock navigation', () => {
     expect(readiness.status).toBe('needs-attention');
     expect(readiness.statusLabel).toBe('🟡 Есть пустые разделы');
     expect(readiness.issues).toEqual([
-      'Нет документов периода',
+      'Нет документов папки',
       'Нет сертификатов',
       'Нет документов объекта',
     ]);

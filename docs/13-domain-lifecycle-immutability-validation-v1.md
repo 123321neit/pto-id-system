@@ -10,7 +10,15 @@
 
 Источник архитектурных принципов: `docs/PROJECT_MEMORY.md`.
 
-Основание: `docs/12-database-schema-v1.md`, ADR 0001-0005, анализ АОСР и реестра.
+Основание: `docs/12-database-schema-v1.md`, ADR 0001-0007, анализ АОСР и реестра.
+
+Object-template amendment note, 2026-06-22:
+
+Active linked acts resolve counterparty/signatory template data live through
+`ObjectTemplate`; manual acts own one complete snapshot; released revisions and
+package outputs freeze exact resolved values. Legacy object-company snapshot
+wording below applies only to frozen output context and cannot be used as the
+normal working-act model.
 
 Этот документ закрывает domain/policy gaps, выявленные при review conceptual Database Schema V1. Он определяет команды, состояния, неизменяемые исторические результаты и validation gates без выбора SQL, ORM, migrations, API, backend/frontend stack, storage provider, queue или renderer.
 
@@ -207,8 +215,8 @@ Generated output заменяется только созданием новог
 | --- | --- | --- |
 | Draft typed document working state | Да | Не меняет released revision; autosave/recovery policy применяется отдельно. |
 | Final document identity | Да, через новую revision | Старые published revisions immutable. |
-| Live `CompanyProfile` | Да | Не обновляет существующий `ObjectCompanySnapshot`. |
-| Object company context | Только явным принятием нового snapshot | Snapshot, использованный в output, immutable. |
+| Live `CompanyProfile` | Да | Обновляет active linked resolution через `ObjectTemplate`; manual/released snapshots неизменяемы. |
+| Object-template company assignment | Да, через явное изменение template assignment/context | Linked acts resolve current assignment; exact values used in released output remain immutable. |
 | Confirmed certificate metadata/file | Для будущего использования только через correction/supersession policy | Exact file/version/reference в historical package сохраняется. |
 | Executive scheme metadata/file | До historical use; затем новая сущность/file или supersession | Exact scheme file/reference сохраняется. |
 | Package configuration | Да | Released package snapshots не меняются. |
@@ -229,7 +237,7 @@ Generated output заменяется только созданием новог
 - точная версия `RegistryOverride`, использованная для projection;
 - registry projection result/input reference, если реестр входит в package;
 - template version ids для актов, реестра и package outputs;
-- `ObjectCompanySnapshot` и иные object/output snapshot references, фактически использованные в выдаче;
+- exact resolved object/company values and other snapshot references actually used in the release;
 - generated artifact identities и/or retained file identities включенного результата;
 - captured validation outcome/warnings, если они сопровождают release.
 
@@ -240,7 +248,7 @@ Generated output заменяется только созданием новог
 | Frozen dependency | Guarantee |
 | --- | --- |
 | Template version freeze | Used `TemplateVersion` и необходимые assets не меняются; новая форма получает новую version. |
-| Object company snapshot freeze | Смена реквизитов или директора в live company profile не меняет старый комплект. |
+| Resolved object/company output freeze | Смена реквизитов или директора в live company profile может обновить active linked acts, но не меняет старый комплект. |
 | Document revision freeze | Пакет ссылается на точный published content каждого АОСР/акта, включая number/date/participants/links. |
 | Certificate freeze | Пакет хранит exact certificate identity и physical file/version/reference, а не latest certificate lookup. |
 | Executive scheme freeze | Пакет хранит exact scheme identity и physical file/reference, а не актуальную схему объекта. |
@@ -410,7 +418,7 @@ Override имеет собственную version/identity для включе�
 
 - certificate registration number, issuer, validity, file presence или evidence identity;
 - date, number, type, work description, revision или final status акта;
-- company legal/requisite data из `ObjectCompanySnapshot`;
+- company legal/requisite data from the owning library/object template or a frozen released snapshot;
 - scheme title, registration number, date или physical file identity;
 - document validation outcome или наличие required attachment;
 - template version, якобы использованной для существующего artifact.
@@ -444,7 +452,7 @@ Override имеет собственную version/identity для включе�
 | Executive schemes | Scheme ids, exact physical file/reference and included metadata. |
 | Registry | Registry scope, exact `RegistryOverride` version, signer snapshot and projection/input reference. |
 | Templates | Exact template versions/assets used for each generated document/registry/package output. |
-| Object context | Exact `ObjectCompanySnapshot` and other output-visible object snapshot references used. |
+| Object context | Exact resolved object/company values and other output-visible snapshot references used. |
 | Composition | Inclusion decisions, package ordering, generated artifact/file references. |
 | Validation/provenance | Release/build validation summary and build attribution needed to explain output. |
 
@@ -456,7 +464,7 @@ Override имеет собственную version/identity для включе�
 | --- | --- |
 | Document получает новую revision | Новый build/snapshot; ранее released snapshot остается unchanged и может помечаться stale для current use. |
 | Certificate/scheme replacement или metadata correction affects output | Новый build/snapshot с новой exact dependency; старый original сохраняется. |
-| Override, ordering, company snapshot или template choice меняется | Новый build/snapshot. |
+| Override, ordering, object-template/company resolved values or form-template choice changes for a new release | Новый build/snapshot. |
 | Пользователь повторно скачивает historical release | Выдать retained artifact или rebuild strictly from its frozen manifest; не подтягивать latest data. |
 
 Нельзя мутировать old released snapshot для экономии storage или для представления его как текущего.

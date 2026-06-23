@@ -953,7 +953,13 @@ Acts should not accept free-text signatories, organizations or certificates as t
 - newly created entity goes into the global library first;
 - then it is linked/assigned to the current object or act.
 
-When an organization, representative or certificate is included in an act, the act stores a snapshot of required printed details: representative full name, position, organization, authority basis/order, role in the act, organization labels/requisites and certificate number/date/issuer/materials. Later edits to the global library must not silently change already formed acts.
+Уточнение 2026-06-22: это первоначальное snapshot-решение superseded для
+active working acts by ADR 0007. Linked acts resolve organization and
+representative data live through `ObjectTemplate`; a full snapshot is created
+only by an explicit whole-act manual switch. Released revisions/packages
+separately freeze exact resolved values. Certificate use remains an explicit
+relation to global file-backed evidence and freezes exact identity/values/file
+provenance on release.
 
 Certificates are global. Objects do not own certificate libraries. Acts select materials/certificates from the global certificate library, and final ID registries/packages derive used certificates from acts and deduplicate them by referenced certificate identity/provenance.
 
@@ -971,8 +977,9 @@ A: Выполнена frontend-only корректировка wording/flow в �
 
 - AOSR signatory creation now uses `Создать представителя и назначение`;
 - submit action now uses `Создать и добавить в акт`;
-- helper explains that production will create a global representative, an
-  object assignment and an act snapshot;
+- helper historically explained a global representative, object assignment and
+  act snapshot; ADR 0007 later supersedes the automatic snapshot part, so the
+  assignment remains live for linked acts;
 - the mock no longer exposes the checkbox/mental model of adding a
   representative only to the act versus also keeping it on the object;
 - simplified in-memory behavior now creates an object assignment before adding
@@ -1038,11 +1045,11 @@ policy, backend/API behavior, persistence or generation was introduced.
 
 ---
 
-## 41. Document default parameters as suggestions
+## 41. Historical document-default suggestion model (superseded for template-owned data)
 
 ### Q: Как должны работать объектовые значения по умолчанию для новых АОСР и существующих документов?
 
-A: Принято правило:
+A: Исторически было принято правило:
 
 ```text
 Параметры по умолчанию -> Предложение -> Самостоятельный документ
@@ -1075,15 +1082,14 @@ mutate the sequence, existing documents are not automatically renumbered, and
 deleted numbers are not reused by default. Numbering settings UI is not
 implemented in this sprint.
 
-Статус решения: accepted architecture/UI principle, recorded in
-`docs/adr/0007-document-defaults-suggestions-and-controlled-updates.md` and
-implemented only in the frontend mock. No backend/API, Prisma/schema/migration,
-persistence, real registry generation, package release snapshot implementation,
-uploads, OCR/AI or DOCX/PDF/ZIP generation was introduced.
+Статус решения: frontend history only. ADR 0007 later replaced this rule for
+template-owned active-act data with strict linked/manual behavior. Individual
+act fields and numbering remain act-owned; template-owned values are not copied
+as independent per-field defaults and do not support partial overrides.
 
 ---
 
-## 42. AOSR printable values must be document-owned by default
+## 42. Historical printable-value snapshot audit (superseded for template-owned data)
 
 ### Q: Должен ли Codex ограничиться проектной документацией и порядком организаций, или нужно проверить весь редактор АОСР на live-связи с объектом?
 
@@ -1103,10 +1109,11 @@ A: Нужно проверять весь редактор и preview. Прин�
 - object defaults remain live only for settings, comparison/status hints,
   explicit restore actions and proposal/search sources.
 
-Статус решения: frontend mock architecture refinement only. No backend/API,
-Prisma/schema/migration, persistence, numbering settings, real registry
-generation, package release snapshot implementation, uploads, OCR/AI or
-DOCX/PDF/ZIP generation was introduced.
+Статус решения: frontend history only. ADR 0007 supersedes document-owned
+copies for active template data. Linked acts resolve through
+`ObjectTemplate + libraries`; manual acts use one complete snapshot; released
+revisions/packages freeze their own exact output. Certificate and object-file
+relations remain explicit act-owned links with release provenance.
 
 ---
 
@@ -1132,3 +1139,53 @@ A: Настройка нумерации принадлежит шаблону �
 Текущая реализация — frontend-only in-memory mock. Backend reservation,
 concurrent collision handling, persistence and explicit bulk renumber flow не
 реализованы.
+
+---
+
+## 44. Canonical working-act snapshot boundaries
+
+### Q: Когда рабочий акт читает live-данные, а когда хранит snapshot?
+
+A: Действует ADR 0007:
+
+- глобальные организации и представители являются reusable current-data
+  sources;
+- `ObjectTemplate` хранит ссылки/назначения и object-specific labels, groups,
+  order and repeated texts;
+- linked act не хранит template snapshot и разрешает текущие значения через
+  `global libraries -> ObjectTemplate`;
+- только явное переключение всего акта в manual mode создаёт один полный
+  `manualTemplateSnapshot`;
+- partial template-field overrides запрещены;
+- individual act data не переключает template mode;
+- certificate остаётся глобальным file-backed evidence relation, а не строкой
+  или object-owned copy;
+- release фиксирует immutable `DocumentRevisionSnapshot` с exact resolved
+  output values and evidence provenance;
+- issued package фиксирует immutable `PackageSnapshot` и не читает `latest`
+  вместо исторических dependencies.
+
+Поэтому библиотечная правка может обновить active linked preview, но не меняет
+manual act, released revision или issued package. Это уточнение документации не
+реализует backend/API/schema/persistence/generation.
+
+---
+
+## 45. Dynamic ID folders in the frontend mock
+
+### Q: Папки ИД обязаны быть заранее заданными месяцами или пользователь создаёт их сам?
+
+A: Пользователь создаёт произвольное количество папок и сам задаёт название.
+
+- `Сентябрь 2026` и `Октябрь 2026` являются только seeded demo content;
+- folder id больше не ограничен union двух заранее известных значений;
+- sidebar и directory читают текущий in-memory folder state;
+- пустой объект показывает явный CTA `Создать папку`;
+- создание требует непустого отображаемого имени, сразу открывает новую папку и
+  не создаёт document автоматически;
+- первый документ создаётся отдельно внутри выбранной папки;
+- registry/intermediate ID остаются derived views папки;
+- итоговая ИД агрегирует документы всех папок.
+
+Это frontend-only in-memory mock. Backend/API, Prisma/schema/migrations,
+persistence/localStorage, generation и production folder lifecycle не введены.

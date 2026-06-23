@@ -10,7 +10,7 @@ export function DerivedRegistryTable({ registry }: DerivedRegistryTableProps): R
   if (registry.rows.length === 0) {
     return (
       <p className="derived-registry-empty">
-        В этом периоде пока нет документов для производного реестра.
+        В этой папке пока нет документов для производного реестра.
       </p>
     );
   }
@@ -25,7 +25,7 @@ export function DerivedRegistryTable({ registry }: DerivedRegistryTableProps): R
             <th scope="col">Тип документа</th>
             <th scope="col">Номер</th>
             <th scope="col">Дата</th>
-            <th scope="col">Период</th>
+            <th scope="col">Папка</th>
             <th scope="col">Документ / работы</th>
           </tr>
         </thead>

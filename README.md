@@ -19,12 +19,11 @@ entry points where they competed with the main path, keeps global reusable
 libraries in global navigation, and treats Object Overview as a start/continue
 surface rather than a dashboard of equal-weight options.
 
-Period document UX cleanup: a period is treated as a folder with documents of
-many future types. `Создать документ` is now the universal entry point; AOSR is
+Folder document UX: an ID folder contains documents of many future types and
+has a user-defined name. `Создать документ` is the universal entry point; AOSR is
 only the first implemented document type, while future types stay disabled as
-`скоро`. The period registry and Periodic ID are generated from period
-documents, with the real registry implementation coming soon. Numbering
-settings are planned for a later stage and are not implemented here.
+`скоро`. Folder registry and intermediate ID are derived from folder documents.
+The mock supports an empty object and explicit creation of the first folder.
 
 Live object template principle: reusable counterparties and signatories are
 global live libraries, while `ObjectTemplate` stores their ids, object-specific
@@ -288,51 +287,53 @@ logic was added.
 
 ADR 0006 records the reusable entity rule: certificates, organizations and
 representatives are global user-level libraries. Objects store assignments and
-links to those entities, while acts store output snapshots for historical
-stability. Acts must avoid direct free-text signatories, organizations and
-certificates as the final model. A "create new" action from search creates a
-global entity first, then links or assigns it to the current object or act.
-Later global library edits must not silently change already formed acts.
+links to those entities. ADR 0007 clarifies the working model: active linked
+acts resolve counterparty/signatory data live through `ObjectTemplate`; an
+explicit whole-act switch creates one complete manual snapshot; released
+revisions/packages freeze exact output separately. Certificate use remains an
+explicit relation to global file-backed evidence, with exact identity, values
+and file provenance frozen for release. Direct free-text signatories,
+organizations and certificates are not valid final sources.
 
-The frontend-only demo wording is now aligned with ADR 0006 for remaining AOSR
-signatory creation flows: the UI describes creating/selecting a global
-representative, assigning the representative to the object, adding that
-assignment to the act, and storing a printed snapshot. This remains an
-in-memory mock simplification only: no production snapshot table, backend/API
-behavior, Prisma schema, migration or persistence was implemented. Empty
-organization/representative fields remain allowed so future print forms can
-render manual-fill lines instead of blocking saving.
+The frontend-only demo wording creates/selects a global representative and
+assigns that representative to the object before act use. The later ADR 0007
+implementation replaces the earlier automatic act-snapshot interpretation:
+linked acts use the assignment live, while manual/released states freeze it at
+their explicit boundaries. This remains in-memory mock behavior only; no
+production schema, backend/API or persistence was implemented. Empty fields
+remain allowed so future print forms can render manual-fill lines.
 
-The frontend-only period-first object workspace mock makes `Периоды` the main
-opened-object navigation path after `Обзор`. Mock periods such as
-`Сентябрь 2026` and `Октябрь 2026` contain documents, a period registry
-placeholder and a future package placeholder. AOSR remains the only working
-document editor and is opened through a period/document path. Object-wide counts
-stay on `Обзор`; the embedded editor keeps only document context such as current
-document number, date, work period and version. The final object ID remains the
-aggregate over all periods. This is frontend demo UX only: no backend/API,
+The frontend-only folder-first object workspace makes `Папки ИД` the main
+opened-object navigation path after `Обзор`. Folders have user-defined names
+and are created in memory; the seeded `Сентябрь 2026` and `Октябрь 2026` rows
+are examples on the populated demo object, not a fixed product taxonomy. A
+separate empty demo object covers `создать первую папку -> открыть папку ->
+создать первый документ`. Each folder contains documents, its derived registry
+and a future intermediate package view. AOSR remains the only working document
+editor and is opened through a folder/document path. The final object ID remains
+the aggregate over all folders. This is frontend demo UX only: no backend/API,
 Prisma/schema/migrations, persistence, uploads, OCR/AI, DOCX/PDF/ZIP generation
 or production business logic was introduced.
 
-The frontend-only period-scoped AOSR creation mock keeps the period-first model
+The frontend-only folder-scoped AOSR creation mock keeps the folder-first model
 but makes `Создать документ -> АОСР` create a real in-memory draft for the
-selected period. The new blank draft appears in the period document list and
-the AOSR document tree, stays in the selected period until the user opens it
+selected folder. The new blank draft appears in the folder document list and
+the AOSR document tree, stays in the selected folder until the user opens it
 manually, and is included by derived overview/final ID counts while the browser
 session lives. This uses no backend, no API, no localStorage and no
 persistence. Empty fields are allowed so preview/editing remain available and
 future print generation can render manual-fill lines.
 
-Future period-first structure:
+Future folder-first structure:
 
 ```text
 Object
 ├── Overview
-├── Periods
-│   ├── September 2026
+├── ID folders
+│   ├── User-defined folder
 │   │   ├── documents
 │   │   ├── registry
-│   │   └── periodic ID generated view
+│   │   └── intermediate ID generated view
 │   └── ...
 ├── Object documents
 ├── Representatives
@@ -368,29 +369,29 @@ persistence, collision transaction or production numbering engine is included.
 
 The frontend-only object workspace premium UX polish keeps the same mock
 functionality but makes the workspace feel more like a calm professional SaaS:
-periods read as real work folders, overview acts as a command center, the
+ID folders read as real work containers, overview acts as a command center, the
 create-document selector uses document-type cards, and the object navigation
-feels closer to `Overview -> Period -> Document`. The visual direction avoids
+feels closer to `Overview -> Folder -> Document`. The visual direction avoids
 relying on bright colors; quality should come from spacing, typography,
 hierarchy, element sizing, action contrast, restrained cards/surfaces and
 predictable navigation. This is styling, copy and layout only: no backend/API,
 persistence, Prisma/schema/migrations, uploads, OCR/AI, generation or
 production business logic was introduced.
 
-Periodic ID and Final ID are generated views/packages, not stored business
-entities. A period contains documents, a period registry placeholder and the
-frontend action `Сформировать периодическую ИД`; the object contains the
-frontend action `Сформировать итоговую ИД`. Both views are always rebuilt from
+Intermediate folder ID and Final ID are generated views/packages, not stored
+business entities. A folder contains documents, a derived registry and the
+frontend intermediate-print action; the object contains the final-print action.
+Both views are always rebuilt from
 the current documents and links, so changing documents later and generating
 again produces an updated composition. This stage intentionally adds no closed
-period status, issued status, locked package state, package persistence,
+folder status, issued status, locked package state, package persistence,
 archive records, backend/API, ZIP generation or production package logic.
 Historical ZIP storage is outside the domain model.
 
 The frontend-only derived registry correction removes the standalone
 object-registry mental model from the current object workspace. Registry exists
-only as a period registry, derived from documents in one selected period, or as
-a final registry, derived from documents across all periods for Final ID.
+only as a folder registry, derived from documents in one selected folder, or as
+a final registry, derived from documents across all folders for Final ID.
 Registry rows are generated from current in-memory document drafts and act type
 metadata (`code`, `title`), so future act types can enter the same projection
 without one-off AOSR-only registry logic. Registries are not stored business
@@ -610,9 +611,11 @@ Scaffold включает:
 - frontend-only live object template: linked AOSR drafts resolve object-owned
   printable data from `ObjectTemplate` and global counterparty/signatory
   libraries; manual drafts use a complete snapshot with no partial overrides;
-  selected certificates/object documents keep their existing act snapshots,
-  with no backend, persistence, Prisma/schema/migration, auth, uploads,
-  generation or production business logic.
+  selected certificates/object documents keep current mock printable copies
+  only for frontend compatibility, while the future production contract keeps
+  explicit evidence relations and freezes exact provenance on release; no
+  backend, persistence, Prisma/schema/migration, auth, uploads, generation or
+  production business logic is implied.
 - frontend-only object document workspace: object-level document registry UI
   with mock filters, summary counts, AOSR usage labels and local in-memory
   creation, sharing the demo object document source with the AOSR point 4 drawer
@@ -623,11 +626,11 @@ Scaffold включает:
   surfaces may only derive used certificates from acts while the dashboard
   certificate library and AOSR material drawer keep sharing the same frontend
   mock store.
-- global reusable libraries and act snapshots ADR: certificates, organizations
-  and representatives are global user-level libraries; objects store
-  assignments/links; acts capture printed snapshots for historical stability;
-  direct free-text signatories, organizations and certificates are not the final
-  model.
+- global reusable libraries and output snapshots ADR: certificates,
+  organizations and representatives are global user-level libraries; object
+  templates store assignments/links; active linked acts resolve current data;
+  manual acts and released outputs freeze snapshots at explicit boundaries;
+  direct free-text entities are not the final model.
 - frontend-only ADR 0006 demo wording alignment: remaining AOSR signatory
   creation copy now says `Создать представителя и назначение` /
   `Создать и добавить в акт`, creates an in-memory object assignment before
@@ -650,15 +653,16 @@ Scaffold включает:
   hierarchy, document tree selected states, current-act metadata, clearer
   drawers and preview framing, with no new document statuses, approvals,
   workflow changes, backend/API behavior, persistence or generation.
-- frontend-only period-first object workspace mock: opened objects still land on
-  `Обзор`, but object navigation now flows through `Периоды` such as
-  `Сентябрь 2026` and `Октябрь 2026`; each period contains documents plus
-  registry/package placeholders, AOSR opens through a period/document path,
+- frontend-only folder-first object workspace mock: opened objects still land on
+  `Обзор`, but object navigation now flows through user-created `Папки ИД`;
+  seeded month names are demo fixtures only; each folder contains documents plus
+  derived registry/package views, AOSR opens through a folder/document path,
+  and an empty object can create its first arbitrary folder and document;
   duplicate workspace/editor counters are removed outside Overview, and no
   backend/API, persistence, Prisma/schema/migration, generation or production
   business logic is added.
-- frontend-only period-scoped AOSR creation mock: `Создать документ -> АОСР`
-  creates a blank in-memory AOSR draft in the selected period, proposes the
+- frontend-only folder-scoped AOSR creation mock: `Создать документ -> АОСР`
+  creates a blank in-memory AOSR draft in the selected folder, proposes the
   next `ОВ-*` number through the initial numbering helper, leaves the user on
   the selected period until the draft is opened manually, and updates derived
   mock overview/final ID counts without
@@ -674,7 +678,7 @@ OpenAPI, domain database state, file APIs or real use cases. They exist only to
 validate frontend -> backend connectivity, shared types, env-driven API/storage
 configuration, Prisma client generation and infrastructure health boundaries.
 The mock object dashboard now opens an object overview first; users explicitly
-open AOSR through a period/document path from recent periods, recent documents
+open AOSR through a folder/document path from recent folders, recent documents
 or the create-document selector. The AOSR screen remains a frontend-only mock
 for feedback, not a production workflow. Its mock printed-page preview
 separates object-level defaults from current-act fields, lets the current act

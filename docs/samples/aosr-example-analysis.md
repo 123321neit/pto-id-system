@@ -60,10 +60,13 @@
 При этом система должна поддерживать:
 
 - global representatives;
-- object representatives;
-- temporary representatives;
-- override внутри документа;
+- object-template representative assignments;
+- linked acts that resolve current assignments;
+- one complete manual snapshot after an explicit whole-act switch;
 - несколько фамилий в одном блоке.
+
+Act-only temporary/free-text representative and partial per-field overrides are
+not valid final sources under ADR 0007.
 
 ---
 
@@ -203,20 +206,16 @@ numbering:
   suffix: null
   rendered_number: "ПД-1"
 date: "2023-07-19"
-object_snapshot:
-  object_name: null
-  object_address: null
-representatives:
-  - role: technical_customer_construction_control
-    organization: null
-    position: null
-    full_name: null
-    authority_basis: null
-  - role: contractor_representative
-    organization: null
-    position: null
-    full_name: null
-    authority_basis: null
+object_template_id: null
+template_mode: linked
+manual_template_snapshot: null
+representative_assignments:
+  - representative_id: null
+    role: technical_customer_construction_control
+    display_order: 1
+  - representative_id: null
+    role: contractor_representative
+    display_order: 2
 work:
   description: "Монтаж воздуховодов..."
   systems: []
@@ -249,9 +248,12 @@ validation:
 Правильная модель:
 
 ```text
-AOSR typed payload + linked representatives + linked certificates + numbering + template version
+AOSR individual data + ObjectTemplate/global-library resolution (or one full manual snapshot) + linked certificates + numbering + form template version
 → HTML Preview
 → DOCX/PDF
 → Registry Projection
 → Package Builder
 ```
+
+Released revision/package snapshots freeze the exact resolved output and
+evidence provenance; the working linked act does not copy template-owned data.

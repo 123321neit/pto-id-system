@@ -10,7 +10,20 @@
 
 Источник истины для решений: `docs/PROJECT_MEMORY.md`.
 
-Связанные решения: ADR 0001-0005, анализ АОСР и пример реестра вентиляции.
+Связанные решения: ADR 0001-0007, анализ АОСР и пример реестра вентиляции.
+
+Уточнение 2026-06-22:
+
+```text
+ADR 0007 имеет приоритет для active working acts.
+```
+
+Упоминания `ObjectCompanySnapshot`, object representative defaults и document
+participant snapshots ниже не означают, что обычный рабочий акт копирует
+шаблонные данные при создании. Активный `linked` акт разрешает их через
+`global libraries -> ObjectTemplate`; `manual` акт хранит один полный
+`manualTemplateSnapshot`; released revision/package отдельно фиксирует точное
+resolved output state. Физическая backend-модель этих границ ещё не принята.
 
 ---
 
@@ -133,10 +146,10 @@ Data Model V1 различает три категории:
 | Aggregate root | Статус в V1 | Назначение | Главные инварианты |
 | --- | --- | --- | --- |
 | `TenantContext` | Концептуальная граница | Изоляция данных организации/аккаунта | Межtenant-ссылки запрещены, кроме специально решённых системных сценариев. |
-| `Object` | Принят | Рабочий контекст строительного объекта | Идентичность объекта, привязка систем, object snapshots и настройки; не владеет всеми документами. |
+| `Object` | Принят | Рабочий контекст строительного объекта | Идентичность объекта, системы, `ObjectTemplate`, настройки и ссылки; не владеет всеми документами. |
 | `FolderTree` | Кандидат внутри object context | Организация документов по папкам/периодам | Один объект, отсутствие циклов, правила move/duplicate/soft delete. |
-| `CompanyProfile` | Принят как library aggregate | Переиспользуемый профиль организации | Изменение профиля не изменяет существующие object snapshots. |
-| `RepresentativeProfile` | Кандидат как library aggregate | Переиспользуемые данные представителя | Переиспользование с возможностью object/document snapshots и временных представителей. |
+| `CompanyProfile` | Принят как library aggregate | Переиспользуемый профиль организации | Изменения видны active linked acts; manual/released snapshots не переписываются. |
+| `RepresentativeProfile` | Принят как global library aggregate | Переиспользуемые данные представителя | Object-specific assignments feed linked acts; manual/released snapshots сохраняют историю. |
 | `Document` | Принят | Typed исполнительный документ | Immutable type, structured payload, lifecycle, revision, связи и template binding. |
 | `Certificate` | Принят | Library item документа качества | Обязательный original file, подтверждённые metadata, переиспользуемые ссылки. |
 | `ExecutiveScheme` | Принят | Фактическая исполнительная схема | File + structured metadata, отдельная от проектных чертежей. |
@@ -152,7 +165,7 @@ Data Model V1 различает три категории:
 | `GeneratedArtifact` | Выход операции генерации с provenance; владеется revision/template/package output context. |
 | `DocumentLock` | Операционная lease-сущность редактирования, не изменяет данные документа. |
 | `MaterialUsage` | Факт использования внутри work/document context; точная граница зависит от уточнения `WorkItem`. |
-| `ObjectCompanySnapshot` | Замороженное значение организации на объекте, принадлежащее object context. |
+| `ObjectCompanySnapshot` | Legacy V1 name for frozen company output values; не normal source активного linked object/act. |
 | `DocumentRevisionSnapshot` | Историческая фиксация состояния документа, принадлежащая Document. |
 | `PackageSnapshot` | Результат сборки, принадлежащий Package. |
 
@@ -166,7 +179,7 @@ Data Model V1 различает три категории:
 
 - наименование, адрес и object-level attributes;
 - инженерные системы/разделы, используемые на объекте;
-- выбранные company snapshots и object representative defaults;
+- `ObjectTemplate` со ссылками на глобальные организации/представителей и object-specific labels/grouping/order;
 - связь с `ProjectDrawingSet`;
 - настройки нумерации и bindings шаблонов на уровне объекта;
 - связь с корнем папочной структуры.
@@ -198,15 +211,21 @@ Folder tree представляет пользовательскую класс
 
 ### 4.3 Company and representative boundaries
 
-`CompanyProfile` является редактируемой библиотечной карточкой организации для будущего использования. При выборе компании для объекта создаётся `ObjectCompanySnapshot`, который хранит реквизиты, необходимые для документов и реестров данного объекта.
+`CompanyProfile` и `RepresentativeProfile` являются глобальными reusable
+library records. `ObjectTemplate` хранит ссылки/assignments к ним и
+object-specific labels, grouping, ordering, roles and authority context.
 
 Это разделяет:
 
-- текущие данные организации в библиотеке;
-- исторически используемые данные организации на объекте;
-- eventual document/package snapshots.
+- текущие данные глобальных библиотек;
+- live object-template assignments для активных linked acts;
+- один полный `manualTemplateSnapshot` для явно ручного акта;
+- immutable resolved values released document/package snapshots.
 
-`RepresentativeProfile` может аналогично давать значения по умолчанию. Документ должен уметь сохранять отображаемые данные представителя либо snapshot/override, потому что состав подписантов, должность, полномочия и порядок должны воспроизводиться для конкретного акта.
+Act-only temporary/free-text representative не является допустимым final
+source. Новый представитель сначала создаётся в глобальной библиотеке, затем
+назначается объекту. Частичные document overrides запрещены: акт либо целиком
+`linked`, либо целиком `manual` в template-owned части.
 
 ### 4.4 Document boundary
 
@@ -287,11 +306,11 @@ Folder tree представляет пользовательскую класс
 
 | Entity | Role | Required conceptual attributes | Lifecycle note |
 | --- | --- | --- | --- |
-| `CompanyProfile` | Библиотека организаций | legal/short name, requisites, addresses, director, authority, SRO/contacts | Mutable library source для новых uses. |
-| `ObjectCompanySnapshot` | Реквизиты компании, принятые для объекта | rendered legal data, contract/work/SRO and representative basis data | Immutable historical value относительно изменений profile. |
+| `CompanyProfile` | Библиотека организаций | legal/short name, requisites, addresses, director, authority, SRO/contacts | Mutable current source для active linked uses. |
+| `ObjectTemplateCompanyAssignment` | Назначение глобальной организации в шаблоне объекта | library reference, object-specific title/subscript/order/context | Live source для linked acts; physical model требует отдельного backend contract. |
 | `RepresentativeProfile` | Переиспользуемый представитель | organization relation, position, full name, authority, optional NRS, contact | Модель глобальности/tenant scope уточняется. |
-| `ObjectRepresentativeBinding` | Дефолт представителя на объекте | role, representative or entered data, ordering, subtitle | Может быть overridden документом. |
-| `DocumentRepresentativeSnapshot` | Отображаемый участник конкретного документа | role, rendered organization/person/authority, ordering, subtitle | Должен сохранять воспроизводимый акт. |
+| `ObjectRepresentativeAssignment` | Назначение глобального представителя в шаблоне объекта | library reference, role/group, ordering, subtitle and object context | Live source для linked acts. |
+| `DocumentRepresentativeSnapshot` | Frozen output участника manual/released документа | role, rendered organization/person/authority, ordering, subtitle | Не создаётся как normal source linked act; released revision обязана быть воспроизводимой. |
 | `RegistrySignerSnapshot` | Подписант конкретного registry output | rendered name, position, organization, authority and caption | Может отличаться от подписантов актов. |
 
 ### 5.4 Works, documents and links
@@ -404,8 +423,8 @@ Value objects описывают значения без самостоятел�
 | Data or behavior | Owner | Consumers | Ownership rule |
 | --- | --- | --- | --- |
 | Object name/address/settings | `Object` | Documents, registry, package | Не редактируется только в projection или output. |
-| Company reusable profile | `CompanyProfile` | Object creation/settings | Изменения применимы к будущим choices, не к историческим snapshots. |
-| Company data used on object | `ObjectCompanySnapshot` under object context | Registry, documents, packages | Исторические реквизиты выводятся из snapshot. |
+| Company reusable profile | `CompanyProfile` | Object template, linked acts | Изменения видны active linked acts, но не manual/released snapshots. |
+| Company assignment used on object | `ObjectTemplate` reference/assignment | Linked acts and current projections | Current values resolve from the library; release captures exact output. |
 | Engineering system definitions | `Object` context / system entity | Works, documents, schemes | Точная каталогизация требует детализации, scope всегда object/tenant. |
 | Folder hierarchy | `FolderTree` in object context | UI placement, documents | Папка хранит placement, не document payload. |
 | Work meaning | `WorkItem` or typed work portion pending refinement | AOSR, tests, schemes, registry | Степень самостоятельности WorkItem уточняется; связи должны быть явными. |
@@ -435,7 +454,11 @@ Value objects описывают значения без самостоятел�
 
 ### 8.1 Object and supporting setup lifecycle
 
-`Object` создаётся как рабочий контекст проекта. При его настройке пользователь выбирает или вводит организации и представителей, после чего система формирует object-level snapshots/default bindings. Системы, папочная структура, project drawing sets и правила нумерации уточняются в рамках объекта.
+`Object` создаётся как рабочий контекст проекта. При его настройке пользователь
+выбирает либо создаёт глобальные организации и представителей, после чего
+`ObjectTemplate` сохраняет ссылки/assignments и object-specific display
+context. Системы, папочная структура, project drawing sets и правила нумерации
+уточняются в рамках объекта.
 
 Архивирование/удаление объекта должно учитывать, что внутри context существуют документы и evidence files; hard delete до retention/privacy решения не допускается как архитектурная предпосылка.
 
@@ -536,8 +559,8 @@ Snapshots фиксируют состояние данных там, где да
 
 | Snapshot | Created when | Contains | Why needed |
 | --- | --- | --- | --- |
-| `ObjectCompanySnapshot` | Компания связывается с объектом или явно обновляется на объекте | Реквизиты, адреса, директор/основание, SRO, contract/work context where used | Старый объект не меняется при правке company library. |
-| `DocumentRepresentativeSnapshot` | Представители включаются в revision документа | Rendered person/organization/authority/role/order | Акт воспроизводит подписантов и подписи того состояния. |
+| `ManualTemplateSnapshot` | Пользователь явно переключает весь акт в manual mode | Полностью resolved template-owned object/company/representative/repeated text state | Manual act больше не читает изменения шаблона/библиотек. |
+| `DocumentRepresentativeSnapshot` | Released revision фиксирует resolved participant output | Rendered person/organization/authority/role/order | Выпущенный акт воспроизводит подписантов и подписи того состояния. |
 | `DocumentRevisionSnapshot` | Revision документа фиксируется согласно lifecycle action | Typed payload, document number/date, links, validation result, template version | Final edit и история документа становятся объяснимыми. |
 | `AutosaveSnapshot` | Во время редактирования draft/current document | Текущее structured editor state | Восстановление работы без создания file-based source of truth. |
 | `PackageSnapshot` | Успешно завершена сборка комплекта | Ordering, included revisions/files, registry result, template/artifact provenance | Скачивание и объяснение исторического комплекта. |
@@ -702,7 +725,7 @@ The aggregate owns:
 - lifecycle status and revision history;
 - typed payload and validation findings;
 - links to works, certificates and executive schemes;
-- representative snapshots and selected `TemplateVersion`;
+- template mode/reference for working state, participant output snapshots in released revisions and selected `TemplateVersion`;
 - provenance of generated artifacts derived from a revision.
 
 It does not own the source lifecycle of `Certificate`, `ExecutiveScheme`, `TemplateVersion` or `Package`. Those references are checked at document validation and package-build boundaries.
@@ -716,7 +739,7 @@ It does not own the source lifecycle of `Certificate`, `ExecutiveScheme`, `Templ
 | Purpose | Record inspection of concealed works before subsequent works proceed. |
 | Source of truth | Structured payload: inspected work, location, execution period, project references, material usages, linked certificates/schemes, participants, subsequent-work permission and notes. |
 | Lifecycle owner | Its containing `Document`; `draft` to validated `final`, with later corrections through a new revision. |
-| Relationships | `WorkItem`, `MaterialUsage`, `Certificate`, `ExecutiveScheme`, `ProjectDrawingSet`, representative snapshots and `TemplateVersion`. |
+| Relationships | `ObjectTemplate`, `WorkItem`, `MaterialUsage`, `Certificate`, `ExecutiveScheme`, `ProjectDrawingSet`, released representative output and `TemplateVersion`. |
 | Constraints | Certificate text must render from an evidence-backed link; type is immutable; number/date changes after publication are revision-relevant. |
 
 ### 14.3 TestAct typed document
@@ -828,7 +851,7 @@ Package Builder должен концептуально выполнить:
 | Registry block | Required source | Expected output meaning |
 | --- | --- | --- |
 | Object header | `Object` and applicable object values | Объект, адрес, вид работ/раздел. |
-| Contractor/company | `ObjectCompanySnapshot` and related object settings | Организации, договорные/СРО/руководящие реквизиты. |
+| Contractor/company | Resolved `ObjectTemplate` assignments for current view; frozen values from released revision for historical output | Организации, договорные/СРО/руководящие реквизиты. |
 | Working drawings | `ProjectDrawingSet` | Комплект рабочих чертежей, шифр и количество листов. |
 | Quality documents | `Certificate` entities selected by scope/links | Сертификаты, декларации, паспорта и файлы подтверждения. |
 | Acts | Typed `Document` revisions | Названия документов, rendered number, date, notes/status where displayed. |
@@ -901,8 +924,8 @@ Derived projection - это представление данных, собир�
 | `TenantContext` | contains/isolates | `Certificate` | one-to-many | Certificate reuse ограничено tenant policy. |
 | `Object` | configures | `EngineeringSystem` | one-to-many | Системы объекта используются works/documents/schemes. |
 | `Object` | organizes through | `Folder` | one-to-many tree | Folder belongs to one object; no cross-object move. |
-| `Object` | captures | `ObjectCompanySnapshot` | one-to-many as roles require | Snapshot используется historic output. |
-| `CompanyProfile` | originates values for | `ObjectCompanySnapshot` | one-to-many | Последующее изменение profile не propagates automatically. |
+| `ObjectTemplate` | assigns/references | `CompanyProfile` | one-to-many as roles require | Linked acts resolve current values; output freezes them on release. |
+| `ObjectTemplate` | assigns/references | `RepresentativeProfile` | one-to-many grouped assignments | No act-only free-text final source; manual/released output uses snapshots. |
 | `Object` | refers to | `ProjectDrawingSet` | one-to-many candidate | Boundary remains to be ratified. |
 
 ### 17.2 Document and evidence relationships
@@ -1080,7 +1103,7 @@ Overrides нужны для порядка, скрытия, примечаний
 2. Когда для draft создаётся новая revision, а когда достаточно обновить autosave snapshot?
 3. Как пользователь видит и разрешает lock timeout/override/conflict?
 4. Должен ли warning о certificate expiry когда-либо становиться hard error для конкретных document types или требований заказчика?
-5. Как оформляется явное обновление ObjectCompanySnapshot, если реквизиты на активном объекте действительно нужно изменить?
+5. Каким будет physical contract для `ObjectTemplate` assignments, полного `manualTemplateSnapshot` и frozen released output values без дублирования live library data?
 
 ### 21.4 Questions required before generation/storage design
 

@@ -16,6 +16,7 @@ import {
   addRepresentativeToDraft,
   addRepresentativeToLibrary,
   buildDemoAosrPrintState,
+  createEmptyDemoAosrDraft,
   defaultAosrRepresentativeSubscript,
   demoAosrWorkspace,
   getCounterpartyLibraryItemFromGlobalOrganization,
@@ -85,7 +86,7 @@ interface DemoAosrWorkspacePageProps {
   readonly onObjectDefaultsChange?: (objectDefaults: DemoAosrObjectDefaults) => void;
   readonly onBackToObjects?: () => void;
   readonly onObjectSettingsClosed?: () => void;
-  readonly periodName?: string;
+  readonly periodName?: string | undefined;
   readonly settingsOpenRequest?: number;
   readonly visibleDraftIds?: readonly string[];
 }
@@ -176,7 +177,7 @@ export function DemoAosrWorkspacePage({
     }
   }, [initialSelectedDraftId]);
 
-  const selectedDraft = getSelectedDraft(visibleDrafts, selectedDraftId);
+  const selectedDraft = getSelectedDraft(visibleDrafts, selectedDraftId, objectDefaults);
   const selectedFormVariant = {
     ...getDemoAosrFormVariantById(selectedDraft.formVariantId),
     printTitle: selectedDraft.formVariantPrintTitle,
@@ -748,11 +749,16 @@ export function DemoAosrWorkspacePage({
 function getSelectedDraft(
   drafts: readonly DemoAosrDraft[],
   selectedDraftId: string,
+  objectDefaults: DemoAosrObjectDefaults,
 ): DemoAosrDraft {
   const selectedDraft = drafts.find((draft) => draft.id === selectedDraftId) ?? drafts[0];
 
-  if (!selectedDraft) {
-    throw new Error('Для демо-рабочей области АОСР нужен хотя бы один черновик.');
+  if (selectedDraft === undefined) {
+    return createEmptyDemoAosrDraft({
+      actNumber: '',
+      id: 'aosr-object-settings-placeholder',
+      objectDefaults,
+    });
   }
 
   return selectedDraft;

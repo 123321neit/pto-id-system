@@ -10,7 +10,13 @@
 
 Источник архитектурных принципов: `docs/PROJECT_MEMORY.md`.
 
-Связанные спецификации: `docs/06-data-model-v1.md`, `docs/07-aosr-domain-specification.md`, ADR 0001-0005 и sample analyses.
+Связанные спецификации: `docs/06-data-model-v1.md`, `docs/07-aosr-domain-specification.md`, ADR 0001-0007 и sample analyses.
+
+Object-template amendment note, 2026-06-22: active acts follow ADR 0007.
+Linked acts resolve template-owned participant/company data through
+`ObjectTemplate`; manual acts use one complete snapshot; released revisions
+freeze exact resolved output. A participant snapshot mentioned below is a
+release/manual boundary, not a mandatory copy in every working act.
 
 ---
 
@@ -226,7 +232,7 @@ Evidence items are structured but do not inherit typed-act payload rules:
 
 | Level | Baseline findings |
 | --- | --- |
-| `ERROR` | Missing object/number/date/work description; missing required participant snapshot for an approved form; certificate text without file-backed relation; linked scheme stated as attachment without file; missing usable template for released output. |
+| `ERROR` | Missing object/number/date/work description; missing required resolved participant data for an approved form at release; certificate text without file-backed relation; linked scheme stated as attachment without file; missing usable template for released output. |
 | `WARNING` | Certificate expired relative to AOSR date; material/evidence applicability unclear; scheme expected in practice but not mandated by ratified form; earlier output is stale after content change. |
 | `INFO` | Evidence valid on historical document date despite later expiry; certificate reused elsewhere; snapshot differs from current profile; previous revision exists in historical package. |
 
@@ -236,7 +242,7 @@ Complete AOSR draft validation is defined in `docs/07-aosr-domain-specification.
 
 | Level | Candidate findings pending subtype ratification |
 | --- | --- |
-| `ERROR` | Missing tested subject, test type/method, date, measured/result values required by the selected concrete form, conclusion or required participant snapshots; released output lacking template version. |
+| `ERROR` | Missing tested subject, test type/method, date, measured/result values required by the selected concrete form, conclusion or required resolved participant data at release; released output lacking template version. |
 | `WARNING` | Referenced supporting evidence/scheme is incomplete where its obligation is not yet approved; values require engineering review; changed source makes output stale. |
 | `INFO` | Related acts/evidence included; prior revision remains in package history. |
 
@@ -392,7 +398,7 @@ Package output must record exact included document revisions, evidence file iden
 
 | Type group | Revision behavior | Snapshot must preserve |
 | --- | --- | --- |
-| `AOSR` | Final content edits create new revision | Number/date, structured payload, participant snapshots, evidence/scheme links and output values, validation, TemplateVersion and artifact provenance. |
+| `AOSR` | Final content edits create new revision | Number/date, structured payload, exact resolved participant output, evidence/scheme links and provenance, validation, TemplateVersion and artifact provenance. |
 | Approved `TestAct` types | Must follow final-edit-through-revision principle | Typed test data, participants, links, validation, template/artifact provenance. |
 | `TechnicalReadinessAct` | Must follow principle if later defined as typed act | Exact contents deferred until schema exists. |
 

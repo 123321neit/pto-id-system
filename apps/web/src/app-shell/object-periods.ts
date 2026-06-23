@@ -1,6 +1,6 @@
 import type { DemoAosrDraft } from '../aosr-demo/demo-aosr-workspace.js';
 
-export type DemoObjectPeriodId = 'period-2026-09' | 'period-2026-10';
+export type DemoObjectPeriodId = string;
 
 export interface DemoObjectPeriod {
   readonly draftIds: readonly string[];
@@ -30,6 +30,16 @@ export const demoObjectPeriods: readonly DemoObjectPeriod[] = [
     registryTitle: 'Реестр папки «Октябрь 2026»',
   },
 ];
+
+export function createDemoObjectPeriod(id: DemoObjectPeriodId, name: string): DemoObjectPeriod {
+  return {
+    draftIds: [],
+    id,
+    name,
+    periodicIdTitle: `Промежуточная ИД: ${name}`,
+    registryTitle: `Реестр папки «${name}»`,
+  };
+}
 
 export function getDemoObjectPeriodById(
   periodId: DemoObjectPeriodId,

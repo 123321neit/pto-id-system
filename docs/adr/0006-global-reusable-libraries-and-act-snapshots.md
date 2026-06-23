@@ -1,22 +1,34 @@
-# ADR 0006: Global Reusable Libraries and Act Snapshots
+# ADR 0006: Global Reusable Libraries and Output Snapshots
 
 ## Title
 
-Global reusable libraries and act snapshots.
+Global reusable libraries, live working links and frozen output snapshots.
 
 ## Status
 
-Accepted.
+Accepted, as clarified by ADR 0007.
 
 This ADR records the reusable-entity architecture decision accepted on 2026-06-11. It does not introduce schema, migrations, API routes, backend behavior, uploads, generation, auth or production feature implementation.
 
-Update 2026-06-17: ADR 0007 refines this decision for active working acts. Working acts may remain live-linked to the object template and reusable libraries until the user explicitly switches the act to a full manual snapshot. Historical stability still applies to issued/frozen outputs and manual snapshots.
+Update 2026-06-22: ADR 0007 is authoritative for active working acts. A normal
+working act is `linked`: its template-owned counterparty and signatory data are
+resolved through the object template from current reusable libraries. A user
+may explicitly switch the whole act to `manual`, which creates one complete
+`manualTemplateSnapshot`. Released document revisions and issued package
+outputs freeze their exact resolved values separately. Statements below about
+snapshots must be read in that manual/released-output sense; linking an entity
+to an active act does not itself create the canonical working snapshot.
 
 ## Context
 
 PTO ID System reuses certificates, organizations and representatives across objects, acts, registries and packages. Earlier conceptual documents already separated structured source data, file-backed evidence, object bindings, typed documents and immutable released outputs, but the reusable boundaries for representatives, organizations and certificates needed a precise rule.
 
-The risk is historical drift. If an already formed act reads live organization, representative or certificate values directly, then later edits to a global library card could silently change old printed documents. The opposite risk is duplicate object-owned libraries: if every object owns separate certificate, organization or representative copies, reuse, search, deduplication, certificate provenance and package assembly become unreliable.
+The risk is historical drift in released output. If a released revision or an
+issued package can only read the latest organization, representative or
+certificate values, later library corrections could rewrite history. The
+opposite risk is duplicate object-owned libraries: if every object owns
+separate certificate, organization or representative copies, reuse, search,
+deduplication, certificate provenance and package assembly become unreliable.
 
 ## Decision
 
@@ -34,9 +46,23 @@ Acts must not accept free-text signatories, organizations or certificates as the
 4. store the newly created entity in the global library first;
 5. then link or assign it to the current object or act.
 
-When an organization, representative or certificate is included in an act, the act must store a snapshot of the required printed details. Required printed details include representative full name, position, organization, authority basis/order, role in the act, organization labels/requisites and certificate number/date/issuer/materials. Later edits to the global library must not silently change already formed acts.
+Active working data and historical output are handled differently:
 
-The implementation may later use explicit snapshots, library versions, issued-document records or another equivalent mechanism, but the historical immutability rule is mandatory.
+- a `linked` act stores object-template/library references and resolves current
+  template-owned counterparty and signatory values live;
+- a `manual` act stores one complete `manualTemplateSnapshot` created only by
+  an explicit whole-act mode switch;
+- certificate use remains an explicit relation to a global file-backed
+  certificate; a released revision/package freezes the exact certificate
+  identity, confirmed output values and file provenance it used;
+- a released `DocumentRevisionSnapshot` and an issued `PackageSnapshot` freeze
+  the exact resolved printable values required for historical reproduction.
+
+Required frozen output details include representative full name, position,
+organization, authority basis/order, role, labels/requisites, certificate
+identity and confirmed number/date/issuer/material values, plus exact evidence
+file provenance. Later library edits may update active linked work, but they
+must never mutate a manual act snapshot or an already released revision/package.
 
 Acts select materials/certificates from the global certificate library. Final ID packages and registries derive used certificates from acts and deduplicate them by source certificate identity/provenance.
 
@@ -45,7 +71,10 @@ Acts select materials/certificates from the global certificate library. Final ID
 - Global library search and "create new" flows become the primary entry path for reusable entities.
 - Object screens may show assigned organizations and representatives, but those rows are object-specific assignments, not separate object-owned libraries.
 - Act editors must route signatory, organization and certificate entry through library selection/assignment instead of accepting isolated free text as canonical data.
-- Act/revision output remains historically stable even when a reusable library card is corrected later.
+- Corrections in reusable counterparty/signatory libraries flow into active
+  linked acts through the object template.
+- Manual acts and released revision/package outputs remain historically stable
+  when a reusable library card is corrected later.
 - Registry and package projections can deduplicate used certificates because certificates remain global evidence entities referenced by acts.
 - Object-specific representative or organization details can differ across objects without duplicating the global person or organization identity.
 
@@ -54,7 +83,8 @@ Acts select materials/certificates from the global certificate library. Final ID
 - Object-owned certificate libraries.
 - Object-owned representative or organization libraries that become independent reusable sources.
 - Free-text signatories, organizations or certificate numbers as valid final act data.
-- Updating already formed acts by reading latest global library values without an explicit revision/snapshot action.
+- Re-resolving a manual act, released revision or issued package from latest
+  library values without an explicit new revision/build.
 - Duplicating certificates per object and deduplicating only by rendered number/text.
 - Treating a newly typed act signatory as act-only source data instead of first creating or selecting a global reusable entity.
 
@@ -64,18 +94,28 @@ Acts select materials/certificates from the global certificate library. Final ID
 - Organizations are global user-level library entities.
 - Representatives are global user-level library entities.
 - Objects store assignments/links and object-specific assignment details.
-- Acts use object assignments where applicable and store output snapshots for printed historical stability.
-- Later edits to global organizations, representatives or certificates do not silently change already formed acts.
+- Active linked acts use object-template assignments/references and resolve
+  current reusable data without storing template snapshots.
+- Manual acts store one complete template snapshot; released revisions and
+  issued packages store separate frozen output snapshots.
+- Later edits to global organizations, representatives or certificates may
+  affect active linked work but do not silently change manual or released data.
 - Certificate use in acts requires a relation to a global certificate library item; direct free-text certificate entry is not sufficient.
 - Registry and final package certificate lists are derived from acts and deduplicated by referenced certificates.
 - Workspace/owner access, certificate provenance, file-backed evidence, structured source of truth and immutable revision/package snapshot rules remain unchanged.
 
 ## Implementation Implications
 
-- Future data model work should distinguish global library identity from object assignment and act snapshot records.
+- Future data model work should distinguish global library identity, object
+  template assignment/reference, manual act snapshot and released output
+  snapshot records.
 - Object assignment records should carry object-specific role, position, authority, organization relation, display label and ordering where needed.
-- Act finalization/revision should capture the exact printed organization, representative and certificate values required to reproduce the act.
-- Correcting a global reusable card can affect future assignments/acts, but old formed acts require an explicit revision or snapshot refresh flow before their printed values change.
+- Act release/finalization should capture the exact resolved organization,
+  representative and certificate values/provenance required to reproduce that
+  released revision.
+- Correcting a reusable counterparty/signatory card affects active linked acts.
+  A manual act remains unchanged until the user explicitly returns it to the
+  object template; a released output changes only through a new revision/build.
 - UI copy should describe object rows as assignments/bindings, not object-owned libraries, and should steer users toward search/select/create-global-first flows.
 
 ## Related Documents
@@ -91,3 +131,4 @@ Acts select materials/certificates from the global certificate library. Final ID
 - `docs/adr/0001-structured-data-source-of-truth.md`
 - `docs/adr/0003-file-backed-evidence-and-derived-artifacts.md`
 - `docs/adr/0004-immutable-revisions-and-package-snapshots.md`
+- `docs/adr/0007-document-defaults-suggestions-and-controlled-updates.md`

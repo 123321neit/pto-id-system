@@ -8,7 +8,7 @@ Status: pre-scaffold governance specification.
 
 Date fixed: 2026-05-28.
 
-Source of authority: `docs/PROJECT_MEMORY.md`, `docs/16-mvp-scope-and-first-forms-v1.md`, `docs/17-tech-stack-and-implementation-strategy-v1.md`, canonical ADR 0001-0005 in `docs/adr/`.
+Source of authority: `docs/PROJECT_MEMORY.md`, `docs/16-mvp-scope-and-first-forms-v1.md`, `docs/17-tech-stack-and-implementation-strategy-v1.md`, canonical ADR 0001-0007 in `docs/adr/`.
 
 Access amendment note, 2026-05-29:
 
@@ -77,9 +77,14 @@ Before the first scaffold, the implementer MUST verify the existence of:
 - `docs/adr/0002-typed-document-domain-model.md`;
 - `docs/adr/0003-file-backed-evidence-and-derived-artifacts.md`;
 - `docs/adr/0004-immutable-revisions-and-package-snapshots.md`;
-- `docs/adr/0005-modular-monolith-and-bounded-contexts.md`.
+- `docs/adr/0005-modular-monolith-and-bounded-contexts.md`;
+- `docs/adr/0006-global-reusable-libraries-and-act-snapshots.md`;
+- `docs/adr/0007-document-defaults-suggestions-and-controlled-updates.md`.
 
-ADR 0001-0005 are now the canonical physical ADR baseline. If any canonical ADR file above is missing, coding MUST NOT proceed. A documentation-only corrective step MUST restore/create the missing canonical ADR files from the accepted project memory before implementation continues.
+ADR 0001-0007 are the current canonical physical ADR baseline. If any canonical
+ADR file above is missing, coding MUST NOT proceed. A documentation-only
+corrective step MUST restore/create the missing canonical ADR files from the
+accepted project memory before implementation continues.
 
 `docs/16-mvp-scope-and-first-forms-v1.md` has implementation-scope precedence over older documents, including `docs/08-document-types-catalog.md`. Any older wording that treats `TestAct` as MVP candidate/family MUST NOT expand the first implementation scope. The first scaffold MUST target AOSR-first MVP only.
 

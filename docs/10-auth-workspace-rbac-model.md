@@ -128,7 +128,10 @@ User identity != permission to access every workspace the user knows about
 
 ### 3.4 Company profile versus organization workspace
 
-`Organization Workspace` is a collaboration and tenant boundary. `CompanyProfile` / `ObjectCompanySnapshot` describe organizations appearing in construction documentation.
+`Organization Workspace` is a collaboration and tenant boundary. `CompanyProfile`,
+`ObjectTemplate` assignments and frozen manual/released output values describe
+organizations appearing in construction documentation; the legacy
+`ObjectCompanySnapshot` name is not the normal linked-act source.
 
 They are not automatically the same concept:
 
