@@ -30,7 +30,16 @@ No physical schema may be derived directly from legacy `ObjectCompanySnapshot`
 or representative-default rows in this document. Future schema must model
 global reusable libraries, `ObjectTemplate` references, linked/manual act mode,
 one complete manual snapshot and separate immutable released revision/package
-snapshots. That physical contract remains a later explicit task.
+snapshots.
+
+Backend contract amendment, 2026-06-23:
+
+`docs/14-backend-api-architecture-v1.md` and
+`docs/15-api-command-readmodel-contracts-v1.md` now define the future
+application-level command/read contract for `ObjectTemplate`, user-defined ID
+folders and linked/manual AOSR behavior. This document remains conceptual
+storage history only: physical tables, Prisma schema, migrations, repositories
+and persistence mapping remain a later explicit task.
 
 ---
 

@@ -70,7 +70,7 @@
 Текущий этап:
 
 ```text
-First allowed infrastructure/bootstrap scaffold accepted; canonical ADR baseline accepted; backend module architecture skeleton introduced; first technical frontend-backend status slice introduced; database foundation technical slice introduced; object storage foundation technical slice introduced; auth sharing implementation plan added; user identity skeleton introduced; global system admin marker introduced; owned workspace baseline introduced
+First allowed infrastructure/bootstrap scaffold accepted; canonical ADR baseline accepted; backend module architecture skeleton introduced; first technical frontend-backend status slice introduced; database foundation technical slice introduced; object storage foundation technical slice introduced; auth sharing implementation plan added; user identity skeleton introduced; global system admin marker introduced; owned workspace baseline introduced; future ObjectTemplate backend contract documented
 ```
 
 Разрешённый scaffold ограничен:
@@ -234,6 +234,8 @@ Privacy/data-processing policy, access to project originals and concrete AI proc
 - modular monolith first и domain-first application modules;
 - explicit command families без CRUD-first API;
 - UI-oriented read models для АОСР, сертификатов, схем, реестра, комплекта и AI review;
+- future `ObjectTemplate`, user-defined ID folders, folder-scoped document
+  creation, numbering proposal and linked/manual АОСР command boundaries;
 - atomic revision/snapshot boundaries, eventual derived work, optimistic versioning and idempotency;
 - backend-authoritative validation, workspace authorization и async package/artifact/AI flows.
 
@@ -241,6 +243,9 @@ Privacy/data-processing policy, access to project originals and concrete AI proc
 
 - common command envelope, results, named errors and async operation outcome;
 - expected-version and idempotency rules для mutable/dangerous commands;
+- `ObjectTemplate` command/read contracts for repeated object-level print
+  values, global-library assignments, manual snapshot transition and folder
+  creation context;
 - typed document, folder/numbering, evidence, registry, package, artifact, AI/OCR and invite command semantics;
 - screen-specific read models and validation finding contract;
 - workspace/object authorization scope and leakage protection.
@@ -277,7 +282,7 @@ Privacy/data-processing policy, access to project originals and concrete AI proc
 - Foreman active permissions are blocked without separate approval;
 - first AOSR template participant requirements must not be hardcoded before template review.
 
-Открытыми остаются exact first AOSR template baseline/participant requirements, retention/privacy/share-grant details, physical migrations/ORM schema/OpenAPI and production implementation.
+Открытыми остаются exact first AOSR template baseline/participant requirements, retention/privacy/share-grant details, physical migrations/ORM schema/OpenAPI and production implementation. Зафиксированный ObjectTemplate contract is documentation-only and must not be interpreted as approval to implement routes, controllers, DTOs, OpenAPI, Prisma/domain schema, migrations, repositories, queues, storage, renderer or persistence mapping.
 
 Следующий отдельный implementation task должен проверяться против:
 

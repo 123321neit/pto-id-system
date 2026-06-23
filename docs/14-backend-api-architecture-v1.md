@@ -26,8 +26,17 @@ Backend commands/read models for active acts must follow ADR 0007. Linked acts
 resolve template-owned data through global libraries and `ObjectTemplate`;
 manual acts own one complete snapshot; released revisions/packages freeze exact
 output separately. Older `adopt_company_snapshot` and
-`configure_representative_defaults` command names are noncanonical; exact
-physical template commands remain deferred to a separate backend contract task.
+`configure_representative_defaults` command names are noncanonical.
+
+Backend contract amendment note, 2026-06-23:
+
+The conceptual backend contract for `ObjectTemplate`, user-defined ID folders,
+folder-scoped document creation and strict linked/manual AOSR behavior is now
+recorded in this document and in
+`docs/15-api-command-readmodel-contracts-v1.md`. This amendment defines command
+families and read-model obligations only. It does not introduce HTTP routes,
+OpenAPI, Prisma schema, SQL/migrations, repositories, persistence, queue,
+renderer, file storage or production backend implementation.
 
 Этот документ описывает backend как набор доменных application-модулей, команд, read models, validation и consistency boundaries. Он не является разрешением писать production code и не выбирает transport, framework, database, storage, job runner, renderer либо AI/OCR technology.
 
@@ -127,8 +136,8 @@ Backend/API Architecture V1 утверждает application-level форму с
 | Responsibility | Рабочий контекст строительного объекта: объект, engineering systems, `ObjectTemplate` assignments, project drawing sets and numbering/template settings. |
 | Owns | Object identity/settings, object-template references plus object-specific labels/groups/order/repeated texts, `ProjectDrawingSet` как owned entity and applicable numbering configuration. |
 | Does not own | Document revisions, evidence originals, исполнительные схемы, registry projection rows, package snapshots либо project-source AI proposals. |
-| Main commands | `create_object`, `update_object_context`, future explicit object-template assignment commands, `create_or_update_project_drawing_set`, `configure_numbering_policy`, `archive_object`. Exact template commands are deferred to the dedicated backend contract step. |
-| Main read models | Object dashboard header, object template/settings view, resolved library assignments, drawing-set summary and readiness inputs. |
+| Main commands | `create_object`, `update_object_context`, `update_object_template_texts`, `configure_object_numbering_policy`, `add/update/reorder/remove_object_template_counterparty`, `add/update/move/remove_object_template_representative_assignment`, `create_or_update_project_drawing_set`, `archive_object`. |
+| Main read models | Object dashboard header, object template editor view, resolved library assignments with provenance, document creation context, drawing-set summary and readiness inputs. |
 
 ### 3.4 FolderTree
 
@@ -300,6 +309,38 @@ Command families ниже фиксируют intent, owner и обязатель
 | `revise_document` / `publish_revised_document` | Исправить уже final АОСР и позднее опубликовать исправление. | Создать новую working revision, сохранить old released revision, invalidate affected current outputs; новая публикация проходит полный gate. |
 | `archive_document` / `restore_document` | Скрыть документ из текущей работы или вернуть. | Не уничтожать historical revisions/package references; проверить access and lifecycle conflict. |
 
+### 5.1.1 ObjectTemplate and folder-scoped creation contract
+
+This subsection fixes the future backend contract for the frontend model now
+used by the mock: `Object -> user-defined ID folders -> documents`, with
+active linked AOSR resolving printable repeated values through
+`global libraries -> ObjectTemplate`.
+
+| Command family | PTO intent | Required backend effect |
+| --- | --- | --- |
+| `read_document_creation_context` | Открыть selector `Создать документ` внутри конкретной папки ИД. | Query only: return object, folder, approved document types, next-number proposal, object-template summary and permitted actions. It does not reserve a number or create a draft. |
+| `create_document` with folder placement | Создать документ выбранного type inside one user-defined folder. | Validate workspace/object/folder/type, assign initial placement, create linked working draft, attach current object-template/form references and allocate numbering according to policy if automatic numbering is requested. |
+| `update_object_template_texts` | Изменить repeated object-level print values: object name/subscript, project documentation, compliance text, work contractor, copies/additional info. | Version-check `ObjectTemplate`, update only template-owned current values, expose stale/current-read implications for active linked views without mutating manual/released snapshots. |
+| `configure_object_numbering_policy` | Настроить object/folder numbering: prefix, suffix, scope and sequence behavior. | Version-check numbering/template configuration; affect future proposals/new documents only unless an explicit `renumber_documents` command is separately confirmed. |
+| `add/update/reorder/remove_object_template_counterparty` | Назначить global organization to object print header with object-specific role/order/subscript/details. | Validate global library reference or create-through-library outcome, store object-template assignment/context, update active linked reads; never create act-only free text as normal source. |
+| `add/update/move/remove_object_template_representative_assignment` | Назначить global representative into object-level signature groups with role/order/object-specific display values. | Validate library reference, group membership and same workspace; update object-template assignment/context; linked acts resolve it live while manual/released outputs remain frozen. |
+| `switch_document_template_mode_to_manual` | Отделить конкретный working act от live template before editing template-owned values. | Resolve complete current template/library state into one manual snapshot and change the document to `manual`; partial per-field overrides are rejected. |
+| `return_document_to_object_template` | Вернуть working act from manual snapshot to live template resolution. | Discard working manual template values for that draft and resume linked resolution from current object template; released revision history remains unchanged. |
+
+Backend rules for this contract:
+
+- Folder names are user-defined strings, not a fixed month/period taxonomy.
+- Linked working acts do not store copied template-owned default fields merely
+  because they are displayed in the editor or preview.
+- Manual mode is a whole-template-owned-section transition, not scattered
+  `override_*` fields.
+- Releasing a document freezes exact resolved output in a
+  `DocumentRevisionSnapshot`; issuing a package freezes exact package
+  dependencies in a `PackageSnapshot`.
+- Changing object template, global organization/representative library records
+  or numbering policy may change current linked previews/proposals, but it
+  cannot rewrite manual acts, released revisions or released package snapshots.
+
 ### 5.2 Evidence and scheme links from documents
 
 | Command family | PTO intent | Required backend effect |
@@ -331,7 +372,7 @@ Command families ниже фиксируют intent, owner и обязатель
 | --- | --- | --- |
 | `move_folder_item` with `keep_numbering` | Переместить акт между business folders без смены номера. | Атомарно изменить placement; content/revision не изменяются при отсутствии иных правок. |
 | `move_folder_item` with `recalculate_numbering` | Переместить акт и применить numbering policy новой папки. | Validate collision; изменить working content либо начать final revision; invalidate outputs where relevant. |
-| `clone_folder` with numbering strategy | Скопировать период, например `Октябрь -> Ноябрь`. | Создать new draft document identities with `copy`, `continue` or `reset` strategy; не копировать published status/history. |
+| `clone_folder` with numbering strategy | Скопировать пользовательскую папку ИД, например этап/участок работ, с выбранной стратегией нумерации. | Создать new draft document identities with `copy`, `continue` or `reset` strategy; не копировать published status/history. |
 | `renumber_documents` | Массово упорядочить номера актов. | Preview impacts/collisions, require confirmation, apply explicit document changes; final documents get new working revisions. |
 
 ### 5.6 Validation, registry, package and generated output

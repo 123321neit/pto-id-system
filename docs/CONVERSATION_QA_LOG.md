@@ -1214,3 +1214,35 @@ A: Сначала нужно показать компактную сводку 
 
 Это UX/copy/layout step only. Backend/API, Prisma/schema/migrations,
 persistence, generation и production template lifecycle не реализованы.
+
+---
+
+## 47. Future backend contract for object template and folders
+
+### Q: Что именно должен зафиксировать следующий backend-контракт перед persistence/API?
+
+A: Нужно зафиксировать conceptual command/read-model contract для уже принятой
+модели frontend mock, не реализуя backend.
+
+Контракт зафиксирован в `docs/14-backend-api-architecture-v1.md` и
+`docs/15-api-command-readmodel-contracts-v1.md`:
+
+- object workspace uses user-defined ID folders, not fixed month/period enum;
+- `read_document_creation_context` is a query-only contract for the
+  `Создать документ` selector and does not create a draft or reserve a number;
+- `create_document` validates workspace/object/folder/type and creates a
+  linked working draft in the selected folder;
+- `ObjectTemplate` owns repeated object-level print values, organization
+  assignments, representative groups and numbering policy;
+- linked acts resolve current printable values through
+  `global libraries -> ObjectTemplate`;
+- manual mode is one explicit whole-act transition to a complete
+  `manualTemplateSnapshot`;
+- partial template-field overrides remain invalid;
+- final/released documents freeze exact resolved output in immutable
+  `DocumentRevisionSnapshot`;
+- released packages freeze exact dependencies in immutable `PackageSnapshot`.
+
+Это документационный backend-contract step only. Он не добавляет routes,
+controllers, OpenAPI, DTO, Prisma/schema/migrations, SQL, repositories,
+persistence, queues, file storage, renderer or production backend code.

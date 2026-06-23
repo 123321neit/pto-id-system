@@ -27,6 +27,14 @@ whole-act switch creates one complete manual snapshot; finalization freezes a
 separate immutable released output. Partial template-field overrides are not a
 valid command surface.
 
+Backend contract amendment note, 2026-06-23: the future command/read-model
+contract for `ObjectTemplate`, user-defined ID folders, folder-scoped document
+creation, object/folder numbering proposals and linked/manual AOSR boundaries is
+now explicitly recorded below. This is still a conceptual application contract:
+no route list, OpenAPI, DTO serialization, Prisma schema, SQL/migrations,
+repository, persistence adapter, queue, renderer or production backend code is
+authorized by this amendment.
+
 Этот документ описывает семантику application contracts: какие намерения выражают команды, какие версии и idempotency expectations они используют, какие UI-oriented reads нужны пользователю и как выглядят validation/error/async outcomes. Он не является API transport specification и не разрешает начинать implementation.
 
 Неприкосновенные принципы:
@@ -201,7 +209,7 @@ These contracts apply to approved typed acts. `AOSR` is the fully modeled first 
 
 | Command | Intent and payload semantics | Result semantics | Version / idempotency / effects |
 | --- | --- | --- | --- |
-| `create_document` | Select approved `document_type`, one `object_id`, optional valid folder placement, initial act-owned structured values, numbering intent/policy and `ObjectTemplate`/form-template references. New acts start `linked` unless an explicit later policy says otherwise. | New `document_id`, initial `DRAFT` linked working state/version, placement and initial draft findings. | Idempotency required when creation may be retried; validates scope/type; never creates released revision or automatic template snapshot. |
+| `create_document` | Select approved `document_type`, one `object_id`, required valid folder placement for folder workspace creation, initial act-owned structured values, numbering intent/policy and `ObjectTemplate`/form-template references. New acts start `linked` unless an explicit later policy says otherwise. | New `document_id`, initial `DRAFT` linked working state/version, placement, assigned/proposed number outcome and initial draft findings. | Idempotency required when creation may be retried; validates scope/type/folder; never creates released revision or automatic template snapshot. |
 | `update_working_document` | Replace or edit act-owned typed working values: number/date, typed blocks, project/material/evidence context and allowed form-template choice. In linked mode, template-owned participant/company fields are read-only resolved data. | Updated working version, autosave/save marker as later detailed, draft validation feedback and stale effects only if it is unpublished work after a final release. | Requires `expected_version`; draft may persist with findings; cannot create partial template overrides or mutate released revision. |
 | `switch_document_template_mode_to_manual` | Explicitly resolve the complete current `ObjectTemplate`/library state and switch the whole template-owned section to manual. | Manual working version plus one complete `manualTemplateSnapshot`. | Requires expected working/template versions, confirmation and idempotency; never creates scattered per-field overrides. |
 | `return_document_to_object_template` | Explicitly discard the working manual template state and resume linked resolution from the current object template. | Linked working version and current resolved template context; released history remains unchanged. | Requires expected version and confirmation; must not mutate any prior released revision. |
@@ -221,6 +229,41 @@ Typed document rules:
 - Output-visible change to a final document occurs in a new working/released revision, including number/date, payload, participants, certificate/scheme links and released template context.
 - Certificate expiry is evaluated against the referring document date and is `WARNING` under the current baseline; absence of required file-backed evidence is blocking.
 - Locks/autosave UX remains to be detailed; neither lock heartbeat nor read/preview creates a released revision.
+
+### 7.1 ObjectTemplate command contracts
+
+These command contracts refine the `ObjectDocumentationContext` / typed document
+boundary. `ObjectTemplate` owns object-specific live assignments and repeated
+print values; `Document` owns act-specific payload, links, lifecycle and
+released revisions.
+
+| Command/read | Intent and payload/read semantics | Result/read semantics | Rules |
+| --- | --- | --- | --- |
+| `read_document_creation_context` | Query one object and one user-defined ID folder before creating a document. Include selected document type if already chosen. | Approved document types, folder identity/title, current object-template summary, numbering policy, proposed next number and visible capability/actions. | Query only; it does not create a draft, reserve a number or mutate sequence state. |
+| `update_object_template_texts` | Change object-level repeated print values: object title/subscript, project documentation, point 6 compliance text, work contractor, additional info and copies line. | New object-template version, updated resolved template read and affected current linked-read/stale hints. | Requires expected object-template version; cannot edit a released revision, manual snapshot or act-owned fields. |
+| `configure_object_numbering_policy` | Change numbering scope, prefix, suffix and sequence behavior for an object/document type, including object-wide or per-folder scope. | New numbering/template configuration version and updated creation-context proposals. | Requires expected configuration version; affects future proposals/new documents only. Existing documents change only through `renumber_documents` or document revision commands. |
+| `add_object_template_counterparty_assignment` | Link/select or create-through-library a global organization for object print header with role/title/order/subscript/details. | New assignment id/version and resolved linked context for active reads. | Requires expected object-template version and same workspace; no act-only organization source is created. |
+| `update_object_template_counterparty_assignment` | Edit object-specific role/title/order/subscript/details for an existing counterparty assignment. | New assignment/template version and updated linked read. | Does not mutate historical released output; global library fields are changed only through the library owner's command. |
+| `reorder_object_template_counterparties` | Reorder print header organization blocks for future/current linked working acts. | New template version and resolved ordering. | Requires expected version; released revision/package order remains the order captured at release/build. |
+| `remove_object_template_counterparty_assignment` | Remove an object-template organization assignment from active linked context. | New template version plus draft/readiness findings where active linked acts lose required context. | Must expose impact; cannot remove frozen historical output. |
+| `add_object_template_representative_assignment` | Link/select or create-through-library a global representative into an object signature group/role with object-specific position, authority, NRS and subscript. | New representative assignment/group version and updated linked signatory context. | Requires expected version; no direct free-text final act source in linked mode. |
+| `update_object_template_representative_assignment` | Edit object-specific representative context or group title/order. | New template version and resolved group/member context. | Global representative profile fields are changed through library owner command; manual/released outputs do not float. |
+| `move_object_template_representative_assignment` | Move a representative between groups or reorder within a group. | New template version and resolved linked signature order. | Requires expected version; active linked reads may change, frozen outputs remain unchanged. |
+| `remove_object_template_representative_assignment` | Remove an object representative assignment from active linked context. | New template version plus draft/readiness findings where active linked acts lose required signatory context. | Historical released/manual snapshots remain intact. |
+| `switch_document_template_mode_to_manual` | Explicit user decision to detach one working document from live template data. Payload references the working document and expected versions for document/template context. | New working document version with one complete `manualTemplateSnapshot` containing the resolved template-owned section. | Idempotency and confirmation required; partial template-field overrides are invalid. |
+| `return_document_to_object_template` | Explicit user decision to discard working manual template values and resume linked resolution. | New linked working version and current resolved object-template context. | Requires expected working version; no released revision or package snapshot is rewritten. |
+
+Object-template read guarantees:
+
+- `ObjectTemplate` editor reads include current version, live-chain
+  explanation, organization assignment order, representative groups/members,
+  repeated texts, numbering policy and allowed commands.
+- Document editor reads show `template_mode`, resolved source provenance and
+  whether each template-owned section is linked or manual.
+- A linked read may change after library/template edits, but any released
+  revision/package read must identify the frozen resolved output it captured.
+- `create_document` from a folder uses the same creation context and returns the
+  selected folder placement; folder names are user text, not a month enum.
 
 ---
 
@@ -387,6 +430,8 @@ Read models are composed views for real screens and decisions. Each read carries
 | --- | --- |
 | Workspace switcher | Owned and connected workspace id/display kind/name/status, owner identity where relevant, effective grant capabilities and safe pending/connected indicators; no other workspace content leakage. |
 | Object dashboard | Object id/name/status/discipline context, document/folder/package counts, validation `ERROR`/`WARNING` counts, latest package freshness/build state, pending AI/source work and recent safe activity summary. |
+| Object template editor view | Object-template id/version, live-chain explanation, repeated print values, numbering policy/proposal example, organization assignments with library provenance, representative groups/members with object-specific display context, validation/impact hints and permitted commands. |
+| Document creation context | One object plus selected user-defined folder, available document types, current object-template summary, numbering policy, proposed next number, disabled/deferred document types and create permissions. |
 | Folder tree/document list | Folder hierarchy/order/status/version, selected-folder placement list, document type/number/date/lifecycle/latest revision/working-change marker, scheme/package representation, validation/stale badges and permitted commands. |
 | Document editor view | Document identity/type/status, working content and expected working version, latest released revision, strict linked/manual template mode, resolved participant/company context with source provenance, certificate/material/scheme links, selected form-template context, draft/final findings, unpublished/stale impacts and later lock/autosave state. |
 | Certificate picker | Candidate certificate id/kind/confirmed metadata/file availability/status/supersession, matching material/coverage cues, applicability finding evaluated for current document date, usage summary and permission to attach/view. |
@@ -504,6 +549,7 @@ API Command/Read Model Contracts V1 explicitly does not provide or authorize:
 - [x] Common command envelope identifies workspace/object/membership context, command/idempotency, expected version and correlation/comment semantics.
 - [x] Common results, errors and async operations expose versions, findings, invalidations, output/provenance and retry-safe behavior.
 - [x] Typed document contracts preserve editable-through-revision `final` and immutable released revisions.
+- [x] Object-template and folder-scoped document creation contracts preserve `global libraries -> ObjectTemplate -> linked act`, explicit whole-act manual snapshots and no partial template overrides.
 - [x] Folder/numbering contracts make move/clone/renumber effects explicit and prevent silent number changes.
 - [x] Evidence contracts require physical originals and prohibit historical silent overwrite.
 - [x] Registry contracts admit only presentation/configuration overrides and forbid source-fact changes.
