@@ -297,6 +297,8 @@ export interface DemoAosrDraft {
   readonly materialCertificateSnapshots: readonly DemoMaterialCertificate[];
   readonly numberingAssignment: DemoDocumentNumberingAssignment;
   readonly documentType: 'AOSR_1';
+  readonly sectionTemplateId: DemoSectionTemplateSettingsId;
+  /** Legacy compatibility alias for older standalone AOSR demo helpers. */
   readonly objectTemplateId: string;
   readonly sectionId: DemoDocumentationSectionId;
   readonly sectionTemplateSettingsId: DemoSectionTemplateSettingsId;
@@ -685,6 +687,7 @@ export const demoAosrWorkspace: DemoAosrWorkspace = {
         automaticSequences: { folder: 1, section: 1 },
         source: 'automatic',
       },
+      sectionTemplateId: 'section-template-settings-ventilation',
       objectTemplateId: 'section-template-settings-ventilation',
       sectionId: 'section-ventilation',
       sectionTemplateSettingsId: 'section-template-settings-ventilation',
@@ -732,6 +735,7 @@ export const demoAosrWorkspace: DemoAosrWorkspace = {
         automaticSequences: { folder: 1, section: 2 },
         source: 'automatic',
       },
+      sectionTemplateId: 'section-template-settings-ventilation',
       objectTemplateId: 'section-template-settings-ventilation',
       sectionId: 'section-ventilation',
       sectionTemplateSettingsId: 'section-template-settings-ventilation',
@@ -794,6 +798,7 @@ export function createEmptyDemoAosrDraft({
     materialCertificateIds: [],
     materialCertificateSnapshots: [],
     numberingAssignment: numberingAssignment ?? { source: 'manual' },
+    sectionTemplateId: templateSettings.sectionTemplate.id,
     objectTemplateId: templateSettings.sectionTemplate.id,
     sectionId,
     sectionTemplateSettingsId,

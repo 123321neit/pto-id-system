@@ -20,7 +20,7 @@ libraries in global navigation, and treats Object Overview as a start/continue
 surface rather than a dashboard of equal-weight options.
 
 Section/folder document UX: an object contains user-defined documentation
-sections such as `Вентиляция`, `Отопление`, `ВК` or any user name. A section
+sections such as `Вентиляция`, `Отопление`, `Водоснабжение` or any user name. A section
 contains user-defined ID folders, and a folder contains documents of many future
 types. `Создать документ` is the universal entry point; AOSR is only the first
 implemented document type, while future types stay disabled as `скоро`. Folder
@@ -60,12 +60,16 @@ frontend mock behavior only.
 
 Frontend-only section model cleanup: ID folders are now represented in the
 frontend mock as `DemoIdFolder` in `object-id-folders.ts`, not as object
-periods. Demo sections carry `code`, optional `description` and
-`templateSettingsId`; AOSR drafts carry explicit `sectionId`, `folderId` and
+periods. Demo sections carry the user-visible `name`, optional `description`
+and `templateSettingsId`; there is no separate inferred short section code.
+AOSR drafts carry explicit `sectionId`, `folderId`, `sectionTemplateId` and
 `sectionTemplateSettingsId`; numbering scopes are `global-section` and
-`restart-per-folder`. `DemoSectionTemplateSettings` / `SectionTemplate` are the
-canonical section names, while old AOSR `objectDefaults` / `objectTemplate`
-names remain only as compatibility aliases in the standalone demo.
+`restart-per-folder`. Section template settings are keyed by
+`templateSettingsId`. Copying settings retargets the copied template to the
+target section and preserves the target section's numbering prefix, with a UI
+notice. `DemoSectionTemplateSettings` / `SectionTemplate` are the canonical
+section names, while old AOSR `objectDefaults` / `objectTemplate` names remain
+only as compatibility aliases in the standalone demo.
 
 Future backend contract: `docs/14-backend-api-architecture-v1.md` and
 `docs/15-api-command-readmodel-contracts-v1.md` now document the future command
@@ -391,10 +395,12 @@ Object
 └── Default parameters
 ```
 
-The frontend-only AOSR mock now keeps its numbering rule in the object template.
-The user can choose one continuous sequence across the object or restart the
-sequence in each folder, and can edit the prefix and suffix. The default is
-global object numbering with prefix `ОВ-`, suffix empty and template:
+The frontend-only AOSR mock now keeps its numbering rule in the selected
+section template settings. The user can choose one continuous sequence across
+the selected section or restart the sequence in each folder, and can edit the
+prefix and suffix. Demo seeded sections may start with prefixes such as `ОВ-`
+or `ОТ-`, while newly created custom sections do not infer a short code from
+their name. The display template remains:
 
 ```text
 {prefix}{number}{suffix}

@@ -35,9 +35,10 @@ Object
       -> final ID by section
 ```
 
-`DocumentationSection` is user-defined. The product may seed suggestions such as
-`Вентиляция`, `Отопление`, `Водоснабжение`, `Канализация`, `ОВ`, `ВК` or
-`Электрика`, but these are never a fixed enum.
+`DocumentationSection` is user-defined. Its visible name is exactly the name the
+user chooses, such as `Вентиляция`, `Отопление`, `Водоснабжение`,
+`Канализация`, `Электрика` or any custom work/system name. The section model
+must not require or infer a separate short code from the section title.
 
 The template used by linked working acts belongs to the section, not directly to
 the object. In the UI this is called:
@@ -70,7 +71,7 @@ object or another object, subject to workspace authorization.
 Copying a section template copies:
 
 - repeated template texts;
-- numbering policy/settings;
+- numbering policy/settings, except the target section's numbering prefix;
 - organization assignment links to global library records;
 - representative assignment links to global library records;
 - section-specific labels, roles, group titles, order and subscripts.
@@ -78,6 +79,8 @@ Copying a section template copies:
 Copying a section template does not copy:
 
 - the source section identity;
+- the source section template id or source section id;
+- the source numbering prefix;
 - source folders;
 - documents or drafts;
 - released revisions;
@@ -91,6 +94,17 @@ version. It references the same allowed global library items unless a later
 cross-workspace import/export policy explicitly creates destination-owned
 library copies.
 
+When copying into a target section, implementations must retarget the template:
+
+```text
+copied.sectionTemplate.id = targetSection.templateSettingsId
+copied.sectionTemplate.sectionId = targetSection.id
+```
+
+The target section keeps its own numbering prefix. The UI must make this clear
+to the user so copying a ventilation template into a heating section cannot
+silently give the heating section a ventilation prefix.
+
 ## Consequences
 
 - Intermediate ID is derived from one folder inside one section.
@@ -99,6 +113,9 @@ library copies.
 - Folder names remain arbitrary user-defined names.
 - Numbering policy should be section-scoped or folder-scoped, not object-scoped
   by default.
+- Frontend and future backend state should key section template settings by the
+  section's `templateSettingsId`, not by the visible section name and not by an
+  inferred short code.
 - Backend/API contracts must use section context for document creation,
   template reads, template mutations and final package reads.
 - Existing historical docs that say `ObjectTemplate` should be read as

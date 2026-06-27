@@ -218,6 +218,10 @@ export function DemoObjectSettingsPanel({
                   Копирует повторяющиеся тексты, настройки нумерации и связи с библиотеками в другой
                   раздел. Папки, документы и выпущенные комплекты не копируются.
                 </p>
+                <p>
+                  Префикс нумерации целевого раздела не копируется: он остаётся своим, чтобы раздел
+                  не получил чужое обозначение.
+                </p>
               </span>
             </div>
             {copyTargetSections.length === 0 ? (
@@ -242,7 +246,8 @@ export function DemoObjectSettingsPanel({
             )}
             {lastTemplateCopyTargetName !== '' ? (
               <p className="status-chip status-chip--active">
-                Настройки скопированы в раздел «{lastTemplateCopyTargetName}»
+                Настройки скопированы в раздел «{lastTemplateCopyTargetName}». Префикс нумерации
+                этого раздела сохранён.
               </p>
             ) : null}
           </section>

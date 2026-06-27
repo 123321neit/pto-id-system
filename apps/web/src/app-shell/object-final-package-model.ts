@@ -104,7 +104,7 @@ export function buildSectionIdPackageOverviewModel(
   return {
     finalPackage: {
       description: finalIdPackageDescription,
-      id: 'final-object-id-package',
+      id: 'final-section-id-package',
       summary: {
         acts: finalPackage.summary.acts,
         objectDocuments: finalPackage.summary.objectDocuments,

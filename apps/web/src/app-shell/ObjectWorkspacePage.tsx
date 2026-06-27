@@ -37,6 +37,11 @@ import {
   type DemoIdFolders,
 } from './object-id-folders.js';
 import { buildFolderRegistryModel } from './object-registry-model.js';
+import {
+  copySectionTemplateSettingsToTarget,
+  createSectionTemplateSettings,
+  type DemoSectionTemplateSettingsById,
+} from './object-section-template-settings.js';
 
 const aosrActType = getDemoActTypeById('aosr');
 const untitledDocumentLabel = 'Без номера';
@@ -45,35 +50,16 @@ function getDocumentDisplayNumber(documentNumber: string): string {
   return documentNumber.trim() === '' ? untitledDocumentLabel : documentNumber;
 }
 
-function createSectionTemplateSettings(
-  section: DemoDocumentationSection,
-): DemoSectionTemplateSettings {
-  const baseDefaults = demoAosrWorkspace.sectionTemplateSettings;
-  const numberingPrefix = `${section.code}-`;
-  const sectionTemplate = {
-    ...baseDefaults.sectionTemplate,
-    id: section.templateSettingsId,
-    numberingPrefix,
-    sectionId: section.id,
-  };
-
-  return {
-    ...baseDefaults,
-    objectTemplate: sectionTemplate,
-    sectionTemplate,
-  };
-}
-
 function buildInitialSectionTemplateSettings(
   hasDemoContent: boolean,
-): Readonly<Record<DemoDocumentationSectionId, DemoSectionTemplateSettings>> {
+): DemoSectionTemplateSettingsById {
   if (!hasDemoContent) {
     return {};
   }
 
   return Object.fromEntries(
     demoDocumentationSections.map((section) => [
-      section.id,
+      section.templateSettingsId,
       createSectionTemplateSettings(section),
     ]),
   );
@@ -109,9 +95,10 @@ export function ObjectWorkspacePage({
   const [selectedSectionId, setSelectedSectionId] = useState<DemoDocumentationSectionId | null>(
     hasDemoContent ? (demoDocumentationSections[0]?.id ?? null) : null,
   );
-  const [sectionTemplateSettingsById, setSectionTemplateSettingsById] = useState<
-    Readonly<Record<DemoDocumentationSectionId, DemoSectionTemplateSettings>>
-  >(() => buildInitialSectionTemplateSettings(hasDemoContent));
+  const [sectionTemplateSettingsById, setSectionTemplateSettingsById] =
+    useState<DemoSectionTemplateSettingsById>(() =>
+      buildInitialSectionTemplateSettings(hasDemoContent),
+    );
   const [folders, setFolders] = useState<DemoIdFolders>(hasDemoContent ? demoIdFolders : []);
   const [selectedFolderId, setSelectedFolderId] = useState<DemoIdFolderId | null>(
     hasDemoContent ? (demoIdFolders[0]?.id ?? null) : null,
@@ -153,8 +140,8 @@ export function ObjectWorkspacePage({
   const selectedSectionTemplateSettings =
     selectedSection === undefined
       ? demoAosrWorkspace.sectionTemplateSettings
-      : (sectionTemplateSettingsById[selectedSection.id] ??
-        demoAosrWorkspace.sectionTemplateSettings);
+      : (sectionTemplateSettingsById[selectedSection.templateSettingsId] ??
+        createSectionTemplateSettings(selectedSection));
   const proposedAosrNumberDetails = useMemo(() => {
     if (selectedFolderId === null || selectedSection === undefined) {
       return undefined;
@@ -218,13 +205,12 @@ export function ObjectWorkspacePage({
     const section = createDemoDocumentationSection(
       `section-created-${String(createdSectionCount)}`,
       sectionName,
-      createdSectionCount,
     );
 
     setSections((currentSections) => [...currentSections, section]);
     setSectionTemplateSettingsById((currentDefaults) => ({
       ...currentDefaults,
-      [section.id]: createSectionTemplateSettings(section),
+      [section.templateSettingsId]: createSectionTemplateSettings(section),
     }));
     setSelectedSectionId(section.id);
     setSelectedFolderId(null);
@@ -374,13 +360,13 @@ export function ObjectWorkspacePage({
   const updateSelectedSectionTemplateSettings = (
     nextSectionTemplateSettings: DemoSectionTemplateSettings,
   ): void => {
-    if (selectedSectionId === null) {
+    if (selectedSection === undefined) {
       return;
     }
 
     setSectionTemplateSettingsById((currentDefaults) => ({
       ...currentDefaults,
-      [selectedSectionId]: nextSectionTemplateSettings,
+      [selectedSection.templateSettingsId]: nextSectionTemplateSettings,
     }));
   };
 
@@ -391,10 +377,18 @@ export function ObjectWorkspacePage({
 
     const targetSection = getDemoDocumentationSectionById(targetSectionId, sections);
 
-    setSectionTemplateSettingsById((currentDefaults) => ({
-      ...currentDefaults,
-      [targetSectionId]: selectedSectionTemplateSettings,
-    }));
+    setSectionTemplateSettingsById((currentDefaults) => {
+      const currentTargetSettings = currentDefaults[targetSection.templateSettingsId];
+
+      return {
+        ...currentDefaults,
+        [targetSection.templateSettingsId]: copySectionTemplateSettingsToTarget(
+          selectedSectionTemplateSettings,
+          targetSection,
+          currentTargetSettings,
+        ),
+      };
+    });
     setLastTemplateCopyTargetName(targetSection.name);
   };
 

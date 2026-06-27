@@ -42,6 +42,7 @@ describe('frontend-only object document numbering helper', () => {
         source: 'automatic' as const,
       },
       sectionId: 'section-heating',
+      sectionTemplateId: 'section-template-settings-heating',
       sectionTemplateSettingsId: 'section-template-settings-heating',
     };
 
@@ -77,7 +78,7 @@ describe('frontend-only object document numbering helper', () => {
       actNumber: 'ОВ-99',
       id: 'manual-number-draft',
       numberingAssignment: { source: 'manual' },
-      objectDefaults: demoAosrWorkspace.objectDefaults,
+      sectionTemplateSettings: demoAosrWorkspace.sectionTemplateSettings,
     });
 
     expect(

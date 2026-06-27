@@ -148,8 +148,15 @@ First allowed infrastructure/bootstrap scaffold accepted; canonical ADR baseline
   flows should use `DemoSectionTemplateSettings` / `SectionTemplate`; legacy
   `DemoAosrObjectDefaults` / `objectTemplate` names exist only for standalone
   AOSR demo compatibility. Demo AOSR drafts now carry explicit `sectionId`,
-  `folderId` and `sectionTemplateSettingsId`; numbering scopes are
-  `global-section` and `restart-per-folder`.
+  `folderId`, `sectionTemplateId` and `sectionTemplateSettingsId`; numbering
+  scopes are `global-section` and `restart-per-folder`. Do not infer a short
+  section code from the user-visible section name; numbering prefixes belong to
+  section template settings. Section template settings should be keyed by
+  `templateSettingsId`. Copying settings into another section must retarget the
+  copied `sectionTemplate.id` / `sectionTemplate.sectionId` to the target and
+  must keep the target section's own numbering prefix. Strict folder/section
+  helpers should throw on corrupted links instead of silently falling back to
+  demo defaults.
 
 The technical status, database foundation and object storage foundation slices are not product
 implementation. They must not be expanded into domain readiness, АОСР,

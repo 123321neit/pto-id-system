@@ -129,10 +129,10 @@ describe('App shell mock navigation', () => {
     await user.click(screen.getByRole('button', { name: 'Создать документ' }));
     const createDocumentDialog = screen.getByRole('dialog', { name: 'Создать документ' });
     expect(createDocumentDialog.textContent).toContain('Монтаж вентиляции — этап 1');
-    expect(createDocumentDialog.textContent).toContain('Предлагаемый номер: ОВ-1');
+    expect(createDocumentDialog.textContent).toContain('Предлагаемый номер: 1');
     await user.click(within(createDocumentDialog).getByRole('button', { name: 'Создать АОСР' }));
 
-    expect(screen.getByRole('button', { name: /ОВ-1/u })).toBeTruthy();
+    expect(screen.getByRole('button', { name: /^1/u })).toBeTruthy();
 
     expect(
       within(objectNavigation).getByRole('button', { name: 'Монтаж вентиляции — этап 1' }),
@@ -506,7 +506,7 @@ describe('App shell mock navigation', () => {
     expect(screen.queryByRole('button', { name: /ОВ-3/u })).toBeNull();
   });
 
-  it('uses current object template parameters for linked AOSR drafts', async () => {
+  it('uses current section template parameters for linked AOSR drafts', async () => {
     const user = userEvent.setup();
     const nextObjectName = 'Новый объект для будущих АОСР.';
     const nextProjectDocumentation = 'Новая проектная документация для будущих АОСР.';
@@ -793,11 +793,17 @@ describe('App shell mock navigation', () => {
         objectDocumentIds: ['object-document-scheme-ov-04'],
       },
     ];
+    const foldersWithDuplicateDrafts = demoIdFolders.map((folder) =>
+      folder.id === sourceDraft.folderId
+        ? { ...folder, draftIds: duplicateDrafts.map((draft) => draft.id) }
+        : folder,
+    );
 
     const finalPackage = buildSectionFinalPackageModel(
       duplicateDrafts,
       initialDemoObjectDocuments,
       initialDemoCertificates,
+      foldersWithDuplicateDrafts,
     );
     const certificates = finalPackage.groups.find((group) => group.id === 'certificates')?.items;
     const objectDocuments = finalPackage.groups.find(
@@ -1015,6 +1021,53 @@ describe('App shell mock navigation', () => {
     expect(screen.getByRole('heading', { name: 'Документ ОВ-1' })).toBeTruthy();
   });
 
+  it('copies section template settings to another section without copying its prefix', async () => {
+    const user = userEvent.setup();
+    const copiedComplianceText = 'Скопированный текст пункта 6 только для проверки разделов.';
+
+    render(<App />);
+    await user.click(getFirstOpenObjectButton());
+
+    const objectNavigation = screen.getByRole('navigation', { name: 'Разделы объекта' });
+    await user.click(
+      within(objectNavigation).getByRole('button', { name: 'Открыть настройки шаблона раздела' }),
+    );
+
+    const ventilationDialog = screen.getByRole('dialog', { name: 'Настройки шаблона раздела' });
+    const ventilationPrefix =
+      within(ventilationDialog).getByLabelText<HTMLInputElement>('Префикс номера');
+    const ventilationCompliance = within(ventilationDialog).getByLabelText<HTMLTextAreaElement>(
+      'Текст для пункта 6. Соответствие работ предъявляемым требованиям',
+    );
+
+    expect(ventilationPrefix.value).toBe('ОВ-');
+    await user.clear(ventilationPrefix);
+    await user.type(ventilationPrefix, 'VENT-');
+    await user.clear(ventilationCompliance);
+    await user.type(ventilationCompliance, copiedComplianceText);
+    await user.click(
+      within(ventilationDialog).getByRole('button', { name: 'Скопировать в «Отопление»' }),
+    );
+
+    expect(ventilationDialog.textContent).toContain('Префикс нумерации этого раздела сохранён');
+    await user.click(within(ventilationDialog).getByRole('button', { name: 'Закрыть' }));
+
+    await user.click(within(objectNavigation).getByRole('button', { name: 'Отопление' }));
+    await user.click(
+      within(objectNavigation).getByRole('button', { name: 'Открыть настройки шаблона раздела' }),
+    );
+
+    const heatingDialog = screen.getByRole('dialog', { name: 'Настройки шаблона раздела' });
+    expect(within(heatingDialog).getByLabelText<HTMLInputElement>('Префикс номера').value).toBe(
+      'ОТ-',
+    );
+    expect(
+      within(heatingDialog).getByLabelText<HTMLTextAreaElement>(
+        'Текст для пункта 6. Соответствие работ предъявляемым требованиям',
+      ).value,
+    ).toBe(copiedComplianceText);
+  });
+
   it('uses the section template numbering rule for new acts', async () => {
     const user = userEvent.setup();
 
@@ -1028,13 +1081,13 @@ describe('App shell mock navigation', () => {
 
     const dialog = screen.getByRole('dialog', { name: 'Настройки шаблона раздела' });
     const globalScope = within(dialog).getByLabelText<HTMLInputElement>(/Сквозная по разделу/u);
-    const periodScope = within(dialog).getByLabelText<HTMLInputElement>(/Отдельно в каждой папке/u);
+    const folderScope = within(dialog).getByLabelText<HTMLInputElement>(/Отдельно в каждой папке/u);
     const prefix = within(dialog).getByLabelText<HTMLInputElement>('Префикс номера');
     const suffix = within(dialog).getByLabelText<HTMLInputElement>('Суффикс номера');
 
     expect(globalScope.checked).toBe(true);
-    expect(periodScope.checked).toBe(false);
-    await user.click(periodScope);
+    expect(folderScope.checked).toBe(false);
+    await user.click(folderScope);
     await user.clear(prefix);
     await user.type(prefix, 'АОСР/');
     await user.type(suffix, '/2026');

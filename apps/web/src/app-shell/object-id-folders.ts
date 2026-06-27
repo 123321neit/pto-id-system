@@ -61,7 +61,7 @@ export function getDemoIdFolderForDraftId(
   const folder = folders.find((candidate) => candidate.draftIds.includes(draftId));
 
   if (folder === undefined) {
-    return defaultDemoIdFolder;
+    throw new Error(`Unknown demo ID folder for draft: ${draftId}`);
   }
 
   return folder;

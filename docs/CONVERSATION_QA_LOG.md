@@ -1385,8 +1385,8 @@ Object
 
 A: The frontend mock was tightened without adding production features:
 
-- `DemoDocumentationSection` now includes `code`, optional `description` and
-  `templateSettingsId`;
+- `DemoDocumentationSection` now includes user-visible `name`, optional
+  `description` and `templateSettingsId`;
 - mock folders are now `DemoIdFolder` in `object-id-folders.ts`, not
   `DemoObjectPeriod` in `object-periods.ts`;
 - AOSR drafts now carry explicit `sectionId`, `folderId` and
@@ -1411,3 +1411,36 @@ Still not implemented:
 - number reservation;
 - production package-builder, released package snapshots or DOCX/PDF/ZIP
   generation.
+
+---
+
+## 52. Section template copy retarget cleanup
+
+### Q: Какие замечания после коммита `0e3df5b` были исправлены?
+
+A: The frontend mock now keeps section-template identity consistent when copying
+settings:
+
+- `sectionTemplateSettingsById` is keyed by `templateSettingsId`;
+- copying settings into another section retargets `sectionTemplate.id` and
+  `sectionTemplate.sectionId` to the target section;
+- the target section keeps its own numbering prefix, and the UI warns that the
+  prefix was not copied;
+- repeated texts, numbering scope/suffix and library assignments are copied;
+- folders, documents, generated packages and source section identity are not
+  copied;
+- strict section/folder helpers now throw on unknown links instead of silently
+  falling back to demo defaults;
+- user-created sections no longer infer short codes from names; section name is
+  exactly what the user typed;
+- `DemoAosrDraft` has `sectionTemplateId`; `objectTemplateId` remains only as a
+  compatibility alias.
+
+Still not implemented:
+
+- backend/API routes;
+- Prisma models/migrations;
+- persistence;
+- real cross-object template copy command;
+- DOCX/PDF/ZIP generation;
+- production package-builder or number reservation.

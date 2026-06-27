@@ -5211,10 +5211,12 @@ delete/move/reorder lifecycle or generation was introduced.
 - `object-periods.ts` was replaced by `object-id-folders.ts`; frontend mock
   code now uses `DemoIdFolder`, `DemoIdFolderId`, `demoIdFolders` and folder
   helper names instead of period names;
-- `DemoDocumentationSection` now has `code`, optional `description` and
-  `templateSettingsId`, so a section is more than a visual tab;
-- created demo sections infer simple codes such as `ОВ`, `ОТ`, `ВК`, with an
-  `ИД-{n}` fallback;
+- `DemoDocumentationSection` now has user-visible `name`, optional
+  `description` and `templateSettingsId`, so a section is more than a visual
+  tab;
+- later correction removed inferred short section codes: the section is named
+  exactly as the user names it, while numbering prefixes live only in section
+  template settings;
 - AOSR drafts now carry explicit `sectionId`, `folderId` and
   `sectionTemplateSettingsId` in addition to the folder's `draftIds` list;
 - numbering helper accepts `sectionId` and computes `global-section` sequences
@@ -5237,6 +5239,41 @@ delete/move/reorder lifecycle or generation was introduced.
 - no number reservation or sequence mutation;
 - no production package-builder, released snapshots, DOCX/PDF/ZIP generation or
   issued package behavior.
+
+### 2026-06-27 — Frontend-only section template copy retarget cleanup
+
+- Статус: `Frontend mock section template copy cleanup only`
+- Описание: addressed architecture review notes after commit
+  `0e3df5b59066fe4060fd7174ab370671189349b3` without adding backend,
+  persistence, DOCX, uploads or production generation.
+
+Добавлено/уточнено:
+
+- section template settings are keyed by `templateSettingsId`, matching the
+  section's explicit link to its template settings;
+- copying settings to another section now retargets `sectionTemplate.id` to the
+  target `templateSettingsId` and `sectionTemplate.sectionId` to the target
+  section id;
+- copying preserves the target section numbering prefix and warns the user that
+  the prefix was not copied;
+- copied settings still carry repeated texts, numbering scope/suffix and
+  library assignments, but do not copy folders, documents, generated packages or
+  source section identity;
+- strict helpers now throw on unknown folder/document-section links instead of
+  silently falling back to the demo default section/folder;
+- `DemoAosrDraft` now has `sectionTemplateId` as the section-scoped field, while
+  `objectTemplateId` remains only as a legacy compatibility alias;
+- user-created sections no longer infer short codes from names such as
+  `Вентиляция`; their initial numbering prefix is empty until the user edits it.
+
+Что не было введено:
+
+- no backend routes/controllers or API;
+- no Prisma/schema/migrations;
+- no repository, persistence adapter or localStorage;
+- no real cross-object template copy command;
+- no number reservation or sequence mutation;
+- no DOCX/PDF/ZIP generation or production package-builder.
 
 ### 2026-06-23 — Document creation context backend contract slice introduced
 
