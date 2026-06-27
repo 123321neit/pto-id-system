@@ -62,7 +62,7 @@ export function buildFinalRegistryModel(
 ): DerivedRegistryModel {
   return {
     description:
-      'Построен из документов всех папок. Финальный реестр не сохраняется как сущность, не блокируется и не архивируется.',
+      'Построен из документов всех папок выбранного раздела. Финальный реестр не сохраняется как сущность, не блокируется и не архивируется.',
     id: 'final-registry',
     rows: buildDerivedRegistryRows(
       drafts.map((draft) => {
@@ -72,7 +72,7 @@ export function buildFinalRegistryModel(
       }),
     ),
     scope: 'final',
-    title: 'Финальный реестр итоговой ИД',
+    title: 'Финальный реестр итоговой ИД раздела',
   };
 }
 

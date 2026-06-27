@@ -21,11 +21,13 @@ import {
 interface ObjectFinalPackagePageProps {
   readonly drafts?: readonly DemoAosrDraft[];
   readonly periods?: DemoObjectPeriods;
+  readonly sectionName?: string | undefined;
 }
 
 export function ObjectFinalPackagePage({
   drafts = demoAosrWorkspace.drafts,
   periods = demoObjectPeriods,
+  sectionName,
 }: ObjectFinalPackagePageProps = {}): React.JSX.Element {
   const { certificates, objectDocuments } = useDemoStore();
   const finalPackage = useMemo(
@@ -45,7 +47,9 @@ export function ObjectFinalPackagePage({
       <header className="object-documents-hero object-final-package-hero">
         <div>
           <p className="section-kicker">Генерируемое представление</p>
-          <h2 id="object-final-package-title">Печать итоговой ИД по объекту</h2>
+          <h2 id="object-final-package-title">
+            Печать итоговой ИД{sectionName === undefined ? '' : `: ${sectionName}`}
+          </h2>
           <p>{finalIdPackageDescription}</p>
         </div>
       </header>
@@ -74,11 +78,13 @@ export function ObjectFinalPackagePage({
       <section className="object-documents-panel final-package-download" aria-label="Скачивание">
         <div>
           <p className="section-kicker">Итоговый комплект</p>
-          <h3>Печать итоговой ИД</h3>
-          <p>Документы всех папок собираются без дублирования сертификатов и файлов.</p>
+          <h3>Печать итоговой ИД{sectionName === undefined ? '' : ' раздела'}</h3>
+          <p>
+            Документы папок выбранного раздела собираются без дублирования сертификатов и файлов.
+          </p>
         </div>
         <button className="action-button" disabled type="button">
-          Печать итоговой ИД
+          Печать итоговой ИД{sectionName === undefined ? '' : ' раздела'}
         </button>
       </section>
     </section>

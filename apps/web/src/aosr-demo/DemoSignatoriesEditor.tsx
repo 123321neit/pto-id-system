@@ -6,6 +6,7 @@ import { DemoRepresentativeForm } from './DemoRepresentativeForm.js';
 
 interface DemoSignatoriesEditorProps {
   readonly actRepresentativeSearch: string;
+  readonly differentSourceLabel: string;
   readonly draggedRepresentativeId: string | null;
   readonly dropTargetRepresentativeId: string | null;
   readonly isManualRepresentativeFormOpen: boolean;
@@ -15,6 +16,7 @@ interface DemoSignatoriesEditorProps {
   readonly objectRepresentatives: readonly DemoAosrRepresentative[];
   readonly selectedSignatories: readonly DemoAosrRepresentative[];
   readonly sourceLabel: string;
+  readonly templateScopeNominative: string;
   readonly onAddManualRepresentative: (event: SyntheticEvent<HTMLFormElement>) => void;
   readonly onAddRepresentativeToAct: (representative: DemoAosrRepresentative) => void;
   readonly onChangeActRepresentativeSearch: (value: string) => void;
@@ -48,6 +50,7 @@ interface DemoSignatoriesEditorProps {
 
 export function DemoSignatoriesEditor({
   actRepresentativeSearch,
+  differentSourceLabel,
   draggedRepresentativeId,
   dropTargetRepresentativeId,
   isManualRepresentativeFormOpen,
@@ -57,6 +60,7 @@ export function DemoSignatoriesEditor({
   objectRepresentatives,
   selectedSignatories,
   sourceLabel,
+  templateScopeNominative,
   onAddManualRepresentative,
   onAddRepresentativeToAct,
   onChangeActRepresentativeSearch,
@@ -156,8 +160,8 @@ export function DemoSignatoriesEditor({
             <DemoRepresentativeForm
               afterFields={
                 <p className="helper-note act-form-grid__wide">
-                  Ручная версия изменит только снимок этого акта. Шаблон объекта и библиотека не
-                  изменятся.
+                  Ручная версия изменит только снимок этого акта. {templateScopeNominative} и
+                  библиотека не изменятся.
                 </p>
               }
               form={manualRepresentativeForm}
@@ -274,7 +278,7 @@ export function DemoSignatoriesEditor({
                       <small className="signatory-order-item__details">{details}</small>
                     )}
                     {isDifferent ? (
-                      <small className="source-chip">Отличается от шаблона объекта</small>
+                      <small className="source-chip">{differentSourceLabel}</small>
                     ) : null}
                     {isTemplateEditable ? (
                       <details className="manual-snapshot-editor">

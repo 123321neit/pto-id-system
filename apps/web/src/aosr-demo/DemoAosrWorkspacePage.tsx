@@ -77,31 +77,42 @@ import { DemoObjectSettingsPanel } from './DemoObjectSettingsPanel.js';
 const aosrActType = getDemoActTypeById('aosr');
 
 interface DemoAosrWorkspacePageProps {
+  readonly copyTargetSections?: readonly {
+    readonly id: string;
+    readonly name: string;
+  }[];
   readonly drafts?: readonly DemoAosrDraft[];
   readonly initialDocumentPreviewOpen?: boolean;
   readonly initialSelectedDraftId?: string;
   readonly isEmbeddedInObjectWorkspace?: boolean;
+  readonly lastTemplateCopyTargetName?: string;
   readonly objectDefaults?: DemoAosrObjectDefaults;
   readonly onDraftsChange?: (drafts: readonly DemoAosrDraft[]) => void;
+  readonly onCopySectionTemplate?: (sectionId: string) => void;
   readonly onObjectDefaultsChange?: (objectDefaults: DemoAosrObjectDefaults) => void;
   readonly onBackToObjects?: () => void;
   readonly onObjectSettingsClosed?: () => void;
   readonly periodName?: string | undefined;
+  readonly sectionName?: string | undefined;
   readonly settingsOpenRequest?: number;
   readonly visibleDraftIds?: readonly string[];
 }
 
 export function DemoAosrWorkspacePage({
+  copyTargetSections = [],
   drafts: controlledDrafts,
   initialDocumentPreviewOpen = false,
   initialSelectedDraftId,
   isEmbeddedInObjectWorkspace = false,
+  lastTemplateCopyTargetName = '',
   objectDefaults: controlledObjectDefaults,
   onDraftsChange,
+  onCopySectionTemplate,
   onObjectDefaultsChange,
   onBackToObjects,
   onObjectSettingsClosed,
   periodName,
+  sectionName,
   settingsOpenRequest,
   visibleDraftIds,
 }: DemoAosrWorkspacePageProps = {}): React.JSX.Element {
@@ -571,6 +582,7 @@ export function DemoAosrWorkspacePage({
               linkedTemplateFields={linkedTemplateFields}
               objectDefaults={objectDefaults}
               objectDocumentLibrary={objectDocuments}
+              sectionName={sectionName}
               selectedDraft={selectedDraft}
               selectedMaterials={selectedMaterials}
               selectedObjectDocuments={selectedObjectDocuments}
@@ -693,11 +705,13 @@ export function DemoAosrWorkspacePage({
 
       {isObjectSettingsOpen ? (
         <DemoObjectSettingsPanel
+          copyTargetSections={copyTargetSections}
           globalOrganizations={globalOrganizations}
           globalRepresentatives={globalRepresentatives}
           headerOrganizationForm={headerOrganizationForm}
           isHeaderOrganizationFormOpen={isHeaderOrganizationFormOpen}
           isRepresentativeLibraryFormOpen={isRepresentativeLibraryFormOpen}
+          lastTemplateCopyTargetName={lastTemplateCopyTargetName}
           libraryRepresentativeForm={libraryRepresentativeForm}
           objectDefaults={objectDefaults}
           organizationSearch={organizationSearch}
@@ -709,6 +723,7 @@ export function DemoAosrWorkspacePage({
           onChangeOrganizationSearch={setOrganizationSearch}
           onChangeRepresentativeSearch={setRepresentativeSearch}
           onCloseObjectSettings={closeObjectSettings}
+          onCopySectionTemplate={onCopySectionTemplate}
           onMoveHeaderOrganization={(headerOrganizationId, direction) => {
             commitObjectDefaults((currentDefaults) =>
               moveHeaderOrganizationBlock(currentDefaults, headerOrganizationId, direction),
@@ -716,6 +731,7 @@ export function DemoAosrWorkspacePage({
           }}
           onSelectGlobalOrganization={selectGlobalOrganization}
           onSelectGlobalRepresentative={selectGlobalRepresentative}
+          sectionName={sectionName}
           onToggleHeaderOrganizationForm={() => {
             setHeaderOrganizationFormOpen((isOpen) => !isOpen);
           }}

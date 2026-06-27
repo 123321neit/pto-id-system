@@ -17,11 +17,16 @@ import { DemoHeaderOrganizationsPanel } from './DemoHeaderOrganizationsPanel.js'
 import { DemoObjectRepresentativesPanel } from './DemoObjectRepresentativesPanel.js';
 
 interface DemoObjectSettingsPanelProps {
+  readonly copyTargetSections: readonly {
+    readonly id: string;
+    readonly name: string;
+  }[];
   readonly globalOrganizations: readonly DemoGlobalOrganization[];
   readonly globalRepresentatives: readonly DemoAosrRepresentative[];
   readonly headerOrganizationForm: HeaderOrganizationFormState;
   readonly isHeaderOrganizationFormOpen: boolean;
   readonly isRepresentativeLibraryFormOpen: boolean;
+  readonly lastTemplateCopyTargetName: string;
   readonly libraryRepresentativeForm: RepresentativeFormState;
   readonly objectDefaults: DemoAosrObjectDefaults;
   readonly organizationSearch: string;
@@ -38,6 +43,7 @@ interface DemoObjectSettingsPanelProps {
   ) => void;
   readonly onChangeOrganizationSearch: (value: string) => void;
   readonly onChangeRepresentativeSearch: (value: string) => void;
+  readonly onCopySectionTemplate: ((sectionId: string) => void) | undefined;
   readonly onMoveHeaderOrganization: (
     headerOrganizationId: string,
     direction: MoveDirection,
@@ -45,6 +51,7 @@ interface DemoObjectSettingsPanelProps {
   readonly onSelectGlobalOrganization: (organization: DemoGlobalOrganization) => void;
   readonly onSelectGlobalRepresentative: (representative: DemoAosrRepresentative) => void;
   readonly onCloseObjectSettings: () => void;
+  readonly sectionName?: string | undefined;
   readonly onToggleHeaderOrganizationForm: () => void;
   readonly onToggleRepresentativeLibraryForm: () => void;
   readonly onUpdateHeaderOrganization: (
@@ -90,11 +97,13 @@ const objectSettingsSections: readonly {
 ];
 
 export function DemoObjectSettingsPanel({
+  copyTargetSections,
   globalOrganizations,
   globalRepresentatives,
   headerOrganizationForm,
   isHeaderOrganizationFormOpen,
   isRepresentativeLibraryFormOpen,
+  lastTemplateCopyTargetName,
   libraryRepresentativeForm,
   objectDefaults,
   organizationSearch,
@@ -105,10 +114,12 @@ export function DemoObjectSettingsPanel({
   onChangeLibraryRepresentativeForm,
   onChangeOrganizationSearch,
   onChangeRepresentativeSearch,
+  onCopySectionTemplate,
   onMoveHeaderOrganization,
   onSelectGlobalOrganization,
   onSelectGlobalRepresentative,
   onCloseObjectSettings,
+  sectionName,
   onToggleHeaderOrganizationForm,
   onToggleRepresentativeLibraryForm,
   onUpdateHeaderOrganization,
@@ -127,8 +138,13 @@ export function DemoObjectSettingsPanel({
   const numberingExample = `${objectDefaults.objectTemplate.numberingPrefix}1${objectDefaults.objectTemplate.numberingSuffix}`;
   const numberingScopeLabel =
     objectDefaults.objectTemplate.numberingScope === 'global-object'
-      ? 'сквозная по объекту'
+      ? sectionName === undefined
+        ? 'сквозная по объекту'
+        : 'сквозная по разделу'
       : 'отдельно в каждой папке';
+  const isSectionScopedTemplate = sectionName !== undefined;
+  const selectedSectionName = sectionName ?? 'выбранный раздел';
+  const dialogTitle = isSectionScopedTemplate ? 'Настройки шаблона раздела' : 'Шаблон объекта';
 
   return (
     <div className="object-settings-overlay">
@@ -140,11 +156,13 @@ export function DemoObjectSettingsPanel({
       >
         <div className="object-settings-dialog__header">
           <span>
-            <p className="scope-label">Уровень объекта</p>
-            <h2 id="object-settings-title">Шаблон объекта</h2>
+            <p className="scope-label">
+              {isSectionScopedTemplate ? `Раздел ИД: ${selectedSectionName}` : 'Уровень объекта'}
+            </p>
+            <h2 id="object-settings-title">{dialogTitle}</h2>
             <p className="object-settings-dialog__lead">
               Единое место для данных, которые автоматически попадают в новые linked-АОСР этого
-              объекта.
+              {isSectionScopedTemplate ? ' раздела.' : ' объекта.'}
             </p>
           </span>
           <button className="compact-toggle" onClick={onCloseObjectSettings} type="button">
@@ -152,10 +170,17 @@ export function DemoObjectSettingsPanel({
           </button>
         </div>
 
-        <section className="object-template-status" aria-label="Сводка шаблона объекта">
+        <section
+          className="object-template-status"
+          aria-label={isSectionScopedTemplate ? 'Сводка шаблона раздела' : 'Сводка шаблона объекта'}
+        >
           <article className="object-template-status__card object-template-status__card--wide">
             <span>Live-цепочка</span>
-            <strong>Библиотеки → шаблон объекта → linked-акты</strong>
+            <strong>
+              {isSectionScopedTemplate
+                ? 'Библиотеки → шаблон раздела → linked-акты'
+                : 'Библиотеки → шаблон объекта → linked-акты'}
+            </strong>
             <small>
               Изменения видны рабочим linked-документам. Ручные версии и выпущенные результаты
               остаются отдельными снимками.
@@ -171,7 +196,11 @@ export function DemoObjectSettingsPanel({
             <strong>
               {representativeGroupCount} группы / {representativeMemberCount} участника
             </strong>
-            <small>Назначения объекта для подписей</small>
+            <small>
+              {isSectionScopedTemplate
+                ? 'Назначения раздела для подписей'
+                : 'Назначения объекта для подписей'}
+            </small>
           </article>
           <article className="object-template-status__card">
             <span>Нумерация</span>
@@ -180,8 +209,52 @@ export function DemoObjectSettingsPanel({
           </article>
         </section>
 
+        {isSectionScopedTemplate ? (
+          <section className="form-section" aria-labelledby="section-template-copy-title">
+            <div className="object-numbering-heading">
+              <span>
+                <h3 id="section-template-copy-title">Копирование шаблона</h3>
+                <p>
+                  Копирует повторяющиеся тексты, настройки нумерации и связи с библиотеками в другой
+                  раздел. Папки, документы и выпущенные комплекты не копируются.
+                </p>
+              </span>
+            </div>
+            {copyTargetSections.length === 0 ? (
+              <p className="object-folders__empty-copy">
+                Создайте ещё один раздел, чтобы сюда можно было скопировать настройки.
+              </p>
+            ) : (
+              <div className="object-folder-create-panel__actions">
+                {copyTargetSections.map((targetSection) => (
+                  <button
+                    className="compact-toggle"
+                    key={targetSection.id}
+                    onClick={() => {
+                      onCopySectionTemplate?.(targetSection.id);
+                    }}
+                    type="button"
+                  >
+                    Скопировать в «{targetSection.name}»
+                  </button>
+                ))}
+              </div>
+            )}
+            {lastTemplateCopyTargetName !== '' ? (
+              <p className="status-chip status-chip--active">
+                Настройки скопированы в раздел «{lastTemplateCopyTargetName}»
+              </p>
+            ) : null}
+          </section>
+        ) : null}
+
         <div className="object-settings-layout">
-          <nav className="object-settings-menu" aria-label="Разделы шаблона объекта">
+          <nav
+            className="object-settings-menu"
+            aria-label={
+              isSectionScopedTemplate ? 'Разделы шаблона раздела' : 'Разделы шаблона объекта'
+            }
+          >
             {objectSettingsSections.map((section) => (
               <button
                 aria-current={activeSectionId === section.id ? 'page' : undefined}
@@ -267,8 +340,9 @@ export function DemoObjectSettingsPanel({
                     <span>
                       <h3 id="object-numbering-title">Нумерация актов</h3>
                       <p>
-                        Правило применяется к новым актам этого объекта. Уже созданные номера не
-                        перенумеровываются автоматически.
+                        Правило применяется к новым актам{' '}
+                        {isSectionScopedTemplate ? 'этого раздела' : 'этого объекта'}. Уже созданные
+                        номера не перенумеровываются автоматически.
                       </p>
                     </span>
                     <output aria-label="Пример номера" className="object-numbering-preview">
@@ -289,8 +363,14 @@ export function DemoObjectSettingsPanel({
                         type="radio"
                       />
                       <span>
-                        <strong>Сквозная по объекту</strong>
-                        <small>Одна последовательность во всех папках</small>
+                        <strong>
+                          {isSectionScopedTemplate ? 'Сквозная по разделу' : 'Сквозная по объекту'}
+                        </strong>
+                        <small>
+                          {isSectionScopedTemplate
+                            ? 'Одна последовательность во всех папках раздела'
+                            : 'Одна последовательность во всех папках'}
+                        </small>
                       </span>
                     </label>
                     <label>

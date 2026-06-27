@@ -1337,3 +1337,42 @@ Object
 Prisma/schema/migrations, routes/controllers, persistence, template-copy
 storage, uploads, generation and production package behavior are still not
 implemented.
+
+---
+
+## 50. Frontend-only section workspace UX
+
+### Q: Что появилось в интерфейсе после принятия разделов ИД?
+
+A: Object workspace now has a visible frontend-only section layer:
+
+```text
+Object
+  -> Раздел ИД
+      -> Настройки шаблона раздела
+      -> Папки ИД
+          -> Документы
+```
+
+Добавлено:
+
+- навигация `Разделы ИД`;
+- демонстрационные разделы `Вентиляция` и `Отопление`;
+- создание пользовательского раздела;
+- создание папки внутри выбранного раздела;
+- открытие документов и создание АОСР внутри выбранного раздела/папки;
+- подписи linked-актов как `По шаблону раздела` в объектном workspace;
+- `Настройки шаблона раздела` вместо object-level template wording;
+- копирование настроек шаблона раздела в другой demo-раздел;
+- итоговая ИД и финальный реестр по выбранному разделу.
+
+Ограничения:
+
+- this is frontend-only in-memory mock behavior;
+- no backend route/controller/API was added;
+- no Prisma schema/model/migration was added;
+- no persistence, repository, template-copy command or localStorage was added;
+- cross-object copy is represented as intended UX, not implemented production
+  behavior;
+- no real package-builder, released snapshot, DOCX/PDF/ZIP generation or number
+  reservation exists yet.

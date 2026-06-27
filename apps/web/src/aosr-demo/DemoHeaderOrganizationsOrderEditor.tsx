@@ -2,6 +2,7 @@ import type { DemoAosrHeaderOrganization } from './demo-aosr-workspace.js';
 import type { MoveDirection } from './demo-aosr-ui.js';
 
 interface DemoHeaderOrganizationsOrderEditorProps {
+  readonly differentSourceLabel: string;
   readonly headerOrganizations: readonly DemoAosrHeaderOrganization[];
   readonly isTemplateEditable: boolean;
   readonly linkedHeaderOrganizations: readonly DemoAosrHeaderOrganization[];
@@ -18,6 +19,7 @@ interface DemoHeaderOrganizationsOrderEditorProps {
 }
 
 export function DemoHeaderOrganizationsOrderEditor({
+  differentSourceLabel,
   headerOrganizations,
   isTemplateEditable,
   linkedHeaderOrganizations,
@@ -61,7 +63,7 @@ export function DemoHeaderOrganizationsOrderEditor({
                     <small>{headerOrganization.organizationName}</small>
                     <small>{headerOrganization.details}</small>
                     {isDifferent ? (
-                      <small className="source-chip">Отличается от шаблона объекта</small>
+                      <small className="source-chip">{differentSourceLabel}</small>
                     ) : null}
                     {isTemplateEditable ? (
                       <details className="manual-snapshot-editor">

@@ -37,6 +37,7 @@ interface DemoCurrentActEditorProps {
   readonly linkedTemplateFields: DemoAosrTemplateFields;
   readonly objectDefaults: DemoAosrObjectDefaults;
   readonly objectDocumentLibrary: readonly DemoObjectDocument[];
+  readonly sectionName?: string | undefined;
   readonly selectedDraft: DemoAosrDraft;
   readonly selectedMaterials: readonly DemoMaterialCertificate[];
   readonly selectedObjectDocuments: readonly DemoObjectDocument[];
@@ -113,6 +114,7 @@ export function DemoCurrentActEditor({
   linkedTemplateFields,
   objectDefaults,
   objectDocumentLibrary,
+  sectionName,
   selectedDraft,
   selectedMaterials,
   selectedObjectDocuments,
@@ -150,19 +152,28 @@ export function DemoCurrentActEditor({
   const isManualTemplate = selectedDraft.templateMode === 'manual';
   const documentLabel =
     selectedDraft.actNumber.trim() === '' ? 'Без номера' : selectedDraft.actNumber;
-  const templateSourceLabel = isManualTemplate ? 'Ручная версия' : 'По шаблону объекта';
+  const templateScopeGenitive = sectionName === undefined ? 'шаблона объекта' : 'шаблона раздела';
+  const templateScopeDative = sectionName === undefined ? 'шаблону объекта' : 'шаблону раздела';
+  const templateScopeNominative = sectionName === undefined ? 'Шаблон объекта' : 'Шаблон раздела';
+  const linkedTemplateSourceLabel = `По ${templateScopeDative}`;
+  const differsFromTemplateSourceLabel = `Отличается от ${templateScopeGenitive}`;
+  const templateSourceLabel = isManualTemplate ? 'Ручная версия' : linkedTemplateSourceLabel;
   const objectNameSourceLabel = getTemplateFieldSourceLabel(
     isManualTemplate,
     isManualDraftFieldDifferentFromObjectTemplate(selectedDraft, objectDefaults, 'objectName'),
+    differsFromTemplateSourceLabel,
+    linkedTemplateSourceLabel,
   );
   const objectNameSubscriptSourceLabel = getTemplateFieldSourceLabel(
     isManualTemplate,
     templateFields.objectNameSubscript !== linkedTemplateFields.objectNameSubscript,
+    differsFromTemplateSourceLabel,
+    linkedTemplateSourceLabel,
   );
   const objectDataSourceLabel =
-    objectNameSourceLabel === 'Отличается от шаблона объекта' ||
-    objectNameSubscriptSourceLabel === 'Отличается от шаблона объекта'
-      ? 'Отличается от шаблона объекта'
+    objectNameSourceLabel === differsFromTemplateSourceLabel ||
+    objectNameSubscriptSourceLabel === differsFromTemplateSourceLabel
+      ? differsFromTemplateSourceLabel
       : templateSourceLabel;
   const projectDocumentationSourceLabel = getTemplateFieldSourceLabel(
     isManualTemplate,
@@ -171,6 +182,8 @@ export function DemoCurrentActEditor({
       objectDefaults,
       'projectDocumentation',
     ),
+    differsFromTemplateSourceLabel,
+    linkedTemplateSourceLabel,
   );
   const complianceSourceLabel = getTemplateFieldSourceLabel(
     isManualTemplate,
@@ -179,6 +192,8 @@ export function DemoCurrentActEditor({
       objectDefaults,
       'complianceStatement',
     ),
+    differsFromTemplateSourceLabel,
+    linkedTemplateSourceLabel,
   );
   const workContractorSourceLabel = getTemplateFieldSourceLabel(
     isManualTemplate,
@@ -187,6 +202,8 @@ export function DemoCurrentActEditor({
       objectDefaults,
       'workContractorName',
     ),
+    differsFromTemplateSourceLabel,
+    linkedTemplateSourceLabel,
   );
   const additionalInfoSourceLabel = getTemplateFieldSourceLabel(
     isManualTemplate,
@@ -196,6 +213,8 @@ export function DemoCurrentActEditor({
       'additionalInfo',
     ) ||
       isManualDraftFieldDifferentFromObjectTemplate(selectedDraft, objectDefaults, 'copiesCount'),
+    differsFromTemplateSourceLabel,
+    linkedTemplateSourceLabel,
   );
   return (
     <section
@@ -221,19 +240,19 @@ export function DemoCurrentActEditor({
             <>
               <span className="source-chip">Ручная версия</span>
               <p className="helper-note">
-                Ручная версия: изменения шаблона объекта и библиотек не применяются.
+                Ручная версия: изменения {templateScopeGenitive} и библиотек не применяются.
               </p>
               <button
                 className="compact-toggle compact-toggle--accent"
                 onClick={onReturnDraftToLinkedTemplate}
                 type="button"
               >
-                Вернуть к шаблону объекта
+                Вернуть к {templateScopeDative}
               </button>
             </>
           ) : (
             <>
-              <span className="source-chip">По шаблону объекта</span>
+              <span className="source-chip">{linkedTemplateSourceLabel}</span>
               <button
                 className="compact-toggle"
                 onClick={onSwitchDraftToManualTemplate}
@@ -320,6 +339,7 @@ export function DemoCurrentActEditor({
       </TemplateOwnedSection>
 
       <DemoHeaderOrganizationsOrderEditor
+        differentSourceLabel={differsFromTemplateSourceLabel}
         headerOrganizations={templateFields.headerOrganizations}
         isTemplateEditable={isManualTemplate}
         linkedHeaderOrganizations={linkedTemplateFields.headerOrganizations}
@@ -330,6 +350,7 @@ export function DemoCurrentActEditor({
 
       <DemoSignatoriesEditor
         actRepresentativeSearch={actRepresentativeSearch}
+        differentSourceLabel={differsFromTemplateSourceLabel}
         draggedRepresentativeId={draggedRepresentativeId}
         dropTargetRepresentativeId={dropTargetRepresentativeId}
         isManualRepresentativeFormOpen={isManualRepresentativeFormOpen}
@@ -339,6 +360,7 @@ export function DemoCurrentActEditor({
         linkedSignatories={linkedTemplateFields.representatives}
         selectedSignatories={selectedSignatories}
         sourceLabel={templateSourceLabel}
+        templateScopeNominative={templateScopeNominative}
         onAddManualRepresentative={onAddManualRepresentative}
         onAddRepresentativeToAct={onAddRepresentativeToAct}
         onChangeActRepresentativeSearch={onChangeActRepresentativeSearch}
@@ -596,7 +618,7 @@ function TemplateOwnedSection({
   summary,
   title,
 }: TemplateOwnedSectionProps): React.JSX.Element {
-  const isManual = sourceLabel !== 'По шаблону объекта';
+  const isManual = !sourceLabel.startsWith('По шаблону');
 
   return (
     <section className="form-section act-editor-card template-owned-section" aria-labelledby={id}>
@@ -614,10 +636,15 @@ function TemplateOwnedSection({
   );
 }
 
-function getTemplateFieldSourceLabel(isManualTemplate: boolean, isDifferent: boolean): string {
+function getTemplateFieldSourceLabel(
+  isManualTemplate: boolean,
+  isDifferent: boolean,
+  differentSourceLabel: string,
+  linkedSourceLabel: string,
+): string {
   if (!isManualTemplate) {
-    return 'По шаблону объекта';
+    return linkedSourceLabel;
   }
 
-  return isDifferent ? 'Отличается от шаблона объекта' : 'Ручная версия';
+  return isDifferent ? differentSourceLabel : 'Ручная версия';
 }

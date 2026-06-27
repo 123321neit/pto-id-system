@@ -134,6 +134,14 @@ First allowed infrastructure/bootstrap scaffold accepted; canonical ADR baseline
   serialization, OpenAPI, Prisma model/schema, migration, repository,
   persistence adapter, draft creation, number reservation or production document
   storage.
+- frontend-only section workspace UX:
+  the object workspace now shows `Разделы ИД` before folders, demo sections
+  such as `Вентиляция` and `Отопление`, section creation, folder creation inside
+  the selected section, `Настройки шаблона раздела`, template-copy affordance
+  into another demo section and final ID filtered to the selected section. This
+  is in-memory frontend mock behavior only: no backend/API, Prisma schema,
+  persistence, real cross-object copy, package-builder, released snapshots or
+  document generation exists for it yet.
 
 The technical status, database foundation and object storage foundation slices are not product
 implementation. They must not be expanded into domain readiness, АОСР,

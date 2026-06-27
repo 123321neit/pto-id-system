@@ -83,7 +83,8 @@ export interface FinalPackageModel {
 
 const aosrActType = getDemoActTypeById('aosr');
 
-export const finalIdPackageDescription = 'Документы из всех папок объекта без дублирования файлов.';
+export const finalIdPackageDescription =
+  'Документы из всех папок выбранного раздела без дублирования файлов.';
 
 export const periodicIdPackageDescription = 'Документы, сертификаты и файлы выбранной папки.';
 
