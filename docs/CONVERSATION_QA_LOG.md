@@ -1376,3 +1376,38 @@ Object
   behavior;
 - no real package-builder, released snapshot, DOCX/PDF/ZIP generation or number
   reservation exists yet.
+
+---
+
+## 51. Section model architecture cleanup after frontend section UX
+
+### Q: Какие архитектурные замечания после section-scoped frontend commit были устранены?
+
+A: The frontend mock was tightened without adding production features:
+
+- `DemoDocumentationSection` now includes `code`, optional `description` and
+  `templateSettingsId`;
+- mock folders are now `DemoIdFolder` in `object-id-folders.ts`, not
+  `DemoObjectPeriod` in `object-periods.ts`;
+- AOSR drafts now carry explicit `sectionId`, `folderId` and
+  `sectionTemplateSettingsId`;
+- numbering uses `global-section` and `restart-per-folder` scopes;
+- numbering helper can receive `sectionId`, so documents from another section
+  do not affect selected-section numbering;
+- final package helpers now expose section-scoped names:
+  `buildSectionFinalPackageModel` and `buildSectionIdPackageOverviewModel`;
+- intermediate package helper is named `buildIntermediateIdPackageModel`;
+- frontend mock introduced `DemoSectionTemplateSettings` and `SectionTemplate`
+  as canonical names, keeping `DemoAosrObjectDefaults` / `objectTemplate` only
+  as standalone demo compatibility aliases.
+
+Still not implemented:
+
+- backend/API routes;
+- Prisma models or migrations;
+- persistence or repositories;
+- real cross-object template copy;
+- document move between sections/folders;
+- number reservation;
+- production package-builder, released package snapshots or DOCX/PDF/ZIP
+  generation.

@@ -137,7 +137,7 @@ export function DemoObjectSettingsPanel({
   );
   const numberingExample = `${objectDefaults.objectTemplate.numberingPrefix}1${objectDefaults.objectTemplate.numberingSuffix}`;
   const numberingScopeLabel =
-    objectDefaults.objectTemplate.numberingScope === 'global-object'
+    objectDefaults.objectTemplate.numberingScope === 'global-section'
       ? sectionName === undefined
         ? 'сквозная по объекту'
         : 'сквозная по разделу'
@@ -355,10 +355,10 @@ export function DemoObjectSettingsPanel({
                     <legend>Порядок нумерации</legend>
                     <label>
                       <input
-                        checked={objectDefaults.objectTemplate.numberingScope === 'global-object'}
+                        checked={objectDefaults.objectTemplate.numberingScope === 'global-section'}
                         name="numberingScope"
                         onChange={() => {
-                          onUpdateNumberingScope('global-object');
+                          onUpdateNumberingScope('global-section');
                         }}
                         type="radio"
                       />
@@ -376,11 +376,11 @@ export function DemoObjectSettingsPanel({
                     <label>
                       <input
                         checked={
-                          objectDefaults.objectTemplate.numberingScope === 'restart-per-period'
+                          objectDefaults.objectTemplate.numberingScope === 'restart-per-folder'
                         }
                         name="numberingScope"
                         onChange={() => {
-                          onUpdateNumberingScope('restart-per-period');
+                          onUpdateNumberingScope('restart-per-folder');
                         }}
                         type="radio"
                       />

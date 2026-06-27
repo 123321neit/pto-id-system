@@ -11,32 +11,64 @@ import {
   getProposedDemoDocumentNumber,
   getProposedDemoDocumentNumberDetails,
 } from './object-document-numbering.js';
-import { demoObjectPeriods, type DemoObjectPeriods } from './object-periods.js';
+import { demoIdFolders, type DemoIdFolders } from './object-id-folders.js';
 
 describe('frontend-only object document numbering helper', () => {
-  it('proposes the next AOSR number globally by object', () => {
+  it('proposes the next AOSR number across the selected section', () => {
     expect(
       getProposedDemoDocumentNumber({
         documentTypeId: 'aosr',
         drafts: demoAosrWorkspace.drafts,
-        periodId: 'period-2026-09',
-        periods: demoObjectPeriods,
+        folderId: 'folder-2026-09',
+        folders: demoIdFolders,
+        sectionId: 'section-ventilation',
       }),
     ).toBe('ОВ-3');
   });
 
-  it('restarts the displayed sequence in each period while preserving the global sequence', () => {
+  it('does not let drafts from another section affect the selected section sequence', () => {
+    const sourceDraft = demoAosrWorkspace.drafts[0];
+
+    if (sourceDraft === undefined) {
+      throw new Error('Для теста нужен mock АОСР.');
+    }
+
+    const otherSectionDraft: DemoAosrDraft = {
+      ...sourceDraft,
+      folderId: 'folder-heating-01',
+      id: 'heating-section-draft',
+      numberingAssignment: {
+        automaticSequences: { section: 10, folder: 10 },
+        source: 'automatic' as const,
+      },
+      sectionId: 'section-heating',
+      sectionTemplateSettingsId: 'section-template-settings-heating',
+    };
+
+    expect(
+      getProposedDemoDocumentNumber({
+        documentTypeId: 'aosr',
+        drafts: [...demoAosrWorkspace.drafts, otherSectionDraft],
+        folderId: 'folder-2026-09',
+        folders: demoIdFolders,
+        sectionId: 'section-ventilation',
+      }),
+    ).toBe('ОВ-3');
+  });
+
+  it('restarts the displayed sequence in each folder while preserving the global sequence', () => {
     expect(
       getProposedDemoDocumentNumberDetails({
         documentTypeId: 'aosr',
         drafts: demoAosrWorkspace.drafts,
-        periodId: 'period-2026-10',
-        periods: demoObjectPeriods,
-        setting: { ...demoAosrNumberingSetting, scope: 'restart-per-period' },
+        folderId: 'folder-2026-10',
+        folders: demoIdFolders,
+        sectionId: 'section-ventilation',
+        setting: { ...demoAosrNumberingSetting, scope: 'restart-per-folder' },
       }),
     ).toEqual({
       renderedNumber: 'ОВ-2',
-      sequences: { globalObject: 3, period: 2 },
+      sequences: { section: 3, folder: 2 },
     });
   });
 
@@ -52,8 +84,9 @@ describe('frontend-only object document numbering helper', () => {
       getProposedDemoDocumentNumber({
         documentTypeId: 'aosr',
         drafts: [...demoAosrWorkspace.drafts, manualDraft],
-        periodId: 'period-2026-09',
-        periods: withDraftInPeriod('period-2026-09', manualDraft),
+        folderId: 'folder-2026-09',
+        folders: withDraftInFolder('folder-2026-09', manualDraft),
+        sectionId: 'section-ventilation',
       }),
     ).toBe('ОВ-3');
   });
@@ -71,7 +104,7 @@ describe('frontend-only object document numbering helper', () => {
         actNumber: 'ОВ-3',
         id: 'automatic-then-manual',
         numberingAssignment: {
-          automaticSequences: { globalObject: 3, period: 2 },
+          automaticSequences: { section: 3, folder: 2 },
           source: 'automatic',
         },
       },
@@ -80,26 +113,28 @@ describe('frontend-only object document numbering helper', () => {
     );
 
     expect(manuallyRenamedDraft.numberingAssignment).toEqual({
-      automaticSequences: { globalObject: 3, period: 2 },
+      automaticSequences: { section: 3, folder: 2 },
       source: 'manual',
     });
     expect(
       getProposedDemoDocumentNumber({
         documentTypeId: 'aosr',
         drafts: [...demoAosrWorkspace.drafts, manuallyRenamedDraft],
-        periodId: 'period-2026-09',
-        periods: withDraftInPeriod('period-2026-09', manuallyRenamedDraft),
+        folderId: 'folder-2026-09',
+        folders: withDraftInFolder('folder-2026-09', manuallyRenamedDraft),
+        sectionId: 'section-ventilation',
       }),
     ).toBe('ОВ-4');
   });
 
-  it('applies the prefix and suffix configured in the object template', () => {
+  it('applies the prefix and suffix configured in the section template', () => {
     expect(
       getProposedDemoDocumentNumber({
         documentTypeId: 'aosr',
         drafts: demoAosrWorkspace.drafts,
-        periodId: 'period-2026-09',
-        periods: demoObjectPeriods,
+        folderId: 'folder-2026-09',
+        folders: demoIdFolders,
+        sectionId: 'section-ventilation',
         setting: {
           ...demoAosrNumberingSetting,
           prefix: 'АОСР/',
@@ -110,11 +145,11 @@ describe('frontend-only object document numbering helper', () => {
   });
 });
 
-function withDraftInPeriod(
-  periodId: 'period-2026-09' | 'period-2026-10',
+function withDraftInFolder(
+  folderId: 'folder-2026-09' | 'folder-2026-10',
   draft: DemoAosrDraft,
-): DemoObjectPeriods {
-  return demoObjectPeriods.map((period) =>
-    period.id === periodId ? { ...period, draftIds: [...period.draftIds, draft.id] } : period,
+): DemoIdFolders {
+  return demoIdFolders.map((folder) =>
+    folder.id === folderId ? { ...folder, draftIds: [...folder.draftIds, draft.id] } : folder,
   );
 }

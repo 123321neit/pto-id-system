@@ -485,8 +485,8 @@ export function DemoCurrentActEditor({
         onToggleObjectDocumentLibrary={onToggleObjectDocumentLibrary}
       />
 
-      <section className="form-section act-editor-card" aria-labelledby="period-data-title">
-        <h3 id="period-data-title">5. Даты выполнения работ</h3>
+      <section className="form-section act-editor-card" aria-labelledby="work-dates-title">
+        <h3 id="work-dates-title">5. Даты выполнения работ</h3>
         <div className="act-form-grid act-form-grid--compact">
           <label>
             Начало работ

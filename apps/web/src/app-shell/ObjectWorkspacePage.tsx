@@ -6,11 +6,11 @@ import {
   createEmptyDemoAosrDraft,
   demoAosrWorkspace,
   type DemoAosrDraft,
-  type DemoAosrObjectDefaults,
+  type DemoSectionTemplateSettings,
 } from '../aosr-demo/demo-aosr-workspace.js';
 import { DerivedRegistryTable } from './DerivedRegistryTable.js';
 import { ObjectDocumentsPage } from './ObjectDocumentsPage.js';
-import { ObjectFinalPackagePage, ObjectPeriodicPackagePage } from './ObjectFinalPackagePage.js';
+import { ObjectFinalPackagePage, ObjectIntermediatePackagePage } from './ObjectFinalPackagePage.js';
 import type { MockObjectCard } from './mock-dashboard.js';
 import {
   addDemoDocumentationSectionFolder,
@@ -19,24 +19,24 @@ import {
   getDemoDocumentationSectionById,
   getDemoDocumentationSectionDrafts,
   getDemoDocumentationSectionForFolderId,
-  getDemoDocumentationSectionPeriods,
+  getDemoDocumentationSectionFolders,
   type DemoDocumentationSection,
   type DemoDocumentationSectionId,
   type DemoDocumentationSections,
 } from './object-documentation-sections.js';
 import { getProposedDemoDocumentNumberDetails } from './object-document-numbering.js';
 import {
-  addDemoObjectPeriodDraft,
-  createDemoObjectPeriod,
-  demoObjectPeriods,
-  getDemoObjectPeriodById,
-  getDemoObjectPeriodDrafts,
-  getDemoObjectPeriodForDraftId,
-  type DemoObjectPeriod,
-  type DemoObjectPeriodId,
-  type DemoObjectPeriods,
-} from './object-periods.js';
-import { buildPeriodRegistryModel } from './object-registry-model.js';
+  addDemoIdFolderDraft,
+  createDemoIdFolder,
+  demoIdFolders,
+  getDemoIdFolderById,
+  getDemoIdFolderDrafts,
+  getDemoIdFolderForDraftId,
+  type DemoIdFolder,
+  type DemoIdFolderId,
+  type DemoIdFolders,
+} from './object-id-folders.js';
+import { buildFolderRegistryModel } from './object-registry-model.js';
 
 const aosrActType = getDemoActTypeById('aosr');
 const untitledDocumentLabel = 'Без номера';
@@ -45,26 +45,28 @@ function getDocumentDisplayNumber(documentNumber: string): string {
   return documentNumber.trim() === '' ? untitledDocumentLabel : documentNumber;
 }
 
-function createSectionObjectDefaults(sectionName: string): DemoAosrObjectDefaults {
-  const baseDefaults = demoAosrWorkspace.objectDefaults;
-  const normalizedSectionName = sectionName.trim().toLowerCase();
-  const numberingPrefix =
-    normalizedSectionName.includes('отоп') || normalizedSectionName.includes('тепл')
-      ? 'ОТ-'
-      : baseDefaults.objectTemplate.numberingPrefix;
+function createSectionTemplateSettings(
+  section: DemoDocumentationSection,
+): DemoSectionTemplateSettings {
+  const baseDefaults = demoAosrWorkspace.sectionTemplateSettings;
+  const numberingPrefix = `${section.code}-`;
+  const sectionTemplate = {
+    ...baseDefaults.sectionTemplate,
+    id: section.templateSettingsId,
+    numberingPrefix,
+    sectionId: section.id,
+  };
 
   return {
     ...baseDefaults,
-    objectTemplate: {
-      ...baseDefaults.objectTemplate,
-      numberingPrefix,
-    },
+    objectTemplate: sectionTemplate,
+    sectionTemplate,
   };
 }
 
-function buildInitialSectionObjectDefaults(
+function buildInitialSectionTemplateSettings(
   hasDemoContent: boolean,
-): Readonly<Record<DemoDocumentationSectionId, DemoAosrObjectDefaults>> {
+): Readonly<Record<DemoDocumentationSectionId, DemoSectionTemplateSettings>> {
   if (!hasDemoContent) {
     return {};
   }
@@ -72,7 +74,7 @@ function buildInitialSectionObjectDefaults(
   return Object.fromEntries(
     demoDocumentationSections.map((section) => [
       section.id,
-      createSectionObjectDefaults(section.name),
+      createSectionTemplateSettings(section),
     ]),
   );
 }
@@ -80,8 +82,8 @@ function buildInitialSectionObjectDefaults(
 type ObjectWorkspaceSection =
   | 'overview'
   | 'folders'
-  | 'period'
-  | 'periodic-package'
+  | 'folder'
+  | 'intermediate-package'
   | 'aosr'
   | 'documents'
   | 'final-package'
@@ -107,14 +109,12 @@ export function ObjectWorkspacePage({
   const [selectedSectionId, setSelectedSectionId] = useState<DemoDocumentationSectionId | null>(
     hasDemoContent ? (demoDocumentationSections[0]?.id ?? null) : null,
   );
-  const [sectionObjectDefaultsById, setSectionObjectDefaultsById] = useState<
-    Readonly<Record<DemoDocumentationSectionId, DemoAosrObjectDefaults>>
-  >(() => buildInitialSectionObjectDefaults(hasDemoContent));
-  const [periods, setPeriods] = useState<DemoObjectPeriods>(
-    hasDemoContent ? demoObjectPeriods : [],
-  );
-  const [selectedPeriodId, setSelectedPeriodId] = useState<DemoObjectPeriodId | null>(
-    hasDemoContent ? (demoObjectPeriods[0]?.id ?? null) : null,
+  const [sectionTemplateSettingsById, setSectionTemplateSettingsById] = useState<
+    Readonly<Record<DemoDocumentationSectionId, DemoSectionTemplateSettings>>
+  >(() => buildInitialSectionTemplateSettings(hasDemoContent));
+  const [folders, setFolders] = useState<DemoIdFolders>(hasDemoContent ? demoIdFolders : []);
+  const [selectedFolderId, setSelectedFolderId] = useState<DemoIdFolderId | null>(
+    hasDemoContent ? (demoIdFolders[0]?.id ?? null) : null,
   );
   const [selectedDraftId, setSelectedDraftId] = useState(
     hasDemoContent ? (demoAosrWorkspace.drafts[0]?.id ?? '') : '',
@@ -135,50 +135,53 @@ export function ObjectWorkspacePage({
     selectedSectionId === null
       ? undefined
       : getDemoDocumentationSectionById(selectedSectionId, sections);
-  const selectedSectionPeriods =
+  const selectedSectionFolders =
     selectedSection === undefined
       ? []
-      : getDemoDocumentationSectionPeriods(selectedSection, periods);
-  const selectedPeriod =
-    selectedPeriodId === null ? undefined : getDemoObjectPeriodById(selectedPeriodId, periods);
+      : getDemoDocumentationSectionFolders(selectedSection, folders);
+  const selectedFolder =
+    selectedFolderId === null ? undefined : getDemoIdFolderById(selectedFolderId, folders);
   const selectedSectionDrafts = useMemo(
     () =>
       selectedSection === undefined
         ? []
-        : getDemoDocumentationSectionDrafts(selectedSection, periods, drafts),
-    [drafts, periods, selectedSection],
+        : getDemoDocumentationSectionDrafts(selectedSection, folders, drafts),
+    [drafts, folders, selectedSection],
   );
-  const selectedPeriodDrafts =
-    selectedPeriod === undefined ? [] : getDemoObjectPeriodDrafts(selectedPeriod, drafts);
-  const selectedSectionObjectDefaults =
+  const selectedFolderDrafts =
+    selectedFolder === undefined ? [] : getDemoIdFolderDrafts(selectedFolder, drafts);
+  const selectedSectionTemplateSettings =
     selectedSection === undefined
-      ? demoAosrWorkspace.objectDefaults
-      : (sectionObjectDefaultsById[selectedSection.id] ?? demoAosrWorkspace.objectDefaults);
+      ? demoAosrWorkspace.sectionTemplateSettings
+      : (sectionTemplateSettingsById[selectedSection.id] ??
+        demoAosrWorkspace.sectionTemplateSettings);
   const proposedAosrNumberDetails = useMemo(() => {
-    if (selectedPeriodId === null) {
+    if (selectedFolderId === null || selectedSection === undefined) {
       return undefined;
     }
 
     return getProposedDemoDocumentNumberDetails({
       documentTypeId: 'aosr',
-      drafts: selectedSectionDrafts,
-      periodId: selectedPeriodId,
-      periods,
+      drafts,
+      folderId: selectedFolderId,
+      folders,
+      sectionId: selectedSection.id,
       setting: {
         documentTypeId: 'aosr',
-        prefix: selectedSectionObjectDefaults.objectTemplate.numberingPrefix,
-        scope: selectedSectionObjectDefaults.objectTemplate.numberingScope,
-        suffix: selectedSectionObjectDefaults.objectTemplate.numberingSuffix,
+        prefix: selectedSectionTemplateSettings.sectionTemplate.numberingPrefix,
+        scope: selectedSectionTemplateSettings.sectionTemplate.numberingScope,
+        suffix: selectedSectionTemplateSettings.sectionTemplate.numberingSuffix,
         template: '{prefix}{number}{suffix}',
       },
     });
   }, [
-    periods,
-    selectedPeriodId,
-    selectedSectionDrafts,
-    selectedSectionObjectDefaults.objectTemplate.numberingPrefix,
-    selectedSectionObjectDefaults.objectTemplate.numberingScope,
-    selectedSectionObjectDefaults.objectTemplate.numberingSuffix,
+    drafts,
+    folders,
+    selectedFolderId,
+    selectedSection,
+    selectedSectionTemplateSettings.sectionTemplate.numberingPrefix,
+    selectedSectionTemplateSettings.sectionTemplate.numberingScope,
+    selectedSectionTemplateSettings.sectionTemplate.numberingSuffix,
   ]);
   const proposedAosrNumber = proposedAosrNumberDetails?.renderedNumber ?? '';
 
@@ -189,7 +192,7 @@ export function ObjectWorkspacePage({
   }, [isCreateDocumentPanelOpen, proposedAosrNumber]);
 
   const openCreateDocumentPanel = (): void => {
-    if (selectedPeriod === undefined) {
+    if (selectedFolder === undefined) {
       return;
     }
 
@@ -215,15 +218,16 @@ export function ObjectWorkspacePage({
     const section = createDemoDocumentationSection(
       `section-created-${String(createdSectionCount)}`,
       sectionName,
+      createdSectionCount,
     );
 
     setSections((currentSections) => [...currentSections, section]);
-    setSectionObjectDefaultsById((currentDefaults) => ({
+    setSectionTemplateSettingsById((currentDefaults) => ({
       ...currentDefaults,
-      [section.id]: createSectionObjectDefaults(section.name),
+      [section.id]: createSectionTemplateSettings(section),
     }));
     setSelectedSectionId(section.id);
-    setSelectedPeriodId(null);
+    setSelectedFolderId(null);
     setSelectedDraftId('');
     setCreatedSectionCount((currentCount) => currentCount + 1);
     setCreateSectionPanelOpen(false);
@@ -255,84 +259,83 @@ export function ObjectWorkspacePage({
       return;
     }
 
-    const folder = createDemoObjectPeriod(
-      `folder-created-${String(createdFolderCount)}`,
-      folderName,
-    );
+    const folder = createDemoIdFolder(`folder-created-${String(createdFolderCount)}`, folderName);
 
-    setPeriods((currentPeriods) => [...currentPeriods, folder]);
+    setFolders((currentFolders) => [...currentFolders, folder]);
     setSections((currentSections) =>
       addDemoDocumentationSectionFolder(currentSections, selectedSectionId, folder.id),
     );
-    setSelectedPeriodId(folder.id);
+    setSelectedFolderId(folder.id);
     setSelectedDraftId('');
     setCreatedFolderCount((currentCount) => currentCount + 1);
     setCreateFolderPanelOpen(false);
     setFolderNameInput('');
-    setActiveSection('period');
+    setActiveSection('folder');
   };
 
   const openSection = (sectionId: DemoDocumentationSectionId): void => {
     const section = getDemoDocumentationSectionById(sectionId, sections);
-    const sectionPeriods = getDemoDocumentationSectionPeriods(section, periods);
-    const firstFolder = sectionPeriods[0];
+    const sectionFolders = getDemoDocumentationSectionFolders(section, folders);
+    const firstFolder = sectionFolders[0];
 
     setCreateDocumentPanelOpen(false);
     setCreateFolderPanelOpen(false);
     setCreateSectionPanelOpen(false);
     setSelectedSectionId(sectionId);
-    setSelectedPeriodId(firstFolder?.id ?? null);
+    setSelectedFolderId(firstFolder?.id ?? null);
     setSelectedDraftId(firstFolder?.draftIds[0] ?? '');
     setLastTemplateCopyTargetName('');
     setActiveSection('folders');
   };
 
-  const openPeriod = (periodId: DemoObjectPeriodId): void => {
-    const section = getDemoDocumentationSectionForFolderId(periodId, sections);
+  const openFolder = (folderId: DemoIdFolderId): void => {
+    const section = getDemoDocumentationSectionForFolderId(folderId, sections);
 
     setCreateDocumentPanelOpen(false);
     setCreateFolderPanelOpen(false);
     setCreateSectionPanelOpen(false);
     setSelectedSectionId(section.id);
-    setSelectedPeriodId(periodId);
-    const period = getDemoObjectPeriodById(periodId, periods);
-    setSelectedDraftId(period.draftIds[0] ?? '');
+    setSelectedFolderId(folderId);
+    const folder = getDemoIdFolderById(folderId, folders);
+    setSelectedDraftId(folder.draftIds[0] ?? '');
     setLastTemplateCopyTargetName('');
-    setActiveSection('period');
+    setActiveSection('folder');
   };
 
-  const openAosr = (
-    periodId: DemoObjectPeriodId | null = selectedPeriodId,
-    draftId?: string,
-  ): void => {
-    if (periodId === null) {
+  const openAosr = (folderId: DemoIdFolderId | null = selectedFolderId, draftId?: string): void => {
+    if (folderId === null) {
       return;
     }
 
-    const period = getDemoObjectPeriodById(periodId, periods);
-    const section = getDemoDocumentationSectionForFolderId(periodId, sections);
+    const folder = getDemoIdFolderById(folderId, folders);
+    const section = getDemoDocumentationSectionForFolderId(folderId, sections);
 
     setCreateDocumentPanelOpen(false);
     setSelectedSectionId(section.id);
-    setSelectedPeriodId(periodId);
-    setSelectedDraftId(draftId ?? period.draftIds[0] ?? '');
+    setSelectedFolderId(folderId);
+    setSelectedDraftId(draftId ?? folder.draftIds[0] ?? '');
     setActiveSection('aosr');
   };
 
   const openDraft = (draft: DemoAosrDraft): void => {
-    const period = getDemoObjectPeriodForDraftId(draft.id, periods);
+    const folder = getDemoIdFolderForDraftId(draft.id, folders);
 
-    openAosr(period.id, draft.id);
+    openAosr(folder.id, draft.id);
   };
 
   const createAosrDraft = (): void => {
-    if (selectedPeriodId === null || proposedAosrNumberDetails === undefined) {
+    if (
+      selectedFolderId === null ||
+      selectedSection === undefined ||
+      proposedAosrNumberDetails === undefined
+    ) {
       return;
     }
 
     const usesAutomaticNumber = documentNumberInput === proposedAosrNumber;
     const draft = createEmptyDemoAosrDraft({
       actNumber: documentNumberInput,
+      folderId: selectedFolderId,
       id: `aosr-draft-created-${String(createdAosrDraftCount)}`,
       numberingAssignment: usesAutomaticNumber
         ? {
@@ -340,17 +343,19 @@ export function ObjectWorkspacePage({
             source: 'automatic',
           }
         : { source: 'manual' },
-      objectDefaults: selectedSectionObjectDefaults,
+      sectionTemplateSettings: selectedSectionTemplateSettings,
+      sectionId: selectedSection.id,
+      sectionTemplateSettingsId: selectedSection.templateSettingsId,
     });
 
     setDrafts((currentDrafts) => [...currentDrafts, draft]);
-    setPeriods((currentPeriods) =>
-      addDemoObjectPeriodDraft(currentPeriods, selectedPeriodId, draft.id),
+    setFolders((currentFolders) =>
+      addDemoIdFolderDraft(currentFolders, selectedFolderId, draft.id),
     );
     setCreatedAosrDraftCount((currentCount) => currentCount + 1);
     setCreateDocumentPanelOpen(false);
     setSelectedDraftId(draft.id);
-    setActiveSection('period');
+    setActiveSection('folder');
   };
 
   const openObjectSettings = (): void => {
@@ -366,16 +371,16 @@ export function ObjectWorkspacePage({
     setSettingsOpenRequest((currentRequest) => currentRequest + 1);
   };
 
-  const updateSelectedSectionObjectDefaults = (
-    nextObjectDefaults: DemoAosrObjectDefaults,
+  const updateSelectedSectionTemplateSettings = (
+    nextSectionTemplateSettings: DemoSectionTemplateSettings,
   ): void => {
     if (selectedSectionId === null) {
       return;
     }
 
-    setSectionObjectDefaultsById((currentDefaults) => ({
+    setSectionTemplateSettingsById((currentDefaults) => ({
       ...currentDefaults,
-      [selectedSectionId]: nextObjectDefaults,
+      [selectedSectionId]: nextSectionTemplateSettings,
     }));
   };
 
@@ -386,9 +391,9 @@ export function ObjectWorkspacePage({
 
     const targetSection = getDemoDocumentationSectionById(targetSectionId, sections);
 
-    setSectionObjectDefaultsById((currentDefaults) => ({
+    setSectionTemplateSettingsById((currentDefaults) => ({
       ...currentDefaults,
-      [targetSectionId]: selectedSectionObjectDefaults,
+      [targetSectionId]: selectedSectionTemplateSettings,
     }));
     setLastTemplateCopyTargetName(targetSection.name);
   };
@@ -439,8 +444,8 @@ export function ObjectWorkspacePage({
               aria-label="Разделы ИД"
               aria-current={
                 activeSection === 'folders' ||
-                activeSection === 'period' ||
-                activeSection === 'periodic-package' ||
+                activeSection === 'folder' ||
+                activeSection === 'intermediate-package' ||
                 activeSection === 'aosr'
                   ? 'page'
                   : undefined
@@ -466,8 +471,8 @@ export function ObjectWorkspacePage({
                 aria-label={section.name}
                 aria-current={
                   (activeSection === 'folders' ||
-                    activeSection === 'period' ||
-                    activeSection === 'periodic-package' ||
+                    activeSection === 'folder' ||
+                    activeSection === 'intermediate-package' ||
                     activeSection === 'aosr' ||
                     activeSection === 'settings') &&
                   selectedSectionId === section.id
@@ -492,21 +497,21 @@ export function ObjectWorkspacePage({
                 </span>
               </button>
             ))}
-            {selectedSectionPeriods.map((period) => (
+            {selectedSectionFolders.map((folder) => (
               <button
-                aria-label={period.name}
+                aria-label={folder.name}
                 aria-current={
-                  (activeSection === 'period' ||
-                    activeSection === 'periodic-package' ||
+                  (activeSection === 'folder' ||
+                    activeSection === 'intermediate-package' ||
                     activeSection === 'aosr') &&
-                  selectedPeriodId === period.id
+                  selectedFolderId === folder.id
                     ? 'page'
                     : undefined
                 }
                 className="object-workspace-nav__subitem object-workspace-nav__subitem--nested"
-                key={period.id}
+                key={folder.id}
                 onClick={() => {
-                  openPeriod(period.id);
+                  openFolder(folder.id);
                 }}
                 type="button"
               >
@@ -514,7 +519,7 @@ export function ObjectWorkspacePage({
                   ▣
                 </span>
                 <span className="object-workspace-nav__label">
-                  <strong>{period.name}</strong>
+                  <strong>{folder.name}</strong>
                   <small>Папка документов</small>
                 </span>
               </button>
@@ -589,10 +594,10 @@ export function ObjectWorkspacePage({
         {activeSection === 'overview' ? (
           <ObjectOverview
             drafts={drafts}
-            periods={periods}
+            folders={folders}
             sections={sections}
             selectedSection={selectedSection}
-            selectedSectionPeriods={selectedSectionPeriods}
+            selectedSectionFolders={selectedSectionFolders}
             onCreateFolder={openCreateFolderPanel}
             onCreateSection={openCreateSectionPanel}
             onOpenDraft={openDraft}
@@ -609,7 +614,7 @@ export function ObjectWorkspacePage({
             sectionName={sectionNameInput}
             sections={sections}
             selectedSection={selectedSection}
-            selectedSectionPeriods={selectedSectionPeriods}
+            selectedSectionFolders={selectedSectionFolders}
             onChangeFolderName={setFolderNameInput}
             onChangeSectionName={setSectionNameInput}
             onCloseCreateFolderPanel={() => {
@@ -622,17 +627,17 @@ export function ObjectWorkspacePage({
             onCreateSection={createSection}
             onOpenCreateFolderPanel={openCreateFolderPanel}
             onOpenCreateSectionPanel={openCreateSectionPanel}
-            onOpenPeriod={openPeriod}
+            onOpenFolder={openFolder}
             onOpenSection={openSection}
           />
         ) : null}
 
-        {activeSection === 'period' && selectedPeriod !== undefined ? (
-          <ObjectPeriodPage
-            drafts={selectedPeriodDrafts}
+        {activeSection === 'folder' && selectedFolder !== undefined ? (
+          <ObjectFolderPage
+            drafts={selectedFolderDrafts}
             documentNumber={documentNumberInput}
             isCreateDocumentPanelOpen={isCreateDocumentPanelOpen}
-            period={selectedPeriod}
+            folder={selectedFolder}
             proposedAosrNumber={proposedAosrNumber}
             sectionName={selectedSection?.name}
             onChangeDocumentNumber={setDocumentNumberInput}
@@ -641,39 +646,39 @@ export function ObjectWorkspacePage({
             }}
             onCreateAosr={createAosrDraft}
             onOpenAosr={(draftId) => {
-              openAosr(selectedPeriod.id, draftId);
+              openAosr(selectedFolder.id, draftId);
             }}
             onOpenCreateDocumentPanel={openCreateDocumentPanel}
-            onOpenPeriodicPackage={() => {
+            onOpenIntermediatePackage={() => {
               setCreateDocumentPanelOpen(false);
-              setActiveSection('periodic-package');
+              setActiveSection('intermediate-package');
             }}
           />
         ) : null}
 
-        {activeSection === 'periodic-package' && selectedPeriod !== undefined ? (
-          <ObjectPeriodicPackagePage drafts={drafts} period={selectedPeriod} />
+        {activeSection === 'intermediate-package' && selectedFolder !== undefined ? (
+          <ObjectIntermediatePackagePage drafts={drafts} folder={selectedFolder} />
         ) : null}
 
-        {isAosrVisible && (selectedPeriod !== undefined || activeSection === 'settings') ? (
+        {isAosrVisible && (selectedFolder !== undefined || activeSection === 'settings') ? (
           <DemoAosrWorkspacePage
             drafts={drafts}
             initialSelectedDraftId={selectedDraftId}
             isEmbeddedInObjectWorkspace
-            objectDefaults={selectedSectionObjectDefaults}
+            sectionTemplateSettings={selectedSectionTemplateSettings}
             onDraftsChange={setDrafts}
-            onObjectDefaultsChange={updateSelectedSectionObjectDefaults}
+            onSectionTemplateSettingsChange={updateSelectedSectionTemplateSettings}
             copyTargetSections={sections
               .filter((section) => section.id !== selectedSection?.id)
               .map(({ id, name }) => ({ id, name }))}
             lastTemplateCopyTargetName={lastTemplateCopyTargetName}
-            periodName={selectedPeriod?.name}
+            folderName={selectedFolder?.name}
             sectionName={selectedSection?.name}
             settingsOpenRequest={settingsOpenRequest}
-            visibleDraftIds={selectedPeriod?.draftIds ?? []}
+            visibleDraftIds={selectedFolder?.draftIds ?? []}
             onCopySectionTemplate={copySelectedSectionTemplate}
             onObjectSettingsClosed={() => {
-              setActiveSection(selectedPeriod === undefined ? 'overview' : 'aosr');
+              setActiveSection(selectedFolder === undefined ? 'overview' : 'aosr');
             }}
           />
         ) : null}
@@ -683,7 +688,7 @@ export function ObjectWorkspacePage({
         {activeSection === 'final-package' ? (
           <ObjectFinalPackagePage
             drafts={selectedSectionDrafts}
-            periods={selectedSectionPeriods}
+            folders={selectedSectionFolders}
             sectionName={selectedSection?.name}
           />
         ) : null}
@@ -722,9 +727,9 @@ function getSectionBreadcrumb(section: ObjectWorkspaceSection): string {
       return 'Обзор';
     case 'folders':
       return 'Разделы ИД';
-    case 'period':
+    case 'folder':
       return 'Разделы ИД / Папка ИД';
-    case 'periodic-package':
+    case 'intermediate-package':
       return 'Разделы ИД / Промежуточная ИД';
     case 'aosr':
       return `Разделы ИД / ${aosrActType.code}`;
@@ -739,10 +744,10 @@ function getSectionBreadcrumb(section: ObjectWorkspaceSection): string {
 
 interface ObjectOverviewProps {
   readonly drafts: readonly DemoAosrDraft[];
-  readonly periods: readonly DemoObjectPeriod[];
+  readonly folders: readonly DemoIdFolder[];
   readonly sections: readonly DemoDocumentationSection[];
   readonly selectedSection: DemoDocumentationSection | undefined;
-  readonly selectedSectionPeriods: readonly DemoObjectPeriod[];
+  readonly selectedSectionFolders: readonly DemoIdFolder[];
   readonly onCreateFolder: () => void;
   readonly onCreateSection: () => void;
   readonly onOpenDraft: (draft: DemoAosrDraft) => void;
@@ -751,10 +756,10 @@ interface ObjectOverviewProps {
 
 function ObjectOverview({
   drafts,
-  periods,
+  folders,
   sections,
   selectedSection,
-  selectedSectionPeriods,
+  selectedSectionFolders,
   onCreateFolder,
   onCreateSection,
   onOpenDraft,
@@ -796,8 +801,8 @@ function ObjectOverview({
             <p className="section-kicker">Продолжить работу</p>
             <h3 id="overview-focus-title">{selectedSection.name}</h3>
             <p>
-              Раздел содержит {selectedSectionPeriods.length}{' '}
-              {getFolderCountLabel(selectedSectionPeriods.length)}. Итоговая ИД собирается именно по
+              Раздел содержит {selectedSectionFolders.length}{' '}
+              {getFolderCountLabel(selectedSectionFolders.length)}. Итоговая ИД собирается именно по
               выбранному разделу.
             </p>
           </div>
@@ -866,8 +871,8 @@ function ObjectOverview({
         ) : (
           <ul className="object-overview__recent-list object-overview__recent-list--wide">
             {drafts.map((draft) => {
-              const period = getDemoObjectPeriodForDraftId(draft.id, periods);
-              const section = getDemoDocumentationSectionForFolderId(period.id, sections);
+              const folder = getDemoIdFolderForDraftId(draft.id, folders);
+              const section = getDemoDocumentationSectionForFolderId(folder.id, sections);
 
               return (
                 <li key={draft.id}>
@@ -880,7 +885,7 @@ function ObjectOverview({
                     <span>
                       <strong>{getDocumentDisplayNumber(draft.actNumber)}</strong>
                       <small>
-                        {section.name} / {period.name} / {aosrActType.title}
+                        {section.name} / {folder.name} / {aosrActType.title}
                       </small>
                     </span>
                     <span>
@@ -906,7 +911,7 @@ interface ObjectFoldersPageProps {
   readonly sectionName: string;
   readonly sections: readonly DemoDocumentationSection[];
   readonly selectedSection: DemoDocumentationSection | undefined;
-  readonly selectedSectionPeriods: readonly DemoObjectPeriod[];
+  readonly selectedSectionFolders: readonly DemoIdFolder[];
   readonly onChangeFolderName: (value: string) => void;
   readonly onChangeSectionName: (value: string) => void;
   readonly onCloseCreateFolderPanel: () => void;
@@ -915,7 +920,7 @@ interface ObjectFoldersPageProps {
   readonly onCreateSection: () => void;
   readonly onOpenCreateFolderPanel: () => void;
   readonly onOpenCreateSectionPanel: () => void;
-  readonly onOpenPeriod: (periodId: DemoObjectPeriodId) => void;
+  readonly onOpenFolder: (folderId: DemoIdFolderId) => void;
   readonly onOpenSection: (sectionId: DemoDocumentationSectionId) => void;
 }
 
@@ -927,7 +932,7 @@ function ObjectFoldersPage({
   sectionName,
   sections,
   selectedSection,
-  selectedSectionPeriods,
+  selectedSectionFolders,
   onChangeFolderName,
   onChangeSectionName,
   onCloseCreateFolderPanel,
@@ -936,7 +941,7 @@ function ObjectFoldersPage({
   onCreateSection,
   onOpenCreateFolderPanel,
   onOpenCreateSectionPanel,
-  onOpenPeriod,
+  onOpenFolder,
   onOpenSection,
 }: ObjectFoldersPageProps): React.JSX.Element {
   return (
@@ -1089,22 +1094,22 @@ function ObjectFoldersPage({
               <p className="section-kicker">Папки выбранного раздела</p>
               <h3 id="selected-section-folders">{selectedSection?.name ?? 'Раздел не выбран'}</h3>
             </div>
-            {selectedSectionPeriods.length === 0 ? (
+            {selectedSectionFolders.length === 0 ? (
               <p className="object-folders__empty-copy">
                 В этом разделе пока нет папок. Создайте папку, чтобы добавить документы и
                 промежуточную ИД.
               </p>
             ) : (
               <div className="object-folder-directory" aria-label="Папки выбранного раздела">
-                {selectedSectionPeriods.map((period) => {
-                  const periodDrafts = getDemoObjectPeriodDrafts(period, drafts);
+                {selectedSectionFolders.map((folder) => {
+                  const folderDrafts = getDemoIdFolderDrafts(folder, drafts);
 
                   return (
                     <button
                       className="object-folder-row"
-                      key={period.id}
+                      key={folder.id}
                       onClick={() => {
-                        onOpenPeriod(period.id);
+                        onOpenFolder(folder.id);
                       }}
                       type="button"
                     >
@@ -1112,11 +1117,11 @@ function ObjectFoldersPage({
                         ▣
                       </span>
                       <span className="object-folder-row__main">
-                        <strong>{period.name}</strong>
+                        <strong>{folder.name}</strong>
                         <small>Промежуточная исполнительная документация</small>
                       </span>
                       <span className="object-folder-row__count">
-                        {periodDrafts.length} {getDocumentCountLabel(periodDrafts.length)}
+                        {folderDrafts.length} {getDocumentCountLabel(folderDrafts.length)}
                       </span>
                       <span className="object-folder-row__action">Открыть</span>
                     </button>
@@ -1173,7 +1178,7 @@ interface CreateDocumentPanelProps {
   readonly documentNumber: string;
   readonly proposedAosrNumber: string;
   readonly selectedSectionName: string | undefined;
-  readonly selectedPeriod: DemoObjectPeriod;
+  readonly selectedFolder: DemoIdFolder;
   readonly onChangeDocumentNumber: (value: string) => void;
   readonly onClose: () => void;
   readonly onCreateAosr: () => void;
@@ -1183,7 +1188,7 @@ function CreateDocumentPanel({
   documentNumber,
   proposedAosrNumber,
   selectedSectionName,
-  selectedPeriod,
+  selectedFolder,
   onChangeDocumentNumber,
   onClose,
   onCreateAosr,
@@ -1200,7 +1205,7 @@ function CreateDocumentPanel({
         <p>
           Выберите тип документа. Документ будет создан в разделе{' '}
           <strong>{selectedSectionName ?? 'без названия'}</strong>, в рабочей папке{' '}
-          <strong>{selectedPeriod.name}</strong>.
+          <strong>{selectedFolder.name}</strong>.
         </p>
       </div>
       <div className="object-overview__numbering-note">
@@ -1274,11 +1279,11 @@ function CreateDocumentPanel({
   );
 }
 
-interface ObjectPeriodPageProps {
+interface ObjectFolderPageProps {
   readonly drafts: readonly DemoAosrDraft[];
   readonly documentNumber: string;
   readonly isCreateDocumentPanelOpen: boolean;
-  readonly period: DemoObjectPeriod;
+  readonly folder: DemoIdFolder;
   readonly proposedAosrNumber: string;
   readonly sectionName: string | undefined;
   readonly onChangeDocumentNumber: (value: string) => void;
@@ -1286,14 +1291,14 @@ interface ObjectPeriodPageProps {
   readonly onCreateAosr: () => void;
   readonly onOpenAosr: (draftId: string) => void;
   readonly onOpenCreateDocumentPanel: () => void;
-  readonly onOpenPeriodicPackage: () => void;
+  readonly onOpenIntermediatePackage: () => void;
 }
 
-function ObjectPeriodPage({
+function ObjectFolderPage({
   drafts,
   documentNumber,
   isCreateDocumentPanelOpen,
-  period,
+  folder,
   proposedAosrNumber,
   sectionName,
   onChangeDocumentNumber,
@@ -1301,20 +1306,20 @@ function ObjectPeriodPage({
   onCreateAosr,
   onOpenAosr,
   onOpenCreateDocumentPanel,
-  onOpenPeriodicPackage,
-}: ObjectPeriodPageProps): React.JSX.Element {
-  const periodRegistry = useMemo(() => buildPeriodRegistryModel(period, drafts), [drafts, period]);
+  onOpenIntermediatePackage,
+}: ObjectFolderPageProps): React.JSX.Element {
+  const folderRegistry = useMemo(() => buildFolderRegistryModel(folder, drafts), [drafts, folder]);
 
   return (
-    <section className="object-period-workspace" aria-labelledby="object-period-title">
-      <div className="object-period-hero">
-        <div className="object-period-hero__title">
-          <span className="object-period-hero__icon" aria-hidden="true">
+    <section className="object-folder-workspace" aria-labelledby="object-folder-title">
+      <div className="object-folder-hero">
+        <div className="object-folder-hero__title">
+          <span className="object-folder-hero__icon" aria-hidden="true">
             ▣
           </span>
           <div>
             <p className="section-kicker">Рабочая папка ИД</p>
-            <h2 id="object-period-title">{period.name}</h2>
+            <h2 id="object-folder-title">{folder.name}</h2>
             <p>
               Раздел: <strong>{sectionName ?? 'без названия'}</strong>. Документы папки определяют
               её реестр и состав промежуточной печати.
@@ -1335,24 +1340,24 @@ function ObjectPeriodPage({
           documentNumber={documentNumber}
           proposedAosrNumber={proposedAosrNumber}
           selectedSectionName={sectionName}
-          selectedPeriod={period}
+          selectedFolder={folder}
           onChangeDocumentNumber={onChangeDocumentNumber}
           onClose={onCloseCreateDocumentPanel}
           onCreateAosr={onCreateAosr}
         />
       ) : null}
 
-      <div className="object-period-grid">
+      <div className="object-folder-grid">
         <section
-          className="object-period-panel object-period-panel--documents object-period-panel--primary"
-          aria-labelledby="period-documents-title"
+          className="object-folder-panel object-folder-panel--documents object-folder-panel--primary"
+          aria-labelledby="folder-documents-title"
         >
           <div className="object-overview__panel-heading">
             <p className="section-kicker">Состав папки</p>
-            <h3 id="period-documents-title">Документы</h3>
+            <h3 id="folder-documents-title">Документы</h3>
           </div>
           {drafts.length === 0 ? (
-            <div className="object-period-panel__empty">
+            <div className="object-folder-panel__empty">
               <strong>В этой папке пока нет документов</strong>
               <p>Создайте первый документ — он сразу появится в составе папки и её реестре.</p>
             </div>
@@ -1385,30 +1390,30 @@ function ObjectPeriodPage({
           )}
         </section>
 
-        <div className="object-period-generated-views" aria-label="Сформированные представления">
+        <div className="object-folder-generated-views" aria-label="Сформированные представления">
           <section
-            className="object-period-panel object-period-panel--registry object-period-panel--secondary"
-            aria-labelledby="period-registry-title"
+            className="object-folder-panel object-folder-panel--registry object-folder-panel--secondary"
+            aria-labelledby="folder-registry-title"
           >
             <div className="object-overview__panel-heading">
               <p className="section-kicker">Сформированный вид</p>
-              <h3 id="period-registry-title">Реестр папки «{period.name}»</h3>
+              <h3 id="folder-registry-title">Реестр папки «{folder.name}»</h3>
             </div>
-            <DerivedRegistryTable registry={periodRegistry} />
+            <DerivedRegistryTable registry={folderRegistry} />
           </section>
 
           <section
-            className="object-period-panel object-period-placeholder object-period-panel--secondary"
-            aria-labelledby="period-package-title"
+            className="object-folder-panel object-folder-placeholder object-folder-panel--secondary"
+            aria-labelledby="folder-package-title"
           >
-            <span className="object-period-placeholder__icon" aria-hidden="true">
+            <span className="object-folder-placeholder__icon" aria-hidden="true">
               ◫
             </span>
             <div>
               <p className="section-kicker">Сформированный вид</p>
-              <h3 id="period-package-title">Промежуточная ИД</h3>
+              <h3 id="folder-package-title">Промежуточная ИД</h3>
               <p>Печатный комплект из документов этой папки.</p>
-              <button className="compact-toggle" onClick={onOpenPeriodicPackage} type="button">
+              <button className="compact-toggle" onClick={onOpenIntermediatePackage} type="button">
                 Открыть состав печати
               </button>
             </div>

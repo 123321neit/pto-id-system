@@ -5,7 +5,7 @@ interface DemoDocumentTreeProps {
   readonly actType: DemoActTypeMetadata;
   readonly drafts: readonly DemoAosrDraft[];
   readonly draggedDraftId: string | null;
-  readonly periodName?: string | undefined;
+  readonly folderName?: string | undefined;
   readonly selectedDraftId: string;
   readonly onDragEnd: () => void;
   readonly onDragStart: (draftId: string) => void;
@@ -17,7 +17,7 @@ export function DemoDocumentTree({
   actType,
   drafts,
   draggedDraftId,
-  periodName,
+  folderName,
   selectedDraftId,
   onDragEnd,
   onDragStart,
@@ -37,7 +37,7 @@ export function DemoDocumentTree({
             ▣
           </span>
           <span>
-            <strong>{periodName ?? 'Рабочая папка'}</strong>
+            <strong>{folderName ?? 'Рабочая папка'}</strong>
             <small>документы и реестр</small>
           </span>
         </div>

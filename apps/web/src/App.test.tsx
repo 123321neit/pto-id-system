@@ -5,16 +5,16 @@ import { afterEach, describe, expect, it } from 'vitest';
 
 import { App } from './App.js';
 import {
-  buildFinalPackageModel,
+  buildSectionFinalPackageModel,
   buildFinalPackageReadiness,
-  buildIdPackageOverviewModel,
-  buildPeriodicPackageModel,
+  buildSectionIdPackageOverviewModel,
+  buildIntermediateIdPackageModel,
 } from './app-shell/object-final-package-model.js';
-import { demoObjectPeriods } from './app-shell/object-periods.js';
+import { demoIdFolders } from './app-shell/object-id-folders.js';
 import {
   buildDerivedRegistryRows,
   buildFinalRegistryModel,
-  buildPeriodRegistryModel,
+  buildFolderRegistryModel,
 } from './app-shell/object-registry-model.js';
 import { demoAosrWorkspace, type DemoAosrDraft } from './aosr-demo/demo-aosr-workspace.js';
 import { initialDemoCertificates, initialDemoObjectDocuments } from './demo-store/demo-store.js';
@@ -365,7 +365,7 @@ describe('App shell mock navigation', () => {
     expect(screen.getByRole('heading', { name: 'Печать итоговой ИД: Вентиляция' })).toBeTruthy();
   });
 
-  it('opens a period as a working folder with documents, registry and periodic ID', async () => {
+  it('opens a folder as a working folder with documents, registry and intermediate ID', async () => {
     const user = userEvent.setup();
 
     render(<App />);
@@ -394,7 +394,7 @@ describe('App shell mock navigation', () => {
     expect(screen.getByLabelText('Текущий документ: ОВ-2')).toBeTruthy();
   });
 
-  it('opens a frontend-only periodic ID page derived from the selected period', async () => {
+  it('opens a frontend-only intermediate ID page derived from the selected folder', async () => {
     const user = userEvent.setup();
 
     render(<App />);
@@ -404,48 +404,50 @@ describe('App shell mock navigation', () => {
     await user.click(within(objectNavigation).getByRole('button', { name: 'Октябрь 2026' }));
     await user.click(screen.getByRole('button', { name: 'Открыть состав печати' }));
 
-    const periodicPackagePage = screen.getByRole('region', {
+    const intermediatePackagePage = screen.getByRole('region', {
       name: 'Промежуточная ИД: Октябрь 2026',
     });
 
     expect(
-      within(periodicPackagePage).getByRole('heading', {
+      within(intermediatePackagePage).getByRole('heading', {
         name: 'Промежуточная ИД: Октябрь 2026',
       }),
     ).toBeTruthy();
     expect(
-      within(periodicPackagePage).getByText('Документы, сертификаты и файлы выбранной папки.'),
+      within(intermediatePackagePage).getByText('Документы, сертификаты и файлы выбранной папки.'),
     ).toBeTruthy();
-    const summary = within(periodicPackagePage).getByLabelText('Сводка промежуточной ИД');
+    const summary = within(intermediatePackagePage).getByLabelText('Сводка промежуточной ИД');
     expect(within(summary).getByLabelText('Документы папки: 1')).toBeTruthy();
     expect(within(summary).getByLabelText('Сертификаты без дублей: 1')).toBeTruthy();
     expect(within(summary).getByLabelText('Документы / чертежи без дублей: 1')).toBeTruthy();
     expect(within(summary).getByLabelText('Всего позиций: 4')).toBeTruthy();
 
-    expect(within(periodicPackagePage).getByRole('heading', { name: 'Реестр папки' })).toBeTruthy();
-    const periodicRegistry = within(getSectionByHeading('Реестр папки'));
     expect(
-      periodicRegistry.getByText(
+      within(intermediatePackagePage).getByRole('heading', { name: 'Реестр папки' }),
+    ).toBeTruthy();
+    const intermediateRegistry = within(getSectionByHeading('Реестр папки'));
+    expect(
+      intermediateRegistry.getByText(
         'Построен из текущих документов папки. Реестр не сохраняется, не блокируется и не закрывает папку.',
       ),
     ).toBeTruthy();
-    expect(periodicRegistry.getByRole('columnheader', { name: '№' })).toBeTruthy();
-    expect(periodicRegistry.getAllByText('АОСР').length).toBeGreaterThan(0);
+    expect(intermediateRegistry.getByRole('columnheader', { name: '№' })).toBeTruthy();
+    expect(intermediateRegistry.getAllByText('АОСР').length).toBeGreaterThan(0);
     expect(
-      periodicRegistry.getAllByText('Акт освидетельствования скрытых работ').length,
+      intermediateRegistry.getAllByText('Акт освидетельствования скрытых работ').length,
     ).toBeGreaterThan(0);
-    expect(periodicRegistry.getByText('ОВ-2')).toBeTruthy();
-    expect(periodicRegistry.getByText('Октябрь 2026')).toBeTruthy();
-    expect(periodicRegistry.queryByText('ОВ-1')).toBeNull();
+    expect(intermediateRegistry.getByText('ОВ-2')).toBeTruthy();
+    expect(intermediateRegistry.getByText('Октябрь 2026')).toBeTruthy();
+    expect(intermediateRegistry.queryByText('ОВ-1')).toBeNull();
     expect(
-      within(periodicPackagePage).getByRole('heading', { name: 'Документы папки' }),
+      within(intermediatePackagePage).getByRole('heading', { name: 'Документы папки' }),
     ).toBeTruthy();
-    expect(within(periodicPackagePage).getAllByText('ОВ-2').length).toBeGreaterThan(0);
+    expect(within(intermediatePackagePage).getAllByText('ОВ-2').length).toBeGreaterThan(0);
     expect(
-      within(periodicPackagePage).getByText('Комплект печатается из текущего состава папки.'),
+      within(intermediatePackagePage).getByText('Комплект печатается из текущего состава папки.'),
     ).toBeTruthy();
     expect(
-      within(periodicPackagePage)
+      within(intermediatePackagePage)
         .getByRole('button', {
           name: 'Печать промежуточной ИД',
         })
@@ -453,7 +455,7 @@ describe('App shell mock navigation', () => {
     ).toBe(true);
   });
 
-  it('creates an AOSR draft inside the selected period and shows it in that period tree', async () => {
+  it('creates an AOSR draft inside the selected folder and shows it in that folder tree', async () => {
     const user = userEvent.setup();
 
     render(<App />);
@@ -659,24 +661,24 @@ describe('App shell mock navigation', () => {
     expect(within(finalPackagePage).getByText('ИС-ОВ-04')).toBeTruthy();
   });
 
-  it('builds the frontend-only periodic and final ID package overview model', () => {
-    const packageOverview = buildIdPackageOverviewModel(
+  it('builds the frontend-only intermediate and final ID package overview model', () => {
+    const packageOverview = buildSectionIdPackageOverviewModel(
       demoAosrWorkspace.drafts,
       initialDemoObjectDocuments,
       initialDemoCertificates,
     );
 
-    expect(packageOverview.periodicPackages).toHaveLength(2);
-    expect(packageOverview.periodicPackages[0]?.type).toBe('periodic');
-    expect(packageOverview.periodicPackages[0]?.periodName).toBe('Сентябрь 2026');
-    expect(packageOverview.periodicPackages[0]?.title).toBe('Промежуточная ИД: Сентябрь 2026');
-    expect(packageOverview.periodicPackages[0]?.summary).toEqual({
+    expect(packageOverview.intermediatePackages).toHaveLength(2);
+    expect(packageOverview.intermediatePackages[0]?.type).toBe('intermediate');
+    expect(packageOverview.intermediatePackages[0]?.folderName).toBe('Сентябрь 2026');
+    expect(packageOverview.intermediatePackages[0]?.title).toBe('Промежуточная ИД: Сентябрь 2026');
+    expect(packageOverview.intermediatePackages[0]?.summary).toEqual({
       acts: 1,
       objectDocuments: 2,
       usedCertificates: 2,
     });
-    expect(packageOverview.periodicPackages[1]?.periodName).toBe('Октябрь 2026');
-    expect(packageOverview.periodicPackages[1]?.summary).toEqual({
+    expect(packageOverview.intermediatePackages[1]?.folderName).toBe('Октябрь 2026');
+    expect(packageOverview.intermediatePackages[1]?.summary).toEqual({
       acts: 1,
       objectDocuments: 1,
       usedCertificates: 1,
@@ -691,59 +693,59 @@ describe('App shell mock navigation', () => {
       usedCertificates: 3,
     });
 
-    const octoberPeriod = demoObjectPeriods[1];
+    const octoberFolder = demoIdFolders[1];
 
-    if (octoberPeriod === undefined) {
-      throw new Error('Для демо нужен октябрьский период.');
+    if (octoberFolder === undefined) {
+      throw new Error('Для демо нужна октябрьская папка ИД.');
     }
 
-    const periodicPackage = buildPeriodicPackageModel(
-      octoberPeriod,
+    const intermediatePackage = buildIntermediateIdPackageModel(
+      octoberFolder,
       demoAosrWorkspace.drafts,
       initialDemoObjectDocuments,
       initialDemoCertificates,
     );
 
-    expect(periodicPackage.summary).toEqual({
+    expect(intermediatePackage.summary).toEqual({
       acts: 1,
       certificates: 1,
       objectDocuments: 1,
       total: 4,
     });
-    expect(periodicPackage.groups.find((group) => group.id === 'registry')?.title).toBe(
+    expect(intermediatePackage.groups.find((group) => group.id === 'registry')?.title).toBe(
       'Реестр папки',
     );
-    expect(periodicPackage.groups.find((group) => group.id === 'registry')?.registry?.rows).toEqual(
-      [
-        expect.objectContaining({
-          documentNumber: 'ОВ-2',
-          documentTypeCode: 'АОСР',
-          documentTypeTitle: 'Акт освидетельствования скрытых работ',
-          periodName: 'Октябрь 2026',
-          rowNumber: 1,
-          workDescription: 'Установка гильз трубопроводов перед заделкой отверстий в перекрытии.',
-        }),
-      ],
-    );
-    expect(periodicPackage.groups.find((group) => group.id === 'acts')?.items).toEqual([
+    expect(
+      intermediatePackage.groups.find((group) => group.id === 'registry')?.registry?.rows,
+    ).toEqual([
+      expect.objectContaining({
+        documentNumber: 'ОВ-2',
+        documentTypeCode: 'АОСР',
+        documentTypeTitle: 'Акт освидетельствования скрытых работ',
+        folderName: 'Октябрь 2026',
+        rowNumber: 1,
+        workDescription: 'Установка гильз трубопроводов перед заделкой отверстий в перекрытии.',
+      }),
+    ]);
+    expect(intermediatePackage.groups.find((group) => group.id === 'acts')?.items).toEqual([
       expect.objectContaining({
         number: 'ОВ-2',
       }),
     ]);
 
-    const octoberRegistry = buildPeriodRegistryModel(octoberPeriod, demoAosrWorkspace.drafts);
+    const octoberRegistry = buildFolderRegistryModel(octoberFolder, demoAosrWorkspace.drafts);
     expect(octoberRegistry.rows).toEqual([
       expect.objectContaining({
         documentNumber: 'ОВ-2',
         documentTypeCode: 'АОСР',
         documentTypeTitle: 'Акт освидетельствования скрытых работ',
-        periodName: 'Октябрь 2026',
+        folderName: 'Октябрь 2026',
       }),
     ]);
 
-    const finalRegistry = buildFinalRegistryModel(demoAosrWorkspace.drafts, demoObjectPeriods);
+    const finalRegistry = buildFinalRegistryModel(demoAosrWorkspace.drafts, demoIdFolders);
     expect(finalRegistry.rows.map((row) => row.documentNumber)).toEqual(['ОВ-1', 'ОВ-2']);
-    expect(finalRegistry.rows.map((row) => row.periodName)).toEqual([
+    expect(finalRegistry.rows.map((row) => row.folderName)).toEqual([
       'Сентябрь 2026',
       'Октябрь 2026',
     ]);
@@ -755,7 +757,7 @@ describe('App shell mock navigation', () => {
           documentDate: '2026-11-01',
           documentNumber: 'ОВ-meta',
           id: 'metadata-driven-row',
-          periodName: 'Ноябрь 2026',
+          folderName: 'Ноябрь 2026',
           workDescription: 'Проверка строки через метаданные типа документа',
         },
       ]),
@@ -764,7 +766,7 @@ describe('App shell mock navigation', () => {
         documentNumber: 'ОВ-meta',
         documentTypeCode: 'АОСР',
         documentTypeTitle: 'Акт освидетельствования скрытых работ',
-        periodName: 'Ноябрь 2026',
+        folderName: 'Ноябрь 2026',
       }),
     ]);
   });
@@ -792,7 +794,7 @@ describe('App shell mock navigation', () => {
       },
     ];
 
-    const finalPackage = buildFinalPackageModel(
+    const finalPackage = buildSectionFinalPackageModel(
       duplicateDrafts,
       initialDemoObjectDocuments,
       initialDemoCertificates,
@@ -947,7 +949,7 @@ describe('App shell mock navigation', () => {
     expect(within(documentLibrary).getByText('Исполнительная схема / ИС-ВК-12')).toBeTruthy();
   });
 
-  it('navigates from a period placeholder back into its AOSR document', async () => {
+  it('navigates from a folder placeholder back into its AOSR document', async () => {
     const user = userEvent.setup();
 
     render(<App />);
@@ -982,7 +984,7 @@ describe('App shell mock navigation', () => {
     expect(screen.getByRole('region', { name: 'Представители' })).toBeTruthy();
   });
 
-  it('opens current object default parameters from object workspace navigation', async () => {
+  it('opens current section template settings from object workspace navigation', async () => {
     const user = userEvent.setup();
 
     render(<App />);
@@ -1013,7 +1015,7 @@ describe('App shell mock navigation', () => {
     expect(screen.getByRole('heading', { name: 'Документ ОВ-1' })).toBeTruthy();
   });
 
-  it('uses the object template numbering rule for new acts', async () => {
+  it('uses the section template numbering rule for new acts', async () => {
     const user = userEvent.setup();
 
     render(<App />);

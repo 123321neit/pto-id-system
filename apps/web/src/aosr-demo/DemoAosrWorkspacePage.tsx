@@ -53,6 +53,7 @@ import {
   type DemoAosrObjectDefaults,
   type DemoAosrObjectDefaultsField,
   type DemoAosrRepresentative,
+  type DemoSectionTemplateSettings,
   type DemoAosrTemplateFields,
   type DemoDocumentNumberingAffixField,
   type DemoDocumentNumberingScope,
@@ -86,13 +87,19 @@ interface DemoAosrWorkspacePageProps {
   readonly initialSelectedDraftId?: string;
   readonly isEmbeddedInObjectWorkspace?: boolean;
   readonly lastTemplateCopyTargetName?: string;
+  readonly sectionTemplateSettings?: DemoSectionTemplateSettings;
+  /** Legacy compatibility alias for older standalone AOSR demo helpers. */
   readonly objectDefaults?: DemoAosrObjectDefaults;
   readonly onDraftsChange?: (drafts: readonly DemoAosrDraft[]) => void;
   readonly onCopySectionTemplate?: (sectionId: string) => void;
+  readonly onSectionTemplateSettingsChange?: (
+    sectionTemplateSettings: DemoSectionTemplateSettings,
+  ) => void;
+  /** Legacy compatibility alias for older standalone AOSR demo helpers. */
   readonly onObjectDefaultsChange?: (objectDefaults: DemoAosrObjectDefaults) => void;
   readonly onBackToObjects?: () => void;
   readonly onObjectSettingsClosed?: () => void;
-  readonly periodName?: string | undefined;
+  readonly folderName?: string | undefined;
   readonly sectionName?: string | undefined;
   readonly settingsOpenRequest?: number;
   readonly visibleDraftIds?: readonly string[];
@@ -105,13 +112,15 @@ export function DemoAosrWorkspacePage({
   initialSelectedDraftId,
   isEmbeddedInObjectWorkspace = false,
   lastTemplateCopyTargetName = '',
+  sectionTemplateSettings: controlledSectionTemplateSettings,
   objectDefaults: controlledObjectDefaults,
   onDraftsChange,
   onCopySectionTemplate,
+  onSectionTemplateSettingsChange,
   onObjectDefaultsChange,
   onBackToObjects,
   onObjectSettingsClosed,
-  periodName,
+  folderName,
   sectionName,
   settingsOpenRequest,
   visibleDraftIds,
@@ -134,9 +143,10 @@ export function DemoAosrWorkspacePage({
   const signatoryLibrary = globalRepresentatives.map(getSignatoryLibraryItemFromRepresentative);
   const certificateLibrary = certificates.flatMap(toDemoMaterialCertificates);
   const [localObjectDefaults, setLocalObjectDefaults] = useState<DemoAosrObjectDefaults>(
-    demoAosrWorkspace.objectDefaults,
+    demoAosrWorkspace.sectionTemplateSettings,
   );
-  const objectDefaults = controlledObjectDefaults ?? localObjectDefaults;
+  const objectDefaults =
+    controlledSectionTemplateSettings ?? controlledObjectDefaults ?? localObjectDefaults;
   const [localDrafts, setLocalDrafts] = useState<readonly DemoAosrDraft[]>(
     demoAosrWorkspace.drafts,
   );
@@ -315,16 +325,20 @@ export function DemoAosrWorkspacePage({
   const commitObjectDefaults = (
     objectDefaultsAction: SetStateAction<DemoAosrObjectDefaults>,
   ): void => {
-    if (controlledObjectDefaults === undefined) {
+    const controlledTemplateSettings =
+      controlledSectionTemplateSettings ?? controlledObjectDefaults;
+
+    if (controlledTemplateSettings === undefined) {
       setLocalObjectDefaults(objectDefaultsAction);
       return;
     }
 
     const nextObjectDefaults =
       typeof objectDefaultsAction === 'function'
-        ? objectDefaultsAction(controlledObjectDefaults)
+        ? objectDefaultsAction(controlledTemplateSettings)
         : objectDefaultsAction;
 
+    onSectionTemplateSettingsChange?.(nextObjectDefaults);
     onObjectDefaultsChange?.(nextObjectDefaults);
   };
 
@@ -513,7 +527,7 @@ export function DemoAosrWorkspacePage({
             aria-label={`Текущий документ: ${selectedDraft.actNumber}`}
           >
             Документ: <strong>{selectedDraft.actNumber}</strong>
-            {periodName === undefined ? null : <span>{periodName}</span>}
+            {folderName === undefined ? null : <span>{folderName}</span>}
           </p>
         </div>
         <div className="workspace-header__aside">
@@ -553,7 +567,7 @@ export function DemoAosrWorkspacePage({
           actType={aosrActType}
           draggedDraftId={draggedDraftId}
           drafts={visibleDrafts}
-          periodName={periodName}
+          folderName={folderName}
           selectedDraftId={selectedDraft.id}
           onDragEnd={() => {
             setDraggedDraftId(null);

@@ -286,7 +286,7 @@ describe('DemoAosrWorkspacePage', () => {
     await user.click(within(dialog).getByRole('button', { name: 'Закрыть' }));
   });
 
-  it('stores repeated contractor, additional information and copy count in the object template', async () => {
+  it('stores repeated contractor, additional information and copy count in the section template', async () => {
     const user = userEvent.setup();
     const contractorName = 'ООО "Исполнитель из шаблона"';
     const additionalInfo = 'Печатные сведения из шаблона объекта.';
@@ -446,7 +446,7 @@ describe('DemoAosrWorkspacePage', () => {
     ).toBeNull();
   });
 
-  it('summarizes the object template before the user edits detailed sections', async () => {
+  it('summarizes the section template before the user edits detailed sections', async () => {
     const user = userEvent.setup();
 
     renderDemoWorkspace();
@@ -963,7 +963,7 @@ describe('DemoAosrWorkspacePage', () => {
     ).toBeTruthy();
   });
 
-  it('updates linked act when a representative assignment is added to the object template', async () => {
+  it('updates linked act when a representative assignment is added to the section template', async () => {
     const user = userEvent.setup();
 
     renderDemoWorkspace({ initialDocumentPreviewOpen: true });
@@ -1538,7 +1538,7 @@ describe('DemoAosrWorkspacePage', () => {
     ).toEqual(['Legacy fallback object document', 'Snapshot object document']);
   });
 
-  it('adds configurable header blocks without mutating object defaults', () => {
+  it('adds configurable header blocks without mutating section templates', () => {
     const editedDefaults = addHeaderOrganizationBlock(demoAosrWorkspace.objectDefaults, {
       details: 'ОГРН 3333333333333; ИНН 4444444444.',
       id: 'header-organization-test',
@@ -1554,7 +1554,7 @@ describe('DemoAosrWorkspacePage', () => {
     );
   });
 
-  it('moves header organization blocks without mutating object defaults', () => {
+  it('moves header organization blocks without mutating section templates', () => {
     const editedDefaults = moveHeaderOrganizationBlock(
       demoAosrWorkspace.objectDefaults,
       'header-organization-contractor',

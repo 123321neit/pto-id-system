@@ -142,6 +142,14 @@ First allowed infrastructure/bootstrap scaffold accepted; canonical ADR baseline
   is in-memory frontend mock behavior only: no backend/API, Prisma schema,
   persistence, real cross-object copy, package-builder, released snapshots or
   document generation exists for it yet.
+- frontend-only section model architecture cleanup:
+  frontend mock code should use `DemoIdFolder` / `object-id-folders.ts`, not
+  `DemoObjectPeriod` / `object-periods.ts`, for ID folders. Section-scoped
+  flows should use `DemoSectionTemplateSettings` / `SectionTemplate`; legacy
+  `DemoAosrObjectDefaults` / `objectTemplate` names exist only for standalone
+  AOSR demo compatibility. Demo AOSR drafts now carry explicit `sectionId`,
+  `folderId` and `sectionTemplateSettingsId`; numbering scopes are
+  `global-section` and `restart-per-folder`.
 
 The technical status, database foundation and object storage foundation slices are not product
 implementation. They must not be expanded into domain readiness, АОСР,

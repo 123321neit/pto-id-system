@@ -3,6 +3,11 @@ import {
   demoAosrFormVariant1,
   type DemoAosrFormVariantId,
 } from '../act-types/act-types.js';
+import type { DemoIdFolderId } from '../app-shell/object-id-folders.js';
+import type {
+  DemoDocumentationSectionId,
+  DemoSectionTemplateSettingsId,
+} from '../app-shell/object-documentation-sections.js';
 
 export interface DemoAosrWorkspace {
   readonly id: string;
@@ -10,6 +15,8 @@ export interface DemoAosrWorkspace {
   readonly projectCode: string;
   readonly ownerName: string;
   readonly demoNotice: string;
+  readonly sectionTemplateSettings: DemoSectionTemplateSettings;
+  /** Legacy compatibility alias for older standalone AOSR demo helpers. */
   readonly objectDefaults: DemoAosrObjectDefaults;
   readonly objectDocumentLibrary: readonly DemoObjectDocument[];
   readonly drafts: readonly DemoAosrDraft[];
@@ -47,13 +54,13 @@ export interface SignatoryLibraryItem {
 
 export type ActTemplateMode = 'linked' | 'manual';
 
-export type DemoDocumentNumberingScope = 'global-object' | 'restart-per-period';
+export type DemoDocumentNumberingScope = 'global-section' | 'restart-per-folder';
 
 export type DemoDocumentNumberingAffixField = 'numberingPrefix' | 'numberingSuffix';
 
 export interface DemoDocumentNumberingSequences {
-  readonly globalObject: number;
-  readonly period: number;
+  readonly folder: number;
+  readonly section: number;
 }
 
 export type DemoDocumentNumberingAssignment =
@@ -66,7 +73,7 @@ export type DemoDocumentNumberingAssignment =
       readonly source: 'manual';
     };
 
-export interface DemoAosrObjectDefaults {
+export interface DemoSectionTemplateSettings {
   readonly defaultAdditionalInfo: string;
   readonly defaultComplianceStatement: string;
   readonly defaultCopiesLine: string;
@@ -76,9 +83,14 @@ export interface DemoAosrObjectDefaults {
   readonly defaultProjectDocumentation: string;
   readonly defaultWorkContractorName: string;
   readonly headerOrganizations: readonly DemoAosrHeaderOrganization[];
-  readonly objectTemplate: ObjectTemplate;
+  readonly sectionTemplate: SectionTemplate;
+  /** Legacy compatibility alias for older standalone AOSR demo helpers. */
+  readonly objectTemplate: SectionTemplate;
   readonly representativeLibrary: readonly DemoAosrRepresentative[];
 }
+
+/** Legacy compatibility alias for older standalone AOSR demo helpers. */
+export type DemoAosrObjectDefaults = DemoSectionTemplateSettings;
 
 export interface DemoAosrHeaderOrganization {
   readonly id: string;
@@ -106,9 +118,10 @@ export interface DemoAosrRepresentative {
   readonly signatureName?: string;
 }
 
-export interface ObjectTemplate {
+export interface SectionTemplate {
   readonly id: string;
-  readonly objectId: string;
+  readonly objectId?: string;
+  readonly sectionId: DemoDocumentationSectionId;
   readonly objectName: string;
   readonly objectNameSubscript: string;
   readonly counterparties: readonly {
@@ -139,6 +152,9 @@ export interface ObjectTemplate {
   readonly numberingSuffix: string;
   readonly defaultDateMode?: 'today' | 'folderDate' | 'manual';
 }
+
+/** Legacy compatibility alias for older standalone AOSR demo helpers. */
+export type ObjectTemplate = SectionTemplate;
 
 export interface AosrPrintState {
   readonly object: {
@@ -275,12 +291,15 @@ export interface DemoAosrDraft {
   readonly formVariantId: DemoAosrFormVariantId;
   readonly formVariantPrintTitle: string;
   readonly formVariantTitle: string;
+  readonly folderId: DemoIdFolderId;
   readonly headerOrganizations: readonly DemoAosrHeaderOrganization[];
   readonly materialCertificateIds: readonly string[];
   readonly materialCertificateSnapshots: readonly DemoMaterialCertificate[];
   readonly numberingAssignment: DemoDocumentNumberingAssignment;
   readonly documentType: 'AOSR_1';
   readonly objectTemplateId: string;
+  readonly sectionId: DemoDocumentationSectionId;
+  readonly sectionTemplateSettingsId: DemoSectionTemplateSettingsId;
   readonly templateMode: ActTemplateMode;
   readonly manualTemplateSnapshot?: DemoAosrManualTemplateSnapshot;
   readonly objectName: string;
@@ -304,9 +323,14 @@ export interface DemoActApplication {
 
 export interface CreateDemoAosrDraftInput {
   readonly actNumber: string;
+  readonly folderId?: DemoIdFolderId;
   readonly id: string;
   readonly numberingAssignment?: DemoDocumentNumberingAssignment;
-  readonly objectDefaults: DemoAosrObjectDefaults;
+  readonly sectionTemplateSettings?: DemoSectionTemplateSettings;
+  /** Legacy compatibility alias for older standalone AOSR demo helpers. */
+  readonly objectDefaults?: DemoAosrObjectDefaults;
+  readonly sectionId?: DemoDocumentationSectionId;
+  readonly sectionTemplateSettingsId?: DemoSectionTemplateSettingsId;
 }
 
 export const demoObjectDocumentTypes: readonly DemoObjectDocumentType[] = [
@@ -411,7 +435,7 @@ const defaultWorkContractorName = 'ООО "ПТО Монтаж"';
 
 const defaultNumberingPrefix = 'ОВ-';
 
-const defaultNumberingScope: DemoDocumentNumberingScope = 'global-object';
+const defaultNumberingScope: DemoDocumentNumberingScope = 'global-section';
 
 const defaultNumberingSuffix = '';
 
@@ -443,7 +467,7 @@ const defaultHeaderOrganizations: readonly DemoAosrHeaderOrganization[] = [
   },
 ];
 
-const defaultObjectTemplate: ObjectTemplate = {
+const defaultSectionTemplate: SectionTemplate = {
   additionalInfo: defaultAdditionalInfo,
   complianceText: defaultComplianceStatement,
   copiesLine: defaultCopiesLine,
@@ -457,8 +481,9 @@ const defaultObjectTemplate: ObjectTemplate = {
       : { customSubscript: headerOrganization.caption }),
   })),
   defaultDateMode: 'manual',
-  id: 'object-template-demo',
+  id: 'section-template-demo-ventilation',
   objectId: 'object-demo',
+  sectionId: 'section-ventilation',
   objectName: defaultObjectName,
   objectNameSubscript: defaultObjectNameSubscript,
   numberingPattern: '{prefix}{number}{suffix}',
@@ -505,6 +530,26 @@ const defaultObjectTemplate: ObjectTemplate = {
     },
   ],
   workContractorName: defaultWorkContractorName,
+};
+
+const defaultSectionTemplateSettings: DemoSectionTemplateSettings = {
+  defaultAdditionalInfo,
+  defaultComplianceStatement,
+  defaultCopiesLine,
+  defaultProjectDocumentation,
+  defaultWorkContractorName,
+  headerOrganizations: copyHeaderOrganizations(defaultHeaderOrganizations),
+  objectName: defaultObjectName,
+  objectNameSubscript: defaultObjectNameSubscript,
+  objectTemplate: defaultSectionTemplate,
+  projectName: 'Реконструкция поликлиники, демонстрационный проект',
+  representativeLibrary: [
+    contractorRepresentative,
+    customerRepresentative,
+    buildingControlRepresentative,
+    authorSupervisionRepresentative,
+  ],
+  sectionTemplate: defaultSectionTemplate,
 };
 
 const demoObjectDocumentLibrary: readonly DemoObjectDocument[] = [
@@ -627,6 +672,7 @@ export const demoAosrWorkspace: DemoAosrWorkspace = {
       formVariantId: demoAosrActType.defaultFormVariantId,
       formVariantPrintTitle: demoAosrFormVariant1.printTitle,
       formVariantTitle: demoAosrFormVariant1.title,
+      folderId: 'folder-2026-09',
       headerOrganizations: copyHeaderOrganizations(defaultHeaderOrganizations),
       id: 'aosr-draft-001',
       documentType: 'AOSR_1',
@@ -636,10 +682,12 @@ export const demoAosrWorkspace: DemoAosrWorkspace = {
         'certificate-fasteners-001',
       ]),
       numberingAssignment: {
-        automaticSequences: { globalObject: 1, period: 1 },
+        automaticSequences: { folder: 1, section: 1 },
         source: 'automatic',
       },
-      objectTemplateId: 'object-template-demo',
+      objectTemplateId: 'section-template-settings-ventilation',
+      sectionId: 'section-ventilation',
+      sectionTemplateSettingsId: 'section-template-settings-ventilation',
       templateMode: 'linked',
       objectName: defaultObjectName,
       objectDocumentIds: ['object-document-scheme-ov-04', 'object-document-journal-input-control'],
@@ -674,16 +722,19 @@ export const demoAosrWorkspace: DemoAosrWorkspace = {
       formVariantId: demoAosrActType.defaultFormVariantId,
       formVariantPrintTitle: demoAosrFormVariant1.printTitle,
       formVariantTitle: demoAosrFormVariant1.title,
+      folderId: 'folder-2026-10',
       headerOrganizations: copyHeaderOrganizations(defaultHeaderOrganizations),
       id: 'aosr-draft-002',
       documentType: 'AOSR_1',
       materialCertificateIds: ['certificate-firestop-001'],
       materialCertificateSnapshots: getMaterialCertificateSnapshots(['certificate-firestop-001']),
       numberingAssignment: {
-        automaticSequences: { globalObject: 2, period: 1 },
+        automaticSequences: { folder: 1, section: 2 },
         source: 'automatic',
       },
-      objectTemplateId: 'object-template-demo',
+      objectTemplateId: 'section-template-settings-ventilation',
+      sectionId: 'section-ventilation',
+      sectionTemplateSettingsId: 'section-template-settings-ventilation',
       templateMode: 'linked',
       objectName: defaultObjectName,
       objectDocumentIds: ['object-document-project-ov-set'],
@@ -705,65 +756,60 @@ export const demoAosrWorkspace: DemoAosrWorkspace = {
   ],
   id: 'workspace-demo-aosr',
   name: 'Демо-рабочая область АОСР',
-  objectDefaults: {
-    defaultAdditionalInfo,
-    defaultComplianceStatement,
-    defaultCopiesLine,
-    defaultProjectDocumentation,
-    defaultWorkContractorName,
-    headerOrganizations: copyHeaderOrganizations(defaultHeaderOrganizations),
-    objectTemplate: defaultObjectTemplate,
-    objectName: defaultObjectName,
-    objectNameSubscript: defaultObjectNameSubscript,
-    projectName: 'Реконструкция поликлиники, демонстрационный проект',
-    representativeLibrary: [
-      contractorRepresentative,
-      buildingControlRepresentative,
-      authorSupervisionRepresentative,
-    ],
-  },
+  objectDefaults: defaultSectionTemplateSettings,
   ownerName: 'Демо-владелец',
   projectCode: 'PTO-DEMO-2026',
+  sectionTemplateSettings: defaultSectionTemplateSettings,
 };
 
 export function createEmptyDemoAosrDraft({
   actNumber,
+  folderId = 'folder-2026-09',
   id,
   numberingAssignment,
+  sectionTemplateSettings,
   objectDefaults,
+  sectionId = 'section-ventilation',
+  sectionTemplateSettingsId = 'section-template-settings-ventilation',
 }: CreateDemoAosrDraftInput): DemoAosrDraft {
+  const templateSettings =
+    sectionTemplateSettings ?? objectDefaults ?? demoAosrWorkspace.sectionTemplateSettings;
+
   return {
     actDate: '',
     actNumber,
-    additionalInfo: objectDefaults.defaultAdditionalInfo,
+    additionalInfo: templateSettings.defaultAdditionalInfo,
     axes: '',
-    complianceStatement: objectDefaults.defaultComplianceStatement,
-    copiesCount: objectDefaults.defaultCopiesLine,
+    complianceStatement: templateSettings.defaultComplianceStatement,
+    copiesCount: templateSettings.defaultCopiesLine,
     elevationRange: '',
     excludedApplicationIds: [],
     formVariantId: demoAosrActType.defaultFormVariantId,
     formVariantPrintTitle: demoAosrFormVariant1.printTitle,
     formVariantTitle: demoAosrFormVariant1.title,
-    headerOrganizations: copyHeaderOrganizations(objectDefaults.headerOrganizations),
+    folderId,
+    headerOrganizations: copyHeaderOrganizations(templateSettings.headerOrganizations),
     id,
     documentType: 'AOSR_1',
     materialCertificateIds: [],
     materialCertificateSnapshots: [],
     numberingAssignment: numberingAssignment ?? { source: 'manual' },
-    objectTemplateId: objectDefaults.objectTemplate.id,
+    objectTemplateId: templateSettings.sectionTemplate.id,
+    sectionId,
+    sectionTemplateSettingsId,
     templateMode: 'linked',
-    objectName: objectDefaults.objectName,
+    objectName: templateSettings.objectName,
     objectDocumentIds: [],
     objectDocumentSnapshots: [],
     periodEnd: '',
     periodStart: '',
-    projectDocumentation: objectDefaults.defaultProjectDocumentation,
-    representatives: objectDefaults.representativeLibrary.map((representative) => ({
+    projectDocumentation: templateSettings.defaultProjectDocumentation,
+    representatives: templateSettings.representativeLibrary.map((representative) => ({
       ...representative,
     })),
     status: 'draft',
     subsequentWorksPermitted: '',
-    workContractorName: objectDefaults.defaultWorkContractorName,
+    workContractorName: templateSettings.defaultWorkContractorName,
     workDescription: '',
   };
 }
@@ -802,9 +848,16 @@ export interface BuildAosrPrintStateInput extends ResolveDemoAosrTemplateFieldsI
   readonly selectedObjectDocuments: readonly DemoObjectDocument[];
 }
 
+export function getSectionTemplateFromSettings(
+  sectionTemplateSettings: DemoSectionTemplateSettings,
+): SectionTemplate {
+  return sectionTemplateSettings.sectionTemplate;
+}
+
+/** Legacy compatibility wrapper for older standalone AOSR demo helpers. */
 export function getObjectTemplateFromDefaults(
   objectDefaults: DemoAosrObjectDefaults,
-): ObjectTemplate {
+): SectionTemplate {
   return objectDefaults.objectTemplate;
 }
 
@@ -1437,6 +1490,7 @@ export function updateDemoObjectDefaultsField(
     ...objectDefaults,
     [field]: value,
     objectTemplate,
+    sectionTemplate: objectTemplate,
   };
 }
 
@@ -1447,6 +1501,10 @@ export function updateDemoObjectNumberingScope(
   return {
     ...objectDefaults,
     objectTemplate: {
+      ...objectDefaults.objectTemplate,
+      numberingScope,
+    },
+    sectionTemplate: {
       ...objectDefaults.objectTemplate,
       numberingScope,
     },
@@ -1461,6 +1519,10 @@ export function updateDemoObjectNumberingAffix(
   return {
     ...objectDefaults,
     objectTemplate: {
+      ...objectDefaults.objectTemplate,
+      [field]: value,
+    },
+    sectionTemplate: {
       ...objectDefaults.objectTemplate,
       [field]: value,
     },
@@ -1507,13 +1569,16 @@ export function addHeaderOrganizationBlock(
       : { customSubscript: headerOrganization.caption }),
   };
 
+  const sectionTemplate = {
+    ...objectDefaults.objectTemplate,
+    counterparties: [...objectDefaults.objectTemplate.counterparties, counterparty],
+  };
+
   return {
     ...objectDefaults,
     headerOrganizations: [...objectDefaults.headerOrganizations, headerOrganization],
-    objectTemplate: {
-      ...objectDefaults.objectTemplate,
-      counterparties: [...objectDefaults.objectTemplate.counterparties, counterparty],
-    },
+    objectTemplate: sectionTemplate,
+    sectionTemplate,
   };
 }
 
@@ -1522,6 +1587,15 @@ export function moveHeaderOrganizationBlock(
   headerOrganizationId: string,
   direction: 'up' | 'down',
 ): DemoAosrObjectDefaults {
+  const sectionTemplate = {
+    ...objectDefaults.objectTemplate,
+    counterparties: moveItemById(
+      objectDefaults.objectTemplate.counterparties,
+      headerOrganizationId,
+      direction,
+    ),
+  };
+
   return {
     ...objectDefaults,
     headerOrganizations: moveItemById(
@@ -1529,14 +1603,8 @@ export function moveHeaderOrganizationBlock(
       headerOrganizationId,
       direction,
     ),
-    objectTemplate: {
-      ...objectDefaults.objectTemplate,
-      counterparties: moveItemById(
-        objectDefaults.objectTemplate.counterparties,
-        headerOrganizationId,
-        direction,
-      ),
-    },
+    objectTemplate: sectionTemplate,
+    sectionTemplate,
   };
 }
 
@@ -1546,6 +1614,29 @@ export function updateHeaderOrganizationBlock(
   field: 'caption' | 'details' | 'label' | 'organizationName',
   value: string,
 ): DemoAosrObjectDefaults {
+  const sectionTemplate = {
+    ...objectDefaults.objectTemplate,
+    counterparties: objectDefaults.objectTemplate.counterparties.map((counterparty) => {
+      if (counterparty.id !== headerOrganizationId) {
+        return counterparty;
+      }
+
+      if (field === 'label') {
+        return { ...counterparty, title: value };
+      }
+
+      if (field === 'caption') {
+        return {
+          ...counterparty,
+          customSubscript: value,
+          subscriptMode: 'custom' as const,
+        };
+      }
+
+      return counterparty;
+    }),
+  };
+
   return {
     ...objectDefaults,
     headerOrganizations: objectDefaults.headerOrganizations.map((headerOrganization) => {
@@ -1558,28 +1649,8 @@ export function updateHeaderOrganizationBlock(
 
       return { ...editableHeaderOrganization, [field]: value };
     }),
-    objectTemplate: {
-      ...objectDefaults.objectTemplate,
-      counterparties: objectDefaults.objectTemplate.counterparties.map((counterparty) => {
-        if (counterparty.id !== headerOrganizationId) {
-          return counterparty;
-        }
-
-        if (field === 'label') {
-          return { ...counterparty, title: value };
-        }
-
-        if (field === 'caption') {
-          return {
-            ...counterparty,
-            customSubscript: value,
-            subscriptMode: 'custom',
-          };
-        }
-
-        return counterparty;
-      }),
-    },
+    objectTemplate: sectionTemplate,
+    sectionTemplate,
   };
 }
 
@@ -1588,14 +1659,17 @@ export function updateObjectRepresentativeGroupTitle(
   groupId: string,
   value: string,
 ): DemoAosrObjectDefaults {
+  const sectionTemplate = {
+    ...objectDefaults.objectTemplate,
+    representativeGroups: objectDefaults.objectTemplate.representativeGroups.map((group) =>
+      group.id === groupId ? { ...group, title: value } : group,
+    ),
+  };
+
   return {
     ...objectDefaults,
-    objectTemplate: {
-      ...objectDefaults.objectTemplate,
-      representativeGroups: objectDefaults.objectTemplate.representativeGroups.map((group) =>
-        group.id === groupId ? { ...group, title: value } : group,
-      ),
-    },
+    objectTemplate: sectionTemplate,
+    sectionTemplate,
     representativeLibrary: objectDefaults.representativeLibrary.map((representative) =>
       representative.templateGroupId === groupId
         ? { ...representative, roleLabel: value }
@@ -1627,23 +1701,26 @@ export function updateObjectRepresentative(
     return { ...objectDefaults, representativeLibrary };
   }
 
+  const sectionTemplate = {
+    ...objectDefaults.objectTemplate,
+    representativeGroups: objectDefaults.objectTemplate.representativeGroups.map((group) =>
+      group.id === groupId
+        ? {
+            ...group,
+            members: group.members.map((member) =>
+              member.id === memberId
+                ? { ...member, customSubscript: value, subscriptMode: 'custom' as const }
+                : member,
+            ),
+          }
+        : group,
+    ),
+  };
+
   return {
     ...objectDefaults,
-    objectTemplate: {
-      ...objectDefaults.objectTemplate,
-      representativeGroups: objectDefaults.objectTemplate.representativeGroups.map((group) =>
-        group.id === groupId
-          ? {
-              ...group,
-              members: group.members.map((member) =>
-                member.id === memberId
-                  ? { ...member, customSubscript: value, subscriptMode: 'custom' }
-                  : member,
-              ),
-            }
-          : group,
-      ),
-    },
+    objectTemplate: sectionTemplate,
+    sectionTemplate,
     representativeLibrary,
   };
 }
@@ -1683,12 +1760,15 @@ export function addRepresentativeToLibrary(
           group.id === existingGroup.id ? { ...group, members: [...group.members, member] } : group,
         );
 
+  const sectionTemplate = {
+    ...objectDefaults.objectTemplate,
+    representativeGroups,
+  };
+
   return {
     ...objectDefaults,
-    objectTemplate: {
-      ...objectDefaults.objectTemplate,
-      representativeGroups,
-    },
+    objectTemplate: sectionTemplate,
+    sectionTemplate,
     representativeLibrary: [
       ...objectDefaults.representativeLibrary,
       { ...representative, templateGroupId: groupId },

@@ -4,39 +4,35 @@ import { demoAosrWorkspace, type DemoAosrDraft } from '../aosr-demo/demo-aosr-wo
 import { useDemoStore } from '../demo-store/demo-store.js';
 import { DerivedRegistryTable } from './DerivedRegistryTable.js';
 import {
-  buildFinalPackageModel,
-  buildIdPackageOverviewModel,
-  buildPeriodicPackageModel,
+  buildSectionFinalPackageModel,
+  buildSectionIdPackageOverviewModel,
+  buildIntermediateIdPackageModel,
   finalIdPackageDescription,
-  periodicIdPackageDescription,
+  intermediateIdPackageDescription,
   type FinalPackageGroup,
-  type PeriodicIdPackageModel,
+  type IntermediateIdPackageModel,
 } from './object-final-package-model.js';
-import {
-  demoObjectPeriods,
-  type DemoObjectPeriod,
-  type DemoObjectPeriods,
-} from './object-periods.js';
+import { demoIdFolders, type DemoIdFolder, type DemoIdFolders } from './object-id-folders.js';
 
 interface ObjectFinalPackagePageProps {
   readonly drafts?: readonly DemoAosrDraft[];
-  readonly periods?: DemoObjectPeriods;
+  readonly folders?: DemoIdFolders;
   readonly sectionName?: string | undefined;
 }
 
 export function ObjectFinalPackagePage({
   drafts = demoAosrWorkspace.drafts,
-  periods = demoObjectPeriods,
+  folders = demoIdFolders,
   sectionName,
 }: ObjectFinalPackagePageProps = {}): React.JSX.Element {
   const { certificates, objectDocuments } = useDemoStore();
   const finalPackage = useMemo(
-    () => buildFinalPackageModel(drafts, objectDocuments, certificates, periods),
-    [certificates, drafts, objectDocuments, periods],
+    () => buildSectionFinalPackageModel(drafts, objectDocuments, certificates, folders),
+    [certificates, drafts, objectDocuments, folders],
   );
   const packageOverview = useMemo(
-    () => buildIdPackageOverviewModel(drafts, objectDocuments, certificates, periods),
-    [certificates, drafts, objectDocuments, periods],
+    () => buildSectionIdPackageOverviewModel(drafts, objectDocuments, certificates, folders),
+    [certificates, drafts, objectDocuments, folders],
   );
 
   return (
@@ -54,7 +50,7 @@ export function ObjectFinalPackagePage({
         </div>
       </header>
 
-      <PeriodicPackageOverview packages={packageOverview.periodicPackages} />
+      <FolderPackageOverview packages={packageOverview.intermediatePackages} />
 
       <dl
         className="object-documents-summary object-documents-summary--quiet"
@@ -91,31 +87,31 @@ export function ObjectFinalPackagePage({
   );
 }
 
-interface ObjectPeriodicPackagePageProps {
+interface ObjectIntermediatePackagePageProps {
   readonly drafts?: readonly DemoAosrDraft[];
-  readonly period: DemoObjectPeriod;
+  readonly folder: DemoIdFolder;
 }
 
-export function ObjectPeriodicPackagePage({
+export function ObjectIntermediatePackagePage({
   drafts = demoAosrWorkspace.drafts,
-  period,
-}: ObjectPeriodicPackagePageProps): React.JSX.Element {
+  folder,
+}: ObjectIntermediatePackagePageProps): React.JSX.Element {
   const { certificates, objectDocuments } = useDemoStore();
-  const periodicPackage = useMemo(
-    () => buildPeriodicPackageModel(period, drafts, objectDocuments, certificates),
-    [certificates, drafts, objectDocuments, period],
+  const intermediatePackage = useMemo(
+    () => buildIntermediateIdPackageModel(folder, drafts, objectDocuments, certificates),
+    [certificates, drafts, objectDocuments, folder],
   );
 
   return (
     <section
       className="object-documents-workspace object-final-package-workspace"
-      aria-labelledby="object-periodic-package-title"
+      aria-labelledby="object-intermediate-package-title"
     >
       <header className="object-documents-hero object-final-package-hero">
         <div>
           <p className="section-kicker">Генерируемое представление</p>
-          <h2 id="object-periodic-package-title">{period.periodicIdTitle}</h2>
-          <p>{periodicIdPackageDescription}</p>
+          <h2 id="object-intermediate-package-title">{folder.intermediateIdTitle}</h2>
+          <p>{intermediateIdPackageDescription}</p>
         </div>
       </header>
 
@@ -123,17 +119,20 @@ export function ObjectPeriodicPackagePage({
         className="object-documents-summary object-documents-summary--quiet"
         aria-label="Сводка промежуточной ИД"
       >
-        <SummaryItem label="Документы папки" value={periodicPackage.summary.acts} />
-        <SummaryItem label="Сертификаты без дублей" value={periodicPackage.summary.certificates} />
+        <SummaryItem label="Документы папки" value={intermediatePackage.summary.acts} />
+        <SummaryItem
+          label="Сертификаты без дублей"
+          value={intermediatePackage.summary.certificates}
+        />
         <SummaryItem
           label="Документы / чертежи без дублей"
-          value={periodicPackage.summary.objectDocuments}
+          value={intermediatePackage.summary.objectDocuments}
         />
-        <SummaryItem label="Всего позиций" value={periodicPackage.summary.total} />
+        <SummaryItem label="Всего позиций" value={intermediatePackage.summary.total} />
       </dl>
 
       <div className="final-package-groups">
-        {periodicPackage.groups.map((group) => (
+        {intermediatePackage.groups.map((group) => (
           <FinalPackageGroupSection group={group} key={group.id} />
         ))}
       </div>
@@ -152,30 +151,30 @@ export function ObjectPeriodicPackagePage({
   );
 }
 
-interface PeriodicPackageOverviewProps {
-  readonly packages: readonly PeriodicIdPackageModel[];
+interface FolderPackageOverviewProps {
+  readonly packages: readonly IntermediateIdPackageModel[];
 }
 
-function PeriodicPackageOverview({ packages }: PeriodicPackageOverviewProps): React.JSX.Element {
+function FolderPackageOverview({ packages }: FolderPackageOverviewProps): React.JSX.Element {
   return (
-    <section className="periodic-package-overview" aria-labelledby="periodic-package-title">
-      <div className="periodic-package-overview__heading">
+    <section className="intermediate-package-overview" aria-labelledby="intermediate-package-title">
+      <div className="intermediate-package-overview__heading">
         <div>
           <p className="section-kicker">Папки ИД</p>
-          <h3 id="periodic-package-title">Промежуточная ИД по папкам</h3>
+          <h3 id="intermediate-package-title">Промежуточная ИД по папкам</h3>
         </div>
         <p>Состав промежуточной печати по каждой папке.</p>
       </div>
 
-      <div className="periodic-package-list">
+      <div className="intermediate-package-list">
         {packages.map((idPackage) => (
-          <article className="periodic-package-row" key={idPackage.id}>
+          <article className="intermediate-package-row" key={idPackage.id}>
             <div>
               <p className="section-tag">Папка</p>
-              <h4>{idPackage.periodName}</h4>
+              <h4>{idPackage.folderName}</h4>
               <p>{idPackage.title}</p>
             </div>
-            <dl aria-label={`Состав пакета ${idPackage.periodName}`}>
+            <dl aria-label={`Состав пакета ${idPackage.folderName}`}>
               <SummaryItem label="Документы" value={idPackage.summary.acts} />
               <SummaryItem
                 label="Использовано сертификатов"

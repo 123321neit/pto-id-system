@@ -579,7 +579,7 @@ button {
   gap: 4px;
 }
 
-.object-period-panel__empty {
+.object-folder-panel__empty {
   display: grid;
   gap: 5px;
   border: 1px dashed #c2d2e2;
@@ -588,12 +588,12 @@ button {
   padding: 18px;
 }
 
-.object-period-panel__empty strong {
+.object-folder-panel__empty strong {
   color: #172033;
   font-size: 0.9rem;
 }
 
-.object-period-panel__empty p {
+.object-folder-panel__empty p {
   margin: 0;
   color: #596a78;
   font-size: 0.84rem;
@@ -1085,7 +1085,7 @@ button {
   grid-template-columns: minmax(0, 1.5fr) minmax(130px, 0.7fr) minmax(120px, 0.6fr);
 }
 
-.object-overview__period-folders {
+.object-overview__folder-folders {
   display: grid;
   gap: 10px;
   margin: 0;
@@ -1093,7 +1093,7 @@ button {
   list-style: none;
 }
 
-.object-overview__period-folders button {
+.object-overview__folder-folders button {
   display: grid;
   grid-template-columns: 42px minmax(0, 1fr) repeat(3, minmax(74px, 0.34fr));
   gap: 12px;
@@ -1108,7 +1108,7 @@ button {
   box-shadow: 0 10px 22px rgb(21 37 56 / 4%);
 }
 
-.object-overview__period-folders button:hover {
+.object-overview__folder-folders button:hover {
   border-color: #b9cbdd;
   background: #ffffff;
 }
@@ -1153,20 +1153,20 @@ button {
   padding-left: 10px;
 }
 
-.object-period-workspace {
+.object-folder-workspace {
   display: grid;
   gap: 18px;
 }
 
-.object-period-hero,
-.object-period-panel {
+.object-folder-hero,
+.object-folder-panel {
   border: 1px solid #d8e3ee;
   border-radius: 8px;
   background: #ffffff;
   box-shadow: 0 18px 46px rgb(21 37 56 / 6%);
 }
 
-.object-period-hero {
+.object-folder-hero {
   display: flex;
   flex-wrap: wrap;
   gap: 18px;
@@ -1176,19 +1176,19 @@ button {
   padding: 22px;
 }
 
-.object-period-hero__title,
-.object-period-panel {
+.object-folder-hero__title,
+.object-folder-panel {
   display: grid;
   gap: 10px;
 }
 
-.object-period-hero__title {
+.object-folder-hero__title {
   grid-template-columns: 54px minmax(0, 1fr);
   align-items: center;
   min-width: min(100%, 520px);
 }
 
-.object-period-hero__icon {
+.object-folder-hero__icon {
   display: grid;
   width: 54px;
   height: 54px;
@@ -1201,56 +1201,56 @@ button {
   font-weight: 900;
 }
 
-.object-period-hero p:not(.section-kicker),
-.object-period-placeholder p:not(.section-kicker) {
+.object-folder-hero p:not(.section-kicker),
+.object-folder-placeholder p:not(.section-kicker) {
   color: #516064;
   font-size: 0.9rem;
   line-height: 1.55;
 }
 
-.object-period-grid {
+.object-folder-grid {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   gap: 14px;
   align-items: start;
 }
 
-.object-period-panel {
+.object-folder-panel {
   padding: 18px;
 }
 
-.object-period-panel--documents {
+.object-folder-panel--documents {
   min-height: 220px;
 }
 
-.object-period-panel--primary {
+.object-folder-panel--primary {
   border-color: #c5d6e6;
   box-shadow: 0 18px 46px rgb(21 37 56 / 7%);
 }
 
-.object-period-generated-views {
+.object-folder-generated-views {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(260px, 0.42fr);
   gap: 12px;
   align-items: start;
 }
 
-.object-period-panel--secondary {
+.object-folder-panel--secondary {
   border-color: #e0e8f0;
   background: #fbfdff;
   padding: 14px;
   box-shadow: none;
 }
 
-.object-period-panel--secondary .object-overview__panel-heading {
+.object-folder-panel--secondary .object-overview__panel-heading {
   gap: 2px;
 }
 
-.object-period-panel--secondary .object-overview__panel-heading h3 {
+.object-folder-panel--secondary .object-overview__panel-heading h3 {
   font-size: 0.98rem;
 }
 
-.object-period-panel__note {
+.object-folder-panel__note {
   margin: 0;
   color: #687680;
   font-size: 0.8rem;
@@ -1258,20 +1258,20 @@ button {
   line-height: 1.4;
 }
 
-.object-period-support-grid {
+.object-folder-support-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 16px;
 }
 
-.object-period-placeholder {
+.object-folder-placeholder {
   grid-template-columns: 44px minmax(0, 1fr);
   align-items: start;
   border-left: 0;
   background: #fbfdff;
 }
 
-.object-period-placeholder__icon {
+.object-folder-placeholder__icon {
   display: grid;
   width: 44px;
   height: 44px;
@@ -1598,7 +1598,7 @@ button {
 }
 
 .id-package-flow,
-.periodic-package-overview {
+.intermediate-package-overview {
   display: grid;
   gap: 16px;
   border: 1px solid #d8e3ee;
@@ -1626,14 +1626,14 @@ button {
 }
 
 .id-package-flow h3,
-.periodic-package-overview h3 {
+.intermediate-package-overview h3 {
   color: #172033;
   font-size: 1.08rem;
   line-height: 1.25;
 }
 
 .id-package-flow p,
-.periodic-package-overview__heading p {
+.intermediate-package-overview__heading p {
   color: #516064;
   font-size: 0.86rem;
   font-weight: 720;
@@ -1688,24 +1688,24 @@ button {
   line-height: 1.45;
 }
 
-.periodic-package-overview__heading {
+.intermediate-package-overview__heading {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   gap: 16px;
   align-items: start;
 }
 
-.periodic-package-overview__heading > div {
+.intermediate-package-overview__heading > div {
   display: grid;
   gap: 5px;
 }
 
-.periodic-package-list {
+.intermediate-package-list {
   display: grid;
   gap: 10px;
 }
 
-.periodic-package-row {
+.intermediate-package-row {
   display: grid;
   grid-template-columns: minmax(220px, 0.8fr) minmax(0, 1fr) minmax(180px, 0.52fr);
   gap: 14px;
@@ -1716,34 +1716,34 @@ button {
   padding: 13px;
 }
 
-.periodic-package-row > div:first-child {
+.intermediate-package-row > div:first-child {
   display: grid;
   gap: 6px;
   min-width: 0;
 }
 
-.periodic-package-row h4,
-.periodic-package-row h5 {
+.intermediate-package-row h4,
+.intermediate-package-row h5 {
   color: #172033;
   font-size: 0.96rem;
   line-height: 1.28;
 }
 
-.periodic-package-row p {
+.intermediate-package-row p {
   color: #5d6c78;
   font-size: 0.8rem;
   font-weight: 720;
   line-height: 1.42;
 }
 
-.periodic-package-row dl {
+.intermediate-package-row dl {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 8px;
   margin: 0;
 }
 
-.periodic-package-row dl div {
+.intermediate-package-row dl div {
   display: grid;
   gap: 4px;
   min-height: 64px;
@@ -1753,7 +1753,7 @@ button {
   padding: 9px 10px;
 }
 
-.periodic-package-row dt {
+.intermediate-package-row dt {
   color: #687680;
   font-size: 0.64rem;
   font-weight: 850;
@@ -1761,7 +1761,7 @@ button {
   text-transform: uppercase;
 }
 
-.periodic-package-row dd {
+.intermediate-package-row dd {
   margin: 0;
   color: #0f172a;
   font-size: 1.25rem;
@@ -1769,25 +1769,25 @@ button {
   line-height: 1;
 }
 
-.periodic-package-row__note {
+.intermediate-package-row__note {
   border-left: 3px solid #c77813;
   background: #fff9ed;
   padding: 9px 10px;
   color: #7a3f04 !important;
 }
 
-.periodic-package-list--compact {
+.intermediate-package-list--compact {
   gap: 8px;
 }
 
-.periodic-package-row--compact {
+.intermediate-package-row--compact {
   grid-template-columns: minmax(170px, 0.72fr) minmax(0, 1fr);
   gap: 12px;
   align-items: start;
   padding: 11px;
 }
 
-.periodic-package-row--compact dl {
+.intermediate-package-row--compact dl {
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
@@ -5070,7 +5070,7 @@ h3 {
   }
 
   .id-package-flow,
-  .periodic-package-row {
+  .intermediate-package-row {
     grid-template-columns: 1fr;
   }
 
@@ -5079,8 +5079,8 @@ h3 {
   .object-overview__grid,
   .object-overview__package-grid,
   .object-overview__create-panel,
-  .object-period-generated-views,
-  .periodic-package-overview__heading,
+  .object-folder-generated-views,
+  .intermediate-package-overview__heading,
   .object-template-status,
   .object-settings-layout {
     grid-template-columns: 1fr;
@@ -5090,7 +5090,7 @@ h3 {
     grid-template-columns: 1fr;
   }
 
-  .object-overview__period-folders button {
+  .object-overview__folder-folders button {
     grid-template-columns: 42px minmax(0, 1fr) repeat(3, minmax(66px, 0.28fr));
   }
 
@@ -5162,14 +5162,14 @@ h3 {
   .object-workspace-metrics,
   .object-placeholder,
   .object-overview__metrics,
-  .object-overview__period-folders button,
+  .object-overview__folder-folders button,
   .object-overview__recent-list button,
   .object-folder-row,
-  .object-period-support-grid,
+  .object-folder-support-grid,
   .object-documents-summary,
   .object-documents-panel__header,
   .final-package-download,
-  .periodic-package-row dl,
+  .intermediate-package-row dl,
   .object-document-form {
     grid-template-columns: 1fr;
   }

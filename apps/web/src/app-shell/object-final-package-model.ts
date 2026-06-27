@@ -2,20 +2,20 @@ import { getDemoActTypeById } from '../act-types/act-types.js';
 import type { DemoAosrDraft, DemoObjectDocument } from '../aosr-demo/demo-aosr-workspace.js';
 import { getCertificateMaterialNames, type DemoCertificate } from '../demo-store/demo-store.js';
 import {
-  demoObjectPeriods,
-  getDemoObjectPeriodDrafts,
-  type DemoObjectPeriod,
-  type DemoObjectPeriods,
-} from './object-periods.js';
+  demoIdFolders,
+  getDemoIdFolderDrafts,
+  type DemoIdFolder,
+  type DemoIdFolders,
+} from './object-id-folders.js';
 import {
   buildFinalRegistryModel,
-  buildPeriodRegistryModel,
+  buildFolderRegistryModel,
   type DerivedRegistryModel,
 } from './object-registry-model.js';
 
 type FinalPackageGroupId = 'registry' | 'acts' | 'certificates' | 'object-documents';
 
-export type IdPackageType = 'periodic' | 'final';
+export type IdPackageType = 'intermediate' | 'final';
 
 export interface IdPackageCompositionSummary {
   readonly acts: number;
@@ -23,13 +23,13 @@ export interface IdPackageCompositionSummary {
   readonly usedCertificates: number;
 }
 
-export interface PeriodicIdPackageModel {
+export interface IntermediateIdPackageModel {
   readonly id: string;
   readonly note: string;
-  readonly periodName: string;
+  readonly folderName: string;
   readonly summary: IdPackageCompositionSummary;
   readonly title: string;
-  readonly type: 'periodic';
+  readonly type: 'intermediate';
 }
 
 export interface FinalIdPackageOverviewModel {
@@ -42,7 +42,7 @@ export interface FinalIdPackageOverviewModel {
 
 export interface IdPackageOverviewModel {
   readonly finalPackage: FinalIdPackageOverviewModel;
-  readonly periodicPackages: readonly PeriodicIdPackageModel[];
+  readonly intermediatePackages: readonly IntermediateIdPackageModel[];
 }
 
 interface FinalPackageSummary {
@@ -86,15 +86,20 @@ const aosrActType = getDemoActTypeById('aosr');
 export const finalIdPackageDescription =
   'Документы из всех папок выбранного раздела без дублирования файлов.';
 
-export const periodicIdPackageDescription = 'Документы, сертификаты и файлы выбранной папки.';
+export const intermediateIdPackageDescription = 'Документы, сертификаты и файлы выбранной папки.';
 
-export function buildIdPackageOverviewModel(
+export function buildSectionIdPackageOverviewModel(
   drafts: readonly DemoAosrDraft[],
   objectDocuments: readonly DemoObjectDocument[],
   certificates: readonly DemoCertificate[],
-  periods: DemoObjectPeriods = demoObjectPeriods,
+  folders: DemoIdFolders = demoIdFolders,
 ): IdPackageOverviewModel {
-  const finalPackage = buildFinalPackageModel(drafts, objectDocuments, certificates, periods);
+  const finalPackage = buildSectionFinalPackageModel(
+    drafts,
+    objectDocuments,
+    certificates,
+    folders,
+  );
 
   return {
     finalPackage: {
@@ -108,30 +113,30 @@ export function buildIdPackageOverviewModel(
       title: 'Печать итоговой ИД',
       type: 'final',
     },
-    periodicPackages: periods.map((period) => {
-      const packageDrafts = getDemoObjectPeriodDrafts(period, drafts);
+    intermediatePackages: folders.map((folder) => {
+      const packageDrafts = getDemoIdFolderDrafts(folder, drafts);
 
       return {
-        id: `periodic-id-${period.id}`,
+        id: `intermediate-id-${folder.id}`,
         note: 'Реестр и промежуточная ИД пересобираются из текущих документов папки, без закрытия папки и без архива.',
-        periodName: period.name,
+        folderName: folder.name,
         summary: buildIdPackageCompositionSummary(packageDrafts, objectDocuments, certificates),
-        title: period.periodicIdTitle,
-        type: 'periodic',
+        title: folder.intermediateIdTitle,
+        type: 'intermediate',
       };
     }),
   };
 }
 
-export function buildPeriodicPackageModel(
-  period: DemoObjectPeriod,
+export function buildIntermediateIdPackageModel(
+  folder: DemoIdFolder,
   drafts: readonly DemoAosrDraft[],
   objectDocuments: readonly DemoObjectDocument[],
   certificates: readonly DemoCertificate[],
 ): FinalPackageModel {
-  const periodDrafts = getDemoObjectPeriodDrafts(period, drafts);
-  const periodRegistry = buildPeriodRegistryModel(period, drafts);
-  const packageModel = buildFinalPackageModel(periodDrafts, objectDocuments, certificates);
+  const folderDrafts = getDemoIdFolderDrafts(folder, drafts);
+  const folderRegistry = buildFolderRegistryModel(folder, drafts);
+  const packageModel = buildSectionFinalPackageModel(folderDrafts, objectDocuments, certificates);
   const [, actsGroup, certificatesGroup, objectDocumentsGroup] = packageModel.groups;
 
   if (
@@ -148,7 +153,7 @@ export function buildPeriodicPackageModel(
       {
         id: 'registry',
         items: [],
-        registry: periodRegistry,
+        registry: folderRegistry,
         title: 'Реестр папки',
       },
       { ...actsGroup, title: 'Документы папки' },
@@ -158,13 +163,13 @@ export function buildPeriodicPackageModel(
   };
 }
 
-export function buildFinalPackageModel(
+export function buildSectionFinalPackageModel(
   drafts: readonly DemoAosrDraft[],
   objectDocuments: readonly DemoObjectDocument[],
   certificates: readonly DemoCertificate[],
-  periods: DemoObjectPeriods = demoObjectPeriods,
+  folders: DemoIdFolders = demoIdFolders,
 ): FinalPackageModel {
-  const finalRegistry = buildFinalRegistryModel(drafts, periods);
+  const finalRegistry = buildFinalRegistryModel(drafts, folders);
   const actItems = drafts.map((draft) => ({
     date: draft.actDate,
     id: `final-act-${draft.id}`,

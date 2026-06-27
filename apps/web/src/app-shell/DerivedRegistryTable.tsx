@@ -39,7 +39,7 @@ export function DerivedRegistryTable({ registry }: DerivedRegistryTableProps): R
               </td>
               <td>{formatRegistryCell(row.documentNumber)}</td>
               <td>{formatRegistryCell(row.documentDate)}</td>
-              <td>{row.periodName}</td>
+              <td>{row.folderName}</td>
               <td>{formatRegistryCell(row.workDescription)}</td>
             </tr>
           ))}

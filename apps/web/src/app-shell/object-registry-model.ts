@@ -1,20 +1,20 @@
 import { getDemoActTypeById, type DemoActTypeId } from '../act-types/act-types.js';
 import type { DemoAosrDraft } from '../aosr-demo/demo-aosr-workspace.js';
 import {
-  getDemoObjectPeriodDrafts,
-  getDemoObjectPeriodForDraftId,
-  type DemoObjectPeriod,
-  type DemoObjectPeriods,
-} from './object-periods.js';
+  getDemoIdFolderDrafts,
+  getDemoIdFolderForDraftId,
+  type DemoIdFolder,
+  type DemoIdFolders,
+} from './object-id-folders.js';
 
-export type DerivedRegistryScope = 'period' | 'final';
+export type DerivedRegistryScope = 'folder' | 'final';
 
 export interface RegistrySourceDocument {
   readonly actTypeId: DemoActTypeId;
   readonly documentDate: string;
   readonly documentNumber: string;
   readonly id: string;
-  readonly periodName: string;
+  readonly folderName: string;
   readonly workDescription: string;
 }
 
@@ -25,7 +25,7 @@ export interface DerivedRegistryRow {
   readonly documentTypeCode: string;
   readonly documentTypeTitle: string;
   readonly id: string;
-  readonly periodName: string;
+  readonly folderName: string;
   readonly rowNumber: number;
   readonly workDescription: string;
 }
@@ -38,27 +38,27 @@ export interface DerivedRegistryModel {
   readonly title: string;
 }
 
-export function buildPeriodRegistryModel(
-  period: DemoObjectPeriod,
+export function buildFolderRegistryModel(
+  folder: DemoIdFolder,
   drafts: readonly DemoAosrDraft[],
 ): DerivedRegistryModel {
-  const periodDrafts = getDemoObjectPeriodDrafts(period, drafts);
+  const folderDrafts = getDemoIdFolderDrafts(folder, drafts);
 
   return {
     description:
       'Построен из текущих документов папки. Реестр не сохраняется, не блокируется и не закрывает папку.',
-    id: `period-registry-${period.id}`,
+    id: `folder-registry-${folder.id}`,
     rows: buildDerivedRegistryRows(
-      periodDrafts.map((draft) => mapAosrDraftToRegistryDocument(draft, period.name)),
+      folderDrafts.map((draft) => mapAosrDraftToRegistryDocument(draft, folder.name)),
     ),
-    scope: 'period',
-    title: period.registryTitle,
+    scope: 'folder',
+    title: folder.registryTitle,
   };
 }
 
 export function buildFinalRegistryModel(
   drafts: readonly DemoAosrDraft[],
-  periods: DemoObjectPeriods,
+  folders: DemoIdFolders,
 ): DerivedRegistryModel {
   return {
     description:
@@ -66,9 +66,9 @@ export function buildFinalRegistryModel(
     id: 'final-registry',
     rows: buildDerivedRegistryRows(
       drafts.map((draft) => {
-        const period = getDemoObjectPeriodForDraftId(draft.id, periods);
+        const folder = getDemoIdFolderForDraftId(draft.id, folders);
 
-        return mapAosrDraftToRegistryDocument(draft, period.name);
+        return mapAosrDraftToRegistryDocument(draft, folder.name);
       }),
     ),
     scope: 'final',
@@ -89,7 +89,7 @@ export function buildDerivedRegistryRows(
       documentTypeCode: actType.code,
       documentTypeTitle: actType.title,
       id: `registry-row-${document.id}`,
-      periodName: document.periodName,
+      folderName: document.folderName,
       rowNumber: index + 1,
       workDescription: document.workDescription,
     };
@@ -98,14 +98,14 @@ export function buildDerivedRegistryRows(
 
 function mapAosrDraftToRegistryDocument(
   draft: DemoAosrDraft,
-  periodName: string,
+  folderName: string,
 ): RegistrySourceDocument {
   return {
     actTypeId: 'aosr',
     documentDate: draft.actDate,
     documentNumber: draft.actNumber,
     id: draft.id,
-    periodName,
+    folderName,
     workDescription: draft.workDescription,
   };
 }

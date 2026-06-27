@@ -1,46 +1,77 @@
 import type { DemoAosrDraft } from '../aosr-demo/demo-aosr-workspace.js';
 import {
-  demoObjectPeriods,
-  getDemoObjectPeriodDrafts,
-  type DemoObjectPeriod,
-  type DemoObjectPeriodId,
-  type DemoObjectPeriods,
-} from './object-periods.js';
+  demoIdFolders,
+  getDemoIdFolderDrafts,
+  type DemoIdFolder,
+  type DemoIdFolderId,
+  type DemoIdFolders,
+} from './object-id-folders.js';
 
 export type DemoDocumentationSectionId = string;
+export type DemoSectionTemplateSettingsId = string;
 
 export interface DemoDocumentationSection {
-  readonly folderIds: readonly DemoObjectPeriodId[];
+  readonly code: string;
+  readonly description?: string;
+  readonly folderIds: readonly DemoIdFolderId[];
   readonly id: DemoDocumentationSectionId;
   readonly name: string;
+  readonly templateSettingsId: DemoSectionTemplateSettingsId;
 }
 
 export type DemoDocumentationSections = readonly DemoDocumentationSection[];
 
 export const defaultDemoDocumentationSection: DemoDocumentationSection = {
-  folderIds: demoObjectPeriods.map((period) => period.id),
+  code: 'ОВ',
+  description: 'Отопление, вентиляция и кондиционирование: демонстрационный раздел.',
+  folderIds: demoIdFolders.map((folder) => folder.id),
   id: 'section-ventilation',
   name: 'Вентиляция',
+  templateSettingsId: 'section-template-settings-ventilation',
 };
 
 export const demoDocumentationSections: DemoDocumentationSections = [
   defaultDemoDocumentationSection,
   {
+    code: 'ОТ',
+    description: 'Отопление: пустой демонстрационный раздел для проверки изоляции.',
     folderIds: [],
     id: 'section-heating',
     name: 'Отопление',
+    templateSettingsId: 'section-template-settings-heating',
   },
 ];
 
 export function createDemoDocumentationSection(
   id: DemoDocumentationSectionId,
   name: string,
+  count = 1,
 ): DemoDocumentationSection {
   return {
+    code: inferDemoDocumentationSectionCode(name, count),
     folderIds: [],
     id,
     name,
+    templateSettingsId: `section-template-settings-${id}`,
   };
+}
+
+function inferDemoDocumentationSectionCode(name: string, count: number): string {
+  const normalizedName = name.trim().toLocaleLowerCase('ru-RU');
+
+  if (normalizedName.includes('вент') || normalizedName === 'ов') {
+    return 'ОВ';
+  }
+
+  if (normalizedName.includes('отоп') || normalizedName.includes('тепл')) {
+    return 'ОТ';
+  }
+
+  if (normalizedName.includes('вод') || normalizedName === 'вк') {
+    return 'ВК';
+  }
+
+  return `ИД-${String(count)}`;
 }
 
 export function getDemoDocumentationSectionById(
@@ -57,7 +88,7 @@ export function getDemoDocumentationSectionById(
 }
 
 export function getDemoDocumentationSectionForFolderId(
-  folderId: DemoObjectPeriodId,
+  folderId: DemoIdFolderId,
   sections: DemoDocumentationSections = demoDocumentationSections,
 ): DemoDocumentationSection {
   const section = sections.find((candidate) => candidate.folderIds.includes(folderId));
@@ -69,27 +100,27 @@ export function getDemoDocumentationSectionForFolderId(
   return section;
 }
 
-export function getDemoDocumentationSectionPeriods(
+export function getDemoDocumentationSectionFolders(
   section: DemoDocumentationSection,
-  periods: DemoObjectPeriods = demoObjectPeriods,
-): readonly DemoObjectPeriod[] {
-  return periods.filter((period) => section.folderIds.includes(period.id));
+  folders: DemoIdFolders = demoIdFolders,
+): readonly DemoIdFolder[] {
+  return folders.filter((folder) => section.folderIds.includes(folder.id));
 }
 
 export function getDemoDocumentationSectionDrafts(
   section: DemoDocumentationSection,
-  periods: DemoObjectPeriods,
+  folders: DemoIdFolders,
   drafts: readonly DemoAosrDraft[],
 ): readonly DemoAosrDraft[] {
-  return getDemoDocumentationSectionPeriods(section, periods).flatMap((period) =>
-    getDemoObjectPeriodDrafts(period, drafts),
+  return getDemoDocumentationSectionFolders(section, folders).flatMap((folder) =>
+    getDemoIdFolderDrafts(folder, drafts),
   );
 }
 
 export function addDemoDocumentationSectionFolder(
   sections: DemoDocumentationSections,
   sectionId: DemoDocumentationSectionId,
-  folderId: DemoObjectPeriodId,
+  folderId: DemoIdFolderId,
 ): DemoDocumentationSections {
   return sections.map((section) =>
     section.id === sectionId
