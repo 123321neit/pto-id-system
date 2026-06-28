@@ -26,10 +26,11 @@ interface DemoObjectSettingsPanelProps {
   readonly headerOrganizationForm: HeaderOrganizationFormState;
   readonly isHeaderOrganizationFormOpen: boolean;
   readonly isRepresentativeLibraryFormOpen: boolean;
-  readonly lastTemplateCopyTargetName: string;
+  readonly lastTemplateCopyMessage: string;
   readonly libraryRepresentativeForm: RepresentativeFormState;
   readonly objectDefaults: DemoAosrObjectDefaults;
   readonly organizationSearch: string;
+  readonly presentation?: 'dialog' | 'page';
   readonly representativeSearch: string;
   readonly onAddHeaderOrganization: (event: SyntheticEvent<HTMLFormElement>) => void;
   readonly onAddLibraryRepresentative: (event: SyntheticEvent<HTMLFormElement>) => void;
@@ -43,7 +44,8 @@ interface DemoObjectSettingsPanelProps {
   ) => void;
   readonly onChangeOrganizationSearch: (value: string) => void;
   readonly onChangeRepresentativeSearch: (value: string) => void;
-  readonly onCopySectionTemplate: ((sectionId: string) => void) | undefined;
+  readonly onCopySectionTemplateFromSource?: ((sectionId: string) => void) | undefined;
+  readonly onCopySectionTemplateToTarget?: ((sectionId: string) => void) | undefined;
   readonly onMoveHeaderOrganization: (
     headerOrganizationId: string,
     direction: MoveDirection,
@@ -103,10 +105,11 @@ export function DemoObjectSettingsPanel({
   headerOrganizationForm,
   isHeaderOrganizationFormOpen,
   isRepresentativeLibraryFormOpen,
-  lastTemplateCopyTargetName,
+  lastTemplateCopyMessage,
   libraryRepresentativeForm,
   objectDefaults,
   organizationSearch,
+  presentation = 'dialog',
   representativeSearch,
   onAddHeaderOrganization,
   onAddLibraryRepresentative,
@@ -114,7 +117,8 @@ export function DemoObjectSettingsPanel({
   onChangeLibraryRepresentativeForm,
   onChangeOrganizationSearch,
   onChangeRepresentativeSearch,
-  onCopySectionTemplate,
+  onCopySectionTemplateFromSource,
+  onCopySectionTemplateToTarget,
   onMoveHeaderOrganization,
   onSelectGlobalOrganization,
   onSelectGlobalRepresentative,
@@ -144,15 +148,16 @@ export function DemoObjectSettingsPanel({
       : 'отдельно в каждой папке';
   const isSectionScopedTemplate = sectionName !== undefined;
   const selectedSectionName = sectionName ?? 'выбранный раздел';
-  const dialogTitle = isSectionScopedTemplate ? 'Настройки шаблона раздела' : 'Шаблон объекта';
+  const dialogTitle = isSectionScopedTemplate ? 'Шаблонные значения раздела' : 'Шаблон объекта';
+  const isPagePresentation = presentation === 'page';
 
   return (
-    <div className="object-settings-overlay">
+    <div className={isPagePresentation ? 'object-settings-page' : 'object-settings-overlay'}>
       <section
         aria-labelledby="object-settings-title"
-        aria-modal="true"
+        aria-modal={isPagePresentation ? undefined : true}
         className="object-settings-dialog"
-        role="dialog"
+        role={isPagePresentation ? 'region' : 'dialog'}
       >
         <div className="object-settings-dialog__header">
           <span>
@@ -166,7 +171,7 @@ export function DemoObjectSettingsPanel({
             </p>
           </span>
           <button className="compact-toggle" onClick={onCloseObjectSettings} type="button">
-            Закрыть
+            {isPagePresentation ? 'Вернуться к разделу' : 'Закрыть'}
           </button>
         </div>
 
@@ -213,10 +218,10 @@ export function DemoObjectSettingsPanel({
           <section className="form-section" aria-labelledby="section-template-copy-title">
             <div className="object-numbering-heading">
               <span>
-                <h3 id="section-template-copy-title">Копирование шаблона</h3>
+                <h3 id="section-template-copy-title">Копирование шаблонных значений</h3>
                 <p>
-                  Копирует повторяющиеся тексты, настройки нумерации и связи с библиотеками в другой
-                  раздел. Папки, документы и выпущенные комплекты не копируются.
+                  Можно взять значения из другого раздела или скопировать текущие значения в другой
+                  раздел. Папки, акты, выпущенные комплекты и файлы не копируются.
                 </p>
                 <p>
                   Префикс нумерации целевого раздела не копируется: он остаётся своим, чтобы раздел
@@ -224,31 +229,100 @@ export function DemoObjectSettingsPanel({
                 </p>
               </span>
             </div>
-            {copyTargetSections.length === 0 ? (
-              <p className="object-folders__empty-copy">
-                Создайте ещё один раздел, чтобы сюда можно было скопировать настройки.
-              </p>
-            ) : (
-              <div className="object-folder-create-panel__actions">
-                {copyTargetSections.map((targetSection) => (
-                  <button
-                    className="compact-toggle"
-                    key={targetSection.id}
-                    onClick={() => {
-                      onCopySectionTemplate?.(targetSection.id);
-                    }}
-                    type="button"
-                  >
-                    Скопировать в «{targetSection.name}»
-                  </button>
-                ))}
+            <div className="template-copy-grid">
+              <section className="template-copy-card" aria-labelledby="copy-from-section-title">
+                <h4 id="copy-from-section-title">Из раздела этого объекта</h4>
+                {copyTargetSections.length === 0 ? (
+                  <p className="object-folders__empty-copy">
+                    Создайте ещё один раздел, чтобы можно было скопировать значения.
+                  </p>
+                ) : (
+                  <div className="object-folder-create-panel__actions">
+                    {copyTargetSections.map((sourceSection) => (
+                      <button
+                        className="compact-toggle"
+                        key={sourceSection.id}
+                        onClick={() => {
+                          onCopySectionTemplateFromSource?.(sourceSection.id);
+                        }}
+                        type="button"
+                      >
+                        Скопировать из «{sourceSection.name}»
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </section>
+
+              <section className="template-copy-card" aria-labelledby="copy-to-section-title">
+                <h4 id="copy-to-section-title">Копировать на раздел</h4>
+                {copyTargetSections.length === 0 ? (
+                  <p className="object-folders__empty-copy">
+                    Других разделов в этом объекте пока нет.
+                  </p>
+                ) : (
+                  <div className="object-folder-create-panel__actions">
+                    {copyTargetSections.map((targetSection) => (
+                      <button
+                        className="compact-toggle"
+                        key={targetSection.id}
+                        onClick={() => {
+                          onCopySectionTemplateToTarget?.(targetSection.id);
+                        }}
+                        type="button"
+                      >
+                        Скопировать в «{targetSection.name}»
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </section>
+
+              <section className="template-copy-card" aria-labelledby="copy-from-object-title">
+                <h4 id="copy-from-object-title">Из другого объекта</h4>
+                <label>
+                  Объект
+                  <select disabled>
+                    <option>Поликлиника, корпус А — Вентиляция</option>
+                  </select>
+                </label>
+                <button className="compact-toggle" disabled type="button">
+                  Просмотреть и скопировать — скоро
+                </button>
+              </section>
+
+              <section className="template-copy-card" aria-labelledby="copy-from-saved-title">
+                <h4 id="copy-from-saved-title">Из сохранённого шаблона</h4>
+                <button className="compact-toggle" disabled type="button">
+                  Выбрать сохранённый шаблон — скоро
+                </button>
+              </section>
+            </div>
+
+            <div className="template-copy-summary" aria-label="Что будет скопировано">
+              <div>
+                <h4>Что будет скопировано</h4>
+                <ul>
+                  <li>объект и участники;</li>
+                  <li>представители;</li>
+                  <li>проектная документация;</li>
+                  <li>нумерация, кроме префикса текущего раздела;</li>
+                  <li>дополнительные шаблонные данные.</li>
+                </ul>
               </div>
-            )}
-            {lastTemplateCopyTargetName !== '' ? (
-              <p className="status-chip status-chip--active">
-                Настройки скопированы в раздел «{lastTemplateCopyTargetName}». Префикс нумерации
-                этого раздела сохранён.
-              </p>
+              <div>
+                <h4>Что не копируется</h4>
+                <ul>
+                  <li>папки;</li>
+                  <li>акты;</li>
+                  <li>выпущенные комплекты;</li>
+                  <li>файлы.</li>
+                </ul>
+              </div>
+            </div>
+
+            {lastTemplateCopyMessage !== '' ? (
+              <p className="status-chip status-chip--active">{lastTemplateCopyMessage}</p>
             ) : null}
           </section>
         ) : null}

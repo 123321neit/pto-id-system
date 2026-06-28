@@ -44,7 +44,7 @@ export function ObjectFinalPackagePage({
         <div>
           <p className="section-kicker">Генерируемое представление</p>
           <h2 id="object-final-package-title">
-            Печать итоговой ИД{sectionName === undefined ? '' : `: ${sectionName}`}
+            Итоговая ИД раздела{sectionName === undefined ? '' : `: ${sectionName}`}
           </h2>
           <p>{finalIdPackageDescription}</p>
         </div>
@@ -74,13 +74,13 @@ export function ObjectFinalPackagePage({
       <section className="object-documents-panel final-package-download" aria-label="Скачивание">
         <div>
           <p className="section-kicker">Итоговый комплект</p>
-          <h3>Печать итоговой ИД{sectionName === undefined ? '' : ' раздела'}</h3>
+          <h3>Итоговая ИД раздела</h3>
           <p>
             Документы папок выбранного раздела собираются без дублирования сертификатов и файлов.
           </p>
         </div>
         <button className="action-button" disabled type="button">
-          Печать итоговой ИД{sectionName === undefined ? '' : ' раздела'}
+          Скачать итоговую ИД раздела
         </button>
       </section>
     </section>

@@ -110,7 +110,7 @@ export function buildSectionIdPackageOverviewModel(
         objectDocuments: finalPackage.summary.objectDocuments,
         usedCertificates: finalPackage.summary.certificates,
       },
-      title: 'Печать итоговой ИД',
+      title: 'Итоговая ИД раздела',
       type: 'final',
     },
     intermediatePackages: folders.map((folder) => {

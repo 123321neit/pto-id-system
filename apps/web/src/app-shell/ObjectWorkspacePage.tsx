@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 
 import { getDemoActTypeById, registeredDemoActTypes } from '../act-types/act-types.js';
 import { DemoAosrWorkspacePage } from '../aosr-demo/DemoAosrWorkspacePage.js';
@@ -67,7 +67,8 @@ function buildInitialSectionTemplateSettings(
 
 type ObjectWorkspaceSection =
   | 'overview'
-  | 'folders'
+  | 'sections'
+  | 'section'
   | 'folder'
   | 'intermediate-package'
   | 'aosr'
@@ -112,11 +113,9 @@ export function ObjectWorkspacePage({
   const [isCreateDocumentPanelOpen, setCreateDocumentPanelOpen] = useState(false);
   const [isCreateFolderPanelOpen, setCreateFolderPanelOpen] = useState(false);
   const [isCreateSectionPanelOpen, setCreateSectionPanelOpen] = useState(false);
-  const [documentNumberInput, setDocumentNumberInput] = useState('');
   const [folderNameInput, setFolderNameInput] = useState('');
   const [sectionNameInput, setSectionNameInput] = useState('');
-  const [settingsOpenRequest, setSettingsOpenRequest] = useState(0);
-  const [lastTemplateCopyTargetName, setLastTemplateCopyTargetName] = useState('');
+  const [lastTemplateCopyMessage, setLastTemplateCopyMessage] = useState('');
   const isAosrVisible = activeSection === 'aosr' || activeSection === 'settings';
   const selectedSection =
     selectedSectionId === null
@@ -172,18 +171,12 @@ export function ObjectWorkspacePage({
   ]);
   const proposedAosrNumber = proposedAosrNumberDetails?.renderedNumber ?? '';
 
-  useEffect(() => {
-    if (isCreateDocumentPanelOpen) {
-      setDocumentNumberInput(proposedAosrNumber);
-    }
-  }, [isCreateDocumentPanelOpen, proposedAosrNumber]);
-
   const openCreateDocumentPanel = (): void => {
     if (selectedFolder === undefined) {
       return;
     }
 
-    setDocumentNumberInput(proposedAosrNumber);
+    setActiveSection('folder');
     setCreateDocumentPanelOpen(true);
   };
 
@@ -192,7 +185,7 @@ export function ObjectWorkspacePage({
     setCreateFolderPanelOpen(false);
     setSectionNameInput('');
     setCreateSectionPanelOpen(true);
-    setActiveSection('folders');
+    setActiveSection('sections');
   };
 
   const createSection = (): void => {
@@ -218,7 +211,7 @@ export function ObjectWorkspacePage({
     setCreatedSectionCount((currentCount) => currentCount + 1);
     setCreateSectionPanelOpen(false);
     setSectionNameInput('');
-    setActiveSection('folders');
+    setActiveSection('section');
   };
 
   const openCreateFolderPanel = (): void => {
@@ -231,7 +224,7 @@ export function ObjectWorkspacePage({
     setCreateSectionPanelOpen(false);
     setFolderNameInput('');
     setCreateFolderPanelOpen(true);
-    setActiveSection('folders');
+    setActiveSection('section');
   };
 
   const createFolder = (): void => {
@@ -270,8 +263,8 @@ export function ObjectWorkspacePage({
     setSelectedSectionId(sectionId);
     setSelectedFolderId(firstFolder?.id ?? null);
     setSelectedDraftId(firstFolder?.draftIds[0] ?? '');
-    setLastTemplateCopyTargetName('');
-    setActiveSection('folders');
+    setLastTemplateCopyMessage('');
+    setActiveSection('section');
   };
 
   const openFolder = (folderId: DemoIdFolderId): void => {
@@ -284,7 +277,7 @@ export function ObjectWorkspacePage({
     setSelectedFolderId(folderId);
     const folder = getDemoIdFolderById(folderId, folders);
     setSelectedDraftId(folder.draftIds[0] ?? '');
-    setLastTemplateCopyTargetName('');
+    setLastTemplateCopyMessage('');
     setActiveSection('folder');
   };
 
@@ -318,17 +311,14 @@ export function ObjectWorkspacePage({
       return;
     }
 
-    const usesAutomaticNumber = documentNumberInput === proposedAosrNumber;
     const draft = createEmptyDemoAosrDraft({
-      actNumber: documentNumberInput,
+      actNumber: proposedAosrNumber,
       folderId: selectedFolderId,
       id: `aosr-draft-created-${String(createdAosrDraftCount)}`,
-      numberingAssignment: usesAutomaticNumber
-        ? {
-            automaticSequences: proposedAosrNumberDetails.sequences,
-            source: 'automatic',
-          }
-        : { source: 'manual' },
+      numberingAssignment: {
+        automaticSequences: proposedAosrNumberDetails.sequences,
+        source: 'automatic',
+      },
       sectionTemplateSettings: selectedSectionTemplateSettings,
       sectionId: selectedSection.id,
       sectionTemplateSettingsId: selectedSection.templateSettingsId,
@@ -354,7 +344,6 @@ export function ObjectWorkspacePage({
     setCreateFolderPanelOpen(false);
     setCreateSectionPanelOpen(false);
     setActiveSection('settings');
-    setSettingsOpenRequest((currentRequest) => currentRequest + 1);
   };
 
   const updateSelectedSectionTemplateSettings = (
@@ -370,7 +359,9 @@ export function ObjectWorkspacePage({
     }));
   };
 
-  const copySelectedSectionTemplate = (targetSectionId: DemoDocumentationSectionId): void => {
+  const copySelectedSectionTemplateToTarget = (
+    targetSectionId: DemoDocumentationSectionId,
+  ): void => {
     if (selectedSection === undefined) {
       return;
     }
@@ -389,7 +380,38 @@ export function ObjectWorkspacePage({
         ),
       };
     });
-    setLastTemplateCopyTargetName(targetSection.name);
+    setLastTemplateCopyMessage(
+      `Шаблонные значения скопированы в раздел «${targetSection.name}». Префикс нумерации этого раздела сохранён.`,
+    );
+  };
+
+  const copySelectedSectionTemplateFromSource = (
+    sourceSectionId: DemoDocumentationSectionId,
+  ): void => {
+    if (selectedSection === undefined) {
+      return;
+    }
+
+    const sourceSection = getDemoDocumentationSectionById(sourceSectionId, sections);
+    const sourceTemplateSettings =
+      sectionTemplateSettingsById[sourceSection.templateSettingsId] ??
+      createSectionTemplateSettings(sourceSection);
+
+    setSectionTemplateSettingsById((currentDefaults) => {
+      const currentTargetSettings = currentDefaults[selectedSection.templateSettingsId];
+
+      return {
+        ...currentDefaults,
+        [selectedSection.templateSettingsId]: copySectionTemplateSettingsToTarget(
+          sourceTemplateSettings,
+          selectedSection,
+          currentTargetSettings,
+        ),
+      };
+    });
+    setLastTemplateCopyMessage(
+      `Шаблонные значения из раздела «${sourceSection.name}» применены к разделу «${selectedSection.name}». Префикс текущего раздела сохранён.`,
+    );
   };
 
   return (
@@ -407,7 +429,7 @@ export function ObjectWorkspacePage({
         <div className="object-workspace-nav__identity">
           <p className="section-kicker">Объект</p>
           <strong>{object.title}</strong>
-          <span className={`status-chip status-chip--${object.status}`}>{object.statusLabel}</span>
+          <small>{object.address}</small>
         </div>
 
         <nav className="object-workspace-nav__sections" aria-label="Разделы объекта">
@@ -417,7 +439,7 @@ export function ObjectWorkspacePage({
             </p>
             <button
               aria-current={activeSection === 'overview' ? 'page' : undefined}
-              aria-label="Обзор"
+              aria-label="Обзор объекта"
               onClick={() => {
                 setCreateDocumentPanelOpen(false);
                 setCreateFolderPanelOpen(false);
@@ -430,25 +452,18 @@ export function ObjectWorkspacePage({
                 ⌂
               </span>
               <span className="object-workspace-nav__label">
-                <strong>Обзор</strong>
-                <small>Командный центр</small>
+                <strong>Обзор объекта</strong>
+                <small>Общая картина</small>
               </span>
             </button>
             <button
               aria-label="Разделы ИД"
-              aria-current={
-                activeSection === 'folders' ||
-                activeSection === 'folder' ||
-                activeSection === 'intermediate-package' ||
-                activeSection === 'aosr'
-                  ? 'page'
-                  : undefined
-              }
+              aria-current={activeSection === 'sections' ? 'page' : undefined}
               onClick={() => {
                 setCreateDocumentPanelOpen(false);
                 setCreateFolderPanelOpen(false);
                 setCreateSectionPanelOpen(false);
-                setActiveSection('folders');
+                setActiveSection('sections');
               }}
               type="button"
             >
@@ -457,68 +472,124 @@ export function ObjectWorkspacePage({
               </span>
               <span className="object-workspace-nav__label">
                 <strong>Разделы ИД</strong>
-                <small>Раздел → папки → документы</small>
+                <small>Список разделов</small>
               </span>
             </button>
-            {sections.map((section) => (
-              <button
-                aria-label={section.name}
-                aria-current={
-                  (activeSection === 'folders' ||
+          </div>
+
+          <div className="object-workspace-nav__group" aria-labelledby="object-nav-current-title">
+            <p className="object-workspace-nav__group-label" id="object-nav-current-title">
+              Текущий раздел
+            </p>
+            {selectedSection === undefined ? (
+              <div className="object-workspace-nav__empty-current">
+                <strong>Не выбран</strong>
+                <small>Откройте раздел в «Разделы ИД».</small>
+              </div>
+            ) : (
+              <>
+                <button
+                  aria-label={selectedSection.name}
+                  aria-current={activeSection === 'section' ? 'page' : undefined}
+                  onClick={() => {
+                    openSection(selectedSection.id);
+                  }}
+                  type="button"
+                >
+                  <span className="object-workspace-nav__icon" aria-hidden="true">
+                    ◧
+                  </span>
+                  <span className="object-workspace-nav__label">
+                    <strong>{selectedSection.name}</strong>
+                    <small>Открытый раздел</small>
+                  </span>
+                </button>
+                <button
+                  aria-label="Обзор раздела"
+                  aria-current={activeSection === 'section' ? 'page' : undefined}
+                  onClick={() => {
+                    setCreateDocumentPanelOpen(false);
+                    setCreateFolderPanelOpen(false);
+                    setCreateSectionPanelOpen(false);
+                    setActiveSection('section');
+                  }}
+                  type="button"
+                >
+                  <span className="object-workspace-nav__icon" aria-hidden="true">
+                    ⓘ
+                  </span>
+                  <span className="object-workspace-nav__label">
+                    <strong>Обзор раздела</strong>
+                    <small>Папки внутри раздела</small>
+                  </span>
+                </button>
+                <button
+                  aria-label="Папки и документы"
+                  aria-current={
                     activeSection === 'folder' ||
                     activeSection === 'intermediate-package' ||
-                    activeSection === 'aosr' ||
-                    activeSection === 'settings') &&
-                  selectedSectionId === section.id
-                    ? 'page'
-                    : undefined
-                }
-                className="object-workspace-nav__subitem"
-                key={section.id}
-                onClick={() => {
-                  openSection(section.id);
-                }}
-                type="button"
-              >
-                <span className="object-workspace-nav__icon" aria-hidden="true">
-                  ◧
-                </span>
-                <span className="object-workspace-nav__label">
-                  <strong>{section.name}</strong>
-                  <small>
-                    {section.folderIds.length} {getFolderCountLabel(section.folderIds.length)}
-                  </small>
-                </span>
-              </button>
-            ))}
-            {selectedSectionFolders.map((folder) => (
-              <button
-                aria-label={folder.name}
-                aria-current={
-                  (activeSection === 'folder' ||
-                    activeSection === 'intermediate-package' ||
-                    activeSection === 'aosr') &&
-                  selectedFolderId === folder.id
-                    ? 'page'
-                    : undefined
-                }
-                className="object-workspace-nav__subitem object-workspace-nav__subitem--nested"
-                key={folder.id}
-                onClick={() => {
-                  openFolder(folder.id);
-                }}
-                type="button"
-              >
-                <span className="object-workspace-nav__icon" aria-hidden="true">
-                  ▣
-                </span>
-                <span className="object-workspace-nav__label">
-                  <strong>{folder.name}</strong>
-                  <small>Папка документов</small>
-                </span>
-              </button>
-            ))}
+                    activeSection === 'aosr'
+                      ? 'page'
+                      : undefined
+                  }
+                  onClick={() => {
+                    setCreateDocumentPanelOpen(false);
+                    setCreateFolderPanelOpen(false);
+                    setCreateSectionPanelOpen(false);
+                    if (selectedFolderId === null) {
+                      setActiveSection('section');
+                      return;
+                    }
+
+                    setActiveSection('folder');
+                  }}
+                  type="button"
+                >
+                  <span className="object-workspace-nav__icon" aria-hidden="true">
+                    ▣
+                  </span>
+                  <span className="object-workspace-nav__label">
+                    <strong>Папки и документы</strong>
+                    <small>{selectedFolder?.name ?? 'Папки пока нет'}</small>
+                  </span>
+                </button>
+                <button
+                  aria-current={activeSection === 'final-package' ? 'page' : undefined}
+                  aria-label="Итоговая ИД раздела"
+                  onClick={() => {
+                    setCreateDocumentPanelOpen(false);
+                    setCreateFolderPanelOpen(false);
+                    setCreateSectionPanelOpen(false);
+                    setActiveSection('final-package');
+                  }}
+                  type="button"
+                >
+                  <span className="object-workspace-nav__icon" aria-hidden="true">
+                    ◫
+                  </span>
+                  <span className="object-workspace-nav__label">
+                    <strong>Итоговая ИД раздела</strong>
+                    <small>По выбранному разделу</small>
+                  </span>
+                </button>
+                <button
+                  aria-current={activeSection === 'settings' ? 'page' : undefined}
+                  aria-label="Шаблонные значения"
+                  onClick={openObjectSettings}
+                  type="button"
+                >
+                  <span className="object-workspace-nav__icon" aria-hidden="true">
+                    ⌁
+                  </span>
+                  <span className="object-workspace-nav__label">
+                    <strong>Шаблонные значения</strong>
+                    <small>Для linked-актов</small>
+                  </span>
+                </button>
+              </>
+            )}
           </div>
+
           <div
             className="object-workspace-nav__group object-workspace-nav__group--service"
             aria-labelledby="object-nav-service-title"
@@ -545,39 +616,6 @@ export function ObjectWorkspacePage({
                 <small>Схемы и журналы</small>
               </span>
             </button>
-            <button
-              aria-current={activeSection === 'final-package' ? 'page' : undefined}
-              aria-label="Печать итоговой ИД раздела"
-              onClick={() => {
-                setCreateDocumentPanelOpen(false);
-                setCreateFolderPanelOpen(false);
-                setCreateSectionPanelOpen(false);
-                setActiveSection('final-package');
-              }}
-              type="button"
-            >
-              <span className="object-workspace-nav__icon" aria-hidden="true">
-                ◫
-              </span>
-              <span className="object-workspace-nav__label">
-                <strong>Печать итоговой ИД</strong>
-                <small>По выбранному разделу</small>
-              </span>
-            </button>
-            <button
-              aria-current={activeSection === 'settings' ? 'page' : undefined}
-              aria-label="Открыть настройки шаблона раздела"
-              onClick={openObjectSettings}
-              type="button"
-            >
-              <span className="object-workspace-nav__icon" aria-hidden="true">
-                ○
-              </span>
-              <span className="object-workspace-nav__label">
-                <strong>Настройки шаблона раздела</strong>
-                <small>{selectedSection?.name ?? 'Сначала создайте раздел'}</small>
-              </span>
-            </button>
           </div>
         </nav>
       </aside>
@@ -599,42 +637,55 @@ export function ObjectWorkspacePage({
           />
         ) : null}
 
-        {activeSection === 'folders' ? (
-          <ObjectFoldersPage
+        {activeSection === 'sections' ? (
+          <ObjectSectionsPage
             drafts={drafts}
-            folderName={folderNameInput}
-            isCreateFolderPanelOpen={isCreateFolderPanelOpen}
             isCreateSectionPanelOpen={isCreateSectionPanelOpen}
             sectionName={sectionNameInput}
+            folders={folders}
             sections={sections}
-            selectedSection={selectedSection}
-            selectedSectionFolders={selectedSectionFolders}
-            onChangeFolderName={setFolderNameInput}
             onChangeSectionName={setSectionNameInput}
-            onCloseCreateFolderPanel={() => {
-              setCreateFolderPanelOpen(false);
-            }}
             onCloseCreateSectionPanel={() => {
               setCreateSectionPanelOpen(false);
             }}
-            onCreateFolder={createFolder}
             onCreateSection={createSection}
-            onOpenCreateFolderPanel={openCreateFolderPanel}
             onOpenCreateSectionPanel={openCreateSectionPanel}
-            onOpenFolder={openFolder}
             onOpenSection={openSection}
+            onOpenSectionTemplateSettings={(sectionId) => {
+              setSelectedSectionId(sectionId);
+              setActiveSection('settings');
+            }}
+          />
+        ) : null}
+
+        {activeSection === 'section' ? (
+          <ObjectSectionPage
+            drafts={drafts}
+            folderName={folderNameInput}
+            isCreateFolderPanelOpen={isCreateFolderPanelOpen}
+            selectedSection={selectedSection}
+            selectedSectionFolders={selectedSectionFolders}
+            onChangeFolderName={setFolderNameInput}
+            onCloseCreateFolderPanel={() => {
+              setCreateFolderPanelOpen(false);
+            }}
+            onCreateFolder={createFolder}
+            onOpenCreateFolderPanel={openCreateFolderPanel}
+            onOpenFinalPackage={() => {
+              setActiveSection('final-package');
+            }}
+            onOpenFolder={openFolder}
+            onOpenSectionTemplateSettings={openObjectSettings}
           />
         ) : null}
 
         {activeSection === 'folder' && selectedFolder !== undefined ? (
           <ObjectFolderPage
             drafts={selectedFolderDrafts}
-            documentNumber={documentNumberInput}
             isCreateDocumentPanelOpen={isCreateDocumentPanelOpen}
             folder={selectedFolder}
             proposedAosrNumber={proposedAosrNumber}
             sectionName={selectedSection?.name}
-            onChangeDocumentNumber={setDocumentNumberInput}
             onCloseCreateDocumentPanel={() => {
               setCreateDocumentPanelOpen(false);
             }}
@@ -659,20 +710,22 @@ export function ObjectWorkspacePage({
             drafts={drafts}
             initialSelectedDraftId={selectedDraftId}
             isEmbeddedInObjectWorkspace
+            isSectionTemplateSettingsPage={activeSection === 'settings'}
             sectionTemplateSettings={selectedSectionTemplateSettings}
             onDraftsChange={setDrafts}
             onSectionTemplateSettingsChange={updateSelectedSectionTemplateSettings}
             copyTargetSections={sections
               .filter((section) => section.id !== selectedSection?.id)
               .map(({ id, name }) => ({ id, name }))}
-            lastTemplateCopyTargetName={lastTemplateCopyTargetName}
+            lastTemplateCopyMessage={lastTemplateCopyMessage}
             folderName={selectedFolder?.name}
             sectionName={selectedSection?.name}
-            settingsOpenRequest={settingsOpenRequest}
             visibleDraftIds={selectedFolder?.draftIds ?? []}
-            onCopySectionTemplate={copySelectedSectionTemplate}
+            onCopySectionTemplateFromSource={copySelectedSectionTemplateFromSource}
+            onCopySectionTemplateToTarget={copySelectedSectionTemplateToTarget}
+            onCreateActInFolder={openCreateDocumentPanel}
             onObjectSettingsClosed={() => {
-              setActiveSection(selectedFolder === undefined ? 'overview' : 'aosr');
+              setActiveSection('section');
             }}
           />
         ) : null}
@@ -719,8 +772,10 @@ function getSectionBreadcrumb(section: ObjectWorkspaceSection): string {
   switch (section) {
     case 'overview':
       return 'Обзор';
-    case 'folders':
+    case 'sections':
       return 'Разделы ИД';
+    case 'section':
+      return 'Разделы ИД / Обзор раздела';
     case 'folder':
       return 'Разделы ИД / Папка ИД';
     case 'intermediate-package':
@@ -728,11 +783,11 @@ function getSectionBreadcrumb(section: ObjectWorkspaceSection): string {
     case 'aosr':
       return `Разделы ИД / ${aosrActType.code}`;
     case 'settings':
-      return 'Настройки шаблона раздела';
+      return 'Шаблонные значения раздела';
     case 'documents':
       return 'Документы объекта';
     case 'final-package':
-      return 'Печать итоговой ИД раздела';
+      return 'Итоговая ИД раздела';
   }
 }
 
@@ -897,69 +952,51 @@ function ObjectOverview({
   );
 }
 
-interface ObjectFoldersPageProps {
+interface ObjectSectionsPageProps {
   readonly drafts: readonly DemoAosrDraft[];
-  readonly folderName: string;
-  readonly isCreateFolderPanelOpen: boolean;
   readonly isCreateSectionPanelOpen: boolean;
   readonly sectionName: string;
+  readonly folders: readonly DemoIdFolder[];
   readonly sections: readonly DemoDocumentationSection[];
-  readonly selectedSection: DemoDocumentationSection | undefined;
-  readonly selectedSectionFolders: readonly DemoIdFolder[];
-  readonly onChangeFolderName: (value: string) => void;
   readonly onChangeSectionName: (value: string) => void;
-  readonly onCloseCreateFolderPanel: () => void;
   readonly onCloseCreateSectionPanel: () => void;
-  readonly onCreateFolder: () => void;
   readonly onCreateSection: () => void;
-  readonly onOpenCreateFolderPanel: () => void;
   readonly onOpenCreateSectionPanel: () => void;
-  readonly onOpenFolder: (folderId: DemoIdFolderId) => void;
   readonly onOpenSection: (sectionId: DemoDocumentationSectionId) => void;
+  readonly onOpenSectionTemplateSettings: (sectionId: DemoDocumentationSectionId) => void;
 }
 
-function ObjectFoldersPage({
+function ObjectSectionsPage({
   drafts,
-  folderName,
-  isCreateFolderPanelOpen,
   isCreateSectionPanelOpen,
   sectionName,
+  folders,
   sections,
-  selectedSection,
-  selectedSectionFolders,
-  onChangeFolderName,
   onChangeSectionName,
-  onCloseCreateFolderPanel,
   onCloseCreateSectionPanel,
-  onCreateFolder,
   onCreateSection,
-  onOpenCreateFolderPanel,
   onOpenCreateSectionPanel,
-  onOpenFolder,
   onOpenSection,
-}: ObjectFoldersPageProps): React.JSX.Element {
+  onOpenSectionTemplateSettings,
+}: ObjectSectionsPageProps): React.JSX.Element {
   return (
     <section className="object-folders" aria-labelledby="object-folders-title">
       <div className="object-folders__topline">
         <div className="object-folders__heading">
-          <p className="section-kicker">Разделы исполнительной документации</p>
-          <h2 id="object-folders-title">Разделы ИД</h2>
+          <p className="section-kicker">Разделы ИД — список разделов</p>
+          <h2 id="object-folders-title">Разделы исполнительной документации</h2>
           <p>
-            Сначала выберите или создайте раздел, затем работайте с папками внутри него. Итоговая ИД
-            собирается по разделу.
+            Раздел — это направление или часть работ на объекте. Например: Вентиляция, Отопление,
+            ВК, Дымоудаление, Система В1.
           </p>
         </div>
         <div className="object-folder-create-panel__actions">
-          <button className="compact-toggle" onClick={onOpenCreateSectionPanel} type="button">
-            Создать раздел
-          </button>
           <button
             className="action-button action-button--primary"
-            disabled={selectedSection === undefined}
-            onClick={onOpenCreateFolderPanel}
+            onClick={onOpenCreateSectionPanel}
             type="button"
           >
-            Создать папку
+            Создать раздел
           </button>
         </div>
       </div>
@@ -1004,6 +1041,174 @@ function ObjectFoldersPage({
         </form>
       ) : null}
 
+      {sections.length === 0 ? (
+        <section className="object-folders__empty" aria-label="Разделов ИД пока нет">
+          <span aria-hidden="true">◧</span>
+          <div>
+            <h3>Разделов ИД пока нет</h3>
+            <p>Создайте первый раздел, затем добавьте в него папку и акты.</p>
+          </div>
+        </section>
+      ) : (
+        <>
+          <div className="object-section-card-list" aria-label="Все разделы ИД">
+            {sections.map((section) => {
+              const sectionFolders = getDemoDocumentationSectionFolders(section, folders);
+              const sectionDrafts = getDemoDocumentationSectionDrafts(section, folders, drafts);
+              const lastDraft = getLatestDraft(sectionDrafts);
+
+              return (
+                <article className="object-section-card" key={section.id}>
+                  <span className="object-section-card__icon" aria-hidden="true">
+                    ◧
+                  </span>
+                  <div className="object-section-card__body">
+                    <h3>{section.name}</h3>
+                    <p className="object-section-card__meta">
+                      {sectionFolders.length === 0
+                        ? 'Папок пока нет'
+                        : `${String(sectionFolders.length)} ${getFolderCountLabel(
+                            sectionFolders.length,
+                          )} · ${String(sectionDrafts.length)} ${getActCountLabel(
+                            sectionDrafts.length,
+                          )}`}
+                    </p>
+                    {lastDraft === undefined ? (
+                      <p className="object-section-card__hint">Акты пока не созданы</p>
+                    ) : (
+                      <p className="object-section-card__hint">
+                        Последний акт: {getDocumentDisplayNumber(lastDraft.actNumber)} от{' '}
+                        {formatShortDate(lastDraft.actDate)}
+                      </p>
+                    )}
+                  </div>
+                  <div className="object-section-card__actions">
+                    <button
+                      aria-label={`Открыть раздел ${section.name}`}
+                      className="compact-toggle compact-toggle--accent"
+                      onClick={() => {
+                        onOpenSection(section.id);
+                      }}
+                      type="button"
+                    >
+                      Открыть раздел
+                    </button>
+                    <button
+                      aria-label={`Шаблонные значения раздела ${section.name}`}
+                      className="compact-toggle"
+                      onClick={() => {
+                        onOpenSectionTemplateSettings(section.id);
+                      }}
+                      type="button"
+                    >
+                      Шаблонные значения
+                    </button>
+                    <button
+                      aria-label={`Дополнительные действия раздела ${section.name}`}
+                      className="compact-toggle compact-toggle--icon"
+                      type="button"
+                    >
+                      …
+                    </button>
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+
+          <section className="object-overview__panel" aria-labelledby="sections-start-title">
+            <div className="object-overview__panel-heading">
+              <p className="section-kicker">С чего начать?</p>
+              <h3 id="sections-start-title">Простой порядок работы</h3>
+            </div>
+            <ol className="object-workspace-help-list">
+              <li>Создайте раздел.</li>
+              <li>Создайте папку внутри раздела.</li>
+              <li>Создайте акт уже внутри папки.</li>
+            </ol>
+          </section>
+        </>
+      )}
+    </section>
+  );
+}
+
+interface ObjectSectionPageProps {
+  readonly drafts: readonly DemoAosrDraft[];
+  readonly folderName: string;
+  readonly isCreateFolderPanelOpen: boolean;
+  readonly selectedSection: DemoDocumentationSection | undefined;
+  readonly selectedSectionFolders: readonly DemoIdFolder[];
+  readonly onChangeFolderName: (value: string) => void;
+  readonly onCloseCreateFolderPanel: () => void;
+  readonly onCreateFolder: () => void;
+  readonly onOpenCreateFolderPanel: () => void;
+  readonly onOpenFinalPackage: () => void;
+  readonly onOpenFolder: (folderId: DemoIdFolderId) => void;
+  readonly onOpenSectionTemplateSettings: () => void;
+}
+
+function ObjectSectionPage({
+  drafts,
+  folderName,
+  isCreateFolderPanelOpen,
+  selectedSection,
+  selectedSectionFolders,
+  onChangeFolderName,
+  onCloseCreateFolderPanel,
+  onCreateFolder,
+  onOpenCreateFolderPanel,
+  onOpenFinalPackage,
+  onOpenFolder,
+  onOpenSectionTemplateSettings,
+}: ObjectSectionPageProps): React.JSX.Element {
+  if (selectedSection === undefined) {
+    return (
+      <section className="object-folders__empty" aria-label="Раздел не выбран">
+        <span aria-hidden="true">◧</span>
+        <div>
+          <h2>Раздел не выбран</h2>
+          <p>Откройте раздел на экране «Разделы ИД».</p>
+        </div>
+      </section>
+    );
+  }
+
+  return (
+    <section className="object-folders" aria-labelledby="section-overview-title">
+      <div className="object-folders__topline">
+        <div className="object-folders__heading">
+          <p className="object-workspace-breadcrumbs">Разделы ИД / {selectedSection.name}</p>
+          <h2 id="section-overview-title">{selectedSection.name}</h2>
+          <p>
+            Раздел исполнительной документации. Внутри раздела создаются папки, а акты создаются уже
+            внутри папок.
+          </p>
+        </div>
+        <div className="object-folder-create-panel__actions">
+          <button
+            className="action-button action-button--primary"
+            onClick={onOpenCreateFolderPanel}
+            type="button"
+          >
+            Создать папку
+          </button>
+          <button className="compact-toggle" onClick={onOpenFinalPackage} type="button">
+            Итоговая ИД раздела
+          </button>
+          <button className="compact-toggle" onClick={onOpenSectionTemplateSettings} type="button">
+            Шаблонные значения
+          </button>
+          <button
+            aria-label={`Дополнительные действия раздела ${selectedSection.name}`}
+            className="compact-toggle compact-toggle--icon"
+            type="button"
+          >
+            …
+          </button>
+        </div>
+      </div>
+
       {isCreateFolderPanelOpen ? (
         <form
           className="object-folder-create-panel"
@@ -1017,8 +1222,8 @@ function ObjectFoldersPage({
             <p className="section-kicker">Новая папка</p>
             <h3>Как назвать папку?</h3>
             <p>
-              Папка будет создана внутри раздела <strong>{selectedSection?.name}</strong>. Например:
-              «Монтаж вентиляции», «Сентябрь 2026» или «Этап 1».
+              Папка будет создана внутри раздела <strong>{selectedSection.name}</strong>. Например:
+              «Сентябрь 2026», «Монтаж воздуховодов» или «Этап 1».
             </p>
           </div>
           <label>
@@ -1041,91 +1246,68 @@ function ObjectFoldersPage({
               disabled={folderName.trim() === ''}
               type="submit"
             >
-              Создать и открыть
+              Создать папку
             </button>
           </div>
         </form>
       ) : null}
 
-      {sections.length === 0 ? (
-        <section className="object-folders__empty" aria-label="Разделов ИД пока нет">
-          <span aria-hidden="true">◧</span>
-          <div>
-            <h3>Разделов ИД пока нет</h3>
-            <p>Создайте первый раздел, затем добавьте в него папки и документы.</p>
+      <section className="object-overview__panel" aria-labelledby="section-folders-title">
+        <div className="object-overview__panel-heading">
+          <p className="section-kicker">Папки раздела</p>
+          <h3 id="section-folders-title">Папки раздела</h3>
+        </div>
+        {selectedSectionFolders.length === 0 ? (
+          <div className="object-folder-panel__empty">
+            <strong>В этом разделе пока нет папок.</strong>
+            <p>
+              Папка — это этап, месяц или комплект документов внутри раздела. Например: «Сентябрь
+              2026», «Монтаж воздуховодов», «Этап 1».
+            </p>
+            <button
+              className="action-button action-button--primary"
+              onClick={onOpenCreateFolderPanel}
+              type="button"
+            >
+              Создать папку
+            </button>
           </div>
-        </section>
-      ) : (
-        <>
-          <div className="object-folder-directory" aria-label="Все разделы ИД">
-            {sections.map((section) => (
-              <button
-                className="object-folder-row"
-                key={section.id}
-                onClick={() => {
-                  onOpenSection(section.id);
-                }}
-                type="button"
-              >
-                <span className="object-folder-row__icon" aria-hidden="true">
-                  ◧
-                </span>
-                <span className="object-folder-row__main">
-                  <strong>{section.name}</strong>
-                  <small>
-                    {section.folderIds.length} {getFolderCountLabel(section.folderIds.length)}
-                  </small>
-                </span>
-                <span className="object-folder-row__action">
-                  {selectedSection?.id === section.id ? 'Выбран' : 'Открыть'}
-                </span>
-              </button>
-            ))}
+        ) : (
+          <div className="object-folder-directory" aria-label="Папки раздела">
+            {selectedSectionFolders.map((folder) => {
+              const folderDrafts = getDemoIdFolderDrafts(folder, drafts);
+              const lastDraft = getLatestDraft(folderDrafts);
+
+              return (
+                <button
+                  className="object-folder-row"
+                  key={folder.id}
+                  onClick={() => {
+                    onOpenFolder(folder.id);
+                  }}
+                  type="button"
+                >
+                  <span className="object-folder-row__icon" aria-hidden="true">
+                    ▣
+                  </span>
+                  <span className="object-folder-row__main">
+                    <strong>{folder.name}</strong>
+                    <small>
+                      {folderDrafts.length} {getActCountLabel(folderDrafts.length)}
+                    </small>
+                  </span>
+                  <span className="object-folder-row__count">
+                    {lastDraft === undefined
+                      ? 'Обновлений нет'
+                      : `Обновлено: ${formatShortDate(lastDraft.actDate)}`}
+                  </span>
+                  <span className="object-folder-row__action">Открыть</span>
+                </button>
+              );
+            })}
           </div>
-
-          <section className="object-overview__panel" aria-labelledby="selected-section-folders">
-            <div className="object-overview__panel-heading">
-              <p className="section-kicker">Папки выбранного раздела</p>
-              <h3 id="selected-section-folders">{selectedSection?.name ?? 'Раздел не выбран'}</h3>
-            </div>
-            {selectedSectionFolders.length === 0 ? (
-              <p className="object-folders__empty-copy">
-                В этом разделе пока нет папок. Создайте папку, чтобы добавить документы и
-                промежуточную ИД.
-              </p>
-            ) : (
-              <div className="object-folder-directory" aria-label="Папки выбранного раздела">
-                {selectedSectionFolders.map((folder) => {
-                  const folderDrafts = getDemoIdFolderDrafts(folder, drafts);
-
-                  return (
-                    <button
-                      className="object-folder-row"
-                      key={folder.id}
-                      onClick={() => {
-                        onOpenFolder(folder.id);
-                      }}
-                      type="button"
-                    >
-                      <span className="object-folder-row__icon" aria-hidden="true">
-                        ▣
-                      </span>
-                      <span className="object-folder-row__main">
-                        <strong>{folder.name}</strong>
-                        <small>Промежуточная исполнительная документация</small>
-                      </span>
-                      <span className="object-folder-row__count">
-                        {folderDrafts.length} {getDocumentCountLabel(folderDrafts.length)}
-                      </span>
-                      <span className="object-folder-row__action">Открыть</span>
-                    </button>
-                  );
-                })}
-              </div>
-            )}
-          </section>
-        </>
-      )}
+        )}
+      </section>
     </section>
   );
 }
@@ -1149,41 +1331,51 @@ function getFolderCountLabel(count: number): string {
   return 'папок';
 }
 
-function getDocumentCountLabel(count: number): string {
+function getActCountLabel(count: number): string {
   const remainder100 = count % 100;
   const remainder10 = count % 10;
 
   if (remainder100 >= 11 && remainder100 <= 14) {
-    return 'документов';
+    return 'актов';
   }
 
   if (remainder10 === 1) {
-    return 'документ';
+    return 'акт';
   }
 
   if (remainder10 >= 2 && remainder10 <= 4) {
-    return 'документа';
+    return 'акта';
   }
 
-  return 'документов';
+  return 'актов';
+}
+
+function getLatestDraft(drafts: readonly DemoAosrDraft[]): DemoAosrDraft | undefined {
+  return [...drafts].sort((left, right) => right.actDate.localeCompare(left.actDate))[0];
+}
+
+function formatShortDate(isoDate: string): string {
+  const [year, month, day] = isoDate.split('-');
+
+  if (year === undefined || month === undefined || day === undefined) {
+    return isoDate;
+  }
+
+  return `${day}.${month}.${year}`;
 }
 
 interface CreateDocumentPanelProps {
-  readonly documentNumber: string;
   readonly proposedAosrNumber: string;
   readonly selectedSectionName: string | undefined;
   readonly selectedFolder: DemoIdFolder;
-  readonly onChangeDocumentNumber: (value: string) => void;
   readonly onClose: () => void;
   readonly onCreateAosr: () => void;
 }
 
 function CreateDocumentPanel({
-  documentNumber,
   proposedAosrNumber,
   selectedSectionName,
   selectedFolder,
-  onChangeDocumentNumber,
   onClose,
   onCreateAosr,
 }: CreateDocumentPanelProps): React.JSX.Element {
@@ -1194,33 +1386,24 @@ function CreateDocumentPanel({
       aria-labelledby="create-document-title"
     >
       <div className="object-overview__create-panel-header">
-        <p className="section-kicker">Новый документ</p>
-        <h3 id="create-document-title">Создать документ</h3>
+        <p className="section-kicker">Новый акт</p>
+        <h3 id="create-document-title">Создание акта</h3>
         <p>
-          Выберите тип документа. Документ будет создан в разделе{' '}
-          <strong>{selectedSectionName ?? 'без названия'}</strong>, в рабочей папке{' '}
-          <strong>{selectedFolder.name}</strong>.
+          Акт будет сохранён в папке <strong>«{selectedFolder.name}»</strong>
+          {selectedSectionName === undefined ? '.' : ` раздела «${selectedSectionName}».`}
         </p>
       </div>
       <div className="object-overview__numbering-note">
-        <h4>Предлагаемый номер: {proposedAosrNumber}</h4>
-        <label className="object-overview__number-field">
-          <span>Номер документа</span>
-          <input
-            aria-label="Номер документа"
-            onChange={(event) => {
-              onChangeDocumentNumber(event.currentTarget.value);
-            }}
-            type="text"
-            value={documentNumber}
-          />
-        </label>
+        <h4>Номер будет присвоен после создания</h4>
         <p>
-          Ручной номер действует только для этого акта и не изменяет автоматическую
-          последовательность.
+          Если в шаблонных значениях раздела включена автоматическая нумерация, mock присвоит номер{' '}
+          <strong>
+            {proposedAosrNumber === '' ? 'после заполнения шаблонных значений' : proposedAosrNumber}
+          </strong>
+          . Если нумерация ручная — номер можно указать в редактировании акта позже.
         </p>
       </div>
-      <ul className="document-type-card-list" aria-label="Доступные типы документов">
+      <ul className="document-type-card-list" aria-label="Тип акта">
         {registeredDemoActTypes.map((actType) => (
           <li className="document-type-card document-type-card--available" key={actType.id}>
             <span className="document-type-card__icon" aria-hidden="true">
@@ -1232,13 +1415,7 @@ function CreateDocumentPanel({
                 {actType.code} — {actType.title}
               </small>
             </span>
-            <button
-              className="compact-toggle compact-toggle--accent"
-              onClick={onCreateAosr}
-              type="button"
-            >
-              Создать АОСР
-            </button>
+            <span className="status-chip status-chip--active">Выбран</span>
           </li>
         ))}
         <li className="document-type-card document-type-card--disabled" aria-disabled="true">
@@ -1255,10 +1432,10 @@ function CreateDocumentPanel({
         </li>
         <li className="document-type-card document-type-card--disabled" aria-disabled="true">
           <span className="document-type-card__icon" aria-hidden="true">
-            ТГ
+            ИС
           </span>
           <span className="document-type-card__body">
-            <strong>Техническая готовность</strong>
+            <strong>Исполнительная схема</strong>
             <small>Будущий тип документа — скоро</small>
           </span>
           <button className="compact-toggle" disabled type="button">
@@ -1266,21 +1443,28 @@ function CreateDocumentPanel({
           </button>
         </li>
       </ul>
-      <button className="compact-toggle" onClick={onClose} type="button">
-        Закрыть
-      </button>
+      <div className="object-folder-create-panel__actions">
+        <button
+          className="action-button action-button--primary"
+          onClick={onCreateAosr}
+          type="button"
+        >
+          Создать акт
+        </button>
+        <button className="compact-toggle" onClick={onClose} type="button">
+          Отмена
+        </button>
+      </div>
     </section>
   );
 }
 
 interface ObjectFolderPageProps {
   readonly drafts: readonly DemoAosrDraft[];
-  readonly documentNumber: string;
   readonly isCreateDocumentPanelOpen: boolean;
   readonly folder: DemoIdFolder;
   readonly proposedAosrNumber: string;
   readonly sectionName: string | undefined;
-  readonly onChangeDocumentNumber: (value: string) => void;
   readonly onCloseCreateDocumentPanel: () => void;
   readonly onCreateAosr: () => void;
   readonly onOpenAosr: (draftId: string) => void;
@@ -1290,12 +1474,10 @@ interface ObjectFolderPageProps {
 
 function ObjectFolderPage({
   drafts,
-  documentNumber,
   isCreateDocumentPanelOpen,
   folder,
   proposedAosrNumber,
   sectionName,
-  onChangeDocumentNumber,
   onCloseCreateDocumentPanel,
   onCreateAosr,
   onOpenAosr,
@@ -1315,27 +1497,40 @@ function ObjectFolderPage({
             <p className="section-kicker">Рабочая папка ИД</p>
             <h2 id="object-folder-title">{folder.name}</h2>
             <p>
-              Раздел: <strong>{sectionName ?? 'без названия'}</strong>. Документы папки определяют
-              её реестр и состав промежуточной печати.
+              Разделы ИД / <strong>{sectionName ?? 'без названия'}</strong> / {folder.name}
             </p>
+            <p>Папка содержит документы одного этапа, месяца или комплекта работ.</p>
           </div>
         </div>
-        <button
-          className="action-button action-button--primary"
-          onClick={onOpenCreateDocumentPanel}
-          type="button"
-        >
-          Создать документ
-        </button>
+        <div className="object-folder-create-panel__actions">
+          <button
+            className="action-button action-button--primary"
+            onClick={onOpenCreateDocumentPanel}
+            type="button"
+          >
+            Создать акт
+          </button>
+          <a className="compact-toggle" href="#folder-registry-title">
+            Реестр папки
+          </a>
+          <button className="compact-toggle" onClick={onOpenIntermediatePackage} type="button">
+            Промежуточная ИД
+          </button>
+          <button
+            aria-label={`Дополнительные действия папки ${folder.name}`}
+            className="compact-toggle compact-toggle--icon"
+            type="button"
+          >
+            …
+          </button>
+        </div>
       </div>
 
       {isCreateDocumentPanelOpen ? (
         <CreateDocumentPanel
-          documentNumber={documentNumber}
           proposedAosrNumber={proposedAosrNumber}
           selectedSectionName={sectionName}
           selectedFolder={folder}
-          onChangeDocumentNumber={onChangeDocumentNumber}
           onClose={onCloseCreateDocumentPanel}
           onCreateAosr={onCreateAosr}
         />
@@ -1348,12 +1543,12 @@ function ObjectFolderPage({
         >
           <div className="object-overview__panel-heading">
             <p className="section-kicker">Состав папки</p>
-            <h3 id="folder-documents-title">Документы</h3>
+            <h3 id="folder-documents-title">Акты в папке</h3>
           </div>
           {drafts.length === 0 ? (
             <div className="object-folder-panel__empty">
-              <strong>В этой папке пока нет документов</strong>
-              <p>Создайте первый документ — он сразу появится в составе папки и её реестре.</p>
+              <strong>В этой папке пока нет актов</strong>
+              <p>Создайте первый акт — он сразу появится в составе папки и её реестре.</p>
             </div>
           ) : (
             <ul className="object-overview__recent-list object-overview__recent-list--wide">
@@ -1367,11 +1562,13 @@ function ObjectFolderPage({
                   >
                     <span>
                       <strong>{getDocumentDisplayNumber(draft.actNumber)}</strong>
-                      <small>{aosrActType.title}</small>
+                      <small>
+                        {aosrActType.code} — {aosrActType.title}
+                      </small>
                     </span>
                     <span>
-                      <small>Дата документа</small>
-                      <strong>{draft.actDate}</strong>
+                      <small>Дата</small>
+                      <strong>{formatShortDate(draft.actDate)}</strong>
                     </span>
                     <span>
                       <small>Открыть</small>
@@ -1382,6 +1579,9 @@ function ObjectFolderPage({
               ))}
             </ul>
           )}
+          <p className="object-folder-panel__note">
+            Для ручной нумерации видно все акты этой папки.
+          </p>
         </section>
 
         <div className="object-folder-generated-views" aria-label="Сформированные представления">
@@ -1406,7 +1606,7 @@ function ObjectFolderPage({
             <div>
               <p className="section-kicker">Сформированный вид</p>
               <h3 id="folder-package-title">Промежуточная ИД</h3>
-              <p>Печатный комплект из документов этой папки.</p>
+              <p>Печатный комплект из актов и документов этой папки.</p>
               <button className="compact-toggle" onClick={onOpenIntermediatePackage} type="button">
                 Открыть состав печати
               </button>

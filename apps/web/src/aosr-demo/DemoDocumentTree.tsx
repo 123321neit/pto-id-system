@@ -7,6 +7,7 @@ interface DemoDocumentTreeProps {
   readonly draggedDraftId: string | null;
   readonly folderName?: string | undefined;
   readonly selectedDraftId: string;
+  readonly onCreateAct?: (() => void) | undefined;
   readonly onDragEnd: () => void;
   readonly onDragStart: (draftId: string) => void;
   readonly onReorderDrafts: (targetDraftId: string) => void;
@@ -19,6 +20,7 @@ export function DemoDocumentTree({
   draggedDraftId,
   folderName,
   selectedDraftId,
+  onCreateAct,
   onDragEnd,
   onDragStart,
   onReorderDrafts,
@@ -28,7 +30,8 @@ export function DemoDocumentTree({
     <section className="document-tree-panel" aria-labelledby="document-tree-title">
       <div className="panel-heading">
         <p className="section-kicker">Папка ИД</p>
-        <h2 id="document-tree-title">Документы папки</h2>
+        <h2 id="document-tree-title">Акты в папке «{folderName ?? 'Рабочая папка'}»</h2>
+        <p className="object-folder-panel__note">Для ручной нумерации видно все акты этой папки.</p>
       </div>
 
       <div className="document-tree" aria-label="Навигация документов папки">
@@ -84,11 +87,20 @@ export function DemoDocumentTree({
                 {draft.actNumber.trim() === '' ? 'Без номера' : draft.actNumber}
               </span>
               <span className="act-tree-item__meta">
-                <small>{draft.templateMode === 'manual' ? 'Ручная версия' : 'По шаблону'}</small>
+                <small>{draft.actDate}</small>
               </span>
             </button>
           ))}
         </div>
+        {onCreateAct === undefined ? null : (
+          <button
+            className="compact-toggle compact-toggle--accent"
+            onClick={onCreateAct}
+            type="button"
+          >
+            + Создать акт
+          </button>
+        )}
       </div>
     </section>
   );

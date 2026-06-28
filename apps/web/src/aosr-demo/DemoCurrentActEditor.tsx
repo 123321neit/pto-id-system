@@ -153,9 +153,8 @@ export function DemoCurrentActEditor({
   const documentLabel =
     selectedDraft.actNumber.trim() === '' ? 'Без номера' : selectedDraft.actNumber;
   const templateScopeGenitive = sectionName === undefined ? 'шаблона объекта' : 'шаблона раздела';
-  const templateScopeDative = sectionName === undefined ? 'шаблону объекта' : 'шаблону раздела';
   const templateScopeNominative = sectionName === undefined ? 'Шаблон объекта' : 'Шаблон раздела';
-  const linkedTemplateSourceLabel = `По ${templateScopeDative}`;
+  const linkedTemplateSourceLabel = 'Шаблонные значения';
   const differsFromTemplateSourceLabel = `Отличается от ${templateScopeGenitive}`;
   const templateSourceLabel = isManualTemplate ? 'Ручная версия' : linkedTemplateSourceLabel;
   const objectNameSourceLabel = getTemplateFieldSourceLabel(
@@ -224,30 +223,31 @@ export function DemoCurrentActEditor({
     >
       <div className="scope-heading current-act-editor__heading">
         <p className="scope-label">АОСР</p>
-        <h3 id="current-act-title">Документ {documentLabel}</h3>
+        <h3 id="current-act-title">Редактирование акта {documentLabel}</h3>
         <dl className="current-act-metadata" aria-label="Метаданные документа">
           <div>
-            <dt>Документ</dt>
+            <dt>Акт</dt>
             <dd>{documentLabel}</dd>
           </div>
           <div>
-            <dt>Шаблонные данные</dt>
-            <dd>{isManualTemplate ? 'Ручная версия' : 'По шаблону'}</dd>
+            <dt>Шаблонные значения</dt>
+            <dd>{isManualTemplate ? 'Ручной режим' : 'Linked-режим'}</dd>
           </div>
         </dl>
         <div className="template-mode-actions" aria-label="Режим шаблонных данных">
           {isManualTemplate ? (
             <>
-              <span className="source-chip">Ручная версия</span>
+              <span className="source-chip">Ручной режим</span>
               <p className="helper-note">
-                Ручная версия: изменения {templateScopeGenitive} и библиотек не применяются.
+                Акт в ручном режиме. Изменения шаблонных значений раздела не применяются к этому
+                акту.
               </p>
               <button
                 className="compact-toggle compact-toggle--accent"
                 onClick={onReturnDraftToLinkedTemplate}
                 type="button"
               >
-                Вернуть к {templateScopeDative}
+                Вернуть к linked-режиму
               </button>
             </>
           ) : (
@@ -258,7 +258,7 @@ export function DemoCurrentActEditor({
                 onClick={onSwitchDraftToManualTemplate}
                 type="button"
               >
-                Редактировать шаблонные данные вручную
+                Сделать акт ручным
               </button>
             </>
           )}
@@ -269,7 +269,7 @@ export function DemoCurrentActEditor({
         className="form-section act-editor-card act-editor-card--featured"
         aria-labelledby="act-header-data-title"
       >
-        <h3 id="act-header-data-title">Шапка печатного документа</h3>
+        <h3 id="act-header-data-title">1. Номер и дата</h3>
         <div className="act-form-grid">
           <label>
             Номер акта
@@ -304,7 +304,7 @@ export function DemoCurrentActEditor({
         id="act-object-data-title"
         sourceLabel={objectDataSourceLabel}
         summary={templateFields.objectName}
-        title="Данные объекта"
+        title="2. Объект и участники"
       >
         <div className="act-form-grid">
           <label className="act-form-grid__wide">
@@ -398,7 +398,7 @@ export function DemoCurrentActEditor({
       </TemplateOwnedSection>
 
       <section className="form-section act-editor-card" aria-labelledby="hidden-works-data-title">
-        <h3 id="hidden-works-data-title">1. Скрытые работы</h3>
+        <h3 id="hidden-works-data-title">4. Работы</h3>
         <div className="act-form-grid">
           <label className="act-form-grid__wide">
             Описание скрытых работ
@@ -440,7 +440,7 @@ export function DemoCurrentActEditor({
         id="project-docs-data-title"
         sourceLabel={projectDocumentationSourceLabel}
         summary={templateFields.projectDocumentation}
-        title="2. Проектная документация"
+        title="6. Документы-основания"
       >
         <label className="act-form-grid__wide">
           Проектная документация в документе
@@ -618,7 +618,7 @@ function TemplateOwnedSection({
   summary,
   title,
 }: TemplateOwnedSectionProps): React.JSX.Element {
-  const isManual = !sourceLabel.startsWith('По шаблону');
+  const isManual = sourceLabel !== 'Шаблонные значения';
 
   return (
     <section className="form-section act-editor-card template-owned-section" aria-labelledby={id}>
@@ -628,9 +628,16 @@ function TemplateOwnedSection({
             <strong id={id}>{title}</strong>
             <small>{summary}</small>
           </span>
-          {isManual ? <span className="source-chip">{sourceLabel}</span> : null}
+          <span className="source-chip">{isManual ? sourceLabel : 'Шаблонные значения'}</span>
         </summary>
-        <div className="template-data-disclosure__body">{children}</div>
+        <div className="template-data-disclosure__body">
+          <p className="template-data-disclosure__intro">
+            {isManual
+              ? 'Акт в ручном режиме. Эти значения меняются только в этом акте.'
+              : 'Эти данные взяты из шаблонных значений раздела и автоматически обновляются в linked-актах. Чтобы изменить их только здесь, сначала сделайте акт ручным.'}
+          </p>
+          {children}
+        </div>
       </details>
     </section>
   );

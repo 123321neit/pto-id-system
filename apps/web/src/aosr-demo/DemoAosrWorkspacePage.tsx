@@ -86,12 +86,15 @@ interface DemoAosrWorkspacePageProps {
   readonly initialDocumentPreviewOpen?: boolean;
   readonly initialSelectedDraftId?: string;
   readonly isEmbeddedInObjectWorkspace?: boolean;
-  readonly lastTemplateCopyTargetName?: string;
+  readonly isSectionTemplateSettingsPage?: boolean;
+  readonly lastTemplateCopyMessage?: string;
   readonly sectionTemplateSettings?: DemoSectionTemplateSettings;
   /** Legacy compatibility alias for older standalone AOSR demo helpers. */
   readonly objectDefaults?: DemoAosrObjectDefaults;
   readonly onDraftsChange?: (drafts: readonly DemoAosrDraft[]) => void;
-  readonly onCopySectionTemplate?: (sectionId: string) => void;
+  readonly onCopySectionTemplateFromSource?: (sectionId: string) => void;
+  readonly onCopySectionTemplateToTarget?: (sectionId: string) => void;
+  readonly onCreateActInFolder?: () => void;
   readonly onSectionTemplateSettingsChange?: (
     sectionTemplateSettings: DemoSectionTemplateSettings,
   ) => void;
@@ -111,11 +114,14 @@ export function DemoAosrWorkspacePage({
   initialDocumentPreviewOpen = false,
   initialSelectedDraftId,
   isEmbeddedInObjectWorkspace = false,
-  lastTemplateCopyTargetName = '',
+  isSectionTemplateSettingsPage = false,
+  lastTemplateCopyMessage = '',
   sectionTemplateSettings: controlledSectionTemplateSettings,
   objectDefaults: controlledObjectDefaults,
   onDraftsChange,
-  onCopySectionTemplate,
+  onCopySectionTemplateFromSource,
+  onCopySectionTemplateToTarget,
+  onCreateActInFolder,
   onSectionTemplateSettingsChange,
   onObjectDefaultsChange,
   onBackToObjects,
@@ -168,6 +174,9 @@ export function DemoAosrWorkspacePage({
   const [isCertificateLibraryOpen, setCertificateLibraryOpen] = useState(false);
   const [isObjectDocumentLibraryOpen, setObjectDocumentLibraryOpen] = useState(false);
   const [isDocumentPreviewOpen, setDocumentPreviewOpen] = useState(initialDocumentPreviewOpen);
+  const [activeActMode, setActiveActMode] = useState<'edit' | 'preview'>(
+    initialDocumentPreviewOpen ? 'preview' : 'edit',
+  );
   const [headerOrganizationForm, setHeaderOrganizationForm] = useState<HeaderOrganizationFormState>(
     emptyHeaderOrganizationForm,
   );
@@ -199,6 +208,8 @@ export function DemoAosrWorkspacePage({
   }, [initialSelectedDraftId]);
 
   const selectedDraft = getSelectedDraft(visibleDrafts, selectedDraftId, objectDefaults);
+  const selectedDocumentLabel =
+    selectedDraft.actNumber.trim() === '' ? 'Без номера' : selectedDraft.actNumber;
   const selectedFormVariant = {
     ...getDemoAosrFormVariantById(selectedDraft.formVariantId),
     printTitle: selectedDraft.formVariantPrintTitle,
@@ -289,7 +300,9 @@ export function DemoAosrWorkspacePage({
 
   const switchSelectedDraftToManualTemplate = (): void => {
     const shouldSwitch = window.confirm(
-      'Акт станет ручной версией. Изменения шаблона объекта и библиотек больше не будут применяться к этому акту.',
+      sectionName === undefined
+        ? 'Этот акт станет ручной версией. Шаблонные значения больше не будут обновлять этот акт. Изменения будут действовать только здесь.'
+        : `Этот акт станет ручной версией. Шаблонные значения раздела «${sectionName}» больше не будут обновлять этот акт. Изменения будут действовать только здесь.`,
     );
 
     if (!shouldSwitch) {
@@ -506,6 +519,66 @@ export function DemoAosrWorkspacePage({
     onObjectSettingsClosed?.();
   };
 
+  if (isSectionTemplateSettingsPage) {
+    return (
+      <DemoObjectSettingsPanel
+        copyTargetSections={copyTargetSections}
+        globalOrganizations={globalOrganizations}
+        globalRepresentatives={globalRepresentatives}
+        headerOrganizationForm={headerOrganizationForm}
+        isHeaderOrganizationFormOpen={isHeaderOrganizationFormOpen}
+        isRepresentativeLibraryFormOpen={isRepresentativeLibraryFormOpen}
+        lastTemplateCopyMessage={lastTemplateCopyMessage}
+        libraryRepresentativeForm={libraryRepresentativeForm}
+        objectDefaults={objectDefaults}
+        organizationSearch={organizationSearch}
+        presentation="page"
+        representativeSearch={representativeSearch}
+        onAddHeaderOrganization={addConfiguredHeaderOrganization}
+        onAddLibraryRepresentative={addLibraryRepresentative}
+        onChangeHeaderOrganizationForm={updateHeaderOrganizationForm}
+        onChangeLibraryRepresentativeForm={updateLibraryRepresentativeForm}
+        onChangeOrganizationSearch={setOrganizationSearch}
+        onChangeRepresentativeSearch={setRepresentativeSearch}
+        onCloseObjectSettings={closeObjectSettings}
+        onCopySectionTemplateFromSource={onCopySectionTemplateFromSource}
+        onCopySectionTemplateToTarget={onCopySectionTemplateToTarget}
+        onMoveHeaderOrganization={(headerOrganizationId, direction) => {
+          commitObjectDefaults((currentDefaults) =>
+            moveHeaderOrganizationBlock(currentDefaults, headerOrganizationId, direction),
+          );
+        }}
+        onSelectGlobalOrganization={selectGlobalOrganization}
+        onSelectGlobalRepresentative={selectGlobalRepresentative}
+        sectionName={sectionName}
+        onToggleHeaderOrganizationForm={() => {
+          setHeaderOrganizationFormOpen((isOpen) => !isOpen);
+        }}
+        onToggleRepresentativeLibraryForm={() => {
+          setRepresentativeLibraryFormOpen((isOpen) => !isOpen);
+        }}
+        onUpdateHeaderOrganization={updateObjectHeaderOrganization}
+        onUpdateNumberingAffix={(field: DemoDocumentNumberingAffixField, value: string) => {
+          commitObjectDefaults((currentDefaults) =>
+            updateDemoObjectNumberingAffix(currentDefaults, field, value),
+          );
+        }}
+        onUpdateNumberingScope={(numberingScope: DemoDocumentNumberingScope) => {
+          commitObjectDefaults((currentDefaults) =>
+            updateDemoObjectNumberingScope(currentDefaults, numberingScope),
+          );
+        }}
+        onUpdateObjectDefaults={updateObjectDefaults}
+        onUpdateRepresentative={updateObjectRepresentativeValue}
+        onUpdateRepresentativeGroupTitle={(groupId, value) => {
+          commitObjectDefaults((currentDefaults) =>
+            updateObjectRepresentativeGroupTitle(currentDefaults, groupId, value),
+          );
+        }}
+      />
+    );
+  }
+
   return (
     <section
       aria-label="Рабочая область АОСР"
@@ -513,21 +586,26 @@ export function DemoAosrWorkspacePage({
     >
       <section className="workspace-header" aria-labelledby="workspace-title">
         <div className="workspace-header__main">
-          <p className="demo-pill">{demoAosrWorkspace.demoNotice}</p>
+          <p className="demo-pill">
+            {isEmbeddedInObjectWorkspace ? 'Акт в папке ИД' : demoAosrWorkspace.demoNotice}
+          </p>
           <h1 id="workspace-title">
-            {isEmbeddedInObjectWorkspace ? 'АОСР' : objectDefaults.projectName}
+            {isEmbeddedInObjectWorkspace ? selectedDocumentLabel : objectDefaults.projectName}
           </h1>
           <p className="workspace-header__meta">
-            <span>{demoAosrWorkspace.name}</span>
-            <span>{demoAosrWorkspace.projectCode}</span>
-            <span>{demoAosrWorkspace.ownerName}</span>
+            <span>
+              {aosrActType.code} — {aosrActType.title}
+            </span>
+            {sectionName === undefined ? null : <span>{sectionName}</span>}
+            {folderName === undefined ? null : <span>{folderName}</span>}
+            {isEmbeddedInObjectWorkspace ? null : <span>{demoAosrWorkspace.ownerName}</span>}
           </p>
           <p
             className="workspace-header__current-act"
-            aria-label={`Текущий документ: ${selectedDraft.actNumber}`}
+            aria-label={`Текущий акт: ${selectedDocumentLabel}`}
           >
-            Документ: <strong>{selectedDraft.actNumber}</strong>
-            {folderName === undefined ? null : <span>{folderName}</span>}
+            Акт: <strong>{selectedDocumentLabel}</strong>
+            <span>{formatDocumentDate(selectedDraft.actDate)}</span>
           </p>
         </div>
         <div className="workspace-header__aside">
@@ -548,174 +626,222 @@ export function DemoAosrWorkspacePage({
                 Шаблон объекта
               </button>
             )}
-            <button
-              aria-expanded={isDocumentPreviewOpen}
-              className="secondary-action secondary-action--accent"
-              onClick={() => {
-                setDocumentPreviewOpen(true);
-              }}
-              type="button"
-            >
-              Предпросмотр документа
-            </button>
+            {isEmbeddedInObjectWorkspace ? (
+              <>
+                <button
+                  aria-pressed={activeActMode === 'preview'}
+                  className="secondary-action secondary-action--accent"
+                  onClick={() => {
+                    setActiveActMode('preview');
+                  }}
+                  type="button"
+                >
+                  Предпросмотр
+                </button>
+                <button
+                  aria-pressed={activeActMode === 'edit'}
+                  className="secondary-action"
+                  onClick={() => {
+                    setActiveActMode('edit');
+                  }}
+                  type="button"
+                >
+                  Редактирование
+                </button>
+                <button className="secondary-action" type="button">
+                  Скачать DOCX
+                </button>
+                <button className="secondary-action" type="button">
+                  Скачать PDF
+                </button>
+              </>
+            ) : (
+              <button
+                aria-expanded={isDocumentPreviewOpen}
+                className="secondary-action secondary-action--accent"
+                onClick={() => {
+                  setDocumentPreviewOpen(true);
+                }}
+                type="button"
+              >
+                Предпросмотр документа
+              </button>
+            )}
           </div>
         </div>
       </section>
 
-      <div className="workspace-grid">
-        <DemoDocumentTree
-          actType={aosrActType}
-          draggedDraftId={draggedDraftId}
-          drafts={visibleDrafts}
-          folderName={folderName}
-          selectedDraftId={selectedDraft.id}
-          onDragEnd={() => {
-            setDraggedDraftId(null);
-          }}
-          onDragStart={setDraggedDraftId}
-          onReorderDrafts={reorderDrafts}
-          onSelectDraft={setSelectedDraftId}
-        />
-
-        <section className="act-form-panel" aria-label="Редактор документа">
-          <div className="form-sections">
-            <DemoCurrentActEditor
-              actRepresentativeSearch={actRepresentativeSearch}
-              allApplications={allApplications}
-              certificateLibrary={certificateLibrary}
-              documentSearch={objectDocumentSearch}
-              documentTypeFilter={objectDocumentTypeFilter}
-              draggedRepresentativeId={draggedRepresentativeId}
-              dropTargetRepresentativeId={representativeDropTargetId}
-              formVariant={selectedFormVariant}
-              isCertificateLibraryOpen={isCertificateLibraryOpen}
-              isManualRepresentativeFormOpen={isManualRepresentativeFormOpen}
-              isObjectDocumentLibraryOpen={isObjectDocumentLibraryOpen}
-              manualRepresentativeForm={manualRepresentativeForm}
-              materialSearch={materialSearch}
-              linkedTemplateFields={linkedTemplateFields}
-              objectDefaults={objectDefaults}
-              objectDocumentLibrary={objectDocuments}
-              sectionName={sectionName}
-              selectedDraft={selectedDraft}
-              selectedMaterials={selectedMaterials}
-              selectedObjectDocuments={selectedObjectDocuments}
-              selectedSignatories={selectedSignatories}
-              templateFields={selectedTemplateFields}
-              onAddManualRepresentative={addManualRepresentative}
-              onAddMaterialToAct={(certificateId) => {
-                const certificate = certificateLibrary.find(({ id }) => id === certificateId);
-
-                if (certificate === undefined) {
-                  return;
-                }
-
-                updateSelectedDraftWith((draft) =>
-                  addMaterialCertificateToDraft(draft, certificate),
-                );
-              }}
-              onAddObjectDocumentToAct={(documentId) => {
-                const document = objectDocuments.find(({ id }) => id === documentId);
-
-                if (document === undefined) {
-                  return;
-                }
-
-                updateSelectedDraftWith((draft) => addObjectDocumentToDraft(draft, document));
-              }}
-              onAddRepresentativeToAct={(representative) => {
-                updateSelectedDraftWith((draft) => addRepresentativeToDraft(draft, representative));
-                setActRepresentativeSearch('');
-              }}
-              onChangeActRepresentativeSearch={setActRepresentativeSearch}
-              onChangeDocumentSearch={setObjectDocumentSearch}
-              onChangeDocumentTypeFilter={setObjectDocumentTypeFilter}
-              onChangeManualRepresentativeForm={updateManualRepresentativeForm}
-              onChangeMaterialSearch={setMaterialSearch}
-              onDragRepresentativeEnd={() => {
-                setDraggedRepresentativeId(null);
-                setRepresentativeDropTargetId(null);
-              }}
-              onDragRepresentativeStart={setDraggedRepresentativeId}
-              onDragRepresentativeTarget={setRepresentativeDropTargetId}
-              onMoveHeaderOrganization={(headerOrganizationId, direction) => {
-                updateSelectedDraftWith((draft) =>
-                  moveHeaderOrganizationInDraft(draft, headerOrganizationId, direction),
-                );
-              }}
-              onUpdateHeaderOrganization={(headerOrganizationId, field, value) => {
-                updateSelectedDraftWith((draft) =>
-                  updateHeaderOrganizationInDraft(draft, headerOrganizationId, field, value),
-                );
-              }}
-              onMoveSelectedSignatory={moveSelectedSignatory}
-              onUpdateObjectNameSubscript={(value) => {
-                updateSelectedDraftWith((draft) => updateManualObjectNameSubscript(draft, value));
-              }}
-              onRemoveMaterialFromAct={(certificateId) => {
-                updateSelectedDraftWith((draft) =>
-                  removeMaterialCertificateFromDraft(draft, certificateId),
-                );
-              }}
-              onRemoveObjectDocumentFromAct={(documentId) => {
-                updateSelectedDraftWith((draft) =>
-                  removeObjectDocumentFromDraft(draft, documentId),
-                );
-              }}
-              onRemoveRepresentativeFromAct={(representativeId) => {
-                updateSelectedDraftWith((draft) =>
-                  removeRepresentativeFromDraft(draft, representativeId),
-                );
-              }}
-              onUpdateRepresentative={(representativeId, field, value) => {
-                updateSelectedDraftWith((draft) =>
-                  updateRepresentativeInDraft(draft, representativeId, field, value),
-                );
-              }}
-              onReorderSelectedSignatory={reorderSelectedSignatory}
-              onToggleApplication={(applicationId) => {
-                updateSelectedDraftWith((draft) =>
-                  toggleApplicationInclusionInDraft(draft, applicationId),
-                );
-              }}
-              onToggleCertificateLibrary={() => {
-                setCertificateLibraryOpen((isOpen) => !isOpen);
-              }}
-              onToggleManualRepresentativeForm={() => {
-                setManualRepresentativeFormOpen((isOpen) => !isOpen);
-              }}
-              onToggleObjectDocumentLibrary={() => {
-                setObjectDocumentLibraryOpen((isOpen) => !isOpen);
-              }}
-              onReturnDraftToLinkedTemplate={returnSelectedDraftToLinkedTemplate}
-              onSwitchDraftToManualTemplate={switchSelectedDraftToManualTemplate}
-              onUpdateSelectedDraft={updateSelectedDraft}
-            />
+      {isEmbeddedInObjectWorkspace && activeActMode === 'preview' ? (
+        <section className="act-preview-mode" aria-label="Предпросмотр акта">
+          <div className="preview-panel">
+            <div className="panel-heading">
+              <p className="section-kicker">Предпросмотр</p>
+              <h2>Предпросмотр акта</h2>
+            </div>
+            <DemoAosrPreview formVariant={selectedFormVariant} printState={printState} />
           </div>
         </section>
-      </div>
+      ) : (
+        <div className="workspace-grid">
+          <DemoDocumentTree
+            actType={aosrActType}
+            draggedDraftId={draggedDraftId}
+            drafts={visibleDrafts}
+            folderName={folderName}
+            selectedDraftId={selectedDraft.id}
+            onCreateAct={onCreateActInFolder}
+            onDragEnd={() => {
+              setDraggedDraftId(null);
+            }}
+            onDragStart={setDraggedDraftId}
+            onReorderDrafts={reorderDrafts}
+            onSelectDraft={setSelectedDraftId}
+          />
 
-      <DocumentPreviewDrawer
-        context={
-          <>
-            <span>
-              Акт <strong>{selectedDraft.actNumber}</strong>
-            </span>
-            <span>{selectedFormVariant.title}</span>
-            <span>{formatDocumentDate(selectedDraft.actDate)}</span>
-            <span>{finalApplications.length} приложений</span>
-          </>
-        }
-        contextLabel="Контекст предпросмотра документа"
-        eyebrow="HTML-макет печатной формы"
-        isOpen={isDocumentPreviewOpen}
-        onClose={() => {
-          setDocumentPreviewOpen(false);
-        }}
-        title="Предпросмотр документа"
-      >
-        <DemoAosrPreview formVariant={selectedFormVariant} printState={printState} />
-      </DocumentPreviewDrawer>
+          <section className="act-form-panel" aria-label="Редактор документа">
+            <div className="form-sections">
+              <DemoCurrentActEditor
+                actRepresentativeSearch={actRepresentativeSearch}
+                allApplications={allApplications}
+                certificateLibrary={certificateLibrary}
+                documentSearch={objectDocumentSearch}
+                documentTypeFilter={objectDocumentTypeFilter}
+                draggedRepresentativeId={draggedRepresentativeId}
+                dropTargetRepresentativeId={representativeDropTargetId}
+                formVariant={selectedFormVariant}
+                isCertificateLibraryOpen={isCertificateLibraryOpen}
+                isManualRepresentativeFormOpen={isManualRepresentativeFormOpen}
+                isObjectDocumentLibraryOpen={isObjectDocumentLibraryOpen}
+                manualRepresentativeForm={manualRepresentativeForm}
+                materialSearch={materialSearch}
+                linkedTemplateFields={linkedTemplateFields}
+                objectDefaults={objectDefaults}
+                objectDocumentLibrary={objectDocuments}
+                sectionName={sectionName}
+                selectedDraft={selectedDraft}
+                selectedMaterials={selectedMaterials}
+                selectedObjectDocuments={selectedObjectDocuments}
+                selectedSignatories={selectedSignatories}
+                templateFields={selectedTemplateFields}
+                onAddManualRepresentative={addManualRepresentative}
+                onAddMaterialToAct={(certificateId) => {
+                  const certificate = certificateLibrary.find(({ id }) => id === certificateId);
+
+                  if (certificate === undefined) {
+                    return;
+                  }
+
+                  updateSelectedDraftWith((draft) =>
+                    addMaterialCertificateToDraft(draft, certificate),
+                  );
+                }}
+                onAddObjectDocumentToAct={(documentId) => {
+                  const document = objectDocuments.find(({ id }) => id === documentId);
+
+                  if (document === undefined) {
+                    return;
+                  }
+
+                  updateSelectedDraftWith((draft) => addObjectDocumentToDraft(draft, document));
+                }}
+                onAddRepresentativeToAct={(representative) => {
+                  updateSelectedDraftWith((draft) =>
+                    addRepresentativeToDraft(draft, representative),
+                  );
+                  setActRepresentativeSearch('');
+                }}
+                onChangeActRepresentativeSearch={setActRepresentativeSearch}
+                onChangeDocumentSearch={setObjectDocumentSearch}
+                onChangeDocumentTypeFilter={setObjectDocumentTypeFilter}
+                onChangeManualRepresentativeForm={updateManualRepresentativeForm}
+                onChangeMaterialSearch={setMaterialSearch}
+                onDragRepresentativeEnd={() => {
+                  setDraggedRepresentativeId(null);
+                  setRepresentativeDropTargetId(null);
+                }}
+                onDragRepresentativeStart={setDraggedRepresentativeId}
+                onDragRepresentativeTarget={setRepresentativeDropTargetId}
+                onMoveHeaderOrganization={(headerOrganizationId, direction) => {
+                  updateSelectedDraftWith((draft) =>
+                    moveHeaderOrganizationInDraft(draft, headerOrganizationId, direction),
+                  );
+                }}
+                onUpdateHeaderOrganization={(headerOrganizationId, field, value) => {
+                  updateSelectedDraftWith((draft) =>
+                    updateHeaderOrganizationInDraft(draft, headerOrganizationId, field, value),
+                  );
+                }}
+                onMoveSelectedSignatory={moveSelectedSignatory}
+                onUpdateObjectNameSubscript={(value) => {
+                  updateSelectedDraftWith((draft) => updateManualObjectNameSubscript(draft, value));
+                }}
+                onRemoveMaterialFromAct={(certificateId) => {
+                  updateSelectedDraftWith((draft) =>
+                    removeMaterialCertificateFromDraft(draft, certificateId),
+                  );
+                }}
+                onRemoveObjectDocumentFromAct={(documentId) => {
+                  updateSelectedDraftWith((draft) =>
+                    removeObjectDocumentFromDraft(draft, documentId),
+                  );
+                }}
+                onRemoveRepresentativeFromAct={(representativeId) => {
+                  updateSelectedDraftWith((draft) =>
+                    removeRepresentativeFromDraft(draft, representativeId),
+                  );
+                }}
+                onUpdateRepresentative={(representativeId, field, value) => {
+                  updateSelectedDraftWith((draft) =>
+                    updateRepresentativeInDraft(draft, representativeId, field, value),
+                  );
+                }}
+                onReorderSelectedSignatory={reorderSelectedSignatory}
+                onToggleApplication={(applicationId) => {
+                  updateSelectedDraftWith((draft) =>
+                    toggleApplicationInclusionInDraft(draft, applicationId),
+                  );
+                }}
+                onToggleCertificateLibrary={() => {
+                  setCertificateLibraryOpen((isOpen) => !isOpen);
+                }}
+                onToggleManualRepresentativeForm={() => {
+                  setManualRepresentativeFormOpen((isOpen) => !isOpen);
+                }}
+                onToggleObjectDocumentLibrary={() => {
+                  setObjectDocumentLibraryOpen((isOpen) => !isOpen);
+                }}
+                onReturnDraftToLinkedTemplate={returnSelectedDraftToLinkedTemplate}
+                onSwitchDraftToManualTemplate={switchSelectedDraftToManualTemplate}
+                onUpdateSelectedDraft={updateSelectedDraft}
+              />
+            </div>
+          </section>
+        </div>
+      )}
+
+      {isEmbeddedInObjectWorkspace ? null : (
+        <DocumentPreviewDrawer
+          context={
+            <>
+              <span>
+                Акт <strong>{selectedDraft.actNumber}</strong>
+              </span>
+              <span>{selectedFormVariant.title}</span>
+              <span>{formatDocumentDate(selectedDraft.actDate)}</span>
+              <span>{finalApplications.length} приложений</span>
+            </>
+          }
+          contextLabel="Контекст предпросмотра документа"
+          eyebrow="HTML-макет печатной формы"
+          isOpen={isDocumentPreviewOpen}
+          onClose={() => {
+            setDocumentPreviewOpen(false);
+          }}
+          title="Предпросмотр документа"
+        >
+          <DemoAosrPreview formVariant={selectedFormVariant} printState={printState} />
+        </DocumentPreviewDrawer>
+      )}
 
       {isObjectSettingsOpen ? (
         <DemoObjectSettingsPanel
@@ -725,7 +851,7 @@ export function DemoAosrWorkspacePage({
           headerOrganizationForm={headerOrganizationForm}
           isHeaderOrganizationFormOpen={isHeaderOrganizationFormOpen}
           isRepresentativeLibraryFormOpen={isRepresentativeLibraryFormOpen}
-          lastTemplateCopyTargetName={lastTemplateCopyTargetName}
+          lastTemplateCopyMessage={lastTemplateCopyMessage}
           libraryRepresentativeForm={libraryRepresentativeForm}
           objectDefaults={objectDefaults}
           organizationSearch={organizationSearch}
@@ -737,7 +863,8 @@ export function DemoAosrWorkspacePage({
           onChangeOrganizationSearch={setOrganizationSearch}
           onChangeRepresentativeSearch={setRepresentativeSearch}
           onCloseObjectSettings={closeObjectSettings}
-          onCopySectionTemplate={onCopySectionTemplate}
+          onCopySectionTemplateFromSource={onCopySectionTemplateFromSource}
+          onCopySectionTemplateToTarget={onCopySectionTemplateToTarget}
           onMoveHeaderOrganization={(headerOrganizationId, direction) => {
             commitObjectDefaults((currentDefaults) =>
               moveHeaderOrganizationBlock(currentDefaults, headerOrganizationId, direction),
