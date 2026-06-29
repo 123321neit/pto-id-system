@@ -1,6 +1,9 @@
 # CONVERSATION_QA_LOG
 
-# PTO ID System
+# ИДея
+
+Техническое имя репозитория/package workspace остаётся `pto-id-system`; это не
+продуктовый UI-name.
 
 # Consolidated decisions from user/assistant discussion
 
@@ -1296,7 +1299,7 @@ Canonical hierarchy:
 ```text
 Object
   -> DocumentationSection
-      -> SectionTemplate / настройки шаблона раздела
+      -> SectionTemplate / Шаблонные значения раздела
       -> ID folders
           -> documents
 ```
@@ -1551,9 +1554,8 @@ closely:
 - empty/manual numbers do not block opening the editor;
 - final and intermediate package buttons are active mock actions and explain
   that real DOCX/PDF/file generation will be connected later;
-- section template values are copied through a UI clipboard:
-  `Скопировать шаблонные значения` → go to another section →
-  `Вставить шаблонные значения`;
+- section template values are copied through a UI clipboard with compact
+  `Скопировать` / `Вставить` actions;
 - inserting into the same source section is disabled;
 - the target section keeps its own numbering prefix;
 - folders, acts, issued packages, files and manual snapshot act versions are
@@ -1570,4 +1572,46 @@ Still not implemented:
 - persistence;
 - real cross-object clipboard persistence;
 - DOCX/PDF/ZIP generation;
+- production number reservation or issued package snapshots.
+
+---
+
+## 56. Product name, cross-object template clipboard and next DOCX stage
+
+### Q: Что уточнено после коммита `2eb14a1`?
+
+A: The frontend mock now uses the product name `ИДея` in product-facing UI:
+
+- main tagline:
+  `ИДея — рабочее место ПТО для исполнительной документации`;
+- short product name: `ИДея`;
+- technical repository/package names such as `pto-id-system` were not renamed.
+
+Section template copy/paste was lifted above `ObjectWorkspacePage`:
+
+- the clipboard survives leaving one object and opening another object;
+- the payload stores source object id/title, source section id/name and section
+  template settings;
+- paste is disabled only for the same source object and same source section;
+- paste into another section or another object is allowed after confirmation;
+- paste still retargets section template id/section id and preserves the target
+  section numbering prefix;
+- folders, acts, released packages, files and manual act snapshots are not
+  copied;
+- the UI block is compact and uses short `Скопировать` / `Вставить` actions.
+
+Next planned stage after UX cleanup:
+
+- connect one DOCX template for AOSR;
+- keep the first template as a repository/public asset suitable for Vercel;
+- generate from `AosrPrintState`, not from UI components;
+- test one AOSR template first, then expand to customer-specific forms.
+
+Still not implemented:
+
+- backend/API routes;
+- Prisma models/migrations;
+- persistence;
+- real DOCX/PDF generation;
+- ZIP/final package generation;
 - production number reservation or issued package snapshots.

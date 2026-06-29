@@ -39,6 +39,7 @@ import {
   createSectionTemplateSettings,
   type DemoSectionTemplateSettingsById,
 } from './object-section-template-settings.js';
+import type { SectionTemplateClipboard } from './section-template-clipboard.js';
 
 const aosrActType = getDemoActTypeById('aosr');
 const untitledDocumentLabel = 'Без номера';
@@ -75,18 +76,16 @@ type ObjectWorkspaceSection =
 
 interface ObjectWorkspacePageProps {
   readonly object: MockObjectCard;
+  readonly sectionTemplateClipboard: SectionTemplateClipboard | null;
   readonly onBackToObjects: () => void;
-}
-
-interface SectionTemplateClipboard {
-  readonly sourceSectionId: DemoDocumentationSectionId;
-  readonly sourceSectionName: string;
-  readonly sectionTemplateSettings: DemoSectionTemplateSettings;
+  readonly onSectionTemplateClipboardChange: (clipboard: SectionTemplateClipboard | null) => void;
 }
 
 export function ObjectWorkspacePage({
   object,
+  sectionTemplateClipboard,
   onBackToObjects,
+  onSectionTemplateClipboardChange,
 }: ObjectWorkspacePageProps): React.JSX.Element {
   const [activeSection, setActiveSection] = useState<ObjectWorkspaceSection>('overview');
   const hasDemoContent = object.workspaceSeed === 'demo-content';
@@ -119,8 +118,6 @@ export function ObjectWorkspacePage({
   const [folderNameInput, setFolderNameInput] = useState('');
   const [sectionNameInput, setSectionNameInput] = useState('');
   const [lastTemplateCopyMessage, setLastTemplateCopyMessage] = useState('');
-  const [sectionTemplateClipboard, setSectionTemplateClipboard] =
-    useState<SectionTemplateClipboard | null>(null);
   const isAosrVisible = activeSection === 'aosr' || activeSection === 'settings';
   const selectedSection =
     selectedSectionId === null
@@ -405,22 +402,35 @@ export function ObjectWorkspacePage({
       return;
     }
 
-    setSectionTemplateClipboard({
+    onSectionTemplateClipboardChange({
       sectionTemplateSettings: selectedSectionTemplateSettings,
+      sourceObjectId: object.id,
+      sourceObjectTitle: object.title,
       sourceSectionId: selectedSection.id,
       sourceSectionName: selectedSection.name,
     });
-    setLastTemplateCopyMessage(
-      `Шаблонные значения раздела «${selectedSection.name}» скопированы. Перейдите в другой раздел и нажмите “Вставить шаблонные значения”.`,
-    );
+    setLastTemplateCopyMessage('Шаблонные значения скопированы.');
   };
 
   const pasteSectionTemplateFromClipboard = (): void => {
     if (
       selectedSection === undefined ||
       sectionTemplateClipboard === null ||
-      sectionTemplateClipboard.sourceSectionId === selectedSection.id
+      (sectionTemplateClipboard.sourceObjectId === object.id &&
+        sectionTemplateClipboard.sourceSectionId === selectedSection.id)
     ) {
+      return;
+    }
+
+    const shouldPaste = window.confirm(
+      `Вставить шаблонные значения из раздела «${sectionTemplateClipboard.sourceSectionName}» объекта «${sectionTemplateClipboard.sourceObjectTitle}»?\n` +
+        'Будут заменены шаблонные значения текущего раздела.\n' +
+        'Папки, акты, выпущенные комплекты и файлы не изменятся.\n' +
+        'Префикс текущего раздела сохранится.\n' +
+        'Продолжить?',
+    );
+
+    if (!shouldPaste) {
       return;
     }
 
@@ -436,9 +446,7 @@ export function ObjectWorkspacePage({
         ),
       };
     });
-    setLastTemplateCopyMessage(
-      `Шаблонные значения из раздела «${sectionTemplateClipboard.sourceSectionName}» вставлены в раздел «${selectedSection.name}». Префикс раздела «${selectedSection.name}» сохранён.`,
-    );
+    setLastTemplateCopyMessage('Шаблонные значения вставлены. Префикс текущего раздела сохранён.');
   };
 
   return (
@@ -747,6 +755,8 @@ export function ObjectWorkspacePage({
             onSectionTemplateSettingsChange={updateSelectedSectionTemplateSettings}
             lastTemplateCopyMessage={lastTemplateCopyMessage}
             folderName={selectedFolder?.name}
+            objectId={object.id}
+            objectTitle={object.title}
             sectionId={selectedSection?.id}
             sectionName={selectedSection?.name}
             sectionTemplateClipboard={sectionTemplateClipboard}

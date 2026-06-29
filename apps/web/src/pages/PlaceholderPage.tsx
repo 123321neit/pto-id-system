@@ -49,9 +49,9 @@ export function PlaceholderPage(): React.JSX.Element {
   return (
     <main className="app-shell">
       <section className="status-panel" aria-label="Application status">
-        <p className="eyebrow">PTO ID System</p>
-        <h1>Infrastructure scaffold</h1>
-        <p className="status-text">Product workflows are intentionally absent in this bootstrap.</p>
+        <p className="eyebrow">ИДея</p>
+        <h1>Рабочее место ПТО для исполнительной документации</h1>
+        <p className="status-text">Технический статус демо-окружения приложения.</p>
         <section className="backend-status" aria-label="Backend status">
           <div>
             <h2>Technical status</h2>

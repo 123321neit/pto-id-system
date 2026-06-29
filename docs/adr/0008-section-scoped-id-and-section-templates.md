@@ -108,12 +108,25 @@ silently give the heating section a ventilation prefix.
 The UI copy flow should be understandable as a clipboard operation:
 
 ```text
-Скопировать шаблонные значения -> перейти в другой раздел -> Вставить шаблонные значения
+Скопировать -> перейти в другой раздел или объект -> Вставить
 ```
 
-Pasting into the same source section is not allowed. The clipboard payload is a
-section template settings snapshot and must still be retargeted to the target
-section on paste.
+For frontend mock UX and future product behavior, the clipboard must be able to
+survive switching from one object to another object in the same workspace. The
+minimum clipboard payload is:
+
+```text
+sourceObjectId
+sourceObjectTitle
+sourceSectionId
+sourceSectionName
+sectionTemplateSettings snapshot
+```
+
+Pasting into the same source object and the same source section is not allowed.
+Pasting into another section of the same object or a section of another object
+is allowed subject to authorization. The clipboard payload is a section template
+settings snapshot and must still be retargeted to the target section on paste.
 
 ## Consequences
 
@@ -131,7 +144,7 @@ section on paste.
   template reads, template mutations and final package reads.
 - Existing historical docs that say `ObjectTemplate` should be read as
   superseded for future implementation. The canonical implementation term is
-  `SectionTemplate` / `настройки шаблона раздела`.
+  `SectionTemplate`; the current UI term is `Шаблонные значения раздела`.
 
 ## Non-goals
 

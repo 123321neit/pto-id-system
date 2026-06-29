@@ -1,6 +1,6 @@
 # PROJECT_MEMORY
 
-# PTO ID SYSTEM
+# ИДея
 
 # EXECUTIVE DOCUMENTATION PLATFORM
 
@@ -16,7 +16,10 @@
 
 ## 0. IMPORTANT — HOW TO USE THIS FILE
 
-Этот файл — главный источник контекста проекта **PTO ID System**.
+Этот файл — главный источник контекста проекта **ИДея**.
+
+Техническое имя репозитория/package workspace остаётся `pto-id-system`; это не
+продуктовый UI-name.
 
 Любой новый чат, Codex, AI-агент, разработчик или подрядчик обязан:
 
@@ -75,7 +78,7 @@ as the normal working source, temporary act-only representatives or partial
 document overrides. Those older passages preserve chronology only. They must
 not be used to design production storage/API behavior. ADR 0008 supersedes the
 object-level template scope: future implementation uses `SectionTemplate` /
-`настройки шаблона раздела`.
+`Шаблонные значения раздела`.
 
 Current section/folder terminology, clarified 2026-06-23:
 
@@ -101,7 +104,7 @@ Current frontend section workspace mock, introduced 2026-06-23:
   folders and section template settings.
 - `Шаблонные значения раздела` is visible in the object workspace and can copy
   repeated texts, numbering settings and global-library assignment links into
-  another demo section.
+  another demo section or another demo object through the frontend clipboard.
 - Final ID view is filtered to the selected section's folders.
 - This is frontend-only in-memory UX: no Prisma schema/model/migration, Nest
   controller, HTTP API, persistence adapter, real template-copy command,
@@ -216,7 +219,7 @@ configurable object-level header organization blocks from the configurable
 object representative/signatory library. Header organization labels and
 representative role labels are not fixed globally and must remain configurable
 per object; sample AOSR wording is a visual/structural reference only. It is
-labelled `ДЕМО / демонстрационные данные / не для работы в продуктиве`. The
+labelled `ИДея / демо-данные / не для работы в продуктиве`. The
 refined mock keeps object/common settings and large libraries behind buttons,
 models global libraries versus object-level editable bindings only in memory,
 keeps certificate materials library-linked rather than free text, and uses the
@@ -788,7 +791,14 @@ generation.
 
 ## 1. Product idea
 
-**PTO ID System** — web-система автоматизации исполнительной документации для инженеров ПТО.
+**ИДея** — рабочее место ПТО для исполнительной документации.
+
+Смысл названия: `ИД` = исполнительная документация, а `идея` = понятный
+помощник инженера ПТО. Продуктовый tagline:
+
+```text
+ИДея — рабочее место ПТО для исполнительной документации
+```
 
 Основной фокус MVP:
 
@@ -3086,7 +3096,7 @@ Initial Repository Bootstrap and Development Rules V1:
     `linked` acts resolve them live; `manual` acts and released outputs use
     explicit snapshots.
 41. Section-level reusable data lives in `SectionTemplate` /
-    `настройки шаблона раздела`. A working act is either fully `linked` to that
+    `Шаблонные значения раздела`. A working act is either fully `linked` to that
     template or fully `manual` with one complete snapshot; partial
     template-field overrides are forbidden.
 42. Work contractor, additional information and copy count are repeated
@@ -4226,7 +4236,7 @@ share codes from `docs/20`.
 - ordered frontend-only mock signatories reflected in the preview;
 - A4-like HTML AOSR preview area resembling an official printed act page, with a
   placeholder that a real PDF/printed form will come later;
-- clear `ДЕМО / демонстрационные данные / не для работы в продуктиве` label;
+- clear `ИДея / демо-данные / не для работы в продуктиве` label;
 - focused frontend tests for rendering and Testing Library/user-event field
   editing that updates the document-like preview.
 
@@ -5654,9 +5664,8 @@ delete/move/reorder lifecycle or generation was introduced.
 - folder registry/table is not embedded in the working folder screen; registry
   and print composition live on the intermediate ID package page;
 - final package wording is section-scoped: `Итоговая ИД по разделу`;
-- section template copy UI uses a frontend clipboard model:
-  `Скопировать шаблонные значения` in one section, then
-  `Вставить шаблонные значения` in another section;
+- section template copy UI uses a frontend clipboard model with compact
+  `Скопировать` / `Вставить` actions;
 - copying section template values copies repeated texts, library links and
   numbering settings, but preserves the target section numbering prefix;
 - act creation uses a real radiogroup selection for the currently available
@@ -5679,3 +5688,46 @@ delete/move/reorder lifecycle or generation was introduced.
 - no DOCX/PDF/ZIP generation changes;
 - no production number reservation;
 - no production package-builder or released package snapshots.
+
+### 2026-06-29 — ИДея brand and cross-object section-template clipboard
+
+- Статус: `Frontend mock UX-polish only`
+- Описание: integrated the product name `ИДея` into the frontend UI and made
+  the section-template clipboard survive object switches inside the frontend
+  mock.
+
+Добавлено/уточнено:
+
+- product-facing UI name is `ИДея`;
+- main dashboard tagline is
+  `ИДея — рабочее место ПТО для исполнительной документации`;
+- repository/package technical names such as `pto-id-system` remain unchanged;
+- section template clipboard state now lives above `ObjectWorkspacePage`, so a
+  user can copy template values in one object/section, return to the dashboard,
+  open another object/section and paste there;
+- the clipboard stores source object id/title, source section id/name and a
+  section template settings snapshot;
+- pasting is blocked only for the same source object and same source section;
+- pasting into another section of the same object or a section of another object
+  uses the same retargeting rule and preserves the target section prefix;
+- paste now asks for confirmation before replacing current section template
+  values;
+- the copy/paste block is compact: short `Скопировать`/`Вставить` actions,
+  compact buffer status and a collapsed explanation of what is copied.
+
+Следующий этап после этого UX-cleanup:
+
+- подключить DOCX-шаблон АОСР;
+- на первом шаге хранить шаблон как repo/public asset, совместимый с Vercel;
+- строить генерацию из `AosrPrintState`, а не из UI-компонентов напрямую;
+- сначала проверить один шаблон АОСР end-to-end;
+- после стабилизации масштабировать подход на разные формы заказчиков.
+
+Что не было введено:
+
+- no backend routes/controllers or API;
+- no Prisma/schema/migrations;
+- no persistence;
+- no real DOCX/PDF generation yet;
+- no ZIP/final package generation;
+- no production number reservation or released package snapshots.

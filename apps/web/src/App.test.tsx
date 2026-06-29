@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { cleanup, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { App } from './App.js';
 import {
@@ -20,6 +20,7 @@ import { demoAosrWorkspace, type DemoAosrDraft } from './aosr-demo/demo-aosr-wor
 import { initialDemoCertificates, initialDemoObjectDocuments } from './demo-store/demo-store.js';
 
 afterEach(() => {
+  vi.restoreAllMocks();
   cleanup();
 });
 
@@ -27,7 +28,11 @@ describe('App shell mock navigation', () => {
   it('renders mock object cards and quick access cards on the dashboard', () => {
     render(<App />);
 
-    expect(screen.getByRole('heading', { name: 'Мои объекты' })).toBeTruthy();
+    expect(
+      screen.getByRole('heading', {
+        name: 'ИДея — рабочее место ПТО для исполнительной документации',
+      }),
+    ).toBeTruthy();
     expect(screen.getByText('Реконструкция поликлиники, демонстрационный проект')).toBeTruthy();
     expect(screen.getByText('Жилой комплекс "Северный"')).toBeTruthy();
     expect(screen.getByText('Торговый центр "Горизонт"')).toBeTruthy();
@@ -62,7 +67,11 @@ describe('App shell mock navigation', () => {
 
     await user.click(screen.getByRole('button', { name: 'Назад к объектам' }));
 
-    expect(screen.getByRole('heading', { name: 'Мои объекты' })).toBeTruthy();
+    expect(
+      screen.getByRole('heading', {
+        name: 'ИДея — рабочее место ПТО для исполнительной документации',
+      }),
+    ).toBeTruthy();
     expect(screen.getByText('Реконструкция поликлиники, демонстрационный проект')).toBeTruthy();
   });
 
@@ -1036,10 +1045,17 @@ describe('App shell mock navigation', () => {
     expect(
       within(dialog).getByRole('heading', { name: 'Копирование шаблонных значений' }),
     ).toBeTruthy();
+    expect(within(dialog).getByRole('button', { name: 'Скопировать' })).toBeTruthy();
     expect(
-      within(dialog).getByRole('button', { name: 'Скопировать шаблонные значения' }),
+      within(dialog).getByText(
+        'Буфер пуст. Скопируйте значения в одном разделе, затем вставьте в другом.',
+      ),
     ).toBeTruthy();
-    expect(within(dialog).getByText(/Буфер шаблонных значений пуст/u)).toBeTruthy();
+    expect(
+      within(dialog).getByText('Скопируйте значения здесь, вставьте в другом разделе.'),
+    ).toBeTruthy();
+    expect(within(dialog).getByText('Что копируется и что не копируется')).toBeTruthy();
+    expect(within(dialog).queryByRole('button', { name: 'Вставить' })).toBeNull();
     expect(
       within(dialog).queryByRole('button', { name: 'Скопировать из выбранного раздела' }),
     ).toBeNull();
@@ -1078,18 +1094,14 @@ describe('App shell mock navigation', () => {
     await user.type(ventilationPrefix, 'VENT-');
     await user.clear(ventilationCompliance);
     await user.type(ventilationCompliance, copiedComplianceText);
-    await user.click(
-      within(ventilationDialog).getByRole('button', { name: 'Скопировать шаблонные значения' }),
-    );
+    await user.click(within(ventilationDialog).getByRole('button', { name: 'Скопировать' }));
 
+    expect(ventilationDialog.textContent).toContain('Шаблонные значения скопированы.');
     expect(ventilationDialog.textContent).toContain(
-      'Шаблонные значения раздела «Вентиляция» скопированы',
-    );
-    expect(ventilationDialog.textContent).toContain(
-      'В буфере: шаблонные значения из этого же раздела',
+      'В буфере значения этого же раздела. Вставка сюда недоступна.',
     );
     const pasteIntoSourceButton = within(ventilationDialog).getByRole('button', {
-      name: 'Вставить шаблонные значения',
+      name: 'Вставить',
     });
     expect((pasteIntoSourceButton as HTMLButtonElement).disabled).toBe(true);
     await user.click(
@@ -1107,14 +1119,30 @@ describe('App shell mock navigation', () => {
 
     const heatingDialog = screen.getByRole('region', { name: /Шаблонные значения раздела/u });
     expect(heatingDialog.textContent).toContain(
-      'В буфере: шаблонные значения из раздела «Вентиляция»',
-    );
-    expect(heatingDialog.textContent).toContain('Префикс раздела «Отопление» сохранится своим');
-    await user.click(
-      within(heatingDialog).getByRole('button', { name: 'Вставить шаблонные значения' }),
+      'В буфере: «Вентиляция» · объект «Реконструкция поликлиники, демонстрационный проект»',
     );
     expect(heatingDialog.textContent).toContain(
-      'Шаблонные значения из раздела «Вентиляция» вставлены в раздел «Отопление»',
+      'При вставке в раздел «Отопление» объекта «Реконструкция поликлиники, демонстрационный проект» префикс текущего раздела сохранится.',
+    );
+    const heatingCompliance = within(heatingDialog).getByLabelText<HTMLTextAreaElement>(
+      'Текст соответствия работ требованиям',
+    );
+    const originalHeatingComplianceText = heatingCompliance.value;
+    const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(false);
+    await user.click(within(heatingDialog).getByRole('button', { name: 'Вставить' }));
+    expect(confirmSpy).toHaveBeenCalledWith(
+      'Вставить шаблонные значения из раздела «Вентиляция» объекта «Реконструкция поликлиники, демонстрационный проект»?\n' +
+        'Будут заменены шаблонные значения текущего раздела.\n' +
+        'Папки, акты, выпущенные комплекты и файлы не изменятся.\n' +
+        'Префикс текущего раздела сохранится.\n' +
+        'Продолжить?',
+    );
+    expect(heatingCompliance.value).toBe(originalHeatingComplianceText);
+
+    confirmSpy.mockReturnValue(true);
+    await user.click(within(heatingDialog).getByRole('button', { name: 'Вставить' }));
+    expect(heatingDialog.textContent).toContain(
+      'Шаблонные значения вставлены. Префикс текущего раздела сохранён.',
     );
     expect(within(heatingDialog).getByLabelText<HTMLInputElement>('Префикс номера').value).toBe(
       'ОТ-',
@@ -1124,6 +1152,55 @@ describe('App shell mock navigation', () => {
         'Текст соответствия работ требованиям',
       ).value,
     ).toBe(copiedComplianceText);
+  });
+
+  it('keeps copied section template values available after switching to another object', async () => {
+    const user = userEvent.setup();
+    const copiedProjectDocumentation = 'Проектная документация из буфера другого объекта.';
+
+    render(<App />);
+    await user.click(getFirstOpenObjectButton());
+    await openObjectSettingsFromWorkspace(user);
+
+    const sourceDialog = screen.getByRole('region', { name: /Шаблонные значения раздела/u });
+    const sourceProjectDocumentation = within(sourceDialog).getByLabelText<HTMLTextAreaElement>(
+      'Проектная документация шаблона',
+    );
+    await user.clear(sourceProjectDocumentation);
+    await user.type(sourceProjectDocumentation, copiedProjectDocumentation);
+    await user.click(within(sourceDialog).getByRole('button', { name: 'Скопировать' }));
+    expect(sourceDialog.textContent).toContain('Шаблонные значения скопированы.');
+
+    await user.click(within(sourceDialog).getByRole('button', { name: 'Вернуться к разделу' }));
+    await user.click(screen.getByRole('button', { name: 'Назад к объектам' }));
+
+    await user.click(
+      within(getObjectCardByTitle('Жилой комплекс "Северный"')).getByRole('button', {
+        name: 'Открыть объект',
+      }),
+    );
+    await openObjectSettingsFromWorkspace(user);
+
+    const targetDialog = screen.getByRole('region', { name: /Шаблонные значения раздела/u });
+    expect(targetDialog.textContent).toContain(
+      'В буфере: «Вентиляция» · объект «Реконструкция поликлиники, демонстрационный проект»',
+    );
+    const pasteButton = within(targetDialog).getByRole('button', { name: 'Вставить' });
+    expect((pasteButton as HTMLButtonElement).disabled).toBe(false);
+
+    vi.spyOn(window, 'confirm').mockReturnValue(true);
+    await user.click(pasteButton);
+
+    expect(targetDialog.textContent).toContain(
+      'Шаблонные значения вставлены. Префикс текущего раздела сохранён.',
+    );
+    expect(
+      within(targetDialog).getByLabelText<HTMLTextAreaElement>('Проектная документация шаблона')
+        .value,
+    ).toBe(copiedProjectDocumentation);
+    expect(within(targetDialog).getByLabelText<HTMLInputElement>('Префикс номера').value).toBe(
+      'ОВ-',
+    );
   });
 
   it('uses the section template numbering rule for new acts', async () => {
@@ -1355,7 +1432,11 @@ describe('App shell mock navigation', () => {
 
     await user.click(screen.getByRole('button', { name: 'Вернуться к объектам' }));
 
-    expect(screen.getByRole('heading', { name: 'Мои объекты' })).toBeTruthy();
+    expect(
+      screen.getByRole('heading', {
+        name: 'ИДея — рабочее место ПТО для исполнительной документации',
+      }),
+    ).toBeTruthy();
     expect(screen.getByText('Реконструкция поликлиники, демонстрационный проект')).toBeTruthy();
   });
 
@@ -1616,7 +1697,11 @@ describe('App shell mock navigation', () => {
 
     await user.click(screen.getByRole('button', { name: 'Вернуться к объектам' }));
 
-    expect(screen.getByRole('heading', { name: 'Мои объекты' })).toBeTruthy();
+    expect(
+      screen.getByRole('heading', {
+        name: 'ИДея — рабочее место ПТО для исполнительной документации',
+      }),
+    ).toBeTruthy();
     expect(screen.getByText('Реконструкция поликлиники, демонстрационный проект')).toBeTruthy();
   });
 
@@ -1707,6 +1792,16 @@ function getFirstOpenObjectButton(): HTMLElement {
   }
 
   return openButton;
+}
+
+function getObjectCardByTitle(title: string): HTMLElement {
+  const objectCard = screen.getByRole('heading', { name: title }).closest('article');
+
+  if (objectCard === null) {
+    throw new Error(`Карточка объекта "${title}" не найдена.`);
+  }
+
+  return objectCard;
 }
 
 function getFirstCreateDocumentButton(): HTMLElement {

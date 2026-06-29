@@ -8,6 +8,7 @@ import {
   type MockDashboardPanel,
   type MockObjectCard,
 } from './app-shell/mock-dashboard.js';
+import type { SectionTemplateClipboard } from './app-shell/section-template-clipboard.js';
 import { DemoStoreProvider } from './demo-store/DemoStoreProvider.js';
 
 const router = createBrowserRouter([
@@ -29,12 +30,16 @@ function AppContent(): React.JSX.Element {
   const [view, setView] = useState<'dashboard' | 'workspace'>('dashboard');
   const [activeDashboardPanel, setActiveDashboardPanel] = useState<MockDashboardPanel>('objects');
   const [selectedObjectId, setSelectedObjectId] = useState<string>(mockObjectCards[0]?.id ?? '');
+  const [sectionTemplateClipboard, setSectionTemplateClipboard] =
+    useState<SectionTemplateClipboard | null>(null);
   const selectedObject = getSelectedObject(selectedObjectId);
 
   if (view === 'workspace') {
     return (
       <ObjectWorkspacePage
         object={selectedObject}
+        sectionTemplateClipboard={sectionTemplateClipboard}
+        onSectionTemplateClipboardChange={setSectionTemplateClipboard}
         onBackToObjects={() => {
           setActiveDashboardPanel('objects');
           setView('dashboard');

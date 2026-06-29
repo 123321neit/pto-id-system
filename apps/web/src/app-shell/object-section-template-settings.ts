@@ -1,6 +1,7 @@
 import {
   demoAosrWorkspace,
   type DemoSectionTemplateSettings,
+  type SectionTemplate,
 } from '../aosr-demo/demo-aosr-workspace.js';
 import type {
   DemoDocumentationSection,
@@ -40,7 +41,7 @@ export function copySectionTemplateSettingsToTarget(
   currentTargetSettings = createSectionTemplateSettings(targetSection),
 ): DemoSectionTemplateSettings {
   const sectionTemplate = {
-    ...sourceSettings.sectionTemplate,
+    ...cloneSectionTemplate(sourceSettings.sectionTemplate),
     id: targetSection.templateSettingsId,
     numberingPrefix: currentTargetSettings.sectionTemplate.numberingPrefix,
     sectionId: targetSection.id,
@@ -48,8 +49,25 @@ export function copySectionTemplateSettingsToTarget(
 
   return {
     ...sourceSettings,
+    headerOrganizations: sourceSettings.headerOrganizations.map((organization) => ({
+      ...organization,
+    })),
     objectTemplate: sectionTemplate,
+    representativeLibrary: sourceSettings.representativeLibrary.map((representative) => ({
+      ...representative,
+    })),
     sectionTemplate,
+  };
+}
+
+function cloneSectionTemplate(sectionTemplate: SectionTemplate): SectionTemplate {
+  return {
+    ...sectionTemplate,
+    counterparties: sectionTemplate.counterparties.map((counterparty) => ({ ...counterparty })),
+    representativeGroups: sectionTemplate.representativeGroups.map((group) => ({
+      ...group,
+      members: group.members.map((member) => ({ ...member })),
+    })),
   };
 }
 

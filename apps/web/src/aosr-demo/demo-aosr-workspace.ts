@@ -659,7 +659,7 @@ function getMaterialCertificateSnapshots(
 }
 
 export const demoAosrWorkspace: DemoAosrWorkspace = {
-  demoNotice: 'ДЕМО / демонстрационные данные / не для работы в продуктиве',
+  demoNotice: 'ИДея / демо-данные / не для работы в продуктиве',
   objectDocumentLibrary: demoObjectDocumentLibrary,
   drafts: [
     {

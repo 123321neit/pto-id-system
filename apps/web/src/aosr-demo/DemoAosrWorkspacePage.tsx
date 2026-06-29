@@ -1,6 +1,7 @@
 import { type SetStateAction, type SyntheticEvent, useEffect, useState } from 'react';
 
 import { getDemoActTypeById, getDemoAosrFormVariantById } from '../act-types/act-types.js';
+import type { SectionTemplateClipboard } from '../app-shell/section-template-clipboard.js';
 import { DocumentPreviewDrawer } from '../document-preview/DocumentPreviewDrawer.js';
 import {
   getCertificateDocumentName,
@@ -84,10 +85,7 @@ interface DemoAosrWorkspacePageProps {
   readonly isEmbeddedInObjectWorkspace?: boolean;
   readonly isSectionTemplateSettingsPage?: boolean;
   readonly lastTemplateCopyMessage?: string;
-  readonly sectionTemplateClipboard?: {
-    readonly sourceSectionId: string;
-    readonly sourceSectionName: string;
-  } | null;
+  readonly sectionTemplateClipboard?: SectionTemplateClipboard | null;
   readonly sectionTemplateSettings?: DemoSectionTemplateSettings;
   /** Legacy compatibility alias for older standalone AOSR demo helpers. */
   readonly objectDefaults?: DemoAosrObjectDefaults;
@@ -103,6 +101,8 @@ interface DemoAosrWorkspacePageProps {
   readonly onBackToObjects?: () => void;
   readonly onObjectSettingsClosed?: () => void;
   readonly folderName?: string | undefined;
+  readonly objectId?: string | undefined;
+  readonly objectTitle?: string | undefined;
   readonly sectionId?: string | undefined;
   readonly sectionName?: string | undefined;
   readonly settingsOpenRequest?: number;
@@ -128,6 +128,8 @@ export function DemoAosrWorkspacePage({
   onBackToObjects,
   onObjectSettingsClosed,
   folderName,
+  objectId,
+  objectTitle,
   sectionId,
   sectionName,
   settingsOpenRequest,
@@ -533,6 +535,8 @@ export function DemoAosrWorkspacePage({
         libraryRepresentativeForm={libraryRepresentativeForm}
         objectDefaults={objectDefaults}
         organizationSearch={organizationSearch}
+        objectId={objectId}
+        objectTitle={objectTitle}
         presentation="page"
         representativeSearch={representativeSearch}
         sectionId={sectionId}
@@ -857,6 +861,8 @@ export function DemoAosrWorkspacePage({
           libraryRepresentativeForm={libraryRepresentativeForm}
           objectDefaults={objectDefaults}
           organizationSearch={organizationSearch}
+          objectId={objectId}
+          objectTitle={objectTitle}
           representativeSearch={representativeSearch}
           sectionId={sectionId}
           sectionTemplateClipboard={sectionTemplateClipboard}

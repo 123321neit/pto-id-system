@@ -1,5 +1,6 @@
 import { useState, type SyntheticEvent } from 'react';
 
+import type { SectionTemplateClipboard } from '../app-shell/section-template-clipboard.js';
 import type {
   DemoAosrObjectDefaults,
   DemoAosrObjectDefaultsField,
@@ -26,6 +27,8 @@ interface DemoObjectSettingsPanelProps {
   readonly libraryRepresentativeForm: RepresentativeFormState;
   readonly objectDefaults: DemoAosrObjectDefaults;
   readonly organizationSearch: string;
+  readonly objectId?: string | undefined;
+  readonly objectTitle?: string | undefined;
   readonly presentation?: 'dialog' | 'page';
   readonly representativeSearch: string;
   readonly sectionId?: string | undefined;
@@ -50,10 +53,7 @@ interface DemoObjectSettingsPanelProps {
   readonly onSelectGlobalRepresentative: (representative: DemoAosrRepresentative) => void;
   readonly onCloseObjectSettings: () => void;
   readonly sectionName?: string | undefined;
-  readonly sectionTemplateClipboard?: {
-    readonly sourceSectionId: string;
-    readonly sourceSectionName: string;
-  } | null;
+  readonly sectionTemplateClipboard?: SectionTemplateClipboard | null;
   readonly onToggleHeaderOrganizationForm: () => void;
   readonly onToggleRepresentativeLibraryForm: () => void;
   readonly onUpdateHeaderOrganization: (
@@ -120,6 +120,8 @@ export function DemoObjectSettingsPanel({
   libraryRepresentativeForm,
   objectDefaults,
   organizationSearch,
+  objectId,
+  objectTitle,
   presentation = 'dialog',
   representativeSearch,
   sectionId,
@@ -157,6 +159,7 @@ export function DemoObjectSettingsPanel({
   const numberingScopeLabel = getNumberingScopeLabel(objectDefaults.objectTemplate.numberingScope);
   const isSectionScopedTemplate = sectionName !== undefined;
   const selectedSectionName = sectionName ?? 'выбранный раздел';
+  const selectedObjectTitle = objectTitle ?? 'текущий объект';
   const dialogTitle = isSectionScopedTemplate
     ? `Шаблонные значения раздела «${selectedSectionName}»`
     : 'Шаблонные значения';
@@ -164,6 +167,7 @@ export function DemoObjectSettingsPanel({
   const isClipboardFromCurrentSection =
     sectionTemplateClipboard !== null &&
     sectionTemplateClipboard !== undefined &&
+    sectionTemplateClipboard.sourceObjectId === objectId &&
     sectionTemplateClipboard.sourceSectionId === sectionId;
 
   return (
@@ -229,89 +233,73 @@ export function DemoObjectSettingsPanel({
 
         {isSectionScopedTemplate ? (
           <section className="form-section" aria-labelledby="section-template-copy-title">
-            <div className="object-numbering-heading">
-              <span>
+            <div className="template-copy-compact">
+              <div className="template-copy-compact__heading">
                 <h3 id="section-template-copy-title">Копирование шаблонных значений</h3>
-                <p>
-                  Можно скопировать шаблонные значения из другого раздела или вставить текущие
-                  значения в другой раздел. Папки, акты, выпущенные комплекты и файлы не копируются.
-                </p>
-                <p>
-                  Префикс нумерации целевого раздела не копируется: он остаётся своим, чтобы раздел
-                  не получил чужое обозначение.
-                </p>
-              </span>
-            </div>
-            <div className="template-copy-baseline">
-              <button
-                className="action-button action-button--primary"
-                disabled={onCopySectionTemplate === undefined}
-                onClick={onCopySectionTemplate}
-                type="button"
-              >
-                Скопировать шаблонные значения
-              </button>
+                <p>Скопируйте значения здесь, вставьте в другом разделе.</p>
+              </div>
 
-              {sectionTemplateClipboard === null || sectionTemplateClipboard === undefined ? (
-                <p className="object-folders__empty-copy">
-                  Буфер шаблонных значений пуст. Скопируйте значения в одном разделе, затем
-                  перейдите в другой раздел и вставьте их.
+              <div className="template-copy-compact__row">
+                <button
+                  className="compact-toggle compact-toggle--accent"
+                  disabled={onCopySectionTemplate === undefined}
+                  onClick={onCopySectionTemplate}
+                  type="button"
+                >
+                  Скопировать
+                </button>
+
+                <p className="template-copy-compact__status" role="note">
+                  {sectionTemplateClipboard === null || sectionTemplateClipboard === undefined
+                    ? 'Буфер пуст. Скопируйте значения в одном разделе, затем вставьте в другом.'
+                    : isClipboardFromCurrentSection
+                      ? 'В буфере значения этого же раздела. Вставка сюда недоступна.'
+                      : `В буфере: «${sectionTemplateClipboard.sourceSectionName}» · объект «${sectionTemplateClipboard.sourceObjectTitle}»`}
                 </p>
-              ) : (
-                <div className="template-copy-buffer" role="note">
-                  <strong>
-                    В буфере:{' '}
-                    {isClipboardFromCurrentSection
-                      ? 'шаблонные значения из этого же раздела'
-                      : `шаблонные значения из раздела «${sectionTemplateClipboard.sourceSectionName}»`}
-                  </strong>
-                  {isClipboardFromCurrentSection ? (
-                    <p>Нельзя вставить шаблонные значения туда же, откуда они были скопированы.</p>
-                  ) : (
-                    <p>
-                      Префикс раздела «{selectedSectionName}» сохранится своим. Папки, акты,
-                      комплекты и файлы не будут скопированы.
-                    </p>
-                  )}
+
+                {sectionTemplateClipboard === null ||
+                sectionTemplateClipboard === undefined ? null : (
                   <button
                     className="compact-toggle"
                     disabled={isClipboardFromCurrentSection || onPasteSectionTemplate === undefined}
                     onClick={onPasteSectionTemplate}
                     type="button"
                   >
-                    Вставить шаблонные значения
+                    Вставить
                   </button>
-                </div>
-              )}
-            </div>
+                )}
+              </div>
 
-            <div className="template-copy-summary" aria-label="Что будет скопировано">
-              <div>
-                <h4>Что будет скопировано</h4>
-                <ul>
-                  <li>объект и участники;</li>
-                  <li>организации/контрагенты;</li>
-                  <li>представители/подписанты;</li>
-                  <li>проектная документация;</li>
-                  <li>текст соответствия требованиям;</li>
-                  <li>дополнительные шаблонные данные;</li>
-                  <li>настройки нумерации, кроме префикса целевого раздела.</li>
-                </ul>
-              </div>
-              <div>
-                <h4>Что не копируется</h4>
-                <ul>
-                  <li>папки;</li>
-                  <li>акты;</li>
-                  <li>выпущенные комплекты;</li>
-                  <li>файлы;</li>
-                  <li>ручные snapshot-версии актов.</li>
-                </ul>
-              </div>
+              <details className="template-copy-details">
+                <summary>Что копируется и что не копируется</summary>
+                <div className="template-copy-details__grid">
+                  <div>
+                    <h4>Что копируется</h4>
+                    <p>
+                      Объект и участники, организации, представители, проектная документация, текст
+                      соответствия, дополнительные данные и настройки нумерации кроме префикса.
+                    </p>
+                  </div>
+                  <div>
+                    <h4>Что не копируется</h4>
+                    <p>Папки, акты, выпущенные комплекты, файлы и ручные версии актов.</p>
+                  </div>
+                </div>
+              </details>
+
+              {sectionTemplateClipboard !== null &&
+              sectionTemplateClipboard !== undefined &&
+              !isClipboardFromCurrentSection ? (
+                <p className="template-copy-compact__hint">
+                  При вставке в раздел «{selectedSectionName}» объекта «{selectedObjectTitle}»
+                  префикс текущего раздела сохранится.
+                </p>
+              ) : null}
+
+              {lastTemplateCopyMessage !== '' ? (
+                <p className="template-copy-message">{lastTemplateCopyMessage}</p>
+              ) : null}
             </div>
-            {lastTemplateCopyMessage !== '' ? (
-              <p className="template-copy-message">{lastTemplateCopyMessage}</p>
-            ) : null}
           </section>
         ) : null}
 

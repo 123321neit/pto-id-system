@@ -71,6 +71,24 @@ describe('frontend-only documentation section model', () => {
     expect(copiedSettings.sectionTemplate.id).toBe(targetSection.templateSettingsId);
     expect(copiedSettings.sectionTemplate.sectionId).toBe(targetSection.id);
     expect(copiedSettings.objectTemplate).toBe(copiedSettings.sectionTemplate);
+    expect(copiedSettings.headerOrganizations).not.toBe(
+      sourceSettingsWithChanges.headerOrganizations,
+    );
+    expect(copiedSettings.representativeLibrary).not.toBe(
+      sourceSettingsWithChanges.representativeLibrary,
+    );
+    expect(copiedSettings.sectionTemplate.counterparties).not.toBe(
+      sourceSettingsWithChanges.sectionTemplate.counterparties,
+    );
+    expect(copiedSettings.sectionTemplate.representativeGroups).not.toBe(
+      sourceSettingsWithChanges.sectionTemplate.representativeGroups,
+    );
+    expect(copiedSettings.sectionTemplate.representativeGroups[0]).not.toBe(
+      sourceSettingsWithChanges.sectionTemplate.representativeGroups[0],
+    );
+    expect(copiedSettings.sectionTemplate.representativeGroups[0]?.members).not.toBe(
+      sourceSettingsWithChanges.sectionTemplate.representativeGroups[0]?.members,
+    );
     expect(copiedSettings.sectionTemplate.numberingPrefix).toBe(
       targetSettings.sectionTemplate.numberingPrefix,
     );

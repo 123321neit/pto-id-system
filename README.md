@@ -1,6 +1,8 @@
-# PTO ID System
+# ИДея
 
-Web-система автоматизации исполнительной документации для инженеров ПТО.
+ИДея — рабочее место ПТО для исполнительной документации.
+
+Акты, реестры, сертификаты и комплекты ИД в одном рабочем месте.
 
 Текущий статус:
 
@@ -33,7 +35,7 @@ labels, grouping, order and subscripts. Linked acts resolve current printable
 data through `libraries -> SectionTemplate -> printState`; manual acts use one
 complete `manualTemplateSnapshot`. There are no partial template-field
 overrides. The UI calls these section-level live values
-`Настройки шаблона раздела`.
+`Шаблонные значения раздела`.
 Representative groups are real groups with independent ids and any number of
 members. `AosrPrintState.document` keeps raw `number` and `date`; renderers add
 `№` and date formatting. The work contractor, additional information and copy
@@ -42,21 +44,27 @@ sections are collapsed by default; users can expand them to verify values and
 must explicitly switch the whole act to manual mode before changing them.
 
 Section template UX summary: the accepted future UI should open
-`Настройки шаблона раздела` with a compact summary of the live chain,
+`Шаблонные значения раздела` with a compact summary of the live chain,
 organization blocks, representative groups and numbering rule before detailed
 editing. Organization and representative sections explain the
 global-library-to-section-template assignment flow. Section template settings
-may be copied into another section in the same object or another object by
-copying repeated texts, numbering policy and library links/assignments, without
-copying documents, folders, released outputs or library records themselves.
+may be copied through a frontend clipboard into another section in the same
+object or another object by copying repeated texts, numbering policy and library
+links/assignments, without copying documents, folders, released outputs or
+library records themselves.
 
 Frontend-only section workspace UX: the object workspace now shows
 user-defined documentation sections before folders. The demo starts with
 `Вентиляция` and `Отопление`, lets the user create a section, create folders
 inside the selected section, open section-scoped AOSR documents, edit
-`Настройки шаблона раздела`, copy those template settings into another section
-and view final ID as a selected-section package. This is still in-memory
+`Шаблонные значения раздела`, copy those template settings into another section
+or another object and view final ID as a selected-section package. This is still in-memory
 frontend mock behavior only.
+
+Next UX-to-generation step: connect one DOCX template for AOSR, preferably as a
+repository/public asset suitable for Vercel, and generate from `AosrPrintState`
+rather than from UI components. This README update does not introduce DOCX/PDF
+generation yet.
 
 Frontend-only section model cleanup: ID folders are now represented in the
 frontend mock as `DemoIdFolder` in `object-id-folders.ts`, not as object
@@ -138,7 +146,7 @@ object-level header organization blocks, a configurable object representative
 library, mock certificate-library selections, a draft list and a document-like
 demo preview that resembles a printed act page. Header and representative
 labels are object configuration, not global fixed schema. It is clearly labelled
-`ДЕМО / демонстрационные данные / не для работы в продуктиве` and intentionally
+`ИДея / демо-данные / не для работы в продуктиве` and intentionally
 adds no Prisma schema, migrations, real auth, backend routes, persistence,
 uploads, document generation, AI, share codes or grants.
 
@@ -341,7 +349,7 @@ logic was added.
 ADR 0006 records the reusable entity rule: certificates, organizations and
 representatives are global user-level libraries. Sections store template
 assignments and links to those entities through `SectionTemplate` /
-`настройки шаблона раздела`. ADR 0007 clarifies the working model: active
+`Шаблонные значения раздела`. ADR 0007 clarifies the working model: active
 linked acts resolve counterparty/signatory data live through the current section
 template; an explicit whole-act switch creates one complete manual snapshot;
 released revisions/packages freeze exact output separately. Certificate use
@@ -674,7 +682,7 @@ Scaffold включает:
 - frontend-only live template history: linked AOSR drafts previously resolved
   printable data from `ObjectTemplate` and global counterparty/signatory
   libraries; ADR 0008 supersedes that future implementation scope with
-  `SectionTemplate` / `настройки шаблона раздела`. Manual drafts use a complete
+  `SectionTemplate` / `Шаблонные значения раздела`. Manual drafts use a complete
   snapshot with no partial overrides; selected certificates/object documents
   keep current mock printable copies only for frontend compatibility, while the
   future production contract keeps explicit evidence relations and freezes exact

@@ -28,11 +28,11 @@ export function MockObjectDashboardPage({
       <aside className="app-sidebar" aria-label="Навигация демо-приложения">
         <div className="app-sidebar__brand">
           <span className="app-sidebar__logo" aria-hidden="true">
-            П
+            ИД
           </span>
           <span>
-            <strong>ПТО</strong>
-            <small>Исполнительная документация</small>
+            <strong>ИДея</strong>
+            <small>Рабочее место ПТО</small>
           </span>
         </div>
 
@@ -89,11 +89,11 @@ export function MockObjectDashboardPage({
           <div className="dashboard-content">
             <header className="dashboard-hero">
               <div>
-                <p className="section-kicker">Рабочий стол</p>
-                <h1 id="objects-dashboard-title">Мои объекты</h1>
-                <p>
-                  Выберите объект, чтобы открыть рабочее пространство исполнительной документации.
-                </p>
+                <p className="section-kicker">ИДея</p>
+                <h1 id="objects-dashboard-title">
+                  ИДея — рабочее место ПТО для исполнительной документации
+                </h1>
+                <p>Акты, реестры, сертификаты и комплекты ИД в одном рабочем месте.</p>
               </div>
               <button className="primary-action" type="button">
                 + Новый объект
@@ -119,7 +119,7 @@ export function MockObjectDashboardPage({
                     <ObjectCard key={object.id} object={object} onOpenObject={onOpenObject} />
                   ))
                 ) : (
-                  <p className="empty-state">По такому запросу демо-объекты не найдены.</p>
+                  <p className="empty-state">В ИДее по такому запросу объекты не найдены.</p>
                 )}
               </section>
 
