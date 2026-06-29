@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 
 import { demoAosrWorkspace, type DemoAosrDraft } from '../aosr-demo/demo-aosr-workspace.js';
 import { useDemoStore } from '../demo-store/demo-store.js';
@@ -26,6 +26,7 @@ export function ObjectFinalPackagePage({
   sectionName,
 }: ObjectFinalPackagePageProps = {}): React.JSX.Element {
   const { certificates, objectDocuments } = useDemoStore();
+  const [downloadMessage, setDownloadMessage] = useState('');
   const finalPackage = useMemo(
     () => buildSectionFinalPackageModel(drafts, objectDocuments, certificates, folders),
     [certificates, drafts, objectDocuments, folders],
@@ -79,9 +80,22 @@ export function ObjectFinalPackagePage({
             Документы папок выбранного раздела собираются без дублирования сертификатов и файлов.
           </p>
         </div>
-        <button className="action-button" disabled type="button">
+        <button
+          className="action-button"
+          onClick={() => {
+            setDownloadMessage(
+              'Генерация DOCX/PDF будет подключена позже. Сейчас показан состав итоговой ИД по разделу.',
+            );
+          }}
+          type="button"
+        >
           Скачать итоговую ИД по разделу
         </button>
+        {downloadMessage === '' ? null : (
+          <p className="final-package-download__message" role="note">
+            {downloadMessage}
+          </p>
+        )}
       </section>
     </section>
   );
@@ -97,6 +111,7 @@ export function ObjectIntermediatePackagePage({
   folder,
 }: ObjectIntermediatePackagePageProps): React.JSX.Element {
   const { certificates, objectDocuments } = useDemoStore();
+  const [printMessage, setPrintMessage] = useState('');
   const intermediatePackage = useMemo(
     () => buildIntermediateIdPackageModel(folder, drafts, objectDocuments, certificates),
     [certificates, drafts, objectDocuments, folder],
@@ -143,9 +158,22 @@ export function ObjectIntermediatePackagePage({
           <h3>Печать промежуточной ИД по папке</h3>
           <p>Комплект печатается из текущего состава папки.</p>
         </div>
-        <button className="action-button" disabled type="button">
+        <button
+          className="action-button"
+          onClick={() => {
+            setPrintMessage(
+              'Промежуточная ИД по папке пока доступна как экран состава. Генерация файла появится после UX-baseline.',
+            );
+          }}
+          type="button"
+        >
           Печать промежуточной ИД по папке
         </button>
+        {printMessage === '' ? null : (
+          <p className="final-package-download__message" role="note">
+            {printMessage}
+          </p>
+        )}
       </section>
     </section>
   );

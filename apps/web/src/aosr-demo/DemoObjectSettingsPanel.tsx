@@ -17,10 +17,6 @@ import { DemoHeaderOrganizationsPanel } from './DemoHeaderOrganizationsPanel.js'
 import { DemoObjectRepresentativesPanel } from './DemoObjectRepresentativesPanel.js';
 
 interface DemoObjectSettingsPanelProps {
-  readonly copyTargetSections: readonly {
-    readonly id: string;
-    readonly name: string;
-  }[];
   readonly globalOrganizations: readonly DemoGlobalOrganization[];
   readonly globalRepresentatives: readonly DemoAosrRepresentative[];
   readonly headerOrganizationForm: HeaderOrganizationFormState;
@@ -32,6 +28,7 @@ interface DemoObjectSettingsPanelProps {
   readonly organizationSearch: string;
   readonly presentation?: 'dialog' | 'page';
   readonly representativeSearch: string;
+  readonly sectionId?: string | undefined;
   readonly onAddHeaderOrganization: (event: SyntheticEvent<HTMLFormElement>) => void;
   readonly onAddLibraryRepresentative: (event: SyntheticEvent<HTMLFormElement>) => void;
   readonly onChangeHeaderOrganizationForm: (
@@ -44,8 +41,7 @@ interface DemoObjectSettingsPanelProps {
   ) => void;
   readonly onChangeOrganizationSearch: (value: string) => void;
   readonly onChangeRepresentativeSearch: (value: string) => void;
-  readonly onCopySectionTemplateFromSource?: ((sectionId: string) => void) | undefined;
-  readonly onCopySectionTemplateToTarget?: ((sectionId: string) => void) | undefined;
+  readonly onCopySectionTemplate?: (() => void) | undefined;
   readonly onMoveHeaderOrganization: (
     headerOrganizationId: string,
     direction: MoveDirection,
@@ -54,6 +50,10 @@ interface DemoObjectSettingsPanelProps {
   readonly onSelectGlobalRepresentative: (representative: DemoAosrRepresentative) => void;
   readonly onCloseObjectSettings: () => void;
   readonly sectionName?: string | undefined;
+  readonly sectionTemplateClipboard?: {
+    readonly sourceSectionId: string;
+    readonly sourceSectionName: string;
+  } | null;
   readonly onToggleHeaderOrganizationForm: () => void;
   readonly onToggleRepresentativeLibraryForm: () => void;
   readonly onUpdateHeaderOrganization: (
@@ -64,6 +64,7 @@ interface DemoObjectSettingsPanelProps {
   readonly onUpdateNumberingAffix: (field: DemoDocumentNumberingAffixField, value: string) => void;
   readonly onUpdateNumberingScope: (numberingScope: DemoDocumentNumberingScope) => void;
   readonly onUpdateObjectDefaults: (field: DemoAosrObjectDefaultsField, value: string) => void;
+  readonly onPasteSectionTemplate?: (() => void) | undefined;
   readonly onUpdateRepresentative: (
     groupId: string,
     memberId: string,
@@ -110,7 +111,6 @@ function getNumberingScopeLabel(numberingScope: DemoDocumentNumberingScope): str
 }
 
 export function DemoObjectSettingsPanel({
-  copyTargetSections,
   globalOrganizations,
   globalRepresentatives,
   headerOrganizationForm,
@@ -122,31 +122,31 @@ export function DemoObjectSettingsPanel({
   organizationSearch,
   presentation = 'dialog',
   representativeSearch,
+  sectionId,
   onAddHeaderOrganization,
   onAddLibraryRepresentative,
   onChangeHeaderOrganizationForm,
   onChangeLibraryRepresentativeForm,
   onChangeOrganizationSearch,
   onChangeRepresentativeSearch,
-  onCopySectionTemplateFromSource,
-  onCopySectionTemplateToTarget,
+  onCopySectionTemplate,
   onMoveHeaderOrganization,
   onSelectGlobalOrganization,
   onSelectGlobalRepresentative,
   onCloseObjectSettings,
   sectionName,
+  sectionTemplateClipboard,
   onToggleHeaderOrganizationForm,
   onToggleRepresentativeLibraryForm,
   onUpdateHeaderOrganization,
   onUpdateNumberingAffix,
   onUpdateNumberingScope,
   onUpdateObjectDefaults,
+  onPasteSectionTemplate,
   onUpdateRepresentative,
   onUpdateRepresentativeGroupTitle,
 }: DemoObjectSettingsPanelProps): React.JSX.Element {
   const [activeSectionId, setActiveSectionId] = useState<ObjectSettingsSectionId>('main');
-  const [copySourceSectionId, setCopySourceSectionId] = useState('');
-  const [copyTargetSectionId, setCopyTargetSectionId] = useState('');
   const representativeGroupCount = objectDefaults.objectTemplate.representativeGroups.length;
   const representativeMemberCount = objectDefaults.objectTemplate.representativeGroups.reduce(
     (count, group) => count + group.members.length,
@@ -161,12 +161,10 @@ export function DemoObjectSettingsPanel({
     ? `Шаблонные значения раздела «${selectedSectionName}»`
     : 'Шаблонные значения';
   const isPagePresentation = presentation === 'page';
-  const fallbackCopySectionId = copyTargetSections[0]?.id ?? '';
-  const selectedCopySourceSectionId =
-    copySourceSectionId === '' ? fallbackCopySectionId : copySourceSectionId;
-  const selectedCopyTargetSectionId =
-    copyTargetSectionId === '' ? fallbackCopySectionId : copyTargetSectionId;
-  const hasCopyTargetSections = copyTargetSections.length > 0;
+  const isClipboardFromCurrentSection =
+    sectionTemplateClipboard !== null &&
+    sectionTemplateClipboard !== undefined &&
+    sectionTemplateClipboard.sourceSectionId === sectionId;
 
   return (
     <div className={isPagePresentation ? 'object-settings-page' : 'object-settings-overlay'}>
@@ -245,67 +243,46 @@ export function DemoObjectSettingsPanel({
               </span>
             </div>
             <div className="template-copy-baseline">
-              <div className="template-copy-baseline__controls">
-                <label>
-                  Раздел-источник
-                  <select
-                    disabled={!hasCopyTargetSections}
-                    onChange={(event) => {
-                      setCopySourceSectionId(event.currentTarget.value);
-                    }}
-                    value={selectedCopySourceSectionId}
-                  >
-                    {copyTargetSections.map((sourceSection) => (
-                      <option key={sourceSection.id} value={sourceSection.id}>
-                        {sourceSection.name}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-                <button
-                  className="compact-toggle"
-                  disabled={!hasCopyTargetSections}
-                  onClick={() => {
-                    if (selectedCopySourceSectionId !== '') {
-                      onCopySectionTemplateFromSource?.(selectedCopySourceSectionId);
-                    }
-                  }}
-                  type="button"
-                >
-                  Скопировать из выбранного раздела
-                </button>
-              </div>
+              <button
+                className="action-button action-button--primary"
+                disabled={onCopySectionTemplate === undefined}
+                onClick={onCopySectionTemplate}
+                type="button"
+              >
+                Скопировать шаблонные значения
+              </button>
 
-              <div className="template-copy-baseline__controls">
-                <label>
-                  Раздел-получатель
-                  <select
-                    disabled={!hasCopyTargetSections}
-                    onChange={(event) => {
-                      setCopyTargetSectionId(event.currentTarget.value);
-                    }}
-                    value={selectedCopyTargetSectionId}
+              {sectionTemplateClipboard === null || sectionTemplateClipboard === undefined ? (
+                <p className="object-folders__empty-copy">
+                  Буфер шаблонных значений пуст. Скопируйте значения в одном разделе, затем
+                  перейдите в другой раздел и вставьте их.
+                </p>
+              ) : (
+                <div className="template-copy-buffer" role="note">
+                  <strong>
+                    В буфере:{' '}
+                    {isClipboardFromCurrentSection
+                      ? 'шаблонные значения из этого же раздела'
+                      : `шаблонные значения из раздела «${sectionTemplateClipboard.sourceSectionName}»`}
+                  </strong>
+                  {isClipboardFromCurrentSection ? (
+                    <p>Нельзя вставить шаблонные значения туда же, откуда они были скопированы.</p>
+                  ) : (
+                    <p>
+                      Префикс раздела «{selectedSectionName}» сохранится своим. Папки, акты,
+                      комплекты и файлы не будут скопированы.
+                    </p>
+                  )}
+                  <button
+                    className="compact-toggle"
+                    disabled={isClipboardFromCurrentSection || onPasteSectionTemplate === undefined}
+                    onClick={onPasteSectionTemplate}
+                    type="button"
                   >
-                    {copyTargetSections.map((targetSection) => (
-                      <option key={targetSection.id} value={targetSection.id}>
-                        {targetSection.name}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-                <button
-                  className="compact-toggle"
-                  disabled={!hasCopyTargetSections}
-                  onClick={() => {
-                    if (selectedCopyTargetSectionId !== '') {
-                      onCopySectionTemplateToTarget?.(selectedCopyTargetSectionId);
-                    }
-                  }}
-                  type="button"
-                >
-                  Скопировать в выбранный раздел
-                </button>
-              </div>
+                    Вставить шаблонные значения
+                  </button>
+                </div>
+              )}
             </div>
 
             <div className="template-copy-summary" aria-label="Что будет скопировано">
@@ -332,15 +309,6 @@ export function DemoObjectSettingsPanel({
                 </ul>
               </div>
             </div>
-
-            {!hasCopyTargetSections ? (
-              <p className="object-folders__empty-copy">
-                Создайте ещё один раздел, чтобы можно было копировать шаблонные значения.
-              </p>
-            ) : null}
-            <p className="object-folders__empty-copy">
-              Копирование из другого объекта и сохранённые шаблоны появятся позже.
-            </p>
             {lastTemplateCopyMessage !== '' ? (
               <p className="template-copy-message">{lastTemplateCopyMessage}</p>
             ) : null}
@@ -468,7 +436,10 @@ export function DemoObjectSettingsPanel({
                       />
                       <span>
                         <strong>Сквозная по объекту</strong>
-                        <small>Одна последовательность по всем разделам и папкам объекта</small>
+                        <small>
+                          Одна последовательность по всем разделам и папкам объекта. Префикс
+                          остаётся префиксом раздела акта.
+                        </small>
                       </span>
                     </label>
                     <label>

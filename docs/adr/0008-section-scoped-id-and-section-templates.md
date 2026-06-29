@@ -44,7 +44,7 @@ The template used by linked working acts belongs to the section, not directly to
 the object. In the UI this is called:
 
 ```text
-Настройки шаблона раздела
+Шаблонные значения раздела
 ```
 
 `SectionTemplate` owns section-specific repeated print values, numbering policy,
@@ -105,14 +105,25 @@ The target section keeps its own numbering prefix. The UI must make this clear
 to the user so copying a ventilation template into a heating section cannot
 silently give the heating section a ventilation prefix.
 
+The UI copy flow should be understandable as a clipboard operation:
+
+```text
+Скопировать шаблонные значения -> перейти в другой раздел -> Вставить шаблонные значения
+```
+
+Pasting into the same source section is not allowed. The clipboard payload is a
+section template settings snapshot and must still be retargeted to the target
+section on paste.
+
 ## Consequences
 
 - Intermediate ID is derived from one folder inside one section.
 - Final ID is derived from one section, across that section's folders.
 - Object-wide final ID is not the default canonical package scope.
 - Folder names remain arbitrary user-defined names.
-- Numbering policy should be section-scoped or folder-scoped, not object-scoped
-  by default.
+- Numbering policy may be object-scoped, section-scoped or folder-scoped.
+  Object-scoped numbering means one sequence across sections and folders, while
+  the rendered number still uses the prefix of the act's own section.
 - Frontend and future backend state should key section template settings by the
   section's `templateSettingsId`, not by the visible section name and not by an
   inferred short code.

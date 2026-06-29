@@ -1310,7 +1310,7 @@ Object
 - промежуточная ИД собирается по папке внутри раздела;
 - итоговая ИД собирается по разделу, а не по объекту целиком по умолчанию;
 - live template для актов принадлежит разделу и называется
-  `Настройки шаблона раздела`;
+  `Шаблонные значения раздела`;
 - future implementation term is `SectionTemplate`, not `ObjectTemplate`;
 - linked acts resolve through
   `global libraries -> SectionTemplate -> linked act`.
@@ -1349,7 +1349,7 @@ A: Object workspace now has a visible frontend-only section layer:
 ```text
 Object
   -> Раздел ИД
-      -> Настройки шаблона раздела
+      -> Шаблонные значения раздела
       -> Папки ИД
           -> Документы
 ```
@@ -1362,7 +1362,7 @@ Object
 - создание папки внутри выбранного раздела;
 - открытие документов и создание АОСР внутри выбранного раздела/папки;
 - подписи linked-актов как `По шаблону раздела` в объектном workspace;
-- `Настройки шаблона раздела` вместо object-level template wording;
+- `Шаблонные значения раздела` вместо object-level template wording;
 - копирование настроек шаблона раздела в другой demo-раздел;
 - итоговая ИД и финальный реестр по выбранному разделу.
 
@@ -1506,14 +1506,14 @@ A: The frontend mock was aligned with the stricter section-first contract:
 
 - object overview no longer contains the `Последние документы` block;
 - the visible path is `Объект → раздел → папка → акт`;
-- the left navigation says `Папки`, `Итоговая ИД по разделу` and
-  `Шаблонные значения раздела`;
+- the left navigation is now a section/folder tree with sections, template
+  values, folders and final ID by section, but without acts;
 - folder screens show act navigation and a compact entry to
   `Промежуточная ИД по папке`;
 - the registry table is only on the intermediate ID page, not in the working
   folder screen;
 - final package wording is explicitly section-scoped;
-- section template copying is a compact source/target section flow;
+- section template copying uses a frontend copy/paste clipboard flow;
 - copying keeps the target section prefix and copies texts, library links and
   numbering settings;
 - real cross-object template copy and saved templates remain future work and
@@ -1523,6 +1523,9 @@ A: The frontend mock was aligned with the stricter section-first contract:
 - numbering previews show `n` as the placeholder, with a first-number example;
 - manual number edits now show a manual-numbering warning while keeping manual
   template mode separate.
+- creating an act inside a folder immediately opens the created act editor;
+- final/intermediate package actions are active mock buttons with explanatory
+  messages, not disabled blockers.
 
 Still not implemented:
 
@@ -1530,5 +1533,41 @@ Still not implemented:
 - Prisma models/migrations;
 - persistence;
 - real cross-object copy command;
+- DOCX/PDF/ZIP generation;
+- production number reservation or issued package snapshots.
+
+---
+
+## 55. Object workspace clipboard, tree navigation and mock package actions
+
+### Q: Что было уточнено после коммита `bdaeb91`?
+
+A: The frontend mock now follows the intended object workplace behavior more
+closely:
+
+- after `Папка → Создать акт → Создать акт`, the newly created act opens in the
+  editor immediately;
+- act creation is still available only inside a folder;
+- empty/manual numbers do not block opening the editor;
+- final and intermediate package buttons are active mock actions and explain
+  that real DOCX/PDF/file generation will be connected later;
+- section template values are copied through a UI clipboard:
+  `Скопировать шаблонные значения` → go to another section →
+  `Вставить шаблонные значения`;
+- inserting into the same source section is disabled;
+- the target section keeps its own numbering prefix;
+- folders, acts, issued packages, files and manual snapshot act versions are
+  not copied;
+- the global left navigation is a section/folder tree and does not show acts;
+- the act editor still keeps the current-folder act list for manual numbering;
+- `Сквозная по объекту` explicitly explains that the sequence is shared across
+  the object, while the prefix remains the prefix of the act section.
+
+Still not implemented:
+
+- backend/API routes;
+- Prisma models/migrations;
+- persistence;
+- real cross-object clipboard persistence;
 - DOCX/PDF/ZIP generation;
 - production number reservation or issued package snapshots.

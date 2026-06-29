@@ -324,6 +324,24 @@ button {
   content: '';
 }
 
+.object-workspace-tree,
+.object-workspace-tree__children {
+  display: grid;
+  gap: 5px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.object-workspace-tree__section {
+  display: grid;
+  gap: 5px;
+}
+
+.object-workspace-tree__children {
+  margin-left: 4px;
+}
+
 .object-workspace-main {
   min-width: 0;
   padding: 24px;
@@ -1959,6 +1977,18 @@ button {
   font-size: 0.88rem;
   font-weight: 700;
   line-height: 1.5;
+}
+
+.final-package-download__message {
+  grid-column: 1 / -1;
+  width: fit-content;
+  border: 1px solid #bfdbfe;
+  border-radius: 999px;
+  background: #eff6ff;
+  padding: 7px 10px;
+  color: #1d4ed8 !important;
+  font-size: 0.8rem !important;
+  font-weight: 820 !important;
 }
 
 .dashboard-page {
@@ -3817,6 +3847,29 @@ h3 {
 .template-copy-baseline {
   display: grid;
   gap: 12px;
+}
+
+.template-copy-buffer {
+  display: grid;
+  gap: 8px;
+  border: 1px solid #d8e3ee;
+  border-radius: 8px;
+  background: #f8fbff;
+  padding: 13px;
+}
+
+.template-copy-buffer strong {
+  color: #172033;
+  font-size: 0.9rem;
+  line-height: 1.35;
+}
+
+.template-copy-buffer p {
+  margin: 0;
+  color: #536268;
+  font-size: 0.82rem;
+  font-weight: 720;
+  line-height: 1.45;
 }
 
 .template-copy-baseline__controls {

@@ -99,7 +99,7 @@ Current frontend section workspace mock, introduced 2026-06-23:
   folder-scoped inside that section.
 - AOSR document creation and numbering proposals use the selected section's
   folders and section template settings.
-- `Настройки шаблона раздела` is visible in the object workspace and can copy
+- `Шаблонные значения раздела` is visible in the object workspace and can copy
   repeated texts, numbering settings and global-library assignment links into
   another demo section.
 - Final ID view is filtered to the selected section's folders.
@@ -117,7 +117,7 @@ Historical object-template UX, superseded for future implementation by ADR 0008:
   `global library -> object-template assignment -> linked act`.
 - This UX layer does not add backend/API routes, Prisma schema, migrations,
   storage, document generation or production template lifecycle behavior.
-  Future UI wording should use `Настройки шаблона раздела`.
+  Future UI wording should use `Шаблонные значения раздела`.
 
 Current future backend contract, clarified 2026-06-23 and amended by ADR 0008:
 
@@ -5137,7 +5137,7 @@ delete/move/reorder lifecycle or generation was introduced.
   enum values;
 - intermediate ID is derived from one folder inside one section;
 - final ID is derived from one section across that section's folders;
-- the UI-facing template is `Настройки шаблона раздела`;
+- the UI-facing template is `Шаблонные значения раздела`;
 - future implementation term is `SectionTemplate`, not `ObjectTemplate`;
 - linked acts resolve template-owned data through
   `global libraries -> SectionTemplate -> linked act`;
@@ -5180,7 +5180,7 @@ delete/move/reorder lifecycle or generation was introduced.
   selected section;
 - folder pages, AOSR creation, numbering proposals and linked template labels
   resolve through the selected section;
-- object workspace settings now open as `Настройки шаблона раздела`;
+- object workspace settings now open as `Шаблонные значения раздела`;
 - section template settings can be copied into another demo section, carrying
   repeated texts, numbering policy and global-library links/assignments;
 - final ID package and derived final registry are scoped to the selected
@@ -5646,16 +5646,17 @@ delete/move/reorder lifecycle or generation was introduced.
 
 - object overview no longer shows `Последние документы`; it explains the user
   path `Объект → раздел → папка → акт`;
-- left navigation uses `Папки`, `Итоговая ИД по разделу` and
-  `Шаблонные значения раздела`;
+- left navigation is a section/folder tree: sections, section template values,
+  folders and final ID by section are visible, but acts are not shown in the
+  global tree;
 - folders show the current folder act list and a compact action to open
   `Промежуточная ИД по папке`;
 - folder registry/table is not embedded in the working folder screen; registry
   and print composition live on the intermediate ID package page;
 - final package wording is section-scoped: `Итоговая ИД по разделу`;
-- section template copy UI is a compact block with source section, target
-  section and explicit note that cross-object copying/saved templates are future
-  work;
+- section template copy UI uses a frontend clipboard model:
+  `Скопировать шаблонные значения` in one section, then
+  `Вставить шаблонные значения` in another section;
 - copying section template values copies repeated texts, library links and
   numbering settings, but preserves the target section numbering prefix;
 - act creation uses a real radiogroup selection for the currently available
@@ -5665,6 +5666,9 @@ delete/move/reorder lifecycle or generation was introduced.
 - manual edits to an act number mark numbering as manual and show a warning
   without switching the whole act to manual-template mode;
 - unused frontend mock fields were removed from demo section/draft data.
+- creating an act inside a folder immediately opens the created act editor;
+- final/intermediate package buttons are active mock actions with explanatory
+  messages, not disabled blockers.
 
 Что не было введено:
 

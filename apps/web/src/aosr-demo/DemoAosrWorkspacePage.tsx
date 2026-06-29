@@ -78,23 +78,23 @@ import { DemoObjectSettingsPanel } from './DemoObjectSettingsPanel.js';
 const aosrActType = getDemoActTypeById('aosr');
 
 interface DemoAosrWorkspacePageProps {
-  readonly copyTargetSections?: readonly {
-    readonly id: string;
-    readonly name: string;
-  }[];
   readonly drafts?: readonly DemoAosrDraft[];
   readonly initialDocumentPreviewOpen?: boolean;
   readonly initialSelectedDraftId?: string;
   readonly isEmbeddedInObjectWorkspace?: boolean;
   readonly isSectionTemplateSettingsPage?: boolean;
   readonly lastTemplateCopyMessage?: string;
+  readonly sectionTemplateClipboard?: {
+    readonly sourceSectionId: string;
+    readonly sourceSectionName: string;
+  } | null;
   readonly sectionTemplateSettings?: DemoSectionTemplateSettings;
   /** Legacy compatibility alias for older standalone AOSR demo helpers. */
   readonly objectDefaults?: DemoAosrObjectDefaults;
   readonly onDraftsChange?: (drafts: readonly DemoAosrDraft[]) => void;
-  readonly onCopySectionTemplateFromSource?: (sectionId: string) => void;
-  readonly onCopySectionTemplateToTarget?: (sectionId: string) => void;
+  readonly onCopySectionTemplate?: () => void;
   readonly onCreateActInFolder?: () => void;
+  readonly onPasteSectionTemplate?: () => void;
   readonly onSectionTemplateSettingsChange?: (
     sectionTemplateSettings: DemoSectionTemplateSettings,
   ) => void;
@@ -103,30 +103,32 @@ interface DemoAosrWorkspacePageProps {
   readonly onBackToObjects?: () => void;
   readonly onObjectSettingsClosed?: () => void;
   readonly folderName?: string | undefined;
+  readonly sectionId?: string | undefined;
   readonly sectionName?: string | undefined;
   readonly settingsOpenRequest?: number;
   readonly visibleDraftIds?: readonly string[];
 }
 
 export function DemoAosrWorkspacePage({
-  copyTargetSections = [],
   drafts: controlledDrafts,
   initialDocumentPreviewOpen = false,
   initialSelectedDraftId,
   isEmbeddedInObjectWorkspace = false,
   isSectionTemplateSettingsPage = false,
   lastTemplateCopyMessage = '',
+  sectionTemplateClipboard = null,
   sectionTemplateSettings: controlledSectionTemplateSettings,
   objectDefaults: controlledObjectDefaults,
   onDraftsChange,
-  onCopySectionTemplateFromSource,
-  onCopySectionTemplateToTarget,
+  onCopySectionTemplate,
   onCreateActInFolder,
+  onPasteSectionTemplate,
   onSectionTemplateSettingsChange,
   onObjectDefaultsChange,
   onBackToObjects,
   onObjectSettingsClosed,
   folderName,
+  sectionId,
   sectionName,
   settingsOpenRequest,
   visibleDraftIds,
@@ -522,7 +524,6 @@ export function DemoAosrWorkspacePage({
   if (isSectionTemplateSettingsPage) {
     return (
       <DemoObjectSettingsPanel
-        copyTargetSections={copyTargetSections}
         globalOrganizations={globalOrganizations}
         globalRepresentatives={globalRepresentatives}
         headerOrganizationForm={headerOrganizationForm}
@@ -534,6 +535,8 @@ export function DemoAosrWorkspacePage({
         organizationSearch={organizationSearch}
         presentation="page"
         representativeSearch={representativeSearch}
+        sectionId={sectionId}
+        sectionTemplateClipboard={sectionTemplateClipboard}
         onAddHeaderOrganization={addConfiguredHeaderOrganization}
         onAddLibraryRepresentative={addLibraryRepresentative}
         onChangeHeaderOrganizationForm={updateHeaderOrganizationForm}
@@ -541,8 +544,7 @@ export function DemoAosrWorkspacePage({
         onChangeOrganizationSearch={setOrganizationSearch}
         onChangeRepresentativeSearch={setRepresentativeSearch}
         onCloseObjectSettings={closeObjectSettings}
-        onCopySectionTemplateFromSource={onCopySectionTemplateFromSource}
-        onCopySectionTemplateToTarget={onCopySectionTemplateToTarget}
+        onCopySectionTemplate={onCopySectionTemplate}
         onMoveHeaderOrganization={(headerOrganizationId, direction) => {
           commitObjectDefaults((currentDefaults) =>
             moveHeaderOrganizationBlock(currentDefaults, headerOrganizationId, direction),
@@ -569,6 +571,7 @@ export function DemoAosrWorkspacePage({
           );
         }}
         onUpdateObjectDefaults={updateObjectDefaults}
+        onPasteSectionTemplate={onPasteSectionTemplate}
         onUpdateRepresentative={updateObjectRepresentativeValue}
         onUpdateRepresentativeGroupTitle={(groupId, value) => {
           commitObjectDefaults((currentDefaults) =>
@@ -845,7 +848,6 @@ export function DemoAosrWorkspacePage({
 
       {isObjectSettingsOpen ? (
         <DemoObjectSettingsPanel
-          copyTargetSections={copyTargetSections}
           globalOrganizations={globalOrganizations}
           globalRepresentatives={globalRepresentatives}
           headerOrganizationForm={headerOrganizationForm}
@@ -856,6 +858,8 @@ export function DemoAosrWorkspacePage({
           objectDefaults={objectDefaults}
           organizationSearch={organizationSearch}
           representativeSearch={representativeSearch}
+          sectionId={sectionId}
+          sectionTemplateClipboard={sectionTemplateClipboard}
           onAddHeaderOrganization={addConfiguredHeaderOrganization}
           onAddLibraryRepresentative={addLibraryRepresentative}
           onChangeHeaderOrganizationForm={updateHeaderOrganizationForm}
@@ -863,8 +867,7 @@ export function DemoAosrWorkspacePage({
           onChangeOrganizationSearch={setOrganizationSearch}
           onChangeRepresentativeSearch={setRepresentativeSearch}
           onCloseObjectSettings={closeObjectSettings}
-          onCopySectionTemplateFromSource={onCopySectionTemplateFromSource}
-          onCopySectionTemplateToTarget={onCopySectionTemplateToTarget}
+          onCopySectionTemplate={onCopySectionTemplate}
           onMoveHeaderOrganization={(headerOrganizationId, direction) => {
             commitObjectDefaults((currentDefaults) =>
               moveHeaderOrganizationBlock(currentDefaults, headerOrganizationId, direction),
@@ -891,6 +894,7 @@ export function DemoAosrWorkspacePage({
             );
           }}
           onUpdateObjectDefaults={updateObjectDefaults}
+          onPasteSectionTemplate={onPasteSectionTemplate}
           onUpdateRepresentative={updateObjectRepresentativeValue}
           onUpdateRepresentativeGroupTitle={(groupId, value) => {
             commitObjectDefaults((currentDefaults) =>

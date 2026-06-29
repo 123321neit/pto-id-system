@@ -78,6 +78,12 @@ interface ObjectWorkspacePageProps {
   readonly onBackToObjects: () => void;
 }
 
+interface SectionTemplateClipboard {
+  readonly sourceSectionId: DemoDocumentationSectionId;
+  readonly sourceSectionName: string;
+  readonly sectionTemplateSettings: DemoSectionTemplateSettings;
+}
+
 export function ObjectWorkspacePage({
   object,
   onBackToObjects,
@@ -113,6 +119,8 @@ export function ObjectWorkspacePage({
   const [folderNameInput, setFolderNameInput] = useState('');
   const [sectionNameInput, setSectionNameInput] = useState('');
   const [lastTemplateCopyMessage, setLastTemplateCopyMessage] = useState('');
+  const [sectionTemplateClipboard, setSectionTemplateClipboard] =
+    useState<SectionTemplateClipboard | null>(null);
   const isAosrVisible = activeSection === 'aosr' || activeSection === 'settings';
   const selectedSection =
     selectedSectionId === null
@@ -190,6 +198,13 @@ export function ObjectWorkspacePage({
     setCreateFolderPanelOpen(false);
     setCreateSectionPanelOpen(false);
     setActiveSection('sections');
+  };
+
+  const openObjectDocumentsPage = (): void => {
+    setCreateDocumentPanelOpen(false);
+    setCreateFolderPanelOpen(false);
+    setCreateSectionPanelOpen(false);
+    setActiveSection('documents');
   };
 
   const createSection = (): void => {
@@ -329,7 +344,7 @@ export function ObjectWorkspacePage({
     setCreatedAosrDraftCount((currentCount) => currentCount + 1);
     setCreateDocumentPanelOpen(false);
     setSelectedDraftId(draft.id);
-    setActiveSection('folder');
+    setActiveSection('aosr');
   };
 
   const openObjectSettings = (): void => {
@@ -342,6 +357,34 @@ export function ObjectWorkspacePage({
     setCreateFolderPanelOpen(false);
     setCreateSectionPanelOpen(false);
     setActiveSection('settings');
+  };
+
+  const openSectionTemplateSettings = (sectionId: DemoDocumentationSectionId): void => {
+    const section = getDemoDocumentationSectionById(sectionId, sections);
+    const sectionFolders = getDemoDocumentationSectionFolders(section, folders);
+    const firstFolder = sectionFolders[0];
+
+    setCreateDocumentPanelOpen(false);
+    setCreateFolderPanelOpen(false);
+    setCreateSectionPanelOpen(false);
+    setSelectedSectionId(section.id);
+    setSelectedFolderId(firstFolder?.id ?? null);
+    setSelectedDraftId(firstFolder?.draftIds[0] ?? '');
+    setActiveSection('settings');
+  };
+
+  const openSectionFinalPackage = (sectionId: DemoDocumentationSectionId): void => {
+    const section = getDemoDocumentationSectionById(sectionId, sections);
+    const sectionFolders = getDemoDocumentationSectionFolders(section, folders);
+    const firstFolder = sectionFolders[0];
+
+    setCreateDocumentPanelOpen(false);
+    setCreateFolderPanelOpen(false);
+    setCreateSectionPanelOpen(false);
+    setSelectedSectionId(section.id);
+    setSelectedFolderId(firstFolder?.id ?? null);
+    setSelectedDraftId(firstFolder?.draftIds[0] ?? '');
+    setActiveSection('final-package');
   };
 
   const updateSelectedSectionTemplateSettings = (
@@ -357,43 +400,29 @@ export function ObjectWorkspacePage({
     }));
   };
 
-  const copySelectedSectionTemplateToTarget = (
-    targetSectionId: DemoDocumentationSectionId,
-  ): void => {
+  const copySelectedSectionTemplateToClipboard = (): void => {
     if (selectedSection === undefined) {
       return;
     }
 
-    const targetSection = getDemoDocumentationSectionById(targetSectionId, sections);
-
-    setSectionTemplateSettingsById((currentDefaults) => {
-      const currentTargetSettings = currentDefaults[targetSection.templateSettingsId];
-
-      return {
-        ...currentDefaults,
-        [targetSection.templateSettingsId]: copySectionTemplateSettingsToTarget(
-          selectedSectionTemplateSettings,
-          targetSection,
-          currentTargetSettings,
-        ),
-      };
+    setSectionTemplateClipboard({
+      sectionTemplateSettings: selectedSectionTemplateSettings,
+      sourceSectionId: selectedSection.id,
+      sourceSectionName: selectedSection.name,
     });
     setLastTemplateCopyMessage(
-      `Шаблонные значения скопированы в раздел «${targetSection.name}». Префикс нумерации этого раздела сохранён.`,
+      `Шаблонные значения раздела «${selectedSection.name}» скопированы. Перейдите в другой раздел и нажмите “Вставить шаблонные значения”.`,
     );
   };
 
-  const copySelectedSectionTemplateFromSource = (
-    sourceSectionId: DemoDocumentationSectionId,
-  ): void => {
-    if (selectedSection === undefined) {
+  const pasteSectionTemplateFromClipboard = (): void => {
+    if (
+      selectedSection === undefined ||
+      sectionTemplateClipboard === null ||
+      sectionTemplateClipboard.sourceSectionId === selectedSection.id
+    ) {
       return;
     }
-
-    const sourceSection = getDemoDocumentationSectionById(sourceSectionId, sections);
-    const sourceTemplateSettings =
-      sectionTemplateSettingsById[sourceSection.templateSettingsId] ??
-      createSectionTemplateSettings(sourceSection);
 
     setSectionTemplateSettingsById((currentDefaults) => {
       const currentTargetSettings = currentDefaults[selectedSection.templateSettingsId];
@@ -401,14 +430,14 @@ export function ObjectWorkspacePage({
       return {
         ...currentDefaults,
         [selectedSection.templateSettingsId]: copySectionTemplateSettingsToTarget(
-          sourceTemplateSettings,
+          sectionTemplateClipboard.sectionTemplateSettings,
           selectedSection,
           currentTargetSettings,
         ),
       };
     });
     setLastTemplateCopyMessage(
-      `Шаблонные значения из раздела «${sourceSection.name}» применены к разделу «${selectedSection.name}». Префикс текущего раздела сохранён.`,
+      `Шаблонные значения из раздела «${sectionTemplateClipboard.sourceSectionName}» вставлены в раздел «${selectedSection.name}». Префикс раздела «${selectedSection.name}» сохранён.`,
     );
   };
 
@@ -475,116 +504,129 @@ export function ObjectWorkspacePage({
             </button>
           </div>
 
-          <div className="object-workspace-nav__group" aria-labelledby="object-nav-current-title">
+          <div
+            className="object-workspace-nav__group object-workspace-nav__group--tree"
+            aria-labelledby="object-nav-current-title"
+          >
             <p className="object-workspace-nav__group-label" id="object-nav-current-title">
-              Текущий раздел
+              Объект
             </p>
-            {selectedSection === undefined ? (
+            {sections.length === 0 ? (
               <div className="object-workspace-nav__empty-current">
-                <strong>Не выбран</strong>
-                <small>Откройте раздел в «Разделы ИД».</small>
+                <strong>Разделов пока нет</strong>
+                <small>Создайте первый раздел в «Разделы ИД».</small>
               </div>
             ) : (
-              <>
-                <button
-                  aria-label={selectedSection.name}
-                  aria-current={activeSection === 'section' ? 'page' : undefined}
-                  onClick={() => {
-                    openSection(selectedSection.id);
-                  }}
-                  type="button"
-                >
-                  <span className="object-workspace-nav__icon" aria-hidden="true">
-                    ◧
-                  </span>
-                  <span className="object-workspace-nav__label">
-                    <strong>{selectedSection.name}</strong>
-                    <small>Открытый раздел</small>
-                  </span>
-                </button>
-                <button
-                  aria-label="Обзор раздела"
-                  aria-current={activeSection === 'section' ? 'page' : undefined}
-                  onClick={() => {
-                    setCreateDocumentPanelOpen(false);
-                    setCreateFolderPanelOpen(false);
-                    setCreateSectionPanelOpen(false);
-                    setActiveSection('section');
-                  }}
-                  type="button"
-                >
-                  <span className="object-workspace-nav__icon" aria-hidden="true">
-                    ⓘ
-                  </span>
-                  <span className="object-workspace-nav__label">
-                    <strong>Обзор раздела</strong>
-                    <small>Папки внутри раздела</small>
-                  </span>
-                </button>
-                <button
-                  aria-label="Папки"
-                  aria-current={
-                    activeSection === 'folder' ||
-                    activeSection === 'intermediate-package' ||
-                    activeSection === 'aosr'
-                      ? 'page'
-                      : undefined
-                  }
-                  onClick={() => {
-                    setCreateDocumentPanelOpen(false);
-                    setCreateFolderPanelOpen(false);
-                    setCreateSectionPanelOpen(false);
-                    if (selectedFolderId === null) {
-                      setActiveSection('section');
-                      return;
-                    }
+              <ul className="object-workspace-tree" aria-label="Дерево разделов и папок объекта">
+                {sections.map((section) => {
+                  const sectionFolders = getDemoDocumentationSectionFolders(section, folders);
+                  const isSelectedSection = selectedSectionId === section.id;
 
-                    setActiveSection('folder');
-                  }}
-                  type="button"
-                >
-                  <span className="object-workspace-nav__icon" aria-hidden="true">
-                    ▣
-                  </span>
-                  <span className="object-workspace-nav__label">
-                    <strong>Папки</strong>
-                    <small>{selectedFolder?.name ?? 'Папки выбранного раздела'}</small>
-                  </span>
-                </button>
-                <button
-                  aria-current={activeSection === 'final-package' ? 'page' : undefined}
-                  aria-label="Итоговая ИД по разделу"
-                  onClick={() => {
-                    setCreateDocumentPanelOpen(false);
-                    setCreateFolderPanelOpen(false);
-                    setCreateSectionPanelOpen(false);
-                    setActiveSection('final-package');
-                  }}
-                  type="button"
-                >
-                  <span className="object-workspace-nav__icon" aria-hidden="true">
-                    ◫
-                  </span>
-                  <span className="object-workspace-nav__label">
-                    <strong>Итоговая ИД по разделу</strong>
-                    <small>По выбранному разделу</small>
-                  </span>
-                </button>
-                <button
-                  aria-current={activeSection === 'settings' ? 'page' : undefined}
-                  aria-label="Шаблонные значения раздела"
-                  onClick={openObjectSettings}
-                  type="button"
-                >
-                  <span className="object-workspace-nav__icon" aria-hidden="true">
-                    ⌁
-                  </span>
-                  <span className="object-workspace-nav__label">
-                    <strong>Шаблонные значения раздела</strong>
-                    <small>Для связанных актов</small>
-                  </span>
-                </button>
-              </>
+                  return (
+                    <li className="object-workspace-tree__section" key={section.id}>
+                      <button
+                        aria-current={
+                          isSelectedSection && activeSection === 'section' ? 'page' : undefined
+                        }
+                        aria-label={`Открыть раздел ${section.name}`}
+                        onClick={() => {
+                          openSection(section.id);
+                        }}
+                        type="button"
+                      >
+                        <span className="object-workspace-nav__icon" aria-hidden="true">
+                          ◧
+                        </span>
+                        <span className="object-workspace-nav__label">
+                          <strong>{section.name}</strong>
+                          <small>
+                            {sectionFolders.length === 0
+                              ? 'Папок пока нет'
+                              : `${String(sectionFolders.length)} ${getFolderCountLabel(
+                                  sectionFolders.length,
+                                )}`}
+                          </small>
+                        </span>
+                      </button>
+
+                      <ul className="object-workspace-tree__children">
+                        <li>
+                          <button
+                            aria-current={
+                              isSelectedSection && activeSection === 'settings' ? 'page' : undefined
+                            }
+                            aria-label={`Шаблонные значения раздела ${section.name}`}
+                            className="object-workspace-nav__subitem"
+                            onClick={() => {
+                              openSectionTemplateSettings(section.id);
+                            }}
+                            type="button"
+                          >
+                            <span className="object-workspace-nav__icon" aria-hidden="true">
+                              ⌁
+                            </span>
+                            <span className="object-workspace-nav__label">
+                              <strong>Шаблонные значения раздела</strong>
+                              <small>{section.name}</small>
+                            </span>
+                          </button>
+                        </li>
+                        {sectionFolders.map((folder) => (
+                          <li key={folder.id}>
+                            <button
+                              aria-current={
+                                selectedFolderId === folder.id &&
+                                (activeSection === 'folder' ||
+                                  activeSection === 'intermediate-package' ||
+                                  activeSection === 'aosr')
+                                  ? 'page'
+                                  : undefined
+                              }
+                              aria-label={`Открыть папку ${folder.name}`}
+                              className="object-workspace-nav__subitem"
+                              onClick={() => {
+                                openFolder(folder.id);
+                              }}
+                              type="button"
+                            >
+                              <span className="object-workspace-nav__icon" aria-hidden="true">
+                                ▣
+                              </span>
+                              <span className="object-workspace-nav__label">
+                                <strong>{folder.name}</strong>
+                                <small>Папка раздела</small>
+                              </span>
+                            </button>
+                          </li>
+                        ))}
+                        <li>
+                          <button
+                            aria-current={
+                              isSelectedSection && activeSection === 'final-package'
+                                ? 'page'
+                                : undefined
+                            }
+                            aria-label={`Итоговая ИД по разделу ${section.name}`}
+                            className="object-workspace-nav__subitem"
+                            onClick={() => {
+                              openSectionFinalPackage(section.id);
+                            }}
+                            type="button"
+                          >
+                            <span className="object-workspace-nav__icon" aria-hidden="true">
+                              ◫
+                            </span>
+                            <span className="object-workspace-nav__label">
+                              <strong>Итоговая ИД по разделу</strong>
+                              <small>{section.name}</small>
+                            </span>
+                          </button>
+                        </li>
+                      </ul>
+                    </li>
+                  );
+                })}
+              </ul>
             )}
           </div>
 
@@ -598,12 +640,7 @@ export function ObjectWorkspacePage({
             <button
               aria-current={activeSection === 'documents' ? 'page' : undefined}
               aria-label="Открыть документы объекта"
-              onClick={() => {
-                setCreateDocumentPanelOpen(false);
-                setCreateFolderPanelOpen(false);
-                setCreateSectionPanelOpen(false);
-                setActiveSection('documents');
-              }}
+              onClick={openObjectDocumentsPage}
               type="button"
             >
               <span className="object-workspace-nav__icon" aria-hidden="true">
@@ -708,19 +745,18 @@ export function ObjectWorkspacePage({
             sectionTemplateSettings={selectedSectionTemplateSettings}
             onDraftsChange={setDrafts}
             onSectionTemplateSettingsChange={updateSelectedSectionTemplateSettings}
-            copyTargetSections={sections
-              .filter((section) => section.id !== selectedSection?.id)
-              .map(({ id, name }) => ({ id, name }))}
             lastTemplateCopyMessage={lastTemplateCopyMessage}
             folderName={selectedFolder?.name}
+            sectionId={selectedSection?.id}
             sectionName={selectedSection?.name}
+            sectionTemplateClipboard={sectionTemplateClipboard}
             visibleDraftIds={selectedFolder?.draftIds ?? []}
-            onCopySectionTemplateFromSource={copySelectedSectionTemplateFromSource}
-            onCopySectionTemplateToTarget={copySelectedSectionTemplateToTarget}
+            onCopySectionTemplate={copySelectedSectionTemplateToClipboard}
             onCreateActInFolder={openCreateDocumentPanel}
             onObjectSettingsClosed={() => {
               setActiveSection('section');
             }}
+            onPasteSectionTemplate={pasteSectionTemplateFromClipboard}
           />
         ) : null}
 
