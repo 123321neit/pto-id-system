@@ -74,6 +74,7 @@ import {
   type MoveDirection,
   type RepresentativeFormState,
 } from './demo-aosr-ui.js';
+import { downloadAosrDocx } from './aosr-docx-generator.js';
 import { DemoAosrPreview } from './DemoAosrPreview.js';
 import { DemoCurrentActEditor } from './DemoCurrentActEditor.js';
 import { DemoDocumentTree } from './DemoDocumentTree.js';
@@ -203,6 +204,7 @@ export function DemoAosrWorkspacePage({
   const [objectDocumentTypeFilter, setObjectDocumentTypeFilter] = useState<
     'all' | DemoObjectDocumentType
   >('all');
+  const [docxDownloadError, setDocxDownloadError] = useState('');
   const [createdHeaderOrganizationCount, setCreatedHeaderOrganizationCount] = useState(1);
   const [createdRepresentativeCount, setCreatedRepresentativeCount] = useState(1);
 
@@ -256,6 +258,27 @@ export function DemoAosrWorkspacePage({
     selectedObjectDocuments,
     signatoryLibrary,
   });
+
+  useEffect(() => {
+    setDocxDownloadError('');
+  }, [selectedDraft.id]);
+
+  const downloadSelectedAosrDocx = async (): Promise<void> => {
+    setDocxDownloadError('');
+
+    try {
+      await downloadAosrDocx(printState);
+    } catch {
+      setDocxDownloadError(
+        'Не удалось сформировать DOCX. Проверьте шаблон акта и данные документа.',
+      );
+      setActiveActMode('edit');
+    }
+  };
+
+  const handleDownloadSelectedAosrDocx = (): void => {
+    void downloadSelectedAosrDocx();
+  };
 
   const updateObjectDefaults = (field: DemoAosrObjectDefaultsField, value: string): void => {
     commitObjectDefaults((currentDefaults) =>
@@ -674,7 +697,11 @@ export function DemoAosrWorkspacePage({
                 >
                   Редактирование
                 </button>
-                <button className="secondary-action" type="button">
+                <button
+                  className="secondary-action"
+                  onClick={handleDownloadSelectedAosrDocx}
+                  type="button"
+                >
                   Скачать DOCX
                 </button>
                 <button className="secondary-action" type="button">
@@ -738,6 +765,7 @@ export function DemoAosrWorkspacePage({
                 isCertificateLibraryOpen={isCertificateLibraryOpen}
                 isManualRepresentativeFormOpen={isManualRepresentativeFormOpen}
                 isObjectDocumentLibraryOpen={isObjectDocumentLibraryOpen}
+                docxDownloadError={docxDownloadError}
                 manualRepresentativeForm={manualRepresentativeForm}
                 materialSearch={materialSearch}
                 linkedTemplateFields={linkedTemplateFields}
@@ -781,6 +809,7 @@ export function DemoAosrWorkspacePage({
                 onChangeDocumentTypeFilter={setObjectDocumentTypeFilter}
                 onChangeManualRepresentativeForm={updateManualRepresentativeForm}
                 onChangeMaterialSearch={setMaterialSearch}
+                onDownloadDocx={handleDownloadSelectedAosrDocx}
                 onDragRepresentativeEnd={() => {
                   setDraggedRepresentativeId(null);
                   setRepresentativeDropTargetId(null);

@@ -31,6 +31,7 @@ import { DemoStoreProvider } from '../demo-store/DemoStoreProvider.js';
 
 afterEach(() => {
   vi.restoreAllMocks();
+  vi.unstubAllGlobals();
   cleanup();
 });
 
@@ -156,6 +157,26 @@ describe('DemoAosrWorkspacePage', () => {
     expect(screen.queryByLabelText('Демо-предпросмотр печатной формы АОСР')).toBeNull();
     expect(screen.getByRole('heading', { name: 'Акты в папке «Рабочая папка»' })).toBeTruthy();
     expect(screen.getByRole('region', { name: 'Редактор документа' })).toBeTruthy();
+  });
+
+  it('shows the AOSR DOCX download action and reports generation errors', async () => {
+    const user = userEvent.setup();
+
+    vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('DOCX template error')));
+    renderDemoWorkspace();
+
+    const downloadButton = screen.getByRole('button', { name: 'Скачать DOCX' });
+
+    expect(downloadButton).toBeTruthy();
+
+    await user.click(downloadButton);
+
+    const alert = await screen.findByRole('alert');
+
+    expect(alert.textContent).toBe(
+      'Не удалось сформировать DOCX. Проверьте шаблон акта и данные документа.',
+    );
+    expect(screen.getByRole('heading', { name: 'Редактирование акта ОВ-1' })).toBeTruthy();
   });
 
   it('opens and closes the document preview drawer with existing preview content', async () => {

@@ -26,6 +26,7 @@ interface DemoCurrentActEditorProps {
   readonly certificateLibrary: readonly DemoMaterialCertificate[];
   readonly documentSearch: string;
   readonly documentTypeFilter: 'all' | DemoObjectDocumentType;
+  readonly docxDownloadError: string;
   readonly draggedRepresentativeId: string | null;
   readonly dropTargetRepresentativeId: string | null;
   readonly formVariant: DemoAosrFormVariantMetadata;
@@ -55,6 +56,7 @@ interface DemoCurrentActEditorProps {
     value: string,
   ) => void;
   readonly onChangeMaterialSearch: (value: string) => void;
+  readonly onDownloadDocx: () => void;
   readonly onDragRepresentativeEnd: () => void;
   readonly onDragRepresentativeStart: (representativeId: string) => void;
   readonly onDragRepresentativeTarget: (representativeId: string) => void;
@@ -103,6 +105,7 @@ export function DemoCurrentActEditor({
   certificateLibrary,
   documentSearch,
   documentTypeFilter,
+  docxDownloadError,
   draggedRepresentativeId,
   dropTargetRepresentativeId,
   formVariant,
@@ -129,6 +132,7 @@ export function DemoCurrentActEditor({
   onChangeDocumentTypeFilter,
   onChangeManualRepresentativeForm,
   onChangeMaterialSearch,
+  onDownloadDocx,
   onDragRepresentativeEnd,
   onDragRepresentativeStart,
   onDragRepresentativeTarget,
@@ -267,6 +271,18 @@ export function DemoCurrentActEditor({
                 Сделать акт ручным
               </button>
             </>
+          )}
+          <button
+            className="compact-toggle compact-toggle--accent"
+            onClick={onDownloadDocx}
+            type="button"
+          >
+            Скачать DOCX
+          </button>
+          {docxDownloadError === '' ? null : (
+            <p className="helper-note" role="alert">
+              {docxDownloadError}
+            </p>
           )}
         </div>
       </div>

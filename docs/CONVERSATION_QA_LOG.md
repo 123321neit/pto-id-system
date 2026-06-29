@@ -1668,3 +1668,34 @@ Still not implemented:
 - backend/API routes;
 - Prisma models/migrations;
 - production number reservation.
+
+---
+
+## 59. First single AOSR DOCX download
+
+### Q: Как подключено первое скачивание АОСР в DOCX?
+
+A: The first generation slice is frontend-only and intentionally narrow:
+
+- the tagged DOCX template is a static asset at
+  `apps/web/public/templates/aosr/AOSR1_template_final_tags_corrected.docx`;
+- the provided real acts are reference fixtures only at
+  `docs/examples/aosr-real-acts/АОСР.docx`;
+- formatting notes are recorded in `docs/aosr-docx-generation-notes.md`;
+- the data chain is
+  `AosrPrintState -> buildAosrDocxTemplateData -> DOCX template -> downloaded .docx`;
+- no printable values are read from DOM/UI;
+- `document.number` and `document.date` remain raw, while
+  `document.numberLine` and `document.dateLine` are computed for the template;
+- the act editor has a real `Скачать DOCX` action and shows a safe error
+  message if generation fails;
+- empty act numbers do not block download; the filename fallback is
+  `АОСР_без_номера.docx`.
+
+Still not implemented:
+
+- PDF generation;
+- ZIP/final/intermediate package downloads;
+- backend/API routes;
+- Prisma models/migrations;
+- production storage or production parsing of the real acts.

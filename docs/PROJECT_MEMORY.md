@@ -5787,3 +5787,40 @@ delete/move/reorder lifecycle or generation was introduced.
 - no DOCX/PDF/ZIP generation;
 - no project-wide rename of all legacy `objectDefaults` / `objectTemplate`
   aliases.
+
+### 2026-06-29 — Single AOSR DOCX download v1
+
+- Статус: `Frontend-only DOCX generation slice`
+- Описание: connected the first static AOSR DOCX template and added one-act
+  DOCX download from the act editor.
+
+Добавлено/уточнено:
+
+- the tagged AOSR template is stored as a static public asset at
+  `apps/web/public/templates/aosr/AOSR1_template_final_tags_corrected.docx`;
+- the provided real AOSR acts are stored only as reference fixtures at
+  `docs/examples/aosr-real-acts/АОСР.docx`;
+- `docs/aosr-docx-generation-notes.md` records practical formatting notes from
+  the real acts before wiring generation;
+- generation follows
+  `AosrPrintState -> buildAosrDocxTemplateData -> DOCX template -> downloaded .docx`;
+- the frontend does not read printable data from DOM/UI components;
+- `buildAosrDocxTemplateData` keeps raw `document.number` and `document.date`
+  and adds computed `document.numberLine` and `document.dateLine` for the
+  template;
+- empty act numbers are allowed; the DOCX field stays empty and the download
+  filename falls back to `АОСР_без_номера.docx`;
+- the act editor has a real `Скачать DOCX` action; failures show
+  `Не удалось сформировать DOCX. Проверьте шаблон акта и данные документа.`;
+- `fflate` is used in the web app to unpack/repack the DOCX template in the
+  browser.
+
+Что не было введено:
+
+- no PDF generation;
+- no ZIP/final/intermediate package generation;
+- no backend routes/controllers or API;
+- no Prisma/schema/migrations;
+- no production storage;
+- no production seed from real acts;
+- no object-wide numbering rollback.
