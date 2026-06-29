@@ -38,7 +38,7 @@ describe('frontend-only object document numbering helper', () => {
       folderId: 'folder-heating-01',
       id: 'heating-section-draft',
       numberingAssignment: {
-        automaticSequences: { folder: 10, object: 10, section: 10 },
+        automaticSequences: { folder: 10, section: 10 },
         source: 'automatic' as const,
       },
       sectionId: 'section-heating',
@@ -68,43 +68,48 @@ describe('frontend-only object document numbering helper', () => {
         setting: { ...demoAosrNumberingSetting, scope: 'restart-per-folder' },
       }),
     ).toEqual({
+      numberingAssignment: {
+        automaticSequences: { folder: 2, section: 3 },
+        source: 'automatic',
+      },
       renderedNumber: 'ОВ-2',
-      sequences: { folder: 2, object: 3, section: 3 },
+      sequences: { folder: 2, section: 3 },
     });
   });
 
-  it('can number acts across the whole object independently from section and folder', () => {
-    const sourceDraft = demoAosrWorkspace.drafts[0];
-
-    if (sourceDraft === undefined) {
-      throw new Error('Для теста нужен mock АОСР.');
-    }
-
-    const otherSectionDraft: DemoAosrDraft = {
-      ...sourceDraft,
-      folderId: 'folder-heating-01',
-      id: 'heating-section-object-sequence-draft',
-      numberingAssignment: {
-        automaticSequences: { folder: 1, object: 8, section: 1 },
-        source: 'automatic' as const,
-      },
-      sectionId: 'section-heating',
-      sectionTemplateId: 'section-template-settings-heating',
-      sectionTemplateSettingsId: 'section-template-settings-heating',
-    };
-
+  it('starts automatic numbering from the configured first number', () => {
     expect(
       getProposedDemoDocumentNumberDetails({
         documentTypeId: 'aosr',
-        drafts: [...demoAosrWorkspace.drafts, otherSectionDraft],
+        drafts: [],
         folderId: 'folder-2026-09',
         folders: demoIdFolders,
         sectionId: 'section-ventilation',
-        setting: { ...demoAosrNumberingSetting, scope: 'global-object' },
+        setting: { ...demoAosrNumberingSetting, start: 100 },
       }),
     ).toEqual({
-      renderedNumber: 'ОВ-9',
-      sequences: { folder: 2, object: 9, section: 3 },
+      numberingAssignment: {
+        automaticSequences: { folder: 100, section: 100 },
+        source: 'automatic',
+      },
+      renderedNumber: 'ОВ-100',
+      sequences: { folder: 100, section: 100 },
+    });
+  });
+
+  it('creates no proposed number in manual section numbering mode', () => {
+    expect(
+      getProposedDemoDocumentNumberDetails({
+        documentTypeId: 'aosr',
+        drafts: demoAosrWorkspace.drafts,
+        folderId: 'folder-2026-09',
+        folders: demoIdFolders,
+        sectionId: 'section-ventilation',
+        setting: { ...demoAosrNumberingSetting, mode: 'manual' },
+      }),
+    ).toEqual({
+      numberingAssignment: { source: 'manual' },
+      renderedNumber: '',
     });
   });
 
@@ -140,7 +145,7 @@ describe('frontend-only object document numbering helper', () => {
         actNumber: 'ОВ-3',
         id: 'automatic-then-manual',
         numberingAssignment: {
-          automaticSequences: { folder: 2, object: 3, section: 3 },
+          automaticSequences: { folder: 2, section: 3 },
           source: 'automatic',
         },
       },
@@ -149,7 +154,7 @@ describe('frontend-only object document numbering helper', () => {
     );
 
     expect(manuallyRenamedDraft.numberingAssignment).toEqual({
-      automaticSequences: { folder: 2, object: 3, section: 3 },
+      automaticSequences: { folder: 2, section: 3 },
       source: 'manual',
     });
     expect(

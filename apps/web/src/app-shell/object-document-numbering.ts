@@ -1,6 +1,8 @@
 import type { DemoActTypeId } from '../act-types/act-types.js';
 import type {
   DemoAosrDraft,
+  DemoDocumentNumberingAssignment,
+  DemoDocumentNumberingMode,
   DemoDocumentNumberingScope,
   DemoDocumentNumberingSequences,
 } from '../aosr-demo/demo-aosr-workspace.js';
@@ -16,8 +18,10 @@ export type { DemoDocumentNumberingScope } from '../aosr-demo/demo-aosr-workspac
 
 export interface DemoDocumentNumberingSetting {
   readonly documentTypeId: DemoActTypeId;
+  readonly mode: DemoDocumentNumberingMode;
   readonly prefix: string;
   readonly scope: DemoDocumentNumberingScope;
+  readonly start: number;
   readonly suffix: string;
   readonly template: '{prefix}{number}{suffix}';
 }
@@ -32,14 +36,17 @@ export interface DemoDocumentNumberingInput {
 }
 
 export interface DemoDocumentNumberProposal {
+  readonly numberingAssignment: DemoDocumentNumberingAssignment;
   readonly renderedNumber: string;
-  readonly sequences: DemoDocumentNumberingSequences;
+  readonly sequences?: DemoDocumentNumberingSequences;
 }
 
 export const demoAosrNumberingSetting: DemoDocumentNumberingSetting = {
   documentTypeId: 'aosr',
+  mode: 'automatic',
   prefix: 'ОВ-',
   scope: 'global-section',
+  start: 1,
   suffix: '',
   template: '{prefix}{number}{suffix}',
 };
@@ -57,6 +64,15 @@ export function getProposedDemoDocumentNumberDetails(
   input: DemoDocumentNumberingInput,
 ): DemoDocumentNumberProposal {
   const setting = input.setting ?? demoDocumentNumberingSettings[input.documentTypeId];
+
+  if (setting.mode === 'manual') {
+    return {
+      numberingAssignment: { source: 'manual' },
+      renderedNumber: '',
+    };
+  }
+
+  const numberingStart = normalizeNumberingStart(setting.start);
   const sectionDrafts =
     input.sectionId === undefined
       ? input.drafts
@@ -66,13 +82,13 @@ export function getProposedDemoDocumentNumberDetails(
     input.drafts,
   );
   const sequences = {
-    section: getNextAutomaticSequence(sectionDrafts, 'section'),
-    object: getNextAutomaticSequence(input.drafts, 'object'),
-    folder: getNextAutomaticSequence(folderDrafts, 'folder'),
+    section: getNextAutomaticSequence(sectionDrafts, 'section', numberingStart),
+    folder: getNextAutomaticSequence(folderDrafts, 'folder', numberingStart),
   };
   const selectedSequence = getSelectedAutomaticSequence(setting.scope, sequences);
 
   return {
+    numberingAssignment: { automaticSequences: sequences, source: 'automatic' },
     renderedNumber: formatDemoDocumentNumber(setting, selectedSequence),
     sequences,
   };
@@ -83,8 +99,6 @@ function getSelectedAutomaticSequence(
   sequences: DemoDocumentNumberingSequences,
 ): number {
   switch (scope) {
-    case 'global-object':
-      return sequences.object;
     case 'global-section':
       return sequences.section;
     case 'restart-per-folder':
@@ -95,14 +109,19 @@ function getSelectedAutomaticSequence(
 function getNextAutomaticSequence(
   drafts: readonly DemoAosrDraft[],
   sequenceKey: keyof DemoDocumentNumberingSequences,
+  numberingStart: number,
 ): number {
   const usedSequences = drafts
     .map((draft) => draft.numberingAssignment.automaticSequences?.[sequenceKey])
     .filter((sequence): sequence is number => sequence !== undefined);
 
-  return Math.max(0, ...usedSequences) + 1;
+  return Math.max(numberingStart - 1, ...usedSequences) + 1;
 }
 
 function formatDemoDocumentNumber(setting: DemoDocumentNumberingSetting, sequence: number): string {
   return `${setting.prefix}${String(sequence)}${setting.suffix}`;
+}
+
+function normalizeNumberingStart(numberingStart: number): number {
+  return Number.isInteger(numberingStart) && numberingStart > 0 ? numberingStart : 1;
 }

@@ -49,7 +49,9 @@ describe('frontend-only documentation section model', () => {
     const sourceTemplate = {
       ...sourceSettings.sectionTemplate,
       complianceText: copiedComplianceText,
+      numberingMode: 'manual' as const,
       numberingPrefix: 'CUSTOM-',
+      numberingStart: 100,
       numberingScope: 'restart-per-folder' as const,
       numberingSuffix: '/2026',
     };
@@ -95,6 +97,8 @@ describe('frontend-only documentation section model', () => {
     expect(copiedSettings.sectionTemplate.numberingPrefix).not.toBe(
       sourceSettingsWithChanges.sectionTemplate.numberingPrefix,
     );
+    expect(copiedSettings.sectionTemplate.numberingMode).toBe('manual');
+    expect(copiedSettings.sectionTemplate.numberingStart).toBe(100);
     expect(copiedSettings.sectionTemplate.numberingScope).toBe('restart-per-folder');
     expect(copiedSettings.sectionTemplate.numberingSuffix).toBe('/2026');
     expect(sourceSettingsWithChanges.sectionTemplate.id).toBe(sourceSection.templateSettingsId);

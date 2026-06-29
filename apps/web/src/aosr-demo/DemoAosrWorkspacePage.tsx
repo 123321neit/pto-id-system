@@ -38,8 +38,10 @@ import {
   switchDraftToManualTemplateMode,
   toggleApplicationInclusionInDraft,
   updateDemoAosrDraftField,
+  updateDemoObjectNumberingMode,
   updateDemoObjectNumberingAffix,
   updateDemoObjectNumberingScope,
+  updateDemoObjectNumberingStart,
   updateDemoObjectDefaultsField,
   updateHeaderOrganizationInDraft,
   updateHeaderOrganizationBlock,
@@ -57,6 +59,7 @@ import {
   type DemoSectionTemplateSettings,
   type DemoAosrTemplateFields,
   type DemoDocumentNumberingAffixField,
+  type DemoDocumentNumberingMode,
   type DemoDocumentNumberingScope,
   type DemoGlobalOrganization,
   type DemoMaterialCertificate,
@@ -87,12 +90,14 @@ interface DemoAosrWorkspacePageProps {
   readonly lastTemplateCopyMessage?: string;
   readonly sectionTemplateClipboard?: SectionTemplateClipboard | null;
   readonly sectionTemplateSettings?: DemoSectionTemplateSettings;
+  readonly sectionDraftCount?: number;
   /** Legacy compatibility alias for older standalone AOSR demo helpers. */
   readonly objectDefaults?: DemoAosrObjectDefaults;
   readonly onDraftsChange?: (drafts: readonly DemoAosrDraft[]) => void;
   readonly onCopySectionTemplate?: () => void;
   readonly onCreateActInFolder?: () => void;
   readonly onPasteSectionTemplate?: () => void;
+  readonly onRenumberSectionDrafts?: () => void;
   readonly onSectionTemplateSettingsChange?: (
     sectionTemplateSettings: DemoSectionTemplateSettings,
   ) => void;
@@ -118,11 +123,13 @@ export function DemoAosrWorkspacePage({
   lastTemplateCopyMessage = '',
   sectionTemplateClipboard = null,
   sectionTemplateSettings: controlledSectionTemplateSettings,
+  sectionDraftCount = 0,
   objectDefaults: controlledObjectDefaults,
   onDraftsChange,
   onCopySectionTemplate,
   onCreateActInFolder,
   onPasteSectionTemplate,
+  onRenumberSectionDrafts,
   onSectionTemplateSettingsChange,
   onObjectDefaultsChange,
   onBackToObjects,
@@ -539,6 +546,7 @@ export function DemoAosrWorkspacePage({
         objectTitle={objectTitle}
         presentation="page"
         representativeSearch={representativeSearch}
+        sectionDraftCount={sectionDraftCount}
         sectionId={sectionId}
         sectionTemplateClipboard={sectionTemplateClipboard}
         onAddHeaderOrganization={addConfiguredHeaderOrganization}
@@ -564,6 +572,11 @@ export function DemoAosrWorkspacePage({
           setRepresentativeLibraryFormOpen((isOpen) => !isOpen);
         }}
         onUpdateHeaderOrganization={updateObjectHeaderOrganization}
+        onUpdateNumberingMode={(numberingMode: DemoDocumentNumberingMode) => {
+          commitObjectDefaults((currentDefaults) =>
+            updateDemoObjectNumberingMode(currentDefaults, numberingMode),
+          );
+        }}
         onUpdateNumberingAffix={(field: DemoDocumentNumberingAffixField, value: string) => {
           commitObjectDefaults((currentDefaults) =>
             updateDemoObjectNumberingAffix(currentDefaults, field, value),
@@ -574,8 +587,14 @@ export function DemoAosrWorkspacePage({
             updateDemoObjectNumberingScope(currentDefaults, numberingScope),
           );
         }}
+        onUpdateNumberingStart={(numberingStart: number) => {
+          commitObjectDefaults((currentDefaults) =>
+            updateDemoObjectNumberingStart(currentDefaults, numberingStart),
+          );
+        }}
         onUpdateObjectDefaults={updateObjectDefaults}
         onPasteSectionTemplate={onPasteSectionTemplate}
+        onRenumberSectionDrafts={onRenumberSectionDrafts}
         onUpdateRepresentative={updateObjectRepresentativeValue}
         onUpdateRepresentativeGroupTitle={(groupId, value) => {
           commitObjectDefaults((currentDefaults) =>
@@ -864,6 +883,7 @@ export function DemoAosrWorkspacePage({
           objectId={objectId}
           objectTitle={objectTitle}
           representativeSearch={representativeSearch}
+          sectionDraftCount={sectionDraftCount}
           sectionId={sectionId}
           sectionTemplateClipboard={sectionTemplateClipboard}
           onAddHeaderOrganization={addConfiguredHeaderOrganization}
@@ -889,6 +909,11 @@ export function DemoAosrWorkspacePage({
             setRepresentativeLibraryFormOpen((isOpen) => !isOpen);
           }}
           onUpdateHeaderOrganization={updateObjectHeaderOrganization}
+          onUpdateNumberingMode={(numberingMode: DemoDocumentNumberingMode) => {
+            commitObjectDefaults((currentDefaults) =>
+              updateDemoObjectNumberingMode(currentDefaults, numberingMode),
+            );
+          }}
           onUpdateNumberingAffix={(field: DemoDocumentNumberingAffixField, value: string) => {
             commitObjectDefaults((currentDefaults) =>
               updateDemoObjectNumberingAffix(currentDefaults, field, value),
@@ -899,8 +924,14 @@ export function DemoAosrWorkspacePage({
               updateDemoObjectNumberingScope(currentDefaults, numberingScope),
             );
           }}
+          onUpdateNumberingStart={(numberingStart: number) => {
+            commitObjectDefaults((currentDefaults) =>
+              updateDemoObjectNumberingStart(currentDefaults, numberingStart),
+            );
+          }}
           onUpdateObjectDefaults={updateObjectDefaults}
           onPasteSectionTemplate={onPasteSectionTemplate}
+          onRenumberSectionDrafts={onRenumberSectionDrafts}
           onUpdateRepresentative={updateObjectRepresentativeValue}
           onUpdateRepresentativeGroupTitle={(groupId, value) => {
             commitObjectDefaults((currentDefaults) =>

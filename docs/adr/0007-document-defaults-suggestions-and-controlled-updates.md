@@ -130,7 +130,9 @@ type ObjectTemplate = {
   copiesLine: string;
   numberingPattern?: string;
   numberingPrefix: string;
-  numberingScope: 'global-object' | 'restart-per-folder';
+  numberingMode: 'automatic' | 'manual';
+  numberingScope: 'global-section' | 'restart-per-folder';
+  numberingStart: number;
   numberingSuffix: string;
   defaultDateMode?: 'today' | 'folderDate' | 'manual';
 };

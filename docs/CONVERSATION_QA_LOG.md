@@ -1034,9 +1034,9 @@ A: Выполнен frontend-only in-memory mock.
 Initial frontend-only numbering helper accepted:
 
 - numbering is per document type;
-- helper supports global numbering per object or numbering restarted per
-  period;
-- current AOSR mock mode is global by object;
+- later section-scoped implementation superseded this helper: automatic
+  numbering now supports `global-section` or `restart-per-folder`;
+- current AOSR mock mode belongs to section template settings;
 - current template is `{prefix}{number}{suffix}`;
 - current AOSR prefix is `ОВ-`, suffix is empty;
 - existing `ОВ-1` and `ОВ-2` produce proposed next number `ОВ-3`;
@@ -1522,7 +1522,7 @@ A: The frontend mock was aligned with the stricter section-first contract:
 - real cross-object template copy and saved templates remain future work and
   are shown as a small note, not disabled cards;
 - AOSR creation uses a proper selected radio item;
-- numbering supports object-wide, section-wide and per-folder scopes;
+- numbering supports section-wide and per-folder scopes;
 - numbering previews show `n` as the placeholder, with a first-number example;
 - manual number edits now show a manual-numbering warning while keeping manual
   template mode separate.
@@ -1562,8 +1562,8 @@ closely:
   not copied;
 - the global left navigation is a section/folder tree and does not show acts;
 - the act editor still keeps the current-folder act list for manual numbering;
-- `Сквозная по объекту` explicitly explains that the sequence is shared across
-  the object, while the prefix remains the prefix of the act section.
+- section numbering can be continuous across the selected section or restarted
+  in each folder, while the prefix remains the target section prefix.
 
 Still not implemented:
 
@@ -1615,3 +1615,30 @@ Still not implemented:
 - real DOCX/PDF generation;
 - ZIP/final package generation;
 - production number reservation or issued package snapshots.
+
+---
+
+## 57. Section numbering cleanup after object-workspace polish
+
+### Q: Что уточнено по нумерации раздела после последнего UX-polish?
+
+A: The frontend mock now keeps numbering strictly inside section template
+settings:
+
+- object-wide numbering was removed from the active model;
+- automatic numbering supports only `global-section` and `restart-per-folder`;
+- section templates now store numbering mode and first number;
+- manual numbering creates new acts without a number and keeps template values
+  linked to the section;
+- mass renumbering changes only act numbers and automatic numbering assignment;
+- clipboard copy stores a cloned section-template snapshot, not a live object
+  reference;
+- dashboard settings are disabled as `Настройки · скоро`.
+
+Still not implemented:
+
+- backend/API routes;
+- Prisma models/migrations;
+- persistence;
+- production number reservation;
+- DOCX/PDF/ZIP generation.

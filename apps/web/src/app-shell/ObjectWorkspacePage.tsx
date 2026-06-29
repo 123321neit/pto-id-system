@@ -6,6 +6,7 @@ import {
   createEmptyDemoAosrDraft,
   demoAosrWorkspace,
   type DemoAosrDraft,
+  type DemoDocumentNumberingSequences,
   type DemoSectionTemplateSettings,
 } from '../aosr-demo/demo-aosr-workspace.js';
 import { ObjectDocumentsPage } from './ObjectDocumentsPage.js';
@@ -39,13 +40,27 @@ import {
   createSectionTemplateSettings,
   type DemoSectionTemplateSettingsById,
 } from './object-section-template-settings.js';
-import type { SectionTemplateClipboard } from './section-template-clipboard.js';
+import {
+  cloneSectionTemplateSettingsForClipboard,
+  type SectionTemplateClipboard,
+} from './section-template-clipboard.js';
 
 const aosrActType = getDemoActTypeById('aosr');
 const untitledDocumentLabel = 'Без номера';
 
 function getDocumentDisplayNumber(documentNumber: string): string {
   return documentNumber.trim() === '' ? untitledDocumentLabel : documentNumber;
+}
+
+function formatSectionDocumentNumber(
+  sectionTemplateSettings: DemoSectionTemplateSettings,
+  sequence: number,
+): string {
+  return `${sectionTemplateSettings.sectionTemplate.numberingPrefix}${String(sequence)}${sectionTemplateSettings.sectionTemplate.numberingSuffix}`;
+}
+
+function normalizeNumberingStart(numberingStart: number): number {
+  return Number.isInteger(numberingStart) && numberingStart > 0 ? numberingStart : 1;
 }
 
 function buildInitialSectionTemplateSettings(
@@ -156,8 +171,10 @@ export function ObjectWorkspacePage({
       sectionId: selectedSection.id,
       setting: {
         documentTypeId: 'aosr',
+        mode: selectedSectionTemplateSettings.sectionTemplate.numberingMode,
         prefix: selectedSectionTemplateSettings.sectionTemplate.numberingPrefix,
         scope: selectedSectionTemplateSettings.sectionTemplate.numberingScope,
+        start: selectedSectionTemplateSettings.sectionTemplate.numberingStart,
         suffix: selectedSectionTemplateSettings.sectionTemplate.numberingSuffix,
         template: '{prefix}{number}{suffix}',
       },
@@ -167,8 +184,10 @@ export function ObjectWorkspacePage({
     folders,
     selectedFolderId,
     selectedSection,
+    selectedSectionTemplateSettings.sectionTemplate.numberingMode,
     selectedSectionTemplateSettings.sectionTemplate.numberingPrefix,
     selectedSectionTemplateSettings.sectionTemplate.numberingScope,
+    selectedSectionTemplateSettings.sectionTemplate.numberingStart,
     selectedSectionTemplateSettings.sectionTemplate.numberingSuffix,
   ]);
   const proposedAosrNumber = proposedAosrNumberDetails?.renderedNumber ?? '';
@@ -325,10 +344,7 @@ export function ObjectWorkspacePage({
       actNumber: proposedAosrNumber,
       folderId: selectedFolderId,
       id: `aosr-draft-created-${String(createdAosrDraftCount)}`,
-      numberingAssignment: {
-        automaticSequences: proposedAosrNumberDetails.sequences,
-        source: 'automatic',
-      },
+      numberingAssignment: proposedAosrNumberDetails.numberingAssignment,
       sectionTemplateSettings: selectedSectionTemplateSettings,
       sectionId: selectedSection.id,
       sectionTemplateSettingsId: selectedSection.templateSettingsId,
@@ -403,7 +419,9 @@ export function ObjectWorkspacePage({
     }
 
     onSectionTemplateClipboardChange({
-      sectionTemplateSettings: selectedSectionTemplateSettings,
+      sectionTemplateSettings: cloneSectionTemplateSettingsForClipboard(
+        selectedSectionTemplateSettings,
+      ),
       sourceObjectId: object.id,
       sourceObjectTitle: object.title,
       sourceSectionId: selectedSection.id,
@@ -447,6 +465,85 @@ export function ObjectWorkspacePage({
       };
     });
     setLastTemplateCopyMessage('Шаблонные значения вставлены. Префикс текущего раздела сохранён.');
+  };
+
+  const renumberSelectedSectionDrafts = (): void => {
+    if (
+      selectedSection === undefined ||
+      selectedSectionDrafts.length === 0 ||
+      selectedSectionTemplateSettings.sectionTemplate.numberingMode !== 'automatic'
+    ) {
+      return;
+    }
+
+    const shouldRenumber = window.confirm(
+      'Задать автоматическую нумерацию для всех актов раздела?\n' +
+        'Будут изменены номера всех актов выбранного раздела.\n' +
+        'Шаблонные значения акта и ручной/связанный режим шаблона не изменятся.\n' +
+        'Продолжить?',
+    );
+
+    if (!shouldRenumber) {
+      return;
+    }
+
+    const numberingStart = normalizeNumberingStart(
+      selectedSectionTemplateSettings.sectionTemplate.numberingStart,
+    );
+    const nextNumberingByDraftId = new Map<
+      string,
+      { readonly actNumber: string; readonly sequences: DemoDocumentNumberingSequences }
+    >();
+    let sectionSequence = numberingStart;
+
+    for (const folderId of selectedSection.folderIds) {
+      const folder = getDemoIdFolderById(folderId, folders);
+      let folderSequence = numberingStart;
+
+      for (const draftId of folder.draftIds) {
+        const draft = drafts.find((currentDraft) => currentDraft.id === draftId);
+
+        if (draft?.sectionId !== selectedSection.id) {
+          continue;
+        }
+
+        const sequences = {
+          folder: folderSequence,
+          section: sectionSequence,
+        };
+        const selectedSequence =
+          selectedSectionTemplateSettings.sectionTemplate.numberingScope === 'global-section'
+            ? sectionSequence
+            : folderSequence;
+
+        nextNumberingByDraftId.set(draft.id, {
+          actNumber: formatSectionDocumentNumber(selectedSectionTemplateSettings, selectedSequence),
+          sequences,
+        });
+        sectionSequence += 1;
+        folderSequence += 1;
+      }
+    }
+
+    setDrafts((currentDrafts) =>
+      currentDrafts.map((draft) => {
+        const nextNumbering = nextNumberingByDraftId.get(draft.id);
+
+        if (nextNumbering === undefined) {
+          return draft;
+        }
+
+        return {
+          ...draft,
+          actNumber: nextNumbering.actNumber,
+          numberingAssignment: {
+            automaticSequences: nextNumbering.sequences,
+            source: 'automatic',
+          },
+        };
+      }),
+    );
+    setLastTemplateCopyMessage('Автоматическая нумерация применена ко всем актам раздела.');
   };
 
   return (
@@ -757,6 +854,7 @@ export function ObjectWorkspacePage({
             folderName={selectedFolder?.name}
             objectId={object.id}
             objectTitle={object.title}
+            sectionDraftCount={selectedSectionDrafts.length}
             sectionId={selectedSection?.id}
             sectionName={selectedSection?.name}
             sectionTemplateClipboard={sectionTemplateClipboard}
@@ -767,6 +865,7 @@ export function ObjectWorkspacePage({
               setActiveSection('section');
             }}
             onPasteSectionTemplate={pasteSectionTemplateFromClipboard}
+            onRenumberSectionDrafts={renumberSelectedSectionDrafts}
           />
         ) : null}
 

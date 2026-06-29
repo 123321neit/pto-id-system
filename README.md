@@ -72,7 +72,8 @@ periods. Demo sections carry the user-visible `name`, optional `description`
 and `templateSettingsId`; there is no separate inferred short section code.
 AOSR drafts carry explicit `sectionId`, `folderId`, `sectionTemplateId` and
 `sectionTemplateSettingsId`; numbering scopes are `global-section` and
-`restart-per-folder`. Section template settings are keyed by
+`restart-per-folder`, with automatic/manual mode and a configurable first
+number. Section template settings are keyed by
 `templateSettingsId`. Copying settings retargets the copied template to the
 target section and preserves the target section's numbering prefix, with a UI
 notice. `DemoSectionTemplateSettings` / `SectionTemplate` are the canonical

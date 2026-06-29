@@ -54,13 +54,14 @@ export interface SignatoryLibraryItem {
 
 export type ActTemplateMode = 'linked' | 'manual';
 
-export type DemoDocumentNumberingScope = 'global-object' | 'global-section' | 'restart-per-folder';
+export type DemoDocumentNumberingMode = 'automatic' | 'manual';
+
+export type DemoDocumentNumberingScope = 'global-section' | 'restart-per-folder';
 
 export type DemoDocumentNumberingAffixField = 'numberingPrefix' | 'numberingSuffix';
 
 export interface DemoDocumentNumberingSequences {
   readonly folder: number;
-  readonly object: number;
   readonly section: number;
 }
 
@@ -148,8 +149,10 @@ export interface SectionTemplate {
   readonly additionalInfo: string;
   readonly copiesLine: string;
   readonly numberingPattern?: string;
+  readonly numberingMode: DemoDocumentNumberingMode;
   readonly numberingPrefix: string;
   readonly numberingScope: DemoDocumentNumberingScope;
+  readonly numberingStart: number;
   readonly numberingSuffix: string;
   readonly defaultDateMode?: 'today' | 'folderDate' | 'manual';
 }
@@ -439,6 +442,10 @@ const defaultNumberingPrefix = 'ОВ-';
 
 const defaultNumberingScope: DemoDocumentNumberingScope = 'global-section';
 
+const defaultNumberingMode: DemoDocumentNumberingMode = 'automatic';
+
+const defaultNumberingStart = 1;
+
 const defaultNumberingSuffix = '';
 
 const defaultHeaderOrganizations: readonly DemoAosrHeaderOrganization[] = [
@@ -488,9 +495,11 @@ const defaultSectionTemplate: SectionTemplate = {
   sectionId: 'section-ventilation',
   objectName: defaultObjectName,
   objectNameSubscript: defaultObjectNameSubscript,
+  numberingMode: defaultNumberingMode,
   numberingPattern: '{prefix}{number}{suffix}',
   numberingPrefix: defaultNumberingPrefix,
   numberingScope: defaultNumberingScope,
+  numberingStart: defaultNumberingStart,
   numberingSuffix: defaultNumberingSuffix,
   projectDocumentation: defaultProjectDocumentation,
   representativeGroups: [
@@ -684,7 +693,7 @@ export const demoAosrWorkspace: DemoAosrWorkspace = {
         'certificate-fasteners-001',
       ]),
       numberingAssignment: {
-        automaticSequences: { folder: 1, object: 1, section: 1 },
+        automaticSequences: { folder: 1, section: 1 },
         source: 'automatic',
       },
       sectionTemplateId: 'section-template-settings-ventilation',
@@ -731,7 +740,7 @@ export const demoAosrWorkspace: DemoAosrWorkspace = {
       materialCertificateIds: ['certificate-firestop-001'],
       materialCertificateSnapshots: getMaterialCertificateSnapshots(['certificate-firestop-001']),
       numberingAssignment: {
-        automaticSequences: { folder: 1, object: 2, section: 2 },
+        automaticSequences: { folder: 1, section: 2 },
         source: 'automatic',
       },
       sectionTemplateId: 'section-template-settings-ventilation',
@@ -1513,6 +1522,42 @@ export function updateDemoObjectNumberingScope(
   };
 }
 
+export function updateDemoObjectNumberingMode(
+  objectDefaults: DemoAosrObjectDefaults,
+  numberingMode: DemoDocumentNumberingMode,
+): DemoAosrObjectDefaults {
+  return {
+    ...objectDefaults,
+    objectTemplate: {
+      ...objectDefaults.objectTemplate,
+      numberingMode,
+    },
+    sectionTemplate: {
+      ...objectDefaults.objectTemplate,
+      numberingMode,
+    },
+  };
+}
+
+export function updateDemoObjectNumberingStart(
+  objectDefaults: DemoAosrObjectDefaults,
+  numberingStart: number,
+): DemoAosrObjectDefaults {
+  const normalizedNumberingStart = normalizeNumberingStart(numberingStart);
+
+  return {
+    ...objectDefaults,
+    objectTemplate: {
+      ...objectDefaults.objectTemplate,
+      numberingStart: normalizedNumberingStart,
+    },
+    sectionTemplate: {
+      ...objectDefaults.objectTemplate,
+      numberingStart: normalizedNumberingStart,
+    },
+  };
+}
+
 export function updateDemoObjectNumberingAffix(
   objectDefaults: DemoAosrObjectDefaults,
   field: DemoDocumentNumberingAffixField,
@@ -1529,6 +1574,10 @@ export function updateDemoObjectNumberingAffix(
       [field]: value,
     },
   };
+}
+
+function normalizeNumberingStart(numberingStart: number): number {
+  return Number.isInteger(numberingStart) && numberingStart > 0 ? numberingStart : 1;
 }
 
 function updateObjectTemplateField(

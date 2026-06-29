@@ -149,12 +149,12 @@ MVP не является:
 
 Следующие категории входят в MVP, но не являются typed acts:
 
-| Category | MVP status | Scope |
-| --- | --- | --- |
-| Certificate / Declaration / Passport | Included as certificate library evidence kinds | Physical original file + required metadata + links to AOSR/materials/package. |
-| ExecutiveScheme | Included as file-backed evidence | PDF/file + structured metadata + AOSR/package links. |
-| Registry | Included as derived projection and export | Built from object, AOSR, certificates, schemes, drawing sets and allowed overrides. |
-| Package | Included as package configuration/build/snapshot | Registry + certificates + AOSR outputs + schemes, ordered and downloadable. |
+| Category                             | MVP status                                       | Scope                                                                               |
+| ------------------------------------ | ------------------------------------------------ | ----------------------------------------------------------------------------------- |
+| Certificate / Declaration / Passport | Included as certificate library evidence kinds   | Physical original file + required metadata + links to AOSR/materials/package.       |
+| ExecutiveScheme                      | Included as file-backed evidence                 | PDF/file + structured metadata + AOSR/package links.                                |
+| Registry                             | Included as derived projection and export        | Built from object, AOSR, certificates, schemes, drawing sets and allowed overrides. |
+| Package                              | Included as package configuration/build/snapshot | Registry + certificates + AOSR outputs + schemes, ordered and downloadable.         |
 
 ### Limited/deferred typed acts
 
@@ -174,36 +174,36 @@ No generic `TestAct`, no name-only subtype and no free-form generated act are al
 
 MVP AOSR must include these blocks:
 
-| Block | MVP requirement |
-| --- | --- |
-| Header | Document type, number, date, object, status/revision, template context. |
-| Object context | Object name/address and output-relevant object/company values needed by the form. |
-| Participants | Structured participant roles, organizations, positions, names, authority and display order. |
-| Work | Description of concealed works, system/discipline, location, execution period and conclusion/subsequent works permission. |
-| Project basis | Project drawing set reference and optional normative/PPR rendered references. |
-| Materials/equipment | Document-owned material/equipment usage rows where the act claims applied items. |
-| Certificates | Explicit links from material/equipment usage to file-backed certificate library items. |
-| Executive schemes | Optional/conditional links to file-backed executive schemes. |
-| Attachments | Ordered list of linked certificates/schemes and approved attachment captions. |
-| Validation | Explainable `ERROR`/`WARNING` findings for draft, finalization and package readiness. |
-| Generated output | DOCX/PDF from structured data and exact template version. |
+| Block               | MVP requirement                                                                                                           |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| Header              | Document type, number, date, object, status/revision, template context.                                                   |
+| Object context      | Object name/address and output-relevant object/company values needed by the form.                                         |
+| Participants        | Structured participant roles, organizations, positions, names, authority and display order.                               |
+| Work                | Description of concealed works, system/discipline, location, execution period and conclusion/subsequent works permission. |
+| Project basis       | Project drawing set reference and optional normative/PPR rendered references.                                             |
+| Materials/equipment | Document-owned material/equipment usage rows where the act claims applied items.                                          |
+| Certificates        | Explicit links from material/equipment usage to file-backed certificate library items.                                    |
+| Executive schemes   | Optional/conditional links to file-backed executive schemes.                                                              |
+| Attachments         | Ordered list of linked certificates/schemes and approved attachment captions.                                             |
+| Validation          | Explainable `ERROR`/`WARNING` findings for draft, finalization and package readiness.                                     |
+| Generated output    | DOCX/PDF from structured data and exact template version.                                                                 |
 
 ### 5.2 Mandatory fields for finalization
 
 The following fields are required before an AOSR can become `final` in MVP:
 
-| Field group | Required MVP fields |
-| --- | --- |
-| Identity | `document_type = AOSR`, `object_id`, document number, document date. |
-| Numbering | numbering scope, prefix if used, sequence, suffix if used, rendered number. |
-| Object | object name and address or equivalent approved object display values. |
-| Work | non-empty work description, engineering system/discipline, rendered location, execution period, acceptance/conclusion text. |
-| Location | at least one meaningful location representation: axes, elevation, floor/zone, room/section or explicit rendered location text. |
-| Project basis | at least one project/reference basis line; preferred source is `ProjectDrawingSet`. |
-| Participants | required resolved participants for the selected MVP AOSR form, including role, organization, position, name, authority/caption and display order; finalization freezes them in the released revision snapshot. |
-| Template | selected usable AOSR `TemplateVersion` for generated output. |
-| Certificates | every printed quality-document number/reference must point to a confirmed certificate library item with retained physical original file. |
-| Schemes | every printed/attached scheme reference must point to an `ExecutiveScheme` with retained physical original file. |
+| Field group   | Required MVP fields                                                                                                                                                                                            |
+| ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Identity      | `document_type = AOSR`, `object_id`, document number, document date.                                                                                                                                           |
+| Numbering     | numbering scope, prefix if used, sequence, suffix if used, rendered number.                                                                                                                                    |
+| Object        | object name and address or equivalent approved object display values.                                                                                                                                          |
+| Work          | non-empty work description, engineering system/discipline, rendered location, execution period, acceptance/conclusion text.                                                                                    |
+| Location      | at least one meaningful location representation: axes, elevation, floor/zone, room/section or explicit rendered location text.                                                                                 |
+| Project basis | at least one project/reference basis line; preferred source is `ProjectDrawingSet`.                                                                                                                            |
+| Participants  | required resolved participants for the selected MVP AOSR form, including role, organization, position, name, authority/caption and display order; finalization freezes them in the released revision snapshot. |
+| Template      | selected usable AOSR `TemplateVersion` for generated output.                                                                                                                                                   |
+| Certificates  | every printed quality-document number/reference must point to a confirmed certificate library item with retained physical original file.                                                                       |
+| Schemes       | every printed/attached scheme reference must point to an `ExecutiveScheme` with retained physical original file.                                                                                               |
 
 ### 5.3 Optional fields in MVP
 
@@ -325,8 +325,9 @@ MVP AOSR date rules:
 MVP numbering rules:
 
 - structured number consists of scope, prefix, sequence, suffix and rendered number;
-- object-scoped and folder-scoped numbering are supported as product concepts;
-- the first implementation should support one simple default policy per object/folder for AOSR;
+- section-scoped and folder-restarted numbering are supported as product concepts;
+- the first implementation should support one simple default policy per section
+  template for AOSR;
 - user can preview and confirm renumbering;
 - collisions are `ERROR`;
 - changing number of a final AOSR creates a new revision and makes current package output stale.
@@ -355,11 +356,11 @@ Deferred:
 
 MVP AOSR validation must include:
 
-| Severity | MVP examples |
-| --- | --- |
-| `ERROR` | Missing object/date/number/work description/rendered location; missing required resolved participant data for accepted template at finalization; printed certificate reference without file-backed certificate; printed scheme attachment without file-backed scheme; numbering collision; missing usable template. |
-| `WARNING` | Certificate expired relative to AOSR date; material-certificate applicability unclear; optional scheme absent where often expected but not required; execution period looks inconsistent with document date; current output stale after edits. |
-| `INFO` | Certificate expired today but was valid on historical document date; evidence reused by other acts; newer template exists; previous revision remains in historical package. |
+| Severity  | MVP examples                                                                                                                                                                                                                                                                                                        |
+| --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ERROR`   | Missing object/date/number/work description/rendered location; missing required resolved participant data for accepted template at finalization; printed certificate reference without file-backed certificate; printed scheme attachment without file-backed scheme; numbering collision; missing usable template. |
+| `WARNING` | Certificate expired relative to AOSR date; material-certificate applicability unclear; optional scheme absent where often expected but not required; execution period looks inconsistent with document date; current output stale after edits.                                                                      |
+| `INFO`    | Certificate expired today but was valid on historical document date; evidence reused by other acts; newer template exists; previous revision remains in historical package.                                                                                                                                         |
 
 Validation explanation UX is part of MVP: findings must tell the user what is wrong, why it matters, and where to fix it.
 
@@ -493,9 +494,9 @@ Renumber flow:
 
 Move flow:
 
-| Move choice | MVP behavior |
-| --- | --- |
-| Keep numbering | Only placement changes; document number/revision stays unchanged. |
+| Move choice           | MVP behavior                                                                            |
+| --------------------- | --------------------------------------------------------------------------------------- |
+| Keep numbering        | Only placement changes; document number/revision stays unchanged.                       |
 | Recalculate numbering | Destination policy applies; collisions validated; final documents require new revision. |
 
 Deferred numbering complexity:
@@ -575,12 +576,12 @@ Deferred package features:
 
 MVP generated outputs:
 
-| Output | MVP requirement |
-| --- | --- |
-| AOSR DOCX | Required from released AOSR revision and template version. |
-| AOSR PDF | Required from the same source context as DOCX. |
+| Output          | MVP requirement                                                                                                                |
+| --------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| AOSR DOCX       | Required from released AOSR revision and template version.                                                                     |
+| AOSR PDF        | Required from the same source context as DOCX.                                                                                 |
 | Registry export | Required as generated registry artifact; exact format may be selected later in tech strategy, but product must support export. |
-| ZIP package | Required package download containing selected generated outputs and evidence originals. |
+| ZIP package     | Required package download containing selected generated outputs and evidence originals.                                        |
 
 Generated output rules:
 
@@ -944,21 +945,21 @@ MVP is not successful if:
 
 Recommended first screens:
 
-| Screen | MVP purpose |
-| --- | --- |
-| Workspace/object selection | Choose personal or organization workspace and open object. |
-| Object dashboard | Show object status, folders, document counts, validation counts and package freshness. |
-| Folder tree | Navigate object-scoped business folders and document/scheme/package placements. |
-| AOSR editor | Fill typed fields, participants, materials, certificates, schemes, numbering, dates and validation. |
-| Certificate picker | Search/select confirmed certificate evidence by material/date/number/coverage. |
-| Certificate library/detail | Upload original, enter/confirm metadata, see usage. |
-| Scheme picker | Select object-scoped executive scheme with file readiness. |
-| Executive scheme library/detail | Upload original, enter metadata, see usage. |
-| Validation panel | Explain errors/warnings, gates and suggested actions. |
-| Registry preview | Show derived registry blocks, provenance, ordering, notes and signer selection. |
-| Package builder | Select scope/components, order items, validate readiness, build and release snapshot. |
-| Generated outputs/download history | Download DOCX/PDF/registry/ZIP and see stale/retained/provenance state. |
-| Onboarding/help | First-run guidance, contextual hints, empty states and dismissible tips. |
+| Screen                             | MVP purpose                                                                                         |
+| ---------------------------------- | --------------------------------------------------------------------------------------------------- |
+| Workspace/object selection         | Choose personal or organization workspace and open object.                                          |
+| Object dashboard                   | Show object status, folders, document counts, validation counts and package freshness.              |
+| Folder tree                        | Navigate object-scoped business folders and document/scheme/package placements.                     |
+| AOSR editor                        | Fill typed fields, participants, materials, certificates, schemes, numbering, dates and validation. |
+| Certificate picker                 | Search/select confirmed certificate evidence by material/date/number/coverage.                      |
+| Certificate library/detail         | Upload original, enter/confirm metadata, see usage.                                                 |
+| Scheme picker                      | Select object-scoped executive scheme with file readiness.                                          |
+| Executive scheme library/detail    | Upload original, enter metadata, see usage.                                                         |
+| Validation panel                   | Explain errors/warnings, gates and suggested actions.                                               |
+| Registry preview                   | Show derived registry blocks, provenance, ordering, notes and signer selection.                     |
+| Package builder                    | Select scope/components, order items, validate readiness, build and release snapshot.               |
+| Generated outputs/download history | Download DOCX/PDF/registry/ZIP and see stale/retained/provenance state.                             |
+| Onboarding/help                    | First-run guidance, contextual hints, empty states and dismissible tips.                            |
 
 Avoid separate screens that look like generic admin databases unless they directly support these workflows.
 

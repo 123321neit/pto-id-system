@@ -67,9 +67,9 @@ export function MockObjectDashboardPage({
             <span aria-hidden="true">△</span>
             Представители и организации
           </button>
-          <button type="button">
+          <button aria-label="Настройки скоро" disabled type="button">
             <span aria-hidden="true">○</span>
-            Настройки
+            Настройки · скоро
           </button>
         </nav>
 
@@ -119,7 +119,9 @@ export function MockObjectDashboardPage({
                     <ObjectCard key={object.id} object={object} onOpenObject={onOpenObject} />
                   ))
                 ) : (
-                  <p className="empty-state">В ИДее по такому запросу объекты не найдены.</p>
+                  <p className="empty-state">
+                    В приложении «ИДея» по такому запросу объекты не найдены.
+                  </p>
                 )}
               </section>
 

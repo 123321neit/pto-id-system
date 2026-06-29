@@ -507,13 +507,13 @@ Stage: frontend-only period-scoped AOSR creation mock. The universal
 currently selected period, stores it only in React memory, adds its id to the
 period document list, shows it in the AOSR document tree and opens it
 immediately in the editor. Empty fields are allowed and must not block editing
-or preview. The mock also introduces a small frontend-only numbering helper for
-document types: current AOSR numbering is global by object with prefix `ОВ-`,
-empty suffix and template `{prefix}{number}{suffix}`, so existing `ОВ-1` and
-`ОВ-2` produce `ОВ-3`. The helper shape can also support future numbering
-restarted per period. The create panel now treats that auto-number as a
-suggestion: editable `Номер документа` is prefilled with the proposed value and
-may be overridden freely, including empty text, before the frontend-only draft
+or preview. The mock also introduced a small frontend-only numbering helper for
+document types. That historical object-level helper was later superseded by
+section template numbering: automatic numbering is continuous across a section
+or restarted per folder, and manual numbering creates acts without a number.
+The create panel at that stage treated the auto-number as a suggestion:
+editable `Номер документа` was prefilled with the proposed value and could be
+overridden freely, including empty text, before the frontend-only draft
 is created. Future UI settings may expose `ОВ-{n}`, `12-{n}-ОВ` and
 `АОСР/{YYYY}/{n}`. This stage adds no backend/API, no localStorage, no
 persistence, no Prisma/schema/migrations, no uploads, no OCR/AI, no
@@ -605,13 +605,13 @@ Examples:
 АОСР/{YYYY}/{n}
 ```
 
-The helper is per document type and supports global numbering per object or
-numbering restarted per period. Current AOSR mock settings use global object
-numbering with prefix `ОВ-`, empty suffix and proposed next number `ОВ-3` for
-existing `ОВ-1` and `ОВ-2`. Future UI for template settings and manual number
-editing settings is not implemented yet. Manual override before creation is
-available only in the frontend mock, and the auto-number remains just a
-suggestion. This stage does not implement backend policy, persistence, API
+This historical helper was later superseded by the section-scoped model:
+numbering belongs to the selected section template, can be automatic or manual,
+and automatic sequences are either continuous across the section or restarted
+inside each folder. Future UI for template settings and manual number editing
+settings was not implemented at that stage. Manual override before creation was
+available only in the frontend mock, and the auto-number remained just a
+suggestion. This stage did not implement backend policy, persistence, API
 contracts or production numbering behavior.
 
 Stage: frontend-only object workspace premium UX polish. The current object
@@ -4859,9 +4859,9 @@ delete/move/reorder lifecycle or generation was introduced.
   Representatives, Final ID and Settings;
 - future numbering engine is documented as `{prefix}{number}{suffix}` with
   examples `ОВ-{n}`, `12-{n}-ОВ` and `АОСР/{YYYY}/{n}`;
-- future numbering must support global numbering per object and numbering
-  restarted per period;
-- Final ID aggregates all periods.
+- future numbering must support section-scoped numbering and numbering
+  restarted per ID folder;
+- Final ID aggregates folders of the selected section.
 
 Что не было введено:
 
@@ -4892,10 +4892,10 @@ delete/move/reorder lifecycle or generation was introduced.
 - overview and final ID counts update when they derive from the in-memory draft
   list;
 - initial frontend-only numbering helper was added for document types;
-- current AOSR mock numbering mode is global by object;
-- current AOSR mock number template is `{prefix}{number}{suffix}` with prefix
-  `ОВ-`, empty suffix and next number `ОВ-3` after existing `ОВ-1` and `ОВ-2`;
-- the helper shape also supports future numbering restarted per period;
+- later section-template numbering superseded the initial object-level helper;
+- current section-template numbering uses `{prefix}{number}{suffix}` and
+  supports automatic/manual mode with `global-section` or
+  `restart-per-folder`;
 - the create panel shows `Предлагаемый номер: ОВ-3`;
 - the create panel also exposes editable `Номер документа`, prefilled from the
   proposed number;
@@ -5670,8 +5670,8 @@ delete/move/reorder lifecycle or generation was introduced.
   numbering settings, but preserves the target section numbering prefix;
 - act creation uses a real radiogroup selection for the currently available
   AOSR type; disabled future types are not selected;
-- numbering supports `global-object`, `global-section` and
-  `restart-per-folder`; previews show `n` as the sequence placeholder;
+- numbering supports `global-section` and `restart-per-folder`; previews show
+  `n` as the sequence placeholder;
 - manual edits to an act number mark numbering as manual and show a warning
   without switching the whole act to manual-template mode;
 - unused frontend mock fields were removed from demo section/draft data.
@@ -5731,3 +5731,33 @@ delete/move/reorder lifecycle or generation was introduced.
 - no real DOCX/PDF generation yet;
 - no ZIP/final package generation;
 - no production number reservation or released package snapshots.
+
+### 2026-06-29 — Section numbering cleanup and mass renumbering
+
+- Статус: `Frontend mock UX/data cleanup only`
+- Описание: removed object-wide numbering from the frontend mock and aligned
+  section template settings with the current product decision.
+
+Добавлено/уточнено:
+
+- section template numbering now has two modes: `automatic` and `manual`;
+- automatic numbering supports only `global-section` and
+  `restart-per-folder`;
+- section template settings own `numberingStart`; invalid values normalize to
+  `1`;
+- manual section numbering creates new acts without a number, does not ask for
+  a number during creation and does not switch the act template mode to manual;
+- settings include `Пронумеровать все акты раздела`, which renumbers existing
+  acts in section folder order and changes only `actNumber` plus automatic
+  numbering assignment;
+- section template clipboard stores a cloned snapshot, not a live reference;
+- dashboard settings are shown as `Настройки · скоро`, not as an active no-op;
+- product copy uses `В приложении «ИДея»...` where the declined brand name would
+  otherwise read awkwardly.
+
+Что не было введено:
+
+- no backend routes/controllers or API;
+- no Prisma/schema/migrations;
+- no persistence or production number reservation;
+- no DOCX/PDF/ZIP generation changes.

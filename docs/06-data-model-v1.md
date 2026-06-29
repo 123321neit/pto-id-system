@@ -143,31 +143,31 @@ Data Model V1 различает три категории:
 
 ### 3.2 Реестр корневых агрегатов
 
-| Aggregate root | Статус в V1 | Назначение | Главные инварианты |
-| --- | --- | --- | --- |
-| `TenantContext` | Концептуальная граница | Изоляция данных организации/аккаунта | Межtenant-ссылки запрещены, кроме специально решённых системных сценариев. |
-| `Object` | Принят | Рабочий контекст строительного объекта | Идентичность объекта, системы, `ObjectTemplate`, настройки и ссылки; не владеет всеми документами. |
-| `FolderTree` | Кандидат внутри object context | Организация документов по папкам/периодам | Один объект, отсутствие циклов, правила move/duplicate/soft delete. |
-| `CompanyProfile` | Принят как library aggregate | Переиспользуемый профиль организации | Изменения видны active linked acts; manual/released snapshots не переписываются. |
-| `RepresentativeProfile` | Принят как global library aggregate | Переиспользуемые данные представителя | Object-specific assignments feed linked acts; manual/released snapshots сохраняют историю. |
-| `Document` | Принят | Typed исполнительный документ | Immutable type, structured payload, lifecycle, revision, связи и template binding. |
-| `Certificate` | Принят | Library item документа качества | Обязательный original file, подтверждённые metadata, переиспользуемые ссылки. |
-| `ExecutiveScheme` | Принят | Фактическая исполнительная схема | File + structured metadata, отдельная от проектных чертежей. |
-| `Template` | Принят как отдельный контекст | Шаблон и его версии | Использованная version immutable. |
-| `Package` | Принят как отдельный контекст | Задание и snapshots комплекта ИД | Async snapshot-based build, dependency invalidation, порядок вывода. |
+| Aggregate root          | Статус в V1                         | Назначение                                | Главные инварианты                                                                                 |
+| ----------------------- | ----------------------------------- | ----------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| `TenantContext`         | Концептуальная граница              | Изоляция данных организации/аккаунта      | Межtenant-ссылки запрещены, кроме специально решённых системных сценариев.                         |
+| `Object`                | Принят                              | Рабочий контекст строительного объекта    | Идентичность объекта, системы, `ObjectTemplate`, настройки и ссылки; не владеет всеми документами. |
+| `FolderTree`            | Кандидат внутри object context      | Организация документов по папкам/периодам | Один объект, отсутствие циклов, правила move/duplicate/soft delete.                                |
+| `CompanyProfile`        | Принят как library aggregate        | Переиспользуемый профиль организации      | Изменения видны active linked acts; manual/released snapshots не переписываются.                   |
+| `RepresentativeProfile` | Принят как global library aggregate | Переиспользуемые данные представителя     | Object-specific assignments feed linked acts; manual/released snapshots сохраняют историю.         |
+| `Document`              | Принят                              | Typed исполнительный документ             | Immutable type, structured payload, lifecycle, revision, связи и template binding.                 |
+| `Certificate`           | Принят                              | Library item документа качества           | Обязательный original file, подтверждённые metadata, переиспользуемые ссылки.                      |
+| `ExecutiveScheme`       | Принят                              | Фактическая исполнительная схема          | File + structured metadata, отдельная от проектных чертежей.                                       |
+| `Template`              | Принят как отдельный контекст       | Шаблон и его версии                       | Использованная version immutable.                                                                  |
+| `Package`               | Принят как отдельный контекст       | Задание и snapshots комплекта ИД          | Async snapshot-based build, dependency invalidation, порядок вывода.                               |
 
 ### 3.3 Concepts that are not aggregate roots in V1
 
-| Concept | Почему не является корнем |
-| --- | --- |
-| `RegistryProjection` | Производное чтение из source entities и overrides, не самостоятельная истина. |
-| `RegistryOverride` | Настройка конкретного представления/комплекта, владеется scope реестра или package configuration. |
-| `GeneratedArtifact` | Выход операции генерации с provenance; владеется revision/template/package output context. |
-| `DocumentLock` | Операционная lease-сущность редактирования, не изменяет данные документа. |
-| `MaterialUsage` | Факт использования внутри work/document context; точная граница зависит от уточнения `WorkItem`. |
-| `ObjectCompanySnapshot` | Legacy V1 name for frozen company output values; не normal source активного linked object/act. |
-| `DocumentRevisionSnapshot` | Историческая фиксация состояния документа, принадлежащая Document. |
-| `PackageSnapshot` | Результат сборки, принадлежащий Package. |
+| Concept                    | Почему не является корнем                                                                         |
+| -------------------------- | ------------------------------------------------------------------------------------------------- |
+| `RegistryProjection`       | Производное чтение из source entities и overrides, не самостоятельная истина.                     |
+| `RegistryOverride`         | Настройка конкретного представления/комплекта, владеется scope реестра или package configuration. |
+| `GeneratedArtifact`        | Выход операции генерации с provenance; владеется revision/template/package output context.        |
+| `DocumentLock`             | Операционная lease-сущность редактирования, не изменяет данные документа.                         |
+| `MaterialUsage`            | Факт использования внутри work/document context; точная граница зависит от уточнения `WorkItem`.  |
+| `ObjectCompanySnapshot`    | Legacy V1 name for frozen company output values; не normal source активного linked object/act.    |
+| `DocumentRevisionSnapshot` | Историческая фиксация состояния документа, принадлежащая Document.                                |
+| `PackageSnapshot`          | Результат сборки, принадлежащий Package.                                                          |
 
 ---
 
@@ -286,79 +286,79 @@ source. Новый представитель сначала создаётся 
 
 ### 5.1 Tenant and user context
 
-| Entity | Role | Required conceptual attributes | Lifecycle note |
-| --- | --- | --- | --- |
-| `TenantContext` | Область изоляции данных | identity, display context, status | Детали коммерческой subscription model не входят в V1. |
-| `User` | Участник работы в tenant | identity, tenant relation, status | Authentication/RBAC design отложен. |
-| `RoleAssignment` | Право пользователя выполнять операции | user, role, scope | `admin`, `PTO`, `foreman` известны как роли, правила уточняются. |
+| Entity           | Role                                  | Required conceptual attributes    | Lifecycle note                                                   |
+| ---------------- | ------------------------------------- | --------------------------------- | ---------------------------------------------------------------- |
+| `TenantContext`  | Область изоляции данных               | identity, display context, status | Детали коммерческой subscription model не входят в V1.           |
+| `User`           | Участник работы в tenant              | identity, tenant relation, status | Authentication/RBAC design отложен.                              |
+| `RoleAssignment` | Право пользователя выполнять операции | user, role, scope                 | `admin`, `PTO`, `foreman` известны как роли, правила уточняются. |
 
 ### 5.2 Object organization
 
-| Entity | Role | Required conceptual attributes | Lifecycle note |
-| --- | --- | --- | --- |
-| `Object` | Строительный объект | name, address, status, tenant, object settings | Создаётся пользователем; archive/delete policy уточняется. |
-| `EngineeringSystem` | Раздел/система объекта | code, name, discipline, object relation | MVP фокус: ОВиК и ВК. |
-| `Folder` | Узел бизнес-структуры | title, object, parent, ordering, deleted state | Move/duplicate/soft delete, без владения документами. |
-| `ProjectDrawingSet` | Рабочая проектная документация | name, drawing code, section, sheet count, organization snapshot/ref, note | Положение внутри Object или отдельной границы требует утверждения. |
-| `NumberingPolicy` | Настройки нумерации | scope, prefix, sequence behavior, suffix, renumber policy | Может задаваться object/folder scope. |
+| Entity              | Role                           | Required conceptual attributes                                                | Lifecycle note                                                                       |
+| ------------------- | ------------------------------ | ----------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
+| `Object`            | Строительный объект            | name, address, status, tenant, object settings                                | Создаётся пользователем; archive/delete policy уточняется.                           |
+| `EngineeringSystem` | Раздел/система объекта         | code, name, discipline, object relation                                       | MVP фокус: ОВиК и ВК.                                                                |
+| `Folder`            | Узел бизнес-структуры          | title, object, parent, ordering, deleted state                                | Move/duplicate/soft delete, без владения документами.                                |
+| `ProjectDrawingSet` | Рабочая проектная документация | name, drawing code, section, sheet count, organization snapshot/ref, note     | Положение внутри Object или отдельной границы требует утверждения.                   |
+| `NumberingPolicy`   | Настройки нумерации            | scope, mode, first number, prefix, sequence behavior, suffix, renumber policy | Может задаваться для раздела: сквозная по разделу или с перезапуском в каждой папке. |
 
 ### 5.3 Companies and people
 
-| Entity | Role | Required conceptual attributes | Lifecycle note |
-| --- | --- | --- | --- |
-| `CompanyProfile` | Библиотека организаций | legal/short name, requisites, addresses, director, authority, SRO/contacts | Mutable current source для active linked uses. |
-| `ObjectTemplateCompanyAssignment` | Назначение глобальной организации в шаблоне объекта | library reference, object-specific title/subscript/order/context | Live source для linked acts; physical model требует отдельного backend contract. |
-| `RepresentativeProfile` | Переиспользуемый представитель | organization relation, position, full name, authority, optional NRS, contact | Модель глобальности/tenant scope уточняется. |
-| `ObjectRepresentativeAssignment` | Назначение глобального представителя в шаблоне объекта | library reference, role/group, ordering, subtitle and object context | Live source для linked acts. |
-| `DocumentRepresentativeSnapshot` | Frozen output участника manual/released документа | role, rendered organization/person/authority, ordering, subtitle | Не создаётся как normal source linked act; released revision обязана быть воспроизводимой. |
-| `RegistrySignerSnapshot` | Подписант конкретного registry output | rendered name, position, organization, authority and caption | Может отличаться от подписантов актов. |
+| Entity                            | Role                                                   | Required conceptual attributes                                               | Lifecycle note                                                                             |
+| --------------------------------- | ------------------------------------------------------ | ---------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| `CompanyProfile`                  | Библиотека организаций                                 | legal/short name, requisites, addresses, director, authority, SRO/contacts   | Mutable current source для active linked uses.                                             |
+| `ObjectTemplateCompanyAssignment` | Назначение глобальной организации в шаблоне объекта    | library reference, object-specific title/subscript/order/context             | Live source для linked acts; physical model требует отдельного backend contract.           |
+| `RepresentativeProfile`           | Переиспользуемый представитель                         | organization relation, position, full name, authority, optional NRS, contact | Модель глобальности/tenant scope уточняется.                                               |
+| `ObjectRepresentativeAssignment`  | Назначение глобального представителя в шаблоне объекта | library reference, role/group, ordering, subtitle and object context         | Live source для linked acts.                                                               |
+| `DocumentRepresentativeSnapshot`  | Frozen output участника manual/released документа      | role, rendered organization/person/authority, ordering, subtitle             | Не создаётся как normal source linked act; released revision обязана быть воспроизводимой. |
+| `RegistrySignerSnapshot`          | Подписант конкретного registry output                  | rendered name, position, organization, authority and caption                 | Может отличаться от подписантов актов.                                                     |
 
 ### 5.4 Works, documents and links
 
-| Entity | Role | Required conceptual attributes | Lifecycle note |
-| --- | --- | --- | --- |
-| `WorkItem` | Работа или выполненный участок | type/description, system, location, execution period, drawing references | Степень нормализации в MVP открыта. |
-| `Document` | Корень typed document | type, number, date, status, revision, object/folder, template binding | Type immutable; final editable through new revision. |
-| `AOSRPayload` | Данные АОСР | work, representatives, project refs, materials, certificates, schemes/applications, permissions/notes | Typed value/entity set внутри `Document`. |
-| `TestActPayload` | Данные акта испытаний | tested object, method, parameters/results, participants, conclusion, links | Specific forms требуют уточнения. |
-| `TechnicalReadinessActPayload` | Данные акта технической готовности | not yet fixed | Тип выявлен sample-реестром, schema deferred. |
-| `DocumentCertificateLink` | Связь документа с сертификатом | document, certificate, usage/purpose, ordering, display context | Certificate file обязателен. |
-| `DocumentSchemeLink` | Связь документа со схемой | document, scheme, purpose, ordering | Ссылка может участвовать в приложениях/реестре. |
-| `DocumentWorkLink` | Связь документа с работой | document, work, relation type | АОСР освидетельствует работу; акт испытаний проверяет объект/участок. |
+| Entity                         | Role                               | Required conceptual attributes                                                                        | Lifecycle note                                                        |
+| ------------------------------ | ---------------------------------- | ----------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------- |
+| `WorkItem`                     | Работа или выполненный участок     | type/description, system, location, execution period, drawing references                              | Степень нормализации в MVP открыта.                                   |
+| `Document`                     | Корень typed document              | type, number, date, status, revision, object/folder, template binding                                 | Type immutable; final editable through new revision.                  |
+| `AOSRPayload`                  | Данные АОСР                        | work, representatives, project refs, materials, certificates, schemes/applications, permissions/notes | Typed value/entity set внутри `Document`.                             |
+| `TestActPayload`               | Данные акта испытаний              | tested object, method, parameters/results, participants, conclusion, links                            | Specific forms требуют уточнения.                                     |
+| `TechnicalReadinessActPayload` | Данные акта технической готовности | not yet fixed                                                                                         | Тип выявлен sample-реестром, schema deferred.                         |
+| `DocumentCertificateLink`      | Связь документа с сертификатом     | document, certificate, usage/purpose, ordering, display context                                       | Certificate file обязателен.                                          |
+| `DocumentSchemeLink`           | Связь документа со схемой          | document, scheme, purpose, ordering                                                                   | Ссылка может участвовать в приложениях/реестре.                       |
+| `DocumentWorkLink`             | Связь документа с работой          | document, work, relation type                                                                         | АОСР освидетельствует работу; акт испытаний проверяет объект/участок. |
 
 ### 5.5 Materials and evidence
 
-| Entity | Role | Required conceptual attributes | Lifecycle note |
-| --- | --- | --- | --- |
-| `Material` | Идентифицируемый материал/оборудование | name, brand/type, manufacturer, category, measurement unit, normative data | Полноценный catalogue в MVP ещё не принят. |
-| `MaterialUsage` | Применение материала в работе | description/ref, work/document context, quantity if used, batch, location, use date | Certificate должен подтверждать именно использование. |
-| `Certificate` | Документ качества | type, registration number, dates, issuer, manufacturer/coverage, file, confirmation state | Shared library aggregate. |
-| `CertificateConfirmation` | Результат ручной проверки metadata | confirmer, confirmed fields/state, confirmation time | OCR без подтверждения не активирует source metadata. |
+| Entity                    | Role                                   | Required conceptual attributes                                                            | Lifecycle note                                        |
+| ------------------------- | -------------------------------------- | ----------------------------------------------------------------------------------------- | ----------------------------------------------------- |
+| `Material`                | Идентифицируемый материал/оборудование | name, brand/type, manufacturer, category, measurement unit, normative data                | Полноценный catalogue в MVP ещё не принят.            |
+| `MaterialUsage`           | Применение материала в работе          | description/ref, work/document context, quantity if used, batch, location, use date       | Certificate должен подтверждать именно использование. |
+| `Certificate`             | Документ качества                      | type, registration number, dates, issuer, manufacturer/coverage, file, confirmation state | Shared library aggregate.                             |
+| `CertificateConfirmation` | Результат ручной проверки metadata     | confirmer, confirmed fields/state, confirmation time                                      | OCR без подтверждения не активирует source metadata.  |
 
 ### 5.6 Schemes, files, templates and outputs
 
-| Entity | Role | Required conceptual attributes | Lifecycle note |
-| --- | --- | --- | --- |
-| `ExecutiveScheme` | Фактическая исполнительная схема | title, number, date, sheet count, note, file, object/folder | Новая редакция файла моделируется явно. |
-| `FileAsset` | Физически сохранённый файл | identity, purpose/type, ownership/ref, original/generation marker, integrity metadata | Physical storage technology deferred. |
-| `Template` | Семейство шаблонов | document/output purpose, scope, status | Global/object variants допустимы. |
-| `TemplateVersion` | Конкретная версия формы | template relation, version identity, usage state, rendering contract | Immutable after use. |
-| `GeneratedArtifact` | Сгенерированный результат | artifact type, source revision/snapshot, template version, file identity, generated time | Не source of truth; regeneration possible where policy permits. |
+| Entity              | Role                             | Required conceptual attributes                                                           | Lifecycle note                                                  |
+| ------------------- | -------------------------------- | ---------------------------------------------------------------------------------------- | --------------------------------------------------------------- |
+| `ExecutiveScheme`   | Фактическая исполнительная схема | title, number, date, sheet count, note, file, object/folder                              | Новая редакция файла моделируется явно.                         |
+| `FileAsset`         | Физически сохранённый файл       | identity, purpose/type, ownership/ref, original/generation marker, integrity metadata    | Physical storage technology deferred.                           |
+| `Template`          | Семейство шаблонов               | document/output purpose, scope, status                                                   | Global/object variants допустимы.                               |
+| `TemplateVersion`   | Конкретная версия формы          | template relation, version identity, usage state, rendering contract                     | Immutable after use.                                            |
+| `GeneratedArtifact` | Сгенерированный результат        | artifact type, source revision/snapshot, template version, file identity, generated time | Не source of truth; regeneration possible where policy permits. |
 
 ### 5.7 Projections, packages and operations
 
-| Entity | Role | Required conceptual attributes | Lifecycle note |
-| --- | --- | --- | --- |
-| `RegistryProjection` | Вычисленное представление реестра | scope, resolved rows/blocks, provenance, freshness | Не первичная entity. |
-| `RegistryOverride` | Печатная/порядковая настройка projection | scope, ordering, inclusion/hiding, notes, signer choice | Не меняет source fields. |
-| `Package` | Конфигурация комплекта ИД | object/scope, ordering, inclusion policy, status | Владеет builds/snapshots, не исходными документами. |
-| `PackageBuild` | Асинхронная попытка сборки | requested scope/version, progress, status, failure information | Job semantics без выбора технологии. |
-| `PackageSnapshot` | Зафиксированный состав и результат комплекта | dependency identities/revisions, ordering, output files, build time | Immutable historical build result. |
-| `DocumentRevisionSnapshot` | Зафиксированное document state | revision, payload state, references, template binding, validation state | Обеспечивает audit и воспроизводимость. |
-| `AutosaveSnapshot` | Последнее сохранённое рабочее состояние | document/editor context, payload state, saved time | Не равно published revision без lifecycle action. |
-| `DocumentLock` | Lease редактирования | document, user/session, locked/expires/heartbeat markers | Operational state, не document revision. |
-| `OCRExtractionProposal` | Результат извлечения из файла | file/certificate/scheme context, proposed fields, confidence/status | Active data только после подтверждения. |
-| `ActivityEvent` | История действий | actor, action, target, moment, context | Перечень обязательных событий уточняется. |
+| Entity                     | Role                                         | Required conceptual attributes                                          | Lifecycle note                                      |
+| -------------------------- | -------------------------------------------- | ----------------------------------------------------------------------- | --------------------------------------------------- |
+| `RegistryProjection`       | Вычисленное представление реестра            | scope, resolved rows/blocks, provenance, freshness                      | Не первичная entity.                                |
+| `RegistryOverride`         | Печатная/порядковая настройка projection     | scope, ordering, inclusion/hiding, notes, signer choice                 | Не меняет source fields.                            |
+| `Package`                  | Конфигурация комплекта ИД                    | object/scope, ordering, inclusion policy, status                        | Владеет builds/snapshots, не исходными документами. |
+| `PackageBuild`             | Асинхронная попытка сборки                   | requested scope/version, progress, status, failure information          | Job semantics без выбора технологии.                |
+| `PackageSnapshot`          | Зафиксированный состав и результат комплекта | dependency identities/revisions, ordering, output files, build time     | Immutable historical build result.                  |
+| `DocumentRevisionSnapshot` | Зафиксированное document state               | revision, payload state, references, template binding, validation state | Обеспечивает audit и воспроизводимость.             |
+| `AutosaveSnapshot`         | Последнее сохранённое рабочее состояние      | document/editor context, payload state, saved time                      | Не равно published revision без lifecycle action.   |
+| `DocumentLock`             | Lease редактирования                         | document, user/session, locked/expires/heartbeat markers                | Operational state, не document revision.            |
+| `OCRExtractionProposal`    | Результат извлечения из файла                | file/certificate/scheme context, proposed fields, confidence/status     | Active data только после подтверждения.             |
+| `ActivityEvent`            | История действий                             | actor, action, target, moment, context                                  | Перечень обязательных событий уточняется.           |
 
 ---
 
@@ -368,51 +368,51 @@ Value objects описывают значения без самостоятел�
 
 ### 6.1 Identification and display values
 
-| Value object | Meaning | Notes |
-| --- | --- | --- |
-| `DocumentNumber` | Номер документа | Содержит prefix, sequence, suffix и rendered representation. |
-| `RegistrationNumber` | Номер сертификата/схемы/проектного комплекта | Не подменяет ссылку на entity. |
-| `DocumentType` | Тип typed document | После создания документа immutable. |
-| `ArtifactType` | DOCX, PDF, registry output, package PDF/ZIP и иные выходы | Не является выбором технологии генерации. |
-| `DisplayOrder` | Порядок вывода элементов | Применим к представителям, строкам, вложениям и package ordering. |
+| Value object         | Meaning                                                   | Notes                                                             |
+| -------------------- | --------------------------------------------------------- | ----------------------------------------------------------------- |
+| `DocumentNumber`     | Номер документа                                           | Содержит prefix, sequence, suffix и rendered representation.      |
+| `RegistrationNumber` | Номер сертификата/схемы/проектного комплекта              | Не подменяет ссылку на entity.                                    |
+| `DocumentType`       | Тип typed document                                        | После создания документа immutable.                               |
+| `ArtifactType`       | DOCX, PDF, registry output, package PDF/ZIP и иные выходы | Не является выбором технологии генерации.                         |
+| `DisplayOrder`       | Порядок вывода элементов                                  | Применим к представителям, строкам, вложениям и package ordering. |
 
 ### 6.2 Date and lifecycle values
 
-| Value object | Meaning | Notes |
-| --- | --- | --- |
-| `DocumentDate` | Дата документа ИД | Является базой certificate validity check. |
-| `ExecutionPeriod` | Даты выполнения работ | Отличается от даты оформления акта. |
-| `ValidityPeriod` | Срок действия сертификата | Проверяется относительно DocumentDate. |
-| `RevisionNumber` | Номер revision документа | Увеличивается при изменении final document; политика draft уточняется. |
-| `LifecycleStatus` | Состояние entity | Точный полный перечень ещё нуждается в детализации. |
+| Value object      | Meaning                   | Notes                                                                  |
+| ----------------- | ------------------------- | ---------------------------------------------------------------------- |
+| `DocumentDate`    | Дата документа ИД         | Является базой certificate validity check.                             |
+| `ExecutionPeriod` | Даты выполнения работ     | Отличается от даты оформления акта.                                    |
+| `ValidityPeriod`  | Срок действия сертификата | Проверяется относительно DocumentDate.                                 |
+| `RevisionNumber`  | Номер revision документа  | Увеличивается при изменении final document; политика draft уточняется. |
+| `LifecycleStatus` | Состояние entity          | Точный полный перечень ещё нуждается в детализации.                    |
 
 ### 6.3 Location, system and work values
 
-| Value object | Meaning | Notes |
-| --- | --- | --- |
-| `ObjectAddress` | Адрес строительного объекта | Может входить в snapshots вывода. |
-| `WorkLocation` | Зона выполнения | Может содержать этаж, помещение, оси, отметку или участок. |
-| `EngineeringSystemRef` | Ссылка/идентификатор системы | ОВиК/ВК и уточнённая система. |
-| `WorkDescription` | Отображаемое описание работы | В MVP может сочетать structured components и rendered text. |
-| `DrawingReference` | Ссылка на рабочую документацию/шифр | Может указывать на ProjectDrawingSet и textual normative refs. |
+| Value object           | Meaning                             | Notes                                                          |
+| ---------------------- | ----------------------------------- | -------------------------------------------------------------- |
+| `ObjectAddress`        | Адрес строительного объекта         | Может входить в snapshots вывода.                              |
+| `WorkLocation`         | Зона выполнения                     | Может содержать этаж, помещение, оси, отметку или участок.     |
+| `EngineeringSystemRef` | Ссылка/идентификатор системы        | ОВиК/ВК и уточнённая система.                                  |
+| `WorkDescription`      | Отображаемое описание работы        | В MVP может сочетать structured components и rendered text.    |
+| `DrawingReference`     | Ссылка на рабочую документацию/шифр | Может указывать на ProjectDrawingSet и textual normative refs. |
 
 ### 6.4 Organization and person values
 
-| Value object | Meaning | Notes |
-| --- | --- | --- |
-| `OrganizationRequisites` | ИНН, КПП, ОГРН, адреса и наименование | В snapshot фиксируется историческая форма. |
-| `AuthorityBasis` | Основание полномочий | Приказ, доверенность, устав и связанные реквизиты. |
-| `RepresentativeCaption` | Подстрочный/печатный текст роли | Default может редактироваться в document context. |
-| `SignerIdentity` | Рендеримые имя, должность и организация | Используется snapshot для документа/реестра. |
+| Value object             | Meaning                                 | Notes                                              |
+| ------------------------ | --------------------------------------- | -------------------------------------------------- |
+| `OrganizationRequisites` | ИНН, КПП, ОГРН, адреса и наименование   | В snapshot фиксируется историческая форма.         |
+| `AuthorityBasis`         | Основание полномочий                    | Приказ, доверенность, устав и связанные реквизиты. |
+| `RepresentativeCaption`  | Подстрочный/печатный текст роли         | Default может редактироваться в document context.  |
+| `SignerIdentity`         | Рендеримые имя, должность и организация | Используется snapshot для документа/реестра.       |
 
 ### 6.5 Validation and provenance values
 
-| Value object | Meaning | Notes |
-| --- | --- | --- |
-| `ValidationFinding` | Warning или error с причиной | Warning для certificate validity может не блокировать продолжение. |
-| `GenerationProvenance` | Набор source revisions/templates/snapshots вывода | Нужен для объяснимости generated artifact. |
-| `DependencyFingerprint` | Концептуальный набор зависимостей build | Способ вычисления не определяется в V1. |
-| `OCRProposalField` | Предложенное AI/OCR значение с состоянием проверки | Не active metadata до подтверждения. |
+| Value object            | Meaning                                            | Notes                                                              |
+| ----------------------- | -------------------------------------------------- | ------------------------------------------------------------------ |
+| `ValidationFinding`     | Warning или error с причиной                       | Warning для certificate validity может не блокировать продолжение. |
+| `GenerationProvenance`  | Набор source revisions/templates/snapshots вывода  | Нужен для объяснимости generated artifact.                         |
+| `DependencyFingerprint` | Концептуальный набор зависимостей build            | Способ вычисления не определяется в V1.                            |
+| `OCRProposalField`      | Предложенное AI/OCR значение с состоянием проверки | Не active metadata до подтверждения.                               |
 
 ---
 
@@ -420,25 +420,25 @@ Value objects описывают значения без самостоятел�
 
 ### 7.1 Core ownership table
 
-| Data or behavior | Owner | Consumers | Ownership rule |
-| --- | --- | --- | --- |
-| Object name/address/settings | `Object` | Documents, registry, package | Не редактируется только в projection или output. |
-| Company reusable profile | `CompanyProfile` | Object template, linked acts | Изменения видны active linked acts, но не manual/released snapshots. |
-| Company assignment used on object | `ObjectTemplate` reference/assignment | Linked acts and current projections | Current values resolve from the library; release captures exact output. |
-| Engineering system definitions | `Object` context / system entity | Works, documents, schemes | Точная каталогизация требует детализации, scope всегда object/tenant. |
-| Folder hierarchy | `FolderTree` in object context | UI placement, documents | Папка хранит placement, не document payload. |
-| Work meaning | `WorkItem` or typed work portion pending refinement | AOSR, tests, schemes, registry | Степень самостоятельности WorkItem уточняется; связи должны быть явными. |
-| Typed document data | `Document` | Registry, package, generation | Source changes создают/обновляют revision по lifecycle rules. |
-| Certificate original and metadata | `Certificate` | Documents, registry, package | Номер в rendered form берётся через link к entity с файлом. |
-| Scheme original and metadata | `ExecutiveScheme` | Documents, registry, package | Не хранится только текстом в акте/реестре. |
-| Working drawing set | `ProjectDrawingSet` in object documentation context | AOSR, registry | Не путать с фактической схемой. |
-| Template definition/version | `Template` | Document generation, registry/package output | Used version immutable. |
-| Registry rows | `RegistryProjection` | UI/export/package | Derived only; not source owner. |
-| Registry ordering/visibility/note | `RegistryOverride` in projection/package scope | Registry output | Не владеет primary document/certificate data. |
-| Package configuration and output | `Package` | User/download/audit | Package stores snapshots/results, source aggregates remain autonomous. |
-| Generated DOCX/PDF/ZIP | Generating document/package context via `GeneratedArtifact` | User/download/package | File provenance must identify source revisions/template/snapshot. |
-| Autosave content | `Document` editing workflow | Editor recovery | Structured payload snapshot, not DOCX. |
-| Edit lease | `DocumentLock` operational scope | Editor | Heartbeats do not revise document. |
+| Data or behavior                  | Owner                                                       | Consumers                                    | Ownership rule                                                           |
+| --------------------------------- | ----------------------------------------------------------- | -------------------------------------------- | ------------------------------------------------------------------------ |
+| Object name/address/settings      | `Object`                                                    | Documents, registry, package                 | Не редактируется только в projection или output.                         |
+| Company reusable profile          | `CompanyProfile`                                            | Object template, linked acts                 | Изменения видны active linked acts, но не manual/released snapshots.     |
+| Company assignment used on object | `ObjectTemplate` reference/assignment                       | Linked acts and current projections          | Current values resolve from the library; release captures exact output.  |
+| Engineering system definitions    | `Object` context / system entity                            | Works, documents, schemes                    | Точная каталогизация требует детализации, scope всегда object/tenant.    |
+| Folder hierarchy                  | `FolderTree` in object context                              | UI placement, documents                      | Папка хранит placement, не document payload.                             |
+| Work meaning                      | `WorkItem` or typed work portion pending refinement         | AOSR, tests, schemes, registry               | Степень самостоятельности WorkItem уточняется; связи должны быть явными. |
+| Typed document data               | `Document`                                                  | Registry, package, generation                | Source changes создают/обновляют revision по lifecycle rules.            |
+| Certificate original and metadata | `Certificate`                                               | Documents, registry, package                 | Номер в rendered form берётся через link к entity с файлом.              |
+| Scheme original and metadata      | `ExecutiveScheme`                                           | Documents, registry, package                 | Не хранится только текстом в акте/реестре.                               |
+| Working drawing set               | `ProjectDrawingSet` in object documentation context         | AOSR, registry                               | Не путать с фактической схемой.                                          |
+| Template definition/version       | `Template`                                                  | Document generation, registry/package output | Used version immutable.                                                  |
+| Registry rows                     | `RegistryProjection`                                        | UI/export/package                            | Derived only; not source owner.                                          |
+| Registry ordering/visibility/note | `RegistryOverride` in projection/package scope              | Registry output                              | Не владеет primary document/certificate data.                            |
+| Package configuration and output  | `Package`                                                   | User/download/audit                          | Package stores snapshots/results, source aggregates remain autonomous.   |
+| Generated DOCX/PDF/ZIP            | Generating document/package context via `GeneratedArtifact` | User/download/package                        | File provenance must identify source revisions/template/snapshot.        |
+| Autosave content                  | `Document` editing workflow                                 | Editor recovery                              | Structured payload snapshot, not DOCX.                                   |
+| Edit lease                        | `DocumentLock` operational scope                            | Editor                                       | Heartbeats do not revise document.                                       |
 
 ### 7.2 Cross-aggregate reference rules
 
@@ -466,12 +466,12 @@ context. Системы, папочная структура, project drawing se
 
 Зафиксированный базовый lifecycle:
 
-| Status | Meaning | Permitted conceptual behavior |
-| --- | --- | --- |
-| `draft` | Рабочее состояние документа | Может быть неполным; autosave сохраняет structured state. |
-| `final` | Провалидированная опубликованная revision | Доступна генерация/включение в package; правка разрешена через новую revision. |
-| `archived` | Документ исключён из активной работы, но хранится исторически | Policy восстановления/использования уточняется. |
-| `deleted` | Soft-deleted state / trash | Hard delete регулируется retention policy. |
+| Status     | Meaning                                                       | Permitted conceptual behavior                                                  |
+| ---------- | ------------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| `draft`    | Рабочее состояние документа                                   | Может быть неполным; autosave сохраняет structured state.                      |
+| `final`    | Провалидированная опубликованная revision                     | Доступна генерация/включение в package; правка разрешена через новую revision. |
+| `archived` | Документ исключён из активной работы, но хранится исторически | Policy восстановления/использования уточняется.                                |
+| `deleted`  | Soft-deleted state / trash                                    | Hard delete регулируется retention policy.                                     |
 
 В ранних документах встречались кандидаты `in_review`, `approved`, `issued`, `needs_regeneration`, `superseded`. Они не удалены из рассмотрения, но не считаются утверждённым lifecycle V1 до отдельного решения.
 
@@ -539,13 +539,13 @@ final document is editable; changing it produces the next revision
 
 ### 9.4 Version distinctions
 
-| Concept | What it versions | Not equivalent to |
-| --- | --- | --- |
-| `DocumentRevision` | Содержание typed document | Template version, package snapshot, autosave state. |
-| `TemplateVersion` | Форму вывода | Document content revision. |
-| `PackageSnapshot` | Состав и output build комплекта | Текущие source entities после дальнейших изменений. |
-| `AutosaveSnapshot` | Рабочее промежуточное состояние | Published/final revision. |
-| `Certificate supersession/version` | Пока не утверждено формально | Не должно решаться молчаливой заменой original file. |
+| Concept                            | What it versions                | Not equivalent to                                    |
+| ---------------------------------- | ------------------------------- | ---------------------------------------------------- |
+| `DocumentRevision`                 | Содержание typed document       | Template version, package snapshot, autosave state.  |
+| `TemplateVersion`                  | Форму вывода                    | Document content revision.                           |
+| `PackageSnapshot`                  | Состав и output build комплекта | Текущие source entities после дальнейших изменений.  |
+| `AutosaveSnapshot`                 | Рабочее промежуточное состояние | Published/final revision.                            |
+| `Certificate supersession/version` | Пока не утверждено формально    | Не должно решаться молчаливой заменой original file. |
 
 ---
 
@@ -557,14 +557,14 @@ Snapshots фиксируют состояние данных там, где да
 
 ### 10.2 Snapshot catalog
 
-| Snapshot | Created when | Contains | Why needed |
-| --- | --- | --- | --- |
-| `ManualTemplateSnapshot` | Пользователь явно переключает весь акт в manual mode | Полностью resolved template-owned object/company/representative/repeated text state | Manual act больше не читает изменения шаблона/библиотек. |
-| `DocumentRepresentativeSnapshot` | Released revision фиксирует resolved participant output | Rendered person/organization/authority/role/order | Выпущенный акт воспроизводит подписантов и подписи того состояния. |
-| `DocumentRevisionSnapshot` | Revision документа фиксируется согласно lifecycle action | Typed payload, document number/date, links, validation result, template version | Final edit и история документа становятся объяснимыми. |
-| `AutosaveSnapshot` | Во время редактирования draft/current document | Текущее structured editor state | Восстановление работы без создания file-based source of truth. |
-| `PackageSnapshot` | Успешно завершена сборка комплекта | Ordering, included revisions/files, registry result, template/artifact provenance | Скачивание и объяснение исторического комплекта. |
-| `GeneratedArtifactProvenance` | Создан DOCX/PDF/ZIP output | Source revision/snapshot identity and template version | Повторная генерация и анализ расхождений. |
+| Snapshot                         | Created when                                             | Contains                                                                            | Why needed                                                         |
+| -------------------------------- | -------------------------------------------------------- | ----------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
+| `ManualTemplateSnapshot`         | Пользователь явно переключает весь акт в manual mode     | Полностью resolved template-owned object/company/representative/repeated text state | Manual act больше не читает изменения шаблона/библиотек.           |
+| `DocumentRepresentativeSnapshot` | Released revision фиксирует resolved participant output  | Rendered person/organization/authority/role/order                                   | Выпущенный акт воспроизводит подписантов и подписи того состояния. |
+| `DocumentRevisionSnapshot`       | Revision документа фиксируется согласно lifecycle action | Typed payload, document number/date, links, validation result, template version     | Final edit и история документа становятся объяснимыми.             |
+| `AutosaveSnapshot`               | Во время редактирования draft/current document           | Текущее structured editor state                                                     | Восстановление работы без создания file-based source of truth.     |
+| `PackageSnapshot`                | Успешно завершена сборка комплекта                       | Ordering, included revisions/files, registry result, template/artifact provenance   | Скачивание и объяснение исторического комплекта.                   |
+| `GeneratedArtifactProvenance`    | Создан DOCX/PDF/ZIP output                               | Source revision/snapshot identity and template version                              | Повторная генерация и анализ расхождений.                          |
 
 ### 10.3 Snapshot immutability
 
@@ -590,14 +590,14 @@ Package snapshot должен считаться требующим нового
 
 ### 11.1 File categories
 
-| File category | Examples | Source/derived status | Conceptual owner |
-| --- | --- | --- | --- |
-| Uploaded evidence original | PDF сертификата, декларации, паспорта | Primary evidence attached to structured entity | `Certificate`. |
-| Uploaded factual scheme | PDF исполнительной схемы | Primary evidence attached to structured entity | `ExecutiveScheme`. |
-| Template original/version content | Form used to render documents | Source for generation under template lifecycle | `TemplateVersion`. |
-| Generated document output | DOCX/PDF акта | Derived artifact | `DocumentRevision` + `TemplateVersion` provenance. |
-| Generated registry output | Реестр в DOCX/PDF/XLSX | Derived artifact | Registry generation/package context. |
-| Generated package output | PDF/ZIP комплекта | Derived snapshot artifact | `PackageSnapshot`. |
+| File category                     | Examples                              | Source/derived status                          | Conceptual owner                                   |
+| --------------------------------- | ------------------------------------- | ---------------------------------------------- | -------------------------------------------------- |
+| Uploaded evidence original        | PDF сертификата, декларации, паспорта | Primary evidence attached to structured entity | `Certificate`.                                     |
+| Uploaded factual scheme           | PDF исполнительной схемы              | Primary evidence attached to structured entity | `ExecutiveScheme`.                                 |
+| Template original/version content | Form used to render documents         | Source for generation under template lifecycle | `TemplateVersion`.                                 |
+| Generated document output         | DOCX/PDF акта                         | Derived artifact                               | `DocumentRevision` + `TemplateVersion` provenance. |
+| Generated registry output         | Реестр в DOCX/PDF/XLSX                | Derived artifact                               | Registry generation/package context.               |
+| Generated package output          | PDF/ZIP комплекта                     | Derived snapshot artifact                      | `PackageSnapshot`.                                 |
 
 ### 11.2 File ownership invariants
 
@@ -631,14 +631,14 @@ Certificate - самостоятельный library aggregate документ�
 
 ### 12.2 Required certificate information
 
-| Information group | Conceptual fields |
-| --- | --- |
-| Identity | certificate identity, document kind, registration number |
-| Coverage | material/equipment/product description, manufacturer, optional batch/coverage |
-| Issuance | issuer, issue date, validity end if applicable |
-| Evidence | original file reference, page count if known |
-| Verification | OCR state, user confirmation state, warnings/errors |
-| Lifecycle | tenant scope, timestamps, archive/soft delete/supersession state to be detailed |
+| Information group | Conceptual fields                                                               |
+| ----------------- | ------------------------------------------------------------------------------- |
+| Identity          | certificate identity, document kind, registration number                        |
+| Coverage          | material/equipment/product description, manufacturer, optional batch/coverage   |
+| Issuance          | issuer, issue date, validity end if applicable                                  |
+| Evidence          | original file reference, page count if known                                    |
+| Verification      | OCR state, user confirmation state, warnings/errors                             |
+| Lifecycle         | tenant scope, timestamps, archive/soft delete/supersession state to be detailed |
 
 ### 12.3 Link to materials and acts
 
@@ -688,21 +688,21 @@ OCR может предложить номер, даты, производите
 
 ### 13.2 Required information
 
-| Information group | Conceptual fields |
-| --- | --- |
-| Identity | scheme identity, title, registration number |
-| Context | tenant, object, folder, engineering system/zone where applicable |
-| Date/output | scheme date, sheet count, note |
-| Evidence | uploaded file reference |
-| Relationships | linked WorkItems and Documents |
-| Lifecycle | created/updated/archive/delete metadata; replacement policy requires detailing |
+| Information group | Conceptual fields                                                              |
+| ----------------- | ------------------------------------------------------------------------------ |
+| Identity          | scheme identity, title, registration number                                    |
+| Context           | tenant, object, folder, engineering system/zone where applicable               |
+| Date/output       | scheme date, sheet count, note                                                 |
+| Evidence          | uploaded file reference                                                        |
+| Relationships     | linked WorkItems and Documents                                                 |
+| Lifecycle         | created/updated/archive/delete metadata; replacement policy requires detailing |
 
 ### 13.3 Difference from ProjectDrawingSet
 
-| Concept | Meaning | Typical registry location |
-| --- | --- | --- |
-| `ProjectDrawingSet` | Рабочая/проектная документация, на основании которой выполнялись работы | Блок комплекта рабочих чертежей. |
-| `ExecutiveScheme` | Документ фактически выполненного результата | Блок исполнительных схем и съёмок. |
+| Concept             | Meaning                                                                 | Typical registry location          |
+| ------------------- | ----------------------------------------------------------------------- | ---------------------------------- |
+| `ProjectDrawingSet` | Рабочая/проектная документация, на основании которой выполнялись работы | Блок комплекта рабочих чертежей.   |
+| `ExecutiveScheme`   | Документ фактически выполненного результата                             | Блок исполнительных схем и съёмок. |
 
 Смешение этих понятий приведёт к ошибочному реестру и неверным связям АОСР.
 
@@ -734,44 +734,44 @@ It does not own the source lifecycle of `Certificate`, `ExecutiveScheme`, `Templ
 
 `AOSR` is a typed document represented by an `AOSRPayload` inside the `Document` aggregate, not a separate aggregate root and not a derived projection.
 
-| Aspect | Model |
-| --- | --- |
-| Purpose | Record inspection of concealed works before subsequent works proceed. |
+| Aspect          | Model                                                                                                                                                                                 |
+| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Purpose         | Record inspection of concealed works before subsequent works proceed.                                                                                                                 |
 | Source of truth | Structured payload: inspected work, location, execution period, project references, material usages, linked certificates/schemes, participants, subsequent-work permission and notes. |
-| Lifecycle owner | Its containing `Document`; `draft` to validated `final`, with later corrections through a new revision. |
-| Relationships | `ObjectTemplate`, `WorkItem`, `MaterialUsage`, `Certificate`, `ExecutiveScheme`, `ProjectDrawingSet`, released representative output and `TemplateVersion`. |
-| Constraints | Certificate text must render from an evidence-backed link; type is immutable; number/date changes after publication are revision-relevant. |
+| Lifecycle owner | Its containing `Document`; `draft` to validated `final`, with later corrections through a new revision.                                                                               |
+| Relationships   | `ObjectTemplate`, `WorkItem`, `MaterialUsage`, `Certificate`, `ExecutiveScheme`, `ProjectDrawingSet`, released representative output and `TemplateVersion`.                           |
+| Constraints     | Certificate text must render from an evidence-backed link; type is immutable; number/date changes after publication are revision-relevant.                                            |
 
 ### 14.3 TestAct typed document
 
 `TestAct` is a typed document represented by `TestActPayload` inside the `Document` aggregate, not an independent aggregate root and not a projection.
 
-| Aspect | Model |
-| --- | --- |
-| Purpose | Record testing of a system, section, pipeline or equipment and its conclusion. |
+| Aspect          | Model                                                                                                                                                                  |
+| --------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Purpose         | Record testing of a system, section, pipeline or equipment and its conclusion.                                                                                         |
 | Source of truth | Structured payload: tested subject, testing type/method, parameters, actual results, dates, participants, instruments where applicable, conclusion and explicit links. |
-| Lifecycle owner | Its containing `Document`, following the same revision policy as other typed documents. |
-| Relationships | `EngineeringSystem`, `WorkItem` or tested subject, related acts, schemes, materials/certificates where required, representatives and `TemplateVersion`. |
-| Constraints | Exact MVP forms and required fields remain open; a free-form generic document cannot substitute for an approved typed schema. |
+| Lifecycle owner | Its containing `Document`, following the same revision policy as other typed documents.                                                                                |
+| Relationships   | `EngineeringSystem`, `WorkItem` or tested subject, related acts, schemes, materials/certificates where required, representatives and `TemplateVersion`.                |
+| Constraints     | Exact MVP forms and required fields remain open; a free-form generic document cannot substitute for an approved typed schema.                                          |
 
 ### 14.4 Required entity disposition matrix
 
 The table below makes ownership and classification explicit for the key concepts required in this model. Details elsewhere in this document remain normative.
 
-| Entity | Purpose | Data owner and source of truth | Lifecycle and relationships | Constraints | Aggregate root / derived projection |
-| --- | --- | --- | --- | --- | --- |
-| `Object` | Construction project context | `Object`; structured object settings and snapshots | Own setup; references folders, systems, documents, drawings and packages | Must not absorb independent lifecycles into a giant aggregate | Aggregate root; not derived |
-| `Folder` | Business organization tree node | `FolderTree` candidate in object context; structured hierarchy | Move/duplicate/soft delete; places documents by reference | Same object only; no cycles; does not own document lifecycle | Not separately fixed as root; not derived |
-| `Document` | Typed executable-document envelope | `Document`; typed payload and revision state | Owns statuses, revisions, links and artifact provenance | Immutable type; final changes create revision | Aggregate root; not derived |
-| `AOSR` | Concealed works act | `Document` through `AOSRPayload` | Follows document lifecycle; links work, evidence and signers | Evidence-backed certificates; typed contract | Typed part of Document; not derived |
-| `TestAct` | Testing act | `Document` through `TestActPayload` | Follows document lifecycle; links tested context and results | Exact forms deferred; typed contract required | Typed part of Document; not derived |
-| `Certificate` | Quality evidence document | `Certificate`; metadata plus physical original file | Library lifecycle; linked from documents/packages and possibly material usages | Physical file required; validity checked by document date; OCR confirmation required | Aggregate root; not derived |
-| `ExecutiveScheme` | As-built factual scheme | `ExecutiveScheme`; metadata plus physical file | Independent file-backed lifecycle; links works/documents/packages | Not `ProjectDrawingSet`; silent file replacement forbidden | Aggregate root; not derived |
-| `Package` | Composition and build history of an ID set | `Package`; configuration and immutable build snapshots | Owns async builds/snapshots; reads exact source revisions/files | Async and snapshot-based; historical snapshots preserved | Aggregate root/context; not derived |
-| `Template` | Form family for rendering output | `Template`; versioned rendering definition | Owns `TemplateVersion`; selected by document/output | Used `TemplateVersion` is immutable | Aggregate root/context; not derived |
-| `GeneratedArtifact` | DOCX/PDF/XLSX/ZIP output | Generating revision or package snapshot via provenance | Regenerated from sources or preserved in snapshots | Never source of truth; identifies sources and template version | Not a root; derived artifact |
-| `RegistryProjection` | Registry view/output | Source aggregates plus approved overrides | Recomputed when current source changes; may be captured in package snapshot | Cannot own primary data | Not a root; derived projection |
-| `RegistryOverride` | Presentation choices for registry/package | Registry/package configuration scope | Applied when projection/output is generated | Only order, visibility, notes and signer selection; no source-field edits | Not a root; not itself a projection |
+| Entity               | Purpose                                    | Data owner and source of truth                                 | Lifecycle and relationships                                                    | Constraints                                                                          | Aggregate root / derived projection       |
+| -------------------- | ------------------------------------------ | -------------------------------------------------------------- | ------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------ | ----------------------------------------- |
+| `Object`             | Construction project context               | `Object`; structured object settings and snapshots             | Own setup; references folders, systems, documents, drawings and packages       | Must not absorb independent lifecycles into a giant aggregate                        | Aggregate root; not derived               |
+| `Folder`             | Business organization tree node            | `FolderTree` candidate in object context; structured hierarchy | Move/duplicate/soft delete; places documents by reference                      | Same object only; no cycles; does not own document lifecycle                         | Not separately fixed as root; not derived |
+| `Document`           | Typed executable-document envelope         | `Document`; typed payload and revision state                   | Owns statuses, revisions, links and artifact provenance                        | Immutable type; final changes create revision                                        | Aggregate root; not derived               |
+| `AOSR`               | Concealed works act                        | `Document` through `AOSRPayload`                               | Follows document lifecycle; links work, evidence and signers                   | Evidence-backed certificates; typed contract                                         | Typed part of Document; not derived       |
+| `TestAct`            | Testing act                                | `Document` through `TestActPayload`                            | Follows document lifecycle; links tested context and results                   | Exact forms deferred; typed contract required                                        | Typed part of Document; not derived       |
+| `Certificate`        | Quality evidence document                  | `Certificate`; metadata plus physical original file            | Library lifecycle; linked from documents/packages and possibly material usages | Physical file required; validity checked by document date; OCR confirmation required | Aggregate root; not derived               |
+| `ExecutiveScheme`    | As-built factual scheme                    | `ExecutiveScheme`; metadata plus physical file                 | Independent file-backed lifecycle; links works/documents/packages              | Not `ProjectDrawingSet`; silent file replacement forbidden                           | Aggregate root; not derived               |
+| `Package`            | Composition and build history of an ID set | `Package`; configuration and immutable build snapshots         | Owns async builds/snapshots; reads exact source revisions/files                | Async and snapshot-based; historical snapshots preserved                             | Aggregate root/context; not derived       |
+| `Template`           | Form family for rendering output           | `Template`; versioned rendering definition                     | Owns `TemplateVersion`; selected by document/output                            | Used `TemplateVersion` is immutable                                                  | Aggregate root/context; not derived       |
+| `GeneratedArtifact`  | DOCX/PDF/XLSX/ZIP output                   | Generating revision or package snapshot via provenance         | Regenerated from sources or preserved in snapshots                             | Never source of truth; identifies sources and template version                       | Not a root; derived artifact              |
+| `RegistryProjection` | Registry view/output                       | Source aggregates plus approved overrides                      | Recomputed when current source changes; may be captured in package snapshot    | Cannot own primary data                                                              | Not a root; derived projection            |
+| `RegistryOverride`   | Presentation choices for registry/package  | Registry/package configuration scope                           | Applied when projection/output is generated                                    | Only order, visibility, notes and signer selection; no source-field edits            | Not a root; not itself a projection       |
 
 ---
 
@@ -848,25 +848,25 @@ Package Builder должен концептуально выполнить:
 
 ### 16.2 Registry block specification
 
-| Registry block | Required source | Expected output meaning |
-| --- | --- | --- |
-| Object header | `Object` and applicable object values | Объект, адрес, вид работ/раздел. |
-| Contractor/company | Resolved `ObjectTemplate` assignments for current view; frozen values from released revision for historical output | Организации, договорные/СРО/руководящие реквизиты. |
-| Working drawings | `ProjectDrawingSet` | Комплект рабочих чертежей, шифр и количество листов. |
-| Quality documents | `Certificate` entities selected by scope/links | Сертификаты, декларации, паспорта и файлы подтверждения. |
-| Acts | Typed `Document` revisions | Названия документов, rendered number, date, notes/status where displayed. |
-| Executive schemes | `ExecutiveScheme` entities | Названия, регистрационные номера, даты и notes. |
-| Registry signer | `RegistrySignerSnapshot` | Лицо, подписывающее данный реестр. |
+| Registry block     | Required source                                                                                                    | Expected output meaning                                                   |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------- |
+| Object header      | `Object` and applicable object values                                                                              | Объект, адрес, вид работ/раздел.                                          |
+| Contractor/company | Resolved `ObjectTemplate` assignments for current view; frozen values from released revision for historical output | Организации, договорные/СРО/руководящие реквизиты.                        |
+| Working drawings   | `ProjectDrawingSet`                                                                                                | Комплект рабочих чертежей, шифр и количество листов.                      |
+| Quality documents  | `Certificate` entities selected by scope/links                                                                     | Сертификаты, декларации, паспорта и файлы подтверждения.                  |
+| Acts               | Typed `Document` revisions                                                                                         | Названия документов, rendered number, date, notes/status where displayed. |
+| Executive schemes  | `ExecutiveScheme` entities                                                                                         | Названия, регистрационные номера, даты и notes.                           |
+| Registry signer    | `RegistrySignerSnapshot`                                                                                           | Лицо, подписывающее данный реестр.                                        |
 
 ### 16.3 Registry color semantics from source sample
 
-| Color mapping | Data block | Modeling implication |
-| --- | --- | --- |
-| Жёлтый | Object data | Значения принадлежат объекту и не вводятся заново в каждой строке. |
-| Красный | Certificates/quality documents | Строки должны иметь evidence-backed `Certificate` source. |
-| Серый | Acts | Строки происходят из typed document revisions. |
-| Зелёный | Executive schemes/drawings | Строки происходят из `ExecutiveScheme`. |
-| Тёмно-красный | Registry signer | Значение происходит из selected signer snapshot. |
+| Color mapping | Data block                     | Modeling implication                                               |
+| ------------- | ------------------------------ | ------------------------------------------------------------------ |
+| Жёлтый        | Object data                    | Значения принадлежат объекту и не вводятся заново в каждой строке. |
+| Красный       | Certificates/quality documents | Строки должны иметь evidence-backed `Certificate` source.          |
+| Серый         | Acts                           | Строки происходят из typed document revisions.                     |
+| Зелёный       | Executive schemes/drawings     | Строки происходят из `ExecutiveScheme`.                            |
+| Тёмно-красный | Registry signer                | Значение происходит из selected signer snapshot.                   |
 
 ### 16.4 RegistryOverride boundary
 
@@ -893,13 +893,13 @@ Override не может:
 
 Derived projection - это представление данных, собираемое из aggregate roots и snapshots для работы пользователя, проверки полноты или вывода. Проекция может быть рассчитана заранее, сохранена или экспортирована, но не является первичным владельцем исходных значений.
 
-| Projection | Purpose | Source aggregates |
-| --- | --- | --- |
-| `RegistryProjection` | Реестр документации объекта/комплекта | Object snapshots, ProjectDrawingSet, Documents, Certificates, ExecutiveSchemes, RegistryOverrides. |
-| `PackageContentsProjection` | Видимый состав собираемого комплекта | Package configuration, registry projection, documents/artifacts, evidence files. |
-| `DocumentListProjection` | Навигация по объекту/папке и статусам | Object, Folder placement, Documents. |
-| `CompletenessProjection` | Недостающие файлы, validation findings и readiness | Documents, links, Certificates, Schemes, templates, package requirements. |
-| `StaleArtifactProjection` | Какие output устарели после изменений | Revisions, template versions, package snapshots, artifact provenance. |
+| Projection                  | Purpose                                            | Source aggregates                                                                                  |
+| --------------------------- | -------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| `RegistryProjection`        | Реестр документации объекта/комплекта              | Object snapshots, ProjectDrawingSet, Documents, Certificates, ExecutiveSchemes, RegistryOverrides. |
+| `PackageContentsProjection` | Видимый состав собираемого комплекта               | Package configuration, registry projection, documents/artifacts, evidence files.                   |
+| `DocumentListProjection`    | Навигация по объекту/папке и статусам              | Object, Folder placement, Documents.                                                               |
+| `CompletenessProjection`    | Недостающие файлы, validation findings и readiness | Documents, links, Certificates, Schemes, templates, package requirements.                          |
+| `StaleArtifactProjection`   | Какие output устарели после изменений              | Revisions, template versions, package snapshots, artifact provenance.                              |
 
 ### 16.7 Edit authority and exported outputs
 
@@ -917,53 +917,53 @@ Derived projection - это представление данных, собир�
 
 ### 17.1 Structural and organizational relationships
 
-| From | Relationship | To | Cardinality intent | Ownership / rule |
-| --- | --- | --- | --- | --- |
-| `TenantContext` | contains/isolates | `Object` | one-to-many | Каждый object находится в tenant boundary. |
-| `TenantContext` | contains/isolates | `CompanyProfile` | one-to-many | Library organisation не пересекает tenant без отдельного решения. |
-| `TenantContext` | contains/isolates | `Certificate` | one-to-many | Certificate reuse ограничено tenant policy. |
-| `Object` | configures | `EngineeringSystem` | one-to-many | Системы объекта используются works/documents/schemes. |
-| `Object` | organizes through | `Folder` | one-to-many tree | Folder belongs to one object; no cross-object move. |
-| `ObjectTemplate` | assigns/references | `CompanyProfile` | one-to-many as roles require | Linked acts resolve current values; output freezes them on release. |
+| From             | Relationship       | To                      | Cardinality intent              | Ownership / rule                                                           |
+| ---------------- | ------------------ | ----------------------- | ------------------------------- | -------------------------------------------------------------------------- |
+| `TenantContext`  | contains/isolates  | `Object`                | one-to-many                     | Каждый object находится в tenant boundary.                                 |
+| `TenantContext`  | contains/isolates  | `CompanyProfile`        | one-to-many                     | Library organisation не пересекает tenant без отдельного решения.          |
+| `TenantContext`  | contains/isolates  | `Certificate`           | one-to-many                     | Certificate reuse ограничено tenant policy.                                |
+| `Object`         | configures         | `EngineeringSystem`     | one-to-many                     | Системы объекта используются works/documents/schemes.                      |
+| `Object`         | organizes through  | `Folder`                | one-to-many tree                | Folder belongs to one object; no cross-object move.                        |
+| `ObjectTemplate` | assigns/references | `CompanyProfile`        | one-to-many as roles require    | Linked acts resolve current values; output freezes them on release.        |
 | `ObjectTemplate` | assigns/references | `RepresentativeProfile` | one-to-many grouped assignments | No act-only free-text final source; manual/released output uses snapshots. |
-| `Object` | refers to | `ProjectDrawingSet` | one-to-many candidate | Boundary remains to be ratified. |
+| `Object`         | refers to          | `ProjectDrawingSet`     | one-to-many candidate           | Boundary remains to be ratified.                                           |
 
 ### 17.2 Document and evidence relationships
 
-| From | Relationship | To | Cardinality intent | Ownership / rule |
-| --- | --- | --- | --- | --- |
-| `Object` | contextualizes | `Document` | one-to-many | Document separate aggregate with `object_id`. |
-| `Folder` | places | `Document` | one-to-many | Placement only; no lifecycle ownership. |
-| `Document` | has typed data | typed payload | exactly one by type | Payload contract defined by immutable document type. |
-| `Document` | represents/closes/tests | `WorkItem` | many-to-many or context-dependent | Relation type required; detailed cardinality open. |
-| `Document` | cites/uses | `Certificate` | many-to-many | Via link; Certificate must have original file. |
-| `MaterialUsage` | is evidenced by | `Certificate` | many-to-many | Validity assessed for document context. |
-| `Document` | references | `ExecutiveScheme` | many-to-many | Scheme retains independent lifecycle/file. |
-| `ExecutiveScheme` | confirms | `WorkItem` | many-to-many candidate | Exact requirement by document type open. |
-| `Document` | renders with | `TemplateVersion` | one selected version per output context | Used version immutable. |
+| From              | Relationship            | To                | Cardinality intent                      | Ownership / rule                                     |
+| ----------------- | ----------------------- | ----------------- | --------------------------------------- | ---------------------------------------------------- |
+| `Object`          | contextualizes          | `Document`        | one-to-many                             | Document separate aggregate with `object_id`.        |
+| `Folder`          | places                  | `Document`        | one-to-many                             | Placement only; no lifecycle ownership.              |
+| `Document`        | has typed data          | typed payload     | exactly one by type                     | Payload contract defined by immutable document type. |
+| `Document`        | represents/closes/tests | `WorkItem`        | many-to-many or context-dependent       | Relation type required; detailed cardinality open.   |
+| `Document`        | cites/uses              | `Certificate`     | many-to-many                            | Via link; Certificate must have original file.       |
+| `MaterialUsage`   | is evidenced by         | `Certificate`     | many-to-many                            | Validity assessed for document context.              |
+| `Document`        | references              | `ExecutiveScheme` | many-to-many                            | Scheme retains independent lifecycle/file.           |
+| `ExecutiveScheme` | confirms                | `WorkItem`        | many-to-many candidate                  | Exact requirement by document type open.             |
+| `Document`        | renders with            | `TemplateVersion` | one selected version per output context | Used version immutable.                              |
 
 ### 17.3 Revision, artifact and package relationships
 
-| From | Relationship | To | Cardinality intent | Ownership / rule |
-| --- | --- | --- | --- | --- |
-| `Document` | produces history of | `DocumentRevisionSnapshot` | one-to-many | Revision captures document state/provenance. |
-| `DocumentRevisionSnapshot` | generates | `GeneratedArtifact` | one-to-many | Artifact output is derived. |
-| `TemplateVersion` | participates in | `GeneratedArtifact` | one-to-many | Artifact records chosen version. |
-| `Package` | starts | `PackageBuild` | one-to-many | Build is asynchronous attempt. |
-| `PackageBuild` | creates on success | `PackageSnapshot` | one successful result per attempt conceptually | Snapshot immutable. |
-| `PackageSnapshot` | includes | `DocumentRevisionSnapshot` | many-to-many | Includes exact revisions, not moving latest pointers only. |
-| `PackageSnapshot` | includes evidence | `Certificate`/file and `ExecutiveScheme`/file | many-to-many | Provenance identifies included files. |
-| `PackageSnapshot` | includes output of | `RegistryProjection` | one or more outputs | Registry result reflects dependencies at build time. |
-| `PackageSnapshot` | stores | `GeneratedArtifact` | one-to-many | Output files of build. |
+| From                       | Relationship        | To                                            | Cardinality intent                             | Ownership / rule                                           |
+| -------------------------- | ------------------- | --------------------------------------------- | ---------------------------------------------- | ---------------------------------------------------------- |
+| `Document`                 | produces history of | `DocumentRevisionSnapshot`                    | one-to-many                                    | Revision captures document state/provenance.               |
+| `DocumentRevisionSnapshot` | generates           | `GeneratedArtifact`                           | one-to-many                                    | Artifact output is derived.                                |
+| `TemplateVersion`          | participates in     | `GeneratedArtifact`                           | one-to-many                                    | Artifact records chosen version.                           |
+| `Package`                  | starts              | `PackageBuild`                                | one-to-many                                    | Build is asynchronous attempt.                             |
+| `PackageBuild`             | creates on success  | `PackageSnapshot`                             | one successful result per attempt conceptually | Snapshot immutable.                                        |
+| `PackageSnapshot`          | includes            | `DocumentRevisionSnapshot`                    | many-to-many                                   | Includes exact revisions, not moving latest pointers only. |
+| `PackageSnapshot`          | includes evidence   | `Certificate`/file and `ExecutiveScheme`/file | many-to-many                                   | Provenance identifies included files.                      |
+| `PackageSnapshot`          | includes output of  | `RegistryProjection`                          | one or more outputs                            | Registry result reflects dependencies at build time.       |
+| `PackageSnapshot`          | stores              | `GeneratedArtifact`                           | one-to-many                                    | Output files of build.                                     |
 
 ### 17.4 Operational relationships
 
-| From | Relationship | To | Rule |
-| --- | --- | --- | --- |
-| `DocumentLock` | leases editing of | `Document` | TTL/heartbeat; no revision on heartbeat. |
-| `AutosaveSnapshot` | temporarily captures | `Document` editing state | Structured recovery state; publication semantics separate. |
-| `OCRExtractionProposal` | proposes metadata for | `Certificate` or future `ExecutiveScheme` | Human confirmation before active source fields. |
-| `ActivityEvent` | records action on | Domain target | Audit event detail remains to be specified. |
+| From                    | Relationship          | To                                        | Rule                                                       |
+| ----------------------- | --------------------- | ----------------------------------------- | ---------------------------------------------------------- |
+| `DocumentLock`          | leases editing of     | `Document`                                | TTL/heartbeat; no revision on heartbeat.                   |
+| `AutosaveSnapshot`      | temporarily captures  | `Document` editing state                  | Structured recovery state; publication semantics separate. |
+| `OCRExtractionProposal` | proposes metadata for | `Certificate` or future `ExecutiveScheme` | Human confirmation before active source fields.            |
+| `ActivityEvent`         | records action on     | Domain target                             | Audit event detail remains to be specified.                |
 
 ---
 

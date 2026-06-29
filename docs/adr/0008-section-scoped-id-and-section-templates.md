@@ -134,9 +134,14 @@ settings snapshot and must still be retargeted to the target section on paste.
 - Final ID is derived from one section, across that section's folders.
 - Object-wide final ID is not the default canonical package scope.
 - Folder names remain arbitrary user-defined names.
-- Numbering policy may be object-scoped, section-scoped or folder-scoped.
-  Object-scoped numbering means one sequence across sections and folders, while
-  the rendered number still uses the prefix of the act's own section.
+- Numbering policy is section-scoped. Automatic numbering can either be
+  continuous across the selected section's folders (`global-section`) or
+  restarted inside each folder (`restart-per-folder`).
+- A section template can use automatic numbering or manual numbering. Manual
+  numbering creates new acts without a number and does not switch the act's
+  template values to manual mode.
+- A section template owns its first automatic number. Invalid or empty values
+  are normalized to `1`.
 - Frontend and future backend state should key section template settings by the
   section's `templateSettingsId`, not by the visible section name and not by an
   inferred short code.

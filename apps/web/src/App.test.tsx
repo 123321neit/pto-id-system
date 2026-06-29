@@ -42,6 +42,10 @@ describe('App shell mock navigation', () => {
     expect(within(quickAccess).getByText('Библиотека сертификатов')).toBeTruthy();
     expect(within(quickAccess).getByText('Представители и организации')).toBeTruthy();
     expect(screen.getByRole('heading', { name: 'Недавние документы' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Настройки скоро' })).toHaveProperty(
+      'disabled',
+      true,
+    );
   });
 
   it('opens an object on the overview instead of the AOSR editor and returns to the dashboard', async () => {
@@ -1170,6 +1174,8 @@ describe('App shell mock navigation', () => {
     await user.type(sourceProjectDocumentation, copiedProjectDocumentation);
     await user.click(within(sourceDialog).getByRole('button', { name: 'Скопировать' }));
     expect(sourceDialog.textContent).toContain('Шаблонные значения скопированы.');
+    await user.clear(sourceProjectDocumentation);
+    await user.type(sourceProjectDocumentation, 'Изменено уже после копирования.');
 
     await user.click(within(sourceDialog).getByRole('button', { name: 'Вернуться к разделу' }));
     await user.click(screen.getByRole('button', { name: 'Назад к объектам' }));
@@ -1212,25 +1218,27 @@ describe('App shell mock navigation', () => {
     await openObjectSettingsFromWorkspace(user);
 
     const dialog = screen.getByRole('region', { name: /Шаблонные значения раздела/u });
-    const objectScope = within(dialog).getByLabelText<HTMLInputElement>(/Сквозная по объекту/u);
+    const automaticMode = within(dialog).getByLabelText<HTMLInputElement>(/Автоматическая/u);
+    const manualMode = within(dialog).getByLabelText<HTMLInputElement>(/Ручная/u);
     const globalScope = within(dialog).getByLabelText<HTMLInputElement>(/Сквозная по разделу/u);
     const folderScope = within(dialog).getByLabelText<HTMLInputElement>(/Отдельно в каждой папке/u);
     const prefix = within(dialog).getByLabelText<HTMLInputElement>('Префикс номера');
+    const firstNumber = within(dialog).getByLabelText<HTMLInputElement>(/Первый номер/u);
     const suffix = within(dialog).getByLabelText<HTMLInputElement>('Суффикс номера');
 
-    expect(objectScope.checked).toBe(false);
+    expect(automaticMode.checked).toBe(true);
+    expect(manualMode.checked).toBe(false);
     expect(globalScope.checked).toBe(true);
     expect(folderScope.checked).toBe(false);
-    expect(dialog.textContent).toContain(
-      'Одна последовательность по всем разделам и папкам объекта. Префикс остаётся префиксом раздела акта.',
-    );
     await user.click(folderScope);
     await user.clear(prefix);
     await user.type(prefix, 'АОСР/');
+    await user.clear(firstNumber);
+    await user.type(firstNumber, '100');
     await user.type(suffix, '/2026');
 
     expect(within(dialog).getByLabelText('Шаблон номера').textContent).toBe('АОСР/n/2026');
-    expect(dialog.textContent).toContain('Пример первого номера: АОСР/1/2026');
+    expect(dialog.textContent).toContain('Пример первого номера: АОСР/100/2026');
     await user.click(within(dialog).getByRole('button', { name: 'Вернуться к разделу' }));
 
     await openFolderByName(user, 'Октябрь 2026');
@@ -1240,7 +1248,78 @@ describe('App shell mock navigation', () => {
     expect(selector.textContent).not.toContain('АОСР/2/2026');
     expect(within(selector).queryByLabelText('Номер документа')).toBeNull();
     await user.click(within(selector).getByRole('button', { name: 'Создать акт' }));
-    expect(screen.getByRole('button', { name: /АОСР\/2\/2026/u })).toBeTruthy();
+    expect(screen.getByRole('button', { name: /АОСР\/100\/2026/u })).toBeTruthy();
+  });
+
+  it('creates new acts without a number when section numbering is manual', async () => {
+    const user = userEvent.setup();
+
+    render(<App />);
+    await user.click(getFirstOpenObjectButton());
+    await openObjectSettingsFromWorkspace(user);
+
+    const dialog = screen.getByRole('region', { name: /Шаблонные значения раздела/u });
+    await user.click(within(dialog).getByLabelText<HTMLInputElement>(/Ручная/u));
+    expect(dialog.textContent).toContain(
+      'Новые акты будут создаваться без номера. Номер можно ввести в редакторе акта.',
+    );
+    await user.click(within(dialog).getByRole('button', { name: 'Вернуться к разделу' }));
+
+    await openFolderByName(user, 'Сентябрь 2026');
+    await user.click(getFirstCreateDocumentButton());
+
+    const selector = screen.getByRole('dialog', { name: 'Создание акта' });
+    expect(within(selector).queryByLabelText('Номер документа')).toBeNull();
+    await user.click(within(selector).getByRole('button', { name: 'Создать акт' }));
+
+    expect(screen.getByLabelText('Текущий акт: Без номера')).toBeTruthy();
+    expect(screen.getByLabelText<HTMLInputElement>('Номер акта').value).toBe('');
+    expect(screen.getByText('Связан с разделом')).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Сделать акт ручным' })).toBeTruthy();
+  });
+
+  it('renumbers all section acts with the automatic section numbering rule', async () => {
+    const user = userEvent.setup();
+
+    render(<App />);
+    await user.click(getFirstOpenObjectButton());
+    await openObjectSettingsFromWorkspace(user);
+
+    const dialog = screen.getByRole('region', { name: /Шаблонные значения раздела/u });
+    await user.clear(within(dialog).getByLabelText<HTMLInputElement>('Префикс номера'));
+    await user.type(within(dialog).getByLabelText<HTMLInputElement>('Префикс номера'), 'AUTO-');
+    await user.clear(within(dialog).getByLabelText<HTMLInputElement>(/Первый номер/u));
+    await user.type(within(dialog).getByLabelText<HTMLInputElement>(/Первый номер/u), '100');
+
+    const renumberButton = within(dialog).getByRole('button', {
+      name: 'Пронумеровать все акты раздела',
+    });
+    const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(false);
+    await user.click(renumberButton);
+    expect(confirmSpy).toHaveBeenCalledWith(
+      'Задать автоматическую нумерацию для всех актов раздела?\n' +
+        'Будут изменены номера всех актов выбранного раздела.\n' +
+        'Шаблонные значения акта и ручной/связанный режим шаблона не изменятся.\n' +
+        'Продолжить?',
+    );
+    expect(
+      screen.queryByText('Автоматическая нумерация применена ко всем актам раздела.'),
+    ).toBeNull();
+
+    confirmSpy.mockReturnValue(true);
+    await user.click(renumberButton);
+    expect(
+      screen.getByText('Автоматическая нумерация применена ко всем актам раздела.'),
+    ).toBeTruthy();
+    await user.click(within(dialog).getByRole('button', { name: 'Вернуться к разделу' }));
+
+    await openFolderByName(user, 'Сентябрь 2026');
+    expect(screen.getByRole('button', { name: /AUTO-100/u })).toBeTruthy();
+    await user.click(screen.getByRole('button', { name: /AUTO-100/u }));
+    expect(screen.getByText('Связан с разделом')).toBeTruthy();
+
+    await openFolderByName(user, 'Октябрь 2026');
+    expect(screen.getByRole('button', { name: /AUTO-101/u })).toBeTruthy();
   });
 
   it('does not show forbidden status or object-template wording in the object workflow', async () => {

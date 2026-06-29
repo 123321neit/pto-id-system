@@ -1,4 +1,4 @@
-import { useState, type SyntheticEvent } from 'react';
+import { useEffect, useState, type SyntheticEvent } from 'react';
 
 import type { SectionTemplateClipboard } from '../app-shell/section-template-clipboard.js';
 import type {
@@ -6,6 +6,7 @@ import type {
   DemoAosrObjectDefaultsField,
   DemoAosrRepresentative,
   DemoDocumentNumberingAffixField,
+  DemoDocumentNumberingMode,
   DemoDocumentNumberingScope,
   DemoGlobalOrganization,
 } from './demo-aosr-workspace.js';
@@ -31,6 +32,7 @@ interface DemoObjectSettingsPanelProps {
   readonly objectTitle?: string | undefined;
   readonly presentation?: 'dialog' | 'page';
   readonly representativeSearch: string;
+  readonly sectionDraftCount: number;
   readonly sectionId?: string | undefined;
   readonly onAddHeaderOrganization: (event: SyntheticEvent<HTMLFormElement>) => void;
   readonly onAddLibraryRepresentative: (event: SyntheticEvent<HTMLFormElement>) => void;
@@ -62,9 +64,12 @@ interface DemoObjectSettingsPanelProps {
     value: string,
   ) => void;
   readonly onUpdateNumberingAffix: (field: DemoDocumentNumberingAffixField, value: string) => void;
+  readonly onUpdateNumberingMode: (numberingMode: DemoDocumentNumberingMode) => void;
   readonly onUpdateNumberingScope: (numberingScope: DemoDocumentNumberingScope) => void;
+  readonly onUpdateNumberingStart: (numberingStart: number) => void;
   readonly onUpdateObjectDefaults: (field: DemoAosrObjectDefaultsField, value: string) => void;
   readonly onPasteSectionTemplate?: (() => void) | undefined;
+  readonly onRenumberSectionDrafts?: (() => void) | undefined;
   readonly onUpdateRepresentative: (
     groupId: string,
     memberId: string,
@@ -101,8 +106,6 @@ const objectSettingsSections: readonly {
 
 function getNumberingScopeLabel(numberingScope: DemoDocumentNumberingScope): string {
   switch (numberingScope) {
-    case 'global-object':
-      return 'сквозная по объекту';
     case 'global-section':
       return 'сквозная по разделу';
     case 'restart-per-folder':
@@ -124,6 +127,7 @@ export function DemoObjectSettingsPanel({
   objectTitle,
   presentation = 'dialog',
   representativeSearch,
+  sectionDraftCount,
   sectionId,
   onAddHeaderOrganization,
   onAddLibraryRepresentative,
@@ -142,9 +146,12 @@ export function DemoObjectSettingsPanel({
   onToggleRepresentativeLibraryForm,
   onUpdateHeaderOrganization,
   onUpdateNumberingAffix,
+  onUpdateNumberingMode,
   onUpdateNumberingScope,
+  onUpdateNumberingStart,
   onUpdateObjectDefaults,
   onPasteSectionTemplate,
+  onRenumberSectionDrafts,
   onUpdateRepresentative,
   onUpdateRepresentativeGroupTitle,
 }: DemoObjectSettingsPanelProps): React.JSX.Element {
@@ -154,9 +161,19 @@ export function DemoObjectSettingsPanel({
     (count, group) => count + group.members.length,
     0,
   );
+  const numberingStart =
+    Number.isInteger(objectDefaults.objectTemplate.numberingStart) &&
+    objectDefaults.objectTemplate.numberingStart > 0
+      ? objectDefaults.objectTemplate.numberingStart
+      : 1;
+  const isAutomaticNumbering = objectDefaults.objectTemplate.numberingMode === 'automatic';
   const numberingPatternPreview = `${objectDefaults.objectTemplate.numberingPrefix}n${objectDefaults.objectTemplate.numberingSuffix}`;
-  const firstNumberingExample = `${objectDefaults.objectTemplate.numberingPrefix}1${objectDefaults.objectTemplate.numberingSuffix}`;
+  const firstNumberingExample = `${objectDefaults.objectTemplate.numberingPrefix}${String(numberingStart)}${objectDefaults.objectTemplate.numberingSuffix}`;
   const numberingScopeLabel = getNumberingScopeLabel(objectDefaults.objectTemplate.numberingScope);
+  const numberingSummary = isAutomaticNumbering
+    ? `${numberingScopeLabel}; пример первого номера: ${firstNumberingExample}`
+    : 'ручная нумерация; новые акты создаются без номера';
+  const [numberingStartInput, setNumberingStartInput] = useState(() => String(numberingStart));
   const isSectionScopedTemplate = sectionName !== undefined;
   const selectedSectionName = sectionName ?? 'выбранный раздел';
   const selectedObjectTitle = objectTitle ?? 'текущий объект';
@@ -169,6 +186,10 @@ export function DemoObjectSettingsPanel({
     sectionTemplateClipboard !== undefined &&
     sectionTemplateClipboard.sourceObjectId === objectId &&
     sectionTemplateClipboard.sourceSectionId === sectionId;
+
+  useEffect(() => {
+    setNumberingStartInput(String(numberingStart));
+  }, [numberingStart]);
 
   return (
     <div className={isPagePresentation ? 'object-settings-page' : 'object-settings-overlay'}>
@@ -225,9 +246,7 @@ export function DemoObjectSettingsPanel({
           <article className="object-template-status__card">
             <span>Нумерация</span>
             <strong>{numberingPatternPreview}</strong>
-            <small>
-              {numberingScopeLabel}; пример первого номера: {firstNumberingExample}
-            </small>
+            <small>{numberingSummary}</small>
           </article>
         </section>
 
@@ -397,9 +416,8 @@ export function DemoObjectSettingsPanel({
                     <span>
                       <h3 id="object-numbering-title">Нумерация актов</h3>
                       <p>
-                        Правило применяется к новым актам{' '}
-                        {isSectionScopedTemplate ? 'этого раздела' : 'этого объекта'}. Уже созданные
-                        номера не перенумеровываются автоматически.
+                        Настройка применяется к новым актам этого раздела. Уже созданные номера
+                        меняются только по кнопке массовой перенумерации.
                       </p>
                     </span>
                     <output aria-label="Шаблон номера" className="object-numbering-preview">
@@ -412,26 +430,47 @@ export function DemoObjectSettingsPanel({
                   </p>
 
                   <fieldset className="object-numbering-scope">
-                    <legend>Порядок нумерации</legend>
+                    <legend>Режим нумерации</legend>
                     <label>
                       <input
-                        checked={objectDefaults.objectTemplate.numberingScope === 'global-object'}
-                        name="numberingScope"
+                        checked={objectDefaults.objectTemplate.numberingMode === 'automatic'}
+                        name="numberingMode"
                         onChange={() => {
-                          onUpdateNumberingScope('global-object');
+                          onUpdateNumberingMode('automatic');
                         }}
                         type="radio"
                       />
                       <span>
-                        <strong>Сквозная по объекту</strong>
+                        <strong>Автоматическая</strong>
                         <small>
-                          Одна последовательность по всем разделам и папкам объекта. Префикс
-                          остаётся префиксом раздела акта.
+                          Новые акты будут получать номер автоматически по выбранному правилу.
                         </small>
                       </span>
                     </label>
                     <label>
                       <input
+                        checked={objectDefaults.objectTemplate.numberingMode === 'manual'}
+                        name="numberingMode"
+                        onChange={() => {
+                          onUpdateNumberingMode('manual');
+                        }}
+                        type="radio"
+                      />
+                      <span>
+                        <strong>Ручная</strong>
+                        <small>
+                          Новые акты будут создаваться без номера. Номер можно ввести в редакторе
+                          акта.
+                        </small>
+                      </span>
+                    </label>
+                  </fieldset>
+
+                  <fieldset className="object-numbering-scope">
+                    <legend>Порядок нумерации</legend>
+                    <label>
+                      <input
+                        disabled={!isAutomaticNumbering}
                         checked={objectDefaults.objectTemplate.numberingScope === 'global-section'}
                         name="numberingScope"
                         onChange={() => {
@@ -441,13 +480,12 @@ export function DemoObjectSettingsPanel({
                       />
                       <span>
                         <strong>Сквозная по разделу</strong>
-                        <small>
-                          В каждом разделе своя последовательность, новый раздел начинает с 1
-                        </small>
+                        <small>В разделе одна последовательность номеров для всех папок.</small>
                       </span>
                     </label>
                     <label>
                       <input
+                        disabled={!isAutomaticNumbering}
                         checked={
                           objectDefaults.objectTemplate.numberingScope === 'restart-per-folder'
                         }
@@ -459,7 +497,7 @@ export function DemoObjectSettingsPanel({
                       />
                       <span>
                         <strong>Отдельно в каждой папке</strong>
-                        <small>В каждой папке последовательность начинается заново</small>
+                        <small>В каждой папке последовательность начинается отдельно.</small>
                       </span>
                     </label>
                   </fieldset>
@@ -476,6 +514,35 @@ export function DemoObjectSettingsPanel({
                       />
                     </label>
                     <label>
+                      Первый номер
+                      <input
+                        min={1}
+                        name="numberingStart"
+                        onChange={(event) => {
+                          const nextValue = event.currentTarget.value;
+                          const nextNumberingStart = Number(nextValue);
+
+                          setNumberingStartInput(nextValue);
+
+                          if (Number.isInteger(nextNumberingStart) && nextNumberingStart > 0) {
+                            onUpdateNumberingStart(nextNumberingStart);
+                          }
+                        }}
+                        onBlur={() => {
+                          const nextNumberingStart = Number(numberingStartInput);
+
+                          if (!Number.isInteger(nextNumberingStart) || nextNumberingStart <= 0) {
+                            setNumberingStartInput('1');
+                            onUpdateNumberingStart(1);
+                          }
+                        }}
+                        step={1}
+                        type="number"
+                        value={numberingStartInput}
+                      />
+                      <small>По умолчанию 1. Можно начать, например, с 100 или 200.</small>
+                    </label>
+                    <label>
                       Суффикс номера
                       <input
                         name="numberingSuffix"
@@ -486,6 +553,27 @@ export function DemoObjectSettingsPanel({
                       />
                     </label>
                   </div>
+
+                  {isAutomaticNumbering ? (
+                    <div className="object-numbering-actions">
+                      <button
+                        className="compact-toggle compact-toggle--accent"
+                        disabled={sectionDraftCount === 0 || onRenumberSectionDrafts === undefined}
+                        onClick={onRenumberSectionDrafts}
+                        type="button"
+                      >
+                        Пронумеровать все акты раздела
+                      </button>
+                      {sectionDraftCount === 0 ? (
+                        <p className="object-folders__empty-copy">В разделе пока нет актов.</p>
+                      ) : null}
+                    </div>
+                  ) : (
+                    <p className="object-folders__empty-copy">
+                      Ручная нумерация не спрашивает номер при создании акта и не переводит акт в
+                      ручной режим шаблонных значений.
+                    </p>
+                  )}
                 </section>
 
                 <section className="form-section" aria-labelledby="object-project-docs-title">
