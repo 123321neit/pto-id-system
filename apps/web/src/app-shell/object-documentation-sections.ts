@@ -11,7 +11,6 @@ export type DemoDocumentationSectionId = string;
 export type DemoSectionTemplateSettingsId = string;
 
 export interface DemoDocumentationSection {
-  readonly description?: string;
   readonly folderIds: readonly DemoIdFolderId[];
   readonly id: DemoDocumentationSectionId;
   readonly name: string;
@@ -21,7 +20,6 @@ export interface DemoDocumentationSection {
 export type DemoDocumentationSections = readonly DemoDocumentationSection[];
 
 export const defaultDemoDocumentationSection: DemoDocumentationSection = {
-  description: 'Отопление, вентиляция и кондиционирование: демонстрационный раздел.',
   folderIds: demoIdFolders.map((folder) => folder.id),
   id: 'section-ventilation',
   name: 'Вентиляция',
@@ -31,7 +29,6 @@ export const defaultDemoDocumentationSection: DemoDocumentationSection = {
 export const demoDocumentationSections: DemoDocumentationSections = [
   defaultDemoDocumentationSection,
   {
-    description: 'Отопление: пустой демонстрационный раздел для проверки изоляции.',
     folderIds: [],
     id: 'section-heating',
     name: 'Отопление',

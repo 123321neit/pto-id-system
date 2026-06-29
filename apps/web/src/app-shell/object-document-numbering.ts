@@ -67,15 +67,29 @@ export function getProposedDemoDocumentNumberDetails(
   );
   const sequences = {
     section: getNextAutomaticSequence(sectionDrafts, 'section'),
+    object: getNextAutomaticSequence(input.drafts, 'object'),
     folder: getNextAutomaticSequence(folderDrafts, 'folder'),
   };
-  const selectedSequence =
-    setting.scope === 'global-section' ? sequences.section : sequences.folder;
+  const selectedSequence = getSelectedAutomaticSequence(setting.scope, sequences);
 
   return {
     renderedNumber: formatDemoDocumentNumber(setting, selectedSequence),
     sequences,
   };
+}
+
+function getSelectedAutomaticSequence(
+  scope: DemoDocumentNumberingScope,
+  sequences: DemoDocumentNumberingSequences,
+): number {
+  switch (scope) {
+    case 'global-object':
+      return sequences.object;
+    case 'global-section':
+      return sequences.section;
+    case 'restart-per-folder':
+      return sequences.folder;
+  }
 }
 
 function getNextAutomaticSequence(

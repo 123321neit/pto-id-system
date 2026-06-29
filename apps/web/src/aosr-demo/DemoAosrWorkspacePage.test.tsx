@@ -452,8 +452,9 @@ describe('DemoAosrWorkspacePage', () => {
     ).toBeTruthy();
     expect(within(summary).getByText('3 блока')).toBeTruthy();
     expect(within(summary).getByText('3 группы / 3 участника')).toBeTruthy();
-    expect(within(summary).getByText('ОВ-1')).toBeTruthy();
-    expect(within(summary).getByText('сквозная по объекту')).toBeTruthy();
+    expect(within(summary).getByText('ОВ-n')).toBeTruthy();
+    expect(summary.textContent).toContain('сквозная по разделу');
+    expect(summary.textContent).toContain('пример первого номера: ОВ-1');
 
     await user.click(within(dialog).getByRole('button', { name: /Организации/u }));
     expect(

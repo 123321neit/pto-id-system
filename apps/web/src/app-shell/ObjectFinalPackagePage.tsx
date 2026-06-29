@@ -44,7 +44,7 @@ export function ObjectFinalPackagePage({
         <div>
           <p className="section-kicker">Генерируемое представление</p>
           <h2 id="object-final-package-title">
-            Итоговая ИД раздела{sectionName === undefined ? '' : `: ${sectionName}`}
+            Итоговая ИД по разделу{sectionName === undefined ? '' : `: ${sectionName}`}
           </h2>
           <p>{finalIdPackageDescription}</p>
         </div>
@@ -74,13 +74,13 @@ export function ObjectFinalPackagePage({
       <section className="object-documents-panel final-package-download" aria-label="Скачивание">
         <div>
           <p className="section-kicker">Итоговый комплект</p>
-          <h3>Итоговая ИД раздела</h3>
+          <h3>Итоговая ИД по разделу</h3>
           <p>
             Документы папок выбранного раздела собираются без дублирования сертификатов и файлов.
           </p>
         </div>
         <button className="action-button" disabled type="button">
-          Скачать итоговую ИД раздела
+          Скачать итоговую ИД по разделу
         </button>
       </section>
     </section>
@@ -117,7 +117,7 @@ export function ObjectIntermediatePackagePage({
 
       <dl
         className="object-documents-summary object-documents-summary--quiet"
-        aria-label="Сводка промежуточной ИД"
+        aria-label="Сводка промежуточной ИД по папке"
       >
         <SummaryItem label="Документы папки" value={intermediatePackage.summary.acts} />
         <SummaryItem
@@ -140,11 +140,11 @@ export function ObjectIntermediatePackagePage({
       <section className="object-documents-panel final-package-download" aria-label="Формирование">
         <div>
           <p className="section-kicker">Промежуточный комплект</p>
-          <h3>Печать промежуточной ИД</h3>
+          <h3>Печать промежуточной ИД по папке</h3>
           <p>Комплект печатается из текущего состава папки.</p>
         </div>
         <button className="action-button" disabled type="button">
-          Печать промежуточной ИД
+          Печать промежуточной ИД по папке
         </button>
       </section>
     </section>

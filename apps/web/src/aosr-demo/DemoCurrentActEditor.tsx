@@ -152,6 +152,12 @@ export function DemoCurrentActEditor({
   const isManualTemplate = selectedDraft.templateMode === 'manual';
   const documentLabel =
     selectedDraft.actNumber.trim() === '' ? 'Без номера' : selectedDraft.actNumber;
+  const manualNumberingNotice =
+    selectedDraft.numberingAssignment.source === 'manual'
+      ? selectedDraft.numberingAssignment.automaticSequences === undefined
+        ? 'Номер этого акта задаётся вручную. Проверьте список актов слева, чтобы не сделать дубль.'
+        : 'Вы изменили номер вручную. Автоматическая нумерация больше не будет управлять номером этого акта. Проверьте список актов слева, чтобы не сделать дубль.'
+      : '';
   const templateScopeGenitive = 'шаблонных значений раздела';
   const templateScopeNominative = 'Шаблонные значения';
   const linkedTemplateSourceLabel = 'Шаблонные значения';
@@ -281,6 +287,12 @@ export function DemoCurrentActEditor({
               value={selectedDraft.actNumber}
             />
           </label>
+          {manualNumberingNotice === '' ? null : (
+            <div className="act-numbering-warning" role="note">
+              <strong>Ручная нумерация</strong>
+              <p>{manualNumberingNotice}</p>
+            </div>
+          )}
           <label>
             Дата акта
             <input

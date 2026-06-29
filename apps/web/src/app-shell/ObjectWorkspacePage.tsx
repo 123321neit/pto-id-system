@@ -8,7 +8,6 @@ import {
   type DemoAosrDraft,
   type DemoSectionTemplateSettings,
 } from '../aosr-demo/demo-aosr-workspace.js';
-import { DerivedRegistryTable } from './DerivedRegistryTable.js';
 import { ObjectDocumentsPage } from './ObjectDocumentsPage.js';
 import { ObjectFinalPackagePage, ObjectIntermediatePackagePage } from './ObjectFinalPackagePage.js';
 import type { MockObjectCard } from './mock-dashboard.js';
@@ -31,12 +30,10 @@ import {
   demoIdFolders,
   getDemoIdFolderById,
   getDemoIdFolderDrafts,
-  getDemoIdFolderForDraftId,
   type DemoIdFolder,
   type DemoIdFolderId,
   type DemoIdFolders,
 } from './object-id-folders.js';
-import { buildFolderRegistryModel } from './object-registry-model.js';
 import {
   copySectionTemplateSettingsToTarget,
   createSectionTemplateSettings,
@@ -303,12 +300,6 @@ export function ObjectWorkspacePage({
     setActiveSection('aosr');
   };
 
-  const openDraft = (draft: DemoAosrDraft): void => {
-    const folder = getDemoIdFolderForDraftId(draft.id, folders);
-
-    openAosr(folder.id, draft.id);
-  };
-
   const createAosrDraft = (): void => {
     if (
       selectedFolderId === null ||
@@ -531,7 +522,7 @@ export function ObjectWorkspacePage({
                   </span>
                 </button>
                 <button
-                  aria-label="Папки и документы"
+                  aria-label="Папки"
                   aria-current={
                     activeSection === 'folder' ||
                     activeSection === 'intermediate-package' ||
@@ -556,13 +547,13 @@ export function ObjectWorkspacePage({
                     ▣
                   </span>
                   <span className="object-workspace-nav__label">
-                    <strong>Папки и документы</strong>
-                    <small>{selectedFolder?.name ?? 'Папки пока нет'}</small>
+                    <strong>Папки</strong>
+                    <small>{selectedFolder?.name ?? 'Папки выбранного раздела'}</small>
                   </span>
                 </button>
                 <button
                   aria-current={activeSection === 'final-package' ? 'page' : undefined}
-                  aria-label="Итоговая ИД раздела"
+                  aria-label="Итоговая ИД по разделу"
                   onClick={() => {
                     setCreateDocumentPanelOpen(false);
                     setCreateFolderPanelOpen(false);
@@ -575,13 +566,13 @@ export function ObjectWorkspacePage({
                     ◫
                   </span>
                   <span className="object-workspace-nav__label">
-                    <strong>Итоговая ИД раздела</strong>
+                    <strong>Итоговая ИД по разделу</strong>
                     <small>По выбранному разделу</small>
                   </span>
                 </button>
                 <button
                   aria-current={activeSection === 'settings' ? 'page' : undefined}
-                  aria-label="Шаблонные значения"
+                  aria-label="Шаблонные значения раздела"
                   onClick={openObjectSettings}
                   type="button"
                 >
@@ -589,7 +580,7 @@ export function ObjectWorkspacePage({
                     ⌁
                   </span>
                   <span className="object-workspace-nav__label">
-                    <strong>Шаблонные значения</strong>
+                    <strong>Шаблонные значения раздела</strong>
                     <small>Для связанных актов</small>
                   </span>
                 </button>
@@ -632,13 +623,10 @@ export function ObjectWorkspacePage({
 
         {activeSection === 'overview' ? (
           <ObjectOverview
-            drafts={drafts}
-            folders={folders}
             sections={sections}
             selectedSection={selectedSection}
             selectedSectionFolders={selectedSectionFolders}
             onCreateSection={openCreateSectionPanel}
-            onOpenDraft={openDraft}
             onOpenSection={openSection}
             onOpenSectionsPage={openSectionsPage}
           />
@@ -785,7 +773,7 @@ function getSectionBreadcrumb(section: ObjectWorkspaceSection): string {
     case 'folder':
       return 'Разделы ИД / Папка';
     case 'intermediate-package':
-      return 'Разделы ИД / Промежуточная ИД';
+      return 'Разделы ИД / Промежуточная ИД по папке';
     case 'aosr':
       return `Разделы ИД / ${aosrActType.code}`;
     case 'settings':
@@ -793,30 +781,24 @@ function getSectionBreadcrumb(section: ObjectWorkspaceSection): string {
     case 'documents':
       return 'Документы объекта';
     case 'final-package':
-      return 'Итоговая ИД раздела';
+      return 'Итоговая ИД по разделу';
   }
 }
 
 interface ObjectOverviewProps {
-  readonly drafts: readonly DemoAosrDraft[];
-  readonly folders: readonly DemoIdFolder[];
   readonly sections: readonly DemoDocumentationSection[];
   readonly selectedSection: DemoDocumentationSection | undefined;
   readonly selectedSectionFolders: readonly DemoIdFolder[];
   readonly onCreateSection: () => void;
-  readonly onOpenDraft: (draft: DemoAosrDraft) => void;
   readonly onOpenSection: (sectionId: DemoDocumentationSectionId) => void;
   readonly onOpenSectionsPage: () => void;
 }
 
 function ObjectOverview({
-  drafts,
-  folders,
   sections,
   selectedSection,
   selectedSectionFolders,
   onCreateSection,
-  onOpenDraft,
   onOpenSection,
   onOpenSectionsPage,
 }: ObjectOverviewProps): React.JSX.Element {
@@ -857,8 +839,8 @@ function ObjectOverview({
             <h3 id="overview-focus-title">{selectedSection.name}</h3>
             <p>
               Раздел содержит {selectedSectionFolders.length}{' '}
-              {getFolderCountLabel(selectedSectionFolders.length)}. Итоговая ИД собирается именно по
-              выбранному разделу.
+              {getFolderCountLabel(selectedSectionFolders.length)}. Итоговая ИД по разделу
+              собирается именно из папок выбранного раздела.
             </p>
           </div>
           <div className="object-overview__focus-actions">
@@ -910,45 +892,16 @@ function ObjectOverview({
         </section>
       ) : null}
 
-      <section className="object-overview__panel" aria-labelledby="overview-recent-documents-title">
+      <section className="object-overview__panel" aria-labelledby="overview-workflow-title">
         <div className="object-overview__panel-heading">
-          <p className="section-kicker">Недавние документы</p>
-          <h3 id="overview-recent-documents-title">Последние документы</h3>
+          <p className="section-kicker">Порядок работы</p>
+          <h3 id="overview-workflow-title">Объект → раздел → папка → акт</h3>
         </div>
-        {drafts.length === 0 ? (
-          <p className="object-folders__empty-copy">
-            Документы появятся здесь после создания первого раздела и папки.
-          </p>
-        ) : (
-          <ul className="object-overview__recent-list object-overview__recent-list--wide">
-            {drafts.map((draft) => {
-              const folder = getDemoIdFolderForDraftId(draft.id, folders);
-              const section = getDemoDocumentationSectionForFolderId(folder.id, sections);
-
-              return (
-                <li key={draft.id}>
-                  <button
-                    onClick={() => {
-                      onOpenDraft(draft);
-                    }}
-                    type="button"
-                  >
-                    <span>
-                      <strong>{getDocumentDisplayNumber(draft.actNumber)}</strong>
-                      <small>
-                        {section.name} / {folder.name} / {aosrActType.title}
-                      </small>
-                    </span>
-                    <span>
-                      <small>Открыть</small>
-                      <strong aria-hidden="true">→</strong>
-                    </span>
-                  </button>
-                </li>
-              );
-            })}
-          </ul>
-        )}
+        <ol className="object-workspace-help-list">
+          <li>Выберите или создайте раздел ИД.</li>
+          <li>Внутри раздела создайте папку.</li>
+          <li>Акты создаются только внутри выбранной папки.</li>
+        </ol>
       </section>
     </section>
   );
@@ -1103,7 +1056,7 @@ function ObjectSectionsPage({
                       }}
                       type="button"
                     >
-                      Шаблонные значения
+                      Шаблонные значения раздела
                     </button>
                     <button
                       aria-label={`Дополнительные действия раздела ${section.name}`}
@@ -1196,10 +1149,10 @@ function ObjectSectionPage({
             Создать папку
           </button>
           <button className="compact-toggle" onClick={onOpenFinalPackage} type="button">
-            Итоговая ИД раздела
+            Итоговая ИД по разделу
           </button>
           <button className="compact-toggle" onClick={onOpenSectionTemplateSettings} type="button">
-            Шаблонные значения
+            Шаблонные значения раздела
           </button>
           <button
             aria-label={`Дополнительные действия раздела ${selectedSection.name}`}
@@ -1282,6 +1235,7 @@ function ObjectSectionPage({
 
               return (
                 <button
+                  aria-label={`Открыть папку ${folder.name}`}
                   className="object-folder-row"
                   key={folder.id}
                   onClick={() => {
@@ -1379,6 +1333,8 @@ function CreateDocumentPanel({
   onClose,
   onCreateAosr,
 }: CreateDocumentPanelProps): React.JSX.Element {
+  const [selectedDocumentTypeId, setSelectedDocumentTypeId] = useState<string>(aosrActType.id);
+
   return (
     <section
       className="object-overview__create-panel"
@@ -1402,24 +1358,35 @@ function CreateDocumentPanel({
         </p>
       </div>
       <ul className="document-type-card-list" role="radiogroup" aria-label="Тип акта">
-        {registeredDemoActTypes.map((actType) => (
-          <li
-            aria-checked="true"
-            className="document-type-card document-type-card--available document-type-card--selected"
-            key={actType.id}
-            role="radio"
-          >
-            <span className="document-type-card__icon" aria-hidden="true">
-              ✓
-            </span>
-            <span className="document-type-card__body">
-              <strong>{actType.code}</strong>
-              <small>
-                {actType.code} — {actType.title}
-              </small>
-            </span>
-          </li>
-        ))}
+        {registeredDemoActTypes.map((actType) => {
+          const isSelected = selectedDocumentTypeId === actType.id;
+
+          return (
+            <li key={actType.id}>
+              <button
+                aria-checked={isSelected}
+                className={`document-type-card document-type-card--available${
+                  isSelected ? ' document-type-card--selected' : ''
+                }`}
+                onClick={() => {
+                  setSelectedDocumentTypeId(actType.id);
+                }}
+                role="radio"
+                type="button"
+              >
+                <span className="document-type-card__icon" aria-hidden="true">
+                  {isSelected ? '✓' : actType.code}
+                </span>
+                <span className="document-type-card__body">
+                  <strong>{actType.code}</strong>
+                  <small>
+                    {actType.code} — {actType.title}
+                  </small>
+                </span>
+              </button>
+            </li>
+          );
+        })}
         <li className="document-type-card document-type-card--disabled" aria-disabled="true">
           <span className="document-type-card__icon" aria-hidden="true">
             АИ
@@ -1448,7 +1415,11 @@ function CreateDocumentPanel({
       <div className="object-folder-create-panel__actions">
         <button
           className="action-button action-button--primary"
-          onClick={onCreateAosr}
+          onClick={() => {
+            if (selectedDocumentTypeId === 'aosr') {
+              onCreateAosr();
+            }
+          }}
           type="button"
         >
           Создать акт
@@ -1484,8 +1455,6 @@ function ObjectFolderPage({
   onOpenCreateDocumentPanel,
   onOpenIntermediatePackage,
 }: ObjectFolderPageProps): React.JSX.Element {
-  const folderRegistry = useMemo(() => buildFolderRegistryModel(folder, drafts), [drafts, folder]);
-
   return (
     <section className="object-folder-workspace" aria-labelledby="object-folder-title">
       <div className="object-folder-hero">
@@ -1510,11 +1479,8 @@ function ObjectFolderPage({
           >
             Создать акт
           </button>
-          <a className="compact-toggle" href="#folder-registry-title">
-            Реестр папки
-          </a>
           <button className="compact-toggle" onClick={onOpenIntermediatePackage} type="button">
-            Промежуточная ИД
+            Промежуточная ИД по папке
           </button>
           <button
             aria-label={`Дополнительные действия папки ${folder.name}`}
@@ -1547,7 +1513,7 @@ function ObjectFolderPage({
           {drafts.length === 0 ? (
             <div className="object-folder-panel__empty">
               <strong>В этой папке пока нет актов</strong>
-              <p>Создайте первый акт — он сразу появится в составе папки и её реестре.</p>
+              <p>Создайте первый акт — он сразу появится в составе папки.</p>
             </div>
           ) : (
             <ul className="object-overview__recent-list object-overview__recent-list--wide">
@@ -1583,18 +1549,7 @@ function ObjectFolderPage({
           </p>
         </section>
 
-        <div className="object-folder-generated-views" aria-label="Сформированные представления">
-          <section
-            className="object-folder-panel object-folder-panel--registry object-folder-panel--secondary"
-            aria-labelledby="folder-registry-title"
-          >
-            <div className="object-overview__panel-heading">
-              <p className="section-kicker">Сформированный вид</p>
-              <h3 id="folder-registry-title">Реестр папки «{folder.name}»</h3>
-            </div>
-            <DerivedRegistryTable registry={folderRegistry} />
-          </section>
-
+        <div className="object-folder-generated-views" aria-label="Действия папки">
           <section
             className="object-folder-panel object-folder-placeholder object-folder-panel--secondary"
             aria-labelledby="folder-package-title"
@@ -1603,11 +1558,11 @@ function ObjectFolderPage({
               ◫
             </span>
             <div>
-              <p className="section-kicker">Сформированный вид</p>
-              <h3 id="folder-package-title">Промежуточная ИД</h3>
-              <p>Печатный комплект из актов и документов этой папки.</p>
+              <p className="section-kicker">Комплект папки</p>
+              <h3 id="folder-package-title">Промежуточная ИД по папке</h3>
+              <p>Реестр и печатный состав открываются в промежуточной ИД этой папки.</p>
               <button className="compact-toggle" onClick={onOpenIntermediatePackage} type="button">
-                Открыть состав печати
+                Открыть промежуточную ИД по папке
               </button>
             </div>
           </section>

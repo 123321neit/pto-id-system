@@ -38,7 +38,7 @@ describe('frontend-only object document numbering helper', () => {
       folderId: 'folder-heating-01',
       id: 'heating-section-draft',
       numberingAssignment: {
-        automaticSequences: { section: 10, folder: 10 },
+        automaticSequences: { folder: 10, object: 10, section: 10 },
         source: 'automatic' as const,
       },
       sectionId: 'section-heating',
@@ -69,7 +69,42 @@ describe('frontend-only object document numbering helper', () => {
       }),
     ).toEqual({
       renderedNumber: 'ОВ-2',
-      sequences: { section: 3, folder: 2 },
+      sequences: { folder: 2, object: 3, section: 3 },
+    });
+  });
+
+  it('can number acts across the whole object independently from section and folder', () => {
+    const sourceDraft = demoAosrWorkspace.drafts[0];
+
+    if (sourceDraft === undefined) {
+      throw new Error('Для теста нужен mock АОСР.');
+    }
+
+    const otherSectionDraft: DemoAosrDraft = {
+      ...sourceDraft,
+      folderId: 'folder-heating-01',
+      id: 'heating-section-object-sequence-draft',
+      numberingAssignment: {
+        automaticSequences: { folder: 1, object: 8, section: 1 },
+        source: 'automatic' as const,
+      },
+      sectionId: 'section-heating',
+      sectionTemplateId: 'section-template-settings-heating',
+      sectionTemplateSettingsId: 'section-template-settings-heating',
+    };
+
+    expect(
+      getProposedDemoDocumentNumberDetails({
+        documentTypeId: 'aosr',
+        drafts: [...demoAosrWorkspace.drafts, otherSectionDraft],
+        folderId: 'folder-2026-09',
+        folders: demoIdFolders,
+        sectionId: 'section-ventilation',
+        setting: { ...demoAosrNumberingSetting, scope: 'global-object' },
+      }),
+    ).toEqual({
+      renderedNumber: 'ОВ-9',
+      sequences: { folder: 2, object: 9, section: 3 },
     });
   });
 
@@ -105,7 +140,7 @@ describe('frontend-only object document numbering helper', () => {
         actNumber: 'ОВ-3',
         id: 'automatic-then-manual',
         numberingAssignment: {
-          automaticSequences: { section: 3, folder: 2 },
+          automaticSequences: { folder: 2, object: 3, section: 3 },
           source: 'automatic',
         },
       },
@@ -114,7 +149,7 @@ describe('frontend-only object document numbering helper', () => {
     );
 
     expect(manuallyRenamedDraft.numberingAssignment).toEqual({
-      automaticSequences: { section: 3, folder: 2 },
+      automaticSequences: { folder: 2, object: 3, section: 3 },
       source: 'manual',
     });
     expect(

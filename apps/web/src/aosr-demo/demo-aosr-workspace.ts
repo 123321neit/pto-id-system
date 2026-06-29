@@ -54,12 +54,13 @@ export interface SignatoryLibraryItem {
 
 export type ActTemplateMode = 'linked' | 'manual';
 
-export type DemoDocumentNumberingScope = 'global-section' | 'restart-per-folder';
+export type DemoDocumentNumberingScope = 'global-object' | 'global-section' | 'restart-per-folder';
 
 export type DemoDocumentNumberingAffixField = 'numberingPrefix' | 'numberingSuffix';
 
 export interface DemoDocumentNumberingSequences {
   readonly folder: number;
+  readonly object: number;
   readonly section: number;
 }
 
@@ -311,7 +312,6 @@ export interface DemoAosrDraft {
   readonly periodStart: string;
   readonly projectDocumentation: string;
   readonly representatives: readonly DemoAosrRepresentative[];
-  readonly status: 'draft' | 'needs-review';
   readonly subsequentWorksPermitted: string;
   readonly workContractorName: string;
   readonly workDescription: string;
@@ -684,7 +684,7 @@ export const demoAosrWorkspace: DemoAosrWorkspace = {
         'certificate-fasteners-001',
       ]),
       numberingAssignment: {
-        automaticSequences: { folder: 1, section: 1 },
+        automaticSequences: { folder: 1, object: 1, section: 1 },
         source: 'automatic',
       },
       sectionTemplateId: 'section-template-settings-ventilation',
@@ -706,7 +706,6 @@ export const demoAosrWorkspace: DemoAosrWorkspace = {
         buildingControlRepresentative,
         authorSupervisionRepresentative,
       ],
-      status: 'draft',
       subsequentWorksPermitted:
         'Разрешается производство последующих работ по устройству теплоизоляции и облицовки.',
       workContractorName: 'ООО "ПТО Монтаж"',
@@ -732,7 +731,7 @@ export const demoAosrWorkspace: DemoAosrWorkspace = {
       materialCertificateIds: ['certificate-firestop-001'],
       materialCertificateSnapshots: getMaterialCertificateSnapshots(['certificate-firestop-001']),
       numberingAssignment: {
-        automaticSequences: { folder: 1, section: 2 },
+        automaticSequences: { folder: 1, object: 2, section: 2 },
         source: 'automatic',
       },
       sectionTemplateId: 'section-template-settings-ventilation',
@@ -751,7 +750,6 @@ export const demoAosrWorkspace: DemoAosrWorkspace = {
         customerRepresentative,
         buildingControlRepresentative,
       ],
-      status: 'needs-review',
       subsequentWorksPermitted:
         'Разрешается производство последующих работ по заделке отверстий в перекрытии.',
       workContractorName: 'ООО "ПТО Монтаж"',
@@ -812,7 +810,6 @@ export function createEmptyDemoAosrDraft({
     representatives: templateSettings.representativeLibrary.map((representative) => ({
       ...representative,
     })),
-    status: 'draft',
     subsequentWorksPermitted: '',
     workContractorName: templateSettings.defaultWorkContractorName,
     workDescription: '',

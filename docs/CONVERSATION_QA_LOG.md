@@ -1466,8 +1466,8 @@ Updated UX behavior:
 
 - object overview no longer offers folder creation; the user opens a section
   first, then creates folders inside that section;
-- section overview has `Создать папку`, `Итоговая ИД раздела` and
-  `Шаблонные значения`, but no act/document creation CTA;
+- section overview has `Создать папку`, `Итоговая ИД по разделу` and
+  `Шаблонные значения раздела`, but no act/document creation CTA;
 - act creation is available only inside a folder;
 - the act creation dialog has no number field and does not show the future
   number, while automatic numbering is still assigned after creation;
@@ -1483,9 +1483,9 @@ Updated UX behavior:
   the object workflow;
 - MVP status wording such as `Активен`, `Черновик`, `Готовность` and
   `Поля заполнены` is not shown in the object workflow;
-- the section template screen exposes copy scenarios: from section, to section,
-  from another object and save as template, with copy notes that folders/acts
-  are not copied and current numbering prefix is preserved.
+- the section template screen exposes compact section-to-section copy controls,
+  with copy notes that folders/acts are not copied and current numbering prefix
+  is preserved.
 
 Still not implemented:
 
@@ -1495,3 +1495,40 @@ Still not implemented:
 - real cross-object template copy command;
 - DOCX/PDF/ZIP generation changes;
 - production package-builder or number reservation.
+
+---
+
+## 54. Object workspace UX-polish after commit `a19cf5b`
+
+### Q: Какие дополнительные UX/архитектурные замечания были закрыты?
+
+A: The frontend mock was aligned with the stricter section-first contract:
+
+- object overview no longer contains the `Последние документы` block;
+- the visible path is `Объект → раздел → папка → акт`;
+- the left navigation says `Папки`, `Итоговая ИД по разделу` and
+  `Шаблонные значения раздела`;
+- folder screens show act navigation and a compact entry to
+  `Промежуточная ИД по папке`;
+- the registry table is only on the intermediate ID page, not in the working
+  folder screen;
+- final package wording is explicitly section-scoped;
+- section template copying is a compact source/target section flow;
+- copying keeps the target section prefix and copies texts, library links and
+  numbering settings;
+- real cross-object template copy and saved templates remain future work and
+  are shown as a small note, not disabled cards;
+- AOSR creation uses a proper selected radio item;
+- numbering supports object-wide, section-wide and per-folder scopes;
+- numbering previews show `n` as the placeholder, with a first-number example;
+- manual number edits now show a manual-numbering warning while keeping manual
+  template mode separate.
+
+Still not implemented:
+
+- backend/API routes;
+- Prisma models/migrations;
+- persistence;
+- real cross-object copy command;
+- DOCX/PDF/ZIP generation;
+- production number reservation or issued package snapshots.

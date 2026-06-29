@@ -15,7 +15,7 @@ export type DemoIdFolders = readonly DemoIdFolder[];
 export const defaultDemoIdFolder: DemoIdFolder = {
   draftIds: ['aosr-draft-001'],
   id: 'folder-2026-09',
-  intermediateIdTitle: 'Промежуточная ИД: Сентябрь 2026',
+  intermediateIdTitle: 'Промежуточная ИД по папке «Сентябрь 2026»',
   name: 'Сентябрь 2026',
   registryTitle: 'Реестр папки «Сентябрь 2026»',
 };
@@ -25,7 +25,7 @@ export const demoIdFolders: readonly DemoIdFolder[] = [
   {
     draftIds: ['aosr-draft-002'],
     id: 'folder-2026-10',
-    intermediateIdTitle: 'Промежуточная ИД: Октябрь 2026',
+    intermediateIdTitle: 'Промежуточная ИД по папке «Октябрь 2026»',
     name: 'Октябрь 2026',
     registryTitle: 'Реестр папки «Октябрь 2026»',
   },
@@ -35,7 +35,7 @@ export function createDemoIdFolder(id: DemoIdFolderId, name: string): DemoIdFold
   return {
     draftIds: [],
     id,
-    intermediateIdTitle: `Промежуточная ИД: ${name}`,
+    intermediateIdTitle: `Промежуточная ИД по папке «${name}»`,
     name,
     registryTitle: `Реестр папки «${name}»`,
   };

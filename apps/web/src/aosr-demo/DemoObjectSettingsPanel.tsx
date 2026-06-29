@@ -98,6 +98,17 @@ const objectSettingsSections: readonly {
   },
 ];
 
+function getNumberingScopeLabel(numberingScope: DemoDocumentNumberingScope): string {
+  switch (numberingScope) {
+    case 'global-object':
+      return 'сквозная по объекту';
+    case 'global-section':
+      return 'сквозная по разделу';
+    case 'restart-per-folder':
+      return 'отдельно в каждой папке';
+  }
+}
+
 export function DemoObjectSettingsPanel({
   copyTargetSections,
   globalOrganizations,
@@ -134,24 +145,28 @@ export function DemoObjectSettingsPanel({
   onUpdateRepresentativeGroupTitle,
 }: DemoObjectSettingsPanelProps): React.JSX.Element {
   const [activeSectionId, setActiveSectionId] = useState<ObjectSettingsSectionId>('main');
+  const [copySourceSectionId, setCopySourceSectionId] = useState('');
+  const [copyTargetSectionId, setCopyTargetSectionId] = useState('');
   const representativeGroupCount = objectDefaults.objectTemplate.representativeGroups.length;
   const representativeMemberCount = objectDefaults.objectTemplate.representativeGroups.reduce(
     (count, group) => count + group.members.length,
     0,
   );
-  const numberingExample = `${objectDefaults.objectTemplate.numberingPrefix}1${objectDefaults.objectTemplate.numberingSuffix}`;
-  const numberingScopeLabel =
-    objectDefaults.objectTemplate.numberingScope === 'global-section'
-      ? sectionName === undefined
-        ? 'сквозная по объекту'
-        : 'сквозная по разделу'
-      : 'отдельно в каждой папке';
+  const numberingPatternPreview = `${objectDefaults.objectTemplate.numberingPrefix}n${objectDefaults.objectTemplate.numberingSuffix}`;
+  const firstNumberingExample = `${objectDefaults.objectTemplate.numberingPrefix}1${objectDefaults.objectTemplate.numberingSuffix}`;
+  const numberingScopeLabel = getNumberingScopeLabel(objectDefaults.objectTemplate.numberingScope);
   const isSectionScopedTemplate = sectionName !== undefined;
   const selectedSectionName = sectionName ?? 'выбранный раздел';
   const dialogTitle = isSectionScopedTemplate
     ? `Шаблонные значения раздела «${selectedSectionName}»`
     : 'Шаблонные значения';
   const isPagePresentation = presentation === 'page';
+  const fallbackCopySectionId = copyTargetSections[0]?.id ?? '';
+  const selectedCopySourceSectionId =
+    copySourceSectionId === '' ? fallbackCopySectionId : copySourceSectionId;
+  const selectedCopyTargetSectionId =
+    copyTargetSectionId === '' ? fallbackCopySectionId : copyTargetSectionId;
+  const hasCopyTargetSections = copyTargetSections.length > 0;
 
   return (
     <div className={isPagePresentation ? 'object-settings-page' : 'object-settings-overlay'}>
@@ -207,8 +222,10 @@ export function DemoObjectSettingsPanel({
           </article>
           <article className="object-template-status__card">
             <span>Нумерация</span>
-            <strong>{numberingExample}</strong>
-            <small>{numberingScopeLabel}</small>
+            <strong>{numberingPatternPreview}</strong>
+            <small>
+              {numberingScopeLabel}; пример первого номера: {firstNumberingExample}
+            </small>
           </article>
         </section>
 
@@ -218,8 +235,8 @@ export function DemoObjectSettingsPanel({
               <span>
                 <h3 id="section-template-copy-title">Копирование шаблонных значений</h3>
                 <p>
-                  Можно взять значения из другого раздела или скопировать текущие значения в другой
-                  раздел. Папки, акты, выпущенные комплекты и файлы не копируются.
+                  Можно скопировать шаблонные значения из другого раздела или вставить текущие
+                  значения в другой раздел. Папки, акты, выпущенные комплекты и файлы не копируются.
                 </p>
                 <p>
                   Префикс нумерации целевого раздела не копируется: он остаётся своим, чтобы раздел
@@ -227,74 +244,68 @@ export function DemoObjectSettingsPanel({
                 </p>
               </span>
             </div>
-            <div className="template-copy-grid">
-              <section className="template-copy-card" aria-labelledby="copy-from-section-title">
-                <h4 id="copy-from-section-title">Копировать из раздела</h4>
-                {copyTargetSections.length === 0 ? (
-                  <p className="object-folders__empty-copy">
-                    Создайте ещё один раздел, чтобы можно было скопировать значения.
-                  </p>
-                ) : (
-                  <div className="object-folder-create-panel__actions">
-                    {copyTargetSections.map((sourceSection) => (
-                      <button
-                        className="compact-toggle"
-                        key={sourceSection.id}
-                        onClick={() => {
-                          onCopySectionTemplateFromSource?.(sourceSection.id);
-                        }}
-                        type="button"
-                      >
-                        Скопировать из «{sourceSection.name}»
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </section>
-
-              <section className="template-copy-card" aria-labelledby="copy-to-section-title">
-                <h4 id="copy-to-section-title">Копировать в раздел</h4>
-                {copyTargetSections.length === 0 ? (
-                  <p className="object-folders__empty-copy">
-                    Других разделов в этом объекте пока нет.
-                  </p>
-                ) : (
-                  <div className="object-folder-create-panel__actions">
-                    {copyTargetSections.map((targetSection) => (
-                      <button
-                        className="compact-toggle"
-                        key={targetSection.id}
-                        onClick={() => {
-                          onCopySectionTemplateToTarget?.(targetSection.id);
-                        }}
-                        type="button"
-                      >
-                        Скопировать в «{targetSection.name}»
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </section>
-
-              <section className="template-copy-card" aria-labelledby="copy-from-object-title">
-                <h4 id="copy-from-object-title">Копировать из другого объекта</h4>
+            <div className="template-copy-baseline">
+              <div className="template-copy-baseline__controls">
                 <label>
-                  Объект
-                  <select disabled>
-                    <option>Поликлиника, корпус А — Вентиляция</option>
+                  Раздел-источник
+                  <select
+                    disabled={!hasCopyTargetSections}
+                    onChange={(event) => {
+                      setCopySourceSectionId(event.currentTarget.value);
+                    }}
+                    value={selectedCopySourceSectionId}
+                  >
+                    {copyTargetSections.map((sourceSection) => (
+                      <option key={sourceSection.id} value={sourceSection.id}>
+                        {sourceSection.name}
+                      </option>
+                    ))}
                   </select>
                 </label>
-                <button className="compact-toggle" disabled type="button">
-                  Просмотреть и скопировать — скоро
+                <button
+                  className="compact-toggle"
+                  disabled={!hasCopyTargetSections}
+                  onClick={() => {
+                    if (selectedCopySourceSectionId !== '') {
+                      onCopySectionTemplateFromSource?.(selectedCopySourceSectionId);
+                    }
+                  }}
+                  type="button"
+                >
+                  Скопировать из выбранного раздела
                 </button>
-              </section>
+              </div>
 
-              <section className="template-copy-card" aria-labelledby="copy-from-saved-title">
-                <h4 id="copy-from-saved-title">Сохранить как шаблон</h4>
-                <button className="compact-toggle" disabled type="button">
-                  Сохранить текущие значения — скоро
+              <div className="template-copy-baseline__controls">
+                <label>
+                  Раздел-получатель
+                  <select
+                    disabled={!hasCopyTargetSections}
+                    onChange={(event) => {
+                      setCopyTargetSectionId(event.currentTarget.value);
+                    }}
+                    value={selectedCopyTargetSectionId}
+                  >
+                    {copyTargetSections.map((targetSection) => (
+                      <option key={targetSection.id} value={targetSection.id}>
+                        {targetSection.name}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <button
+                  className="compact-toggle"
+                  disabled={!hasCopyTargetSections}
+                  onClick={() => {
+                    if (selectedCopyTargetSectionId !== '') {
+                      onCopySectionTemplateToTarget?.(selectedCopyTargetSectionId);
+                    }
+                  }}
+                  type="button"
+                >
+                  Скопировать в выбранный раздел
                 </button>
-              </section>
+              </div>
             </div>
 
             <div className="template-copy-summary" aria-label="Что будет скопировано">
@@ -302,10 +313,12 @@ export function DemoObjectSettingsPanel({
                 <h4>Что будет скопировано</h4>
                 <ul>
                   <li>объект и участники;</li>
-                  <li>представители;</li>
+                  <li>организации/контрагенты;</li>
+                  <li>представители/подписанты;</li>
                   <li>проектная документация;</li>
-                  <li>нумерация, кроме префикса текущего раздела;</li>
-                  <li>дополнительные шаблонные данные.</li>
+                  <li>текст соответствия требованиям;</li>
+                  <li>дополнительные шаблонные данные;</li>
+                  <li>настройки нумерации, кроме префикса целевого раздела.</li>
                 </ul>
               </div>
               <div>
@@ -314,11 +327,20 @@ export function DemoObjectSettingsPanel({
                   <li>папки;</li>
                   <li>акты;</li>
                   <li>выпущенные комплекты;</li>
-                  <li>файлы.</li>
+                  <li>файлы;</li>
+                  <li>ручные snapshot-версии актов.</li>
                 </ul>
               </div>
             </div>
 
+            {!hasCopyTargetSections ? (
+              <p className="object-folders__empty-copy">
+                Создайте ещё один раздел, чтобы можно было копировать шаблонные значения.
+              </p>
+            ) : null}
+            <p className="object-folders__empty-copy">
+              Копирование из другого объекта и сохранённые шаблоны появятся позже.
+            </p>
             {lastTemplateCopyMessage !== '' ? (
               <p className="template-copy-message">{lastTemplateCopyMessage}</p>
             ) : null}
@@ -424,14 +446,31 @@ export function DemoObjectSettingsPanel({
                         номера не перенумеровываются автоматически.
                       </p>
                     </span>
-                    <output aria-label="Пример номера" className="object-numbering-preview">
-                      {objectDefaults.objectTemplate.numberingPrefix}1
+                    <output aria-label="Шаблон номера" className="object-numbering-preview">
+                      {objectDefaults.objectTemplate.numberingPrefix}n
                       {objectDefaults.objectTemplate.numberingSuffix}
                     </output>
                   </div>
+                  <p className="object-folders__empty-copy">
+                    Пример первого номера: {firstNumberingExample}
+                  </p>
 
                   <fieldset className="object-numbering-scope">
                     <legend>Порядок нумерации</legend>
+                    <label>
+                      <input
+                        checked={objectDefaults.objectTemplate.numberingScope === 'global-object'}
+                        name="numberingScope"
+                        onChange={() => {
+                          onUpdateNumberingScope('global-object');
+                        }}
+                        type="radio"
+                      />
+                      <span>
+                        <strong>Сквозная по объекту</strong>
+                        <small>Одна последовательность по всем разделам и папкам объекта</small>
+                      </span>
+                    </label>
                     <label>
                       <input
                         checked={objectDefaults.objectTemplate.numberingScope === 'global-section'}
@@ -442,13 +481,9 @@ export function DemoObjectSettingsPanel({
                         type="radio"
                       />
                       <span>
-                        <strong>
-                          {isSectionScopedTemplate ? 'Сквозная по разделу' : 'Сквозная по объекту'}
-                        </strong>
+                        <strong>Сквозная по разделу</strong>
                         <small>
-                          {isSectionScopedTemplate
-                            ? 'Одна последовательность во всех папках раздела'
-                            : 'Одна последовательность во всех папках'}
+                          В каждом разделе своя последовательность, новый раздел начинает с 1
                         </small>
                       </span>
                     </label>

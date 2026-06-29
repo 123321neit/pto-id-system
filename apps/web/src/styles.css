@@ -917,11 +917,16 @@ button {
   background: #ffffff;
   padding: 13px;
   box-shadow: 0 10px 22px rgb(21 37 56 / 4%);
+  width: 100%;
+  color: inherit;
+  font: inherit;
+  text-align: left;
 }
 
 .document-type-card--available {
   border-color: #c8d8e7;
   background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+  cursor: pointer;
 }
 
 .document-type-card--selected {
@@ -3090,25 +3095,6 @@ h3 {
   white-space: nowrap;
 }
 
-.act-tree-item__status {
-  grid-column: 3;
-  width: fit-content;
-  border-radius: 999px;
-  padding: 2px 6px;
-  font-size: 0.66rem;
-  font-weight: 800;
-}
-
-.act-tree-item__status--draft {
-  background: #dbeafe;
-  color: #1d4ed8;
-}
-
-.act-tree-item__status--needs-review {
-  background: #fff4df;
-  color: #8a4306;
-}
-
 .act-tree-item__meta {
   grid-column: auto;
   display: grid;
@@ -3306,23 +3292,6 @@ h3 {
   color: #64748b;
   font-size: 0.72rem;
   font-weight: 760;
-}
-
-.act-summary-strip__status {
-  width: fit-content;
-  border-radius: 999px;
-  padding: 4px 8px;
-  font-size: 0.78rem !important;
-}
-
-.act-summary-strip__status--draft {
-  background: #dbeafe;
-  color: #1d4ed8 !important;
-}
-
-.act-summary-strip__status--needs-review {
-  background: #fef3c7;
-  color: #92400e !important;
 }
 
 .readiness-card {
@@ -3845,23 +3814,24 @@ h3 {
   min-width: 0;
 }
 
-.template-copy-grid {
+.template-copy-baseline {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
 }
 
-.template-copy-card {
-  display: grid;
+.template-copy-baseline__controls {
+  display: flex;
+  flex-wrap: wrap;
   gap: 10px;
-  align-content: start;
+  align-items: end;
   border: 1px solid #d8e3ee;
   border-radius: 8px;
   background: #f8fbff;
   padding: 13px;
 }
 
-.template-copy-card label {
+.template-copy-baseline__controls label {
+  flex: 1 1 260px;
   display: grid;
   gap: 6px;
   color: #42515f;
@@ -3869,7 +3839,7 @@ h3 {
   font-weight: 800;
 }
 
-.template-copy-card select {
+.template-copy-baseline__controls select {
   width: 100%;
   border: 1px solid #d2dde8;
   border-radius: 8px;
@@ -4309,6 +4279,26 @@ h3 {
   color: #627075;
   font-size: 0.82rem;
   line-height: 1.45;
+}
+
+.act-numbering-warning {
+  grid-column: 1 / -1;
+  border: 1px solid #bfdbfe;
+  border-radius: 8px;
+  background: #eff6ff;
+  padding: 10px 12px;
+  color: #1e3a8a;
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
+
+.act-numbering-warning strong,
+.act-numbering-warning p {
+  margin: 0;
+}
+
+.act-numbering-warning p {
+  margin-top: 4px;
 }
 
 .source-chip {

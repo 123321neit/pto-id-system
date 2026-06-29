@@ -5634,3 +5634,44 @@ delete/move/reorder lifecycle or generation was introduced.
 - no share codes/grants;
 - no production registry, package, certificate, object-document or AOSR
   business logic.
+
+### 2026-06-29 — Object workspace section UX contract tightened
+
+- Статус: `Frontend mock UX-polish only`
+- Описание: tightened the object workspace around the agreed hierarchy
+  `Object → Section → Folder → Act`, without adding backend, persistence or file
+  generation.
+
+Добавлено/уточнено:
+
+- object overview no longer shows `Последние документы`; it explains the user
+  path `Объект → раздел → папка → акт`;
+- left navigation uses `Папки`, `Итоговая ИД по разделу` and
+  `Шаблонные значения раздела`;
+- folders show the current folder act list and a compact action to open
+  `Промежуточная ИД по папке`;
+- folder registry/table is not embedded in the working folder screen; registry
+  and print composition live on the intermediate ID package page;
+- final package wording is section-scoped: `Итоговая ИД по разделу`;
+- section template copy UI is a compact block with source section, target
+  section and explicit note that cross-object copying/saved templates are future
+  work;
+- copying section template values copies repeated texts, library links and
+  numbering settings, but preserves the target section numbering prefix;
+- act creation uses a real radiogroup selection for the currently available
+  AOSR type; disabled future types are not selected;
+- numbering supports `global-object`, `global-section` and
+  `restart-per-folder`; previews show `n` as the sequence placeholder;
+- manual edits to an act number mark numbering as manual and show a warning
+  without switching the whole act to manual-template mode;
+- unused frontend mock fields were removed from demo section/draft data.
+
+Что не было введено:
+
+- no backend routes/controllers or API;
+- no Prisma/schema/migrations;
+- no persistence or repositories;
+- no real cross-object copy command;
+- no DOCX/PDF/ZIP generation changes;
+- no production number reservation;
+- no production package-builder or released package snapshots.
