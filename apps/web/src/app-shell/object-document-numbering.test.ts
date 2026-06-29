@@ -13,7 +13,7 @@ import {
 } from './object-document-numbering.js';
 import { demoIdFolders, type DemoIdFolders } from './object-id-folders.js';
 
-describe('frontend-only object document numbering helper', () => {
+describe('frontend-only section document numbering helper', () => {
   it('proposes the next AOSR number across the selected section', () => {
     expect(
       getProposedDemoDocumentNumber({
@@ -57,7 +57,7 @@ describe('frontend-only object document numbering helper', () => {
     ).toBe('ОВ-3');
   });
 
-  it('restarts the displayed sequence in each folder while preserving the global sequence', () => {
+  it('restarts the displayed sequence in each folder while preserving the section sequence', () => {
     expect(
       getProposedDemoDocumentNumberDetails({
         documentTypeId: 'aosr',

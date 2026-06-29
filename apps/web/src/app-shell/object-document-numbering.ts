@@ -45,7 +45,7 @@ export const demoAosrNumberingSetting: DemoDocumentNumberingSetting = {
   documentTypeId: 'aosr',
   mode: 'automatic',
   prefix: 'ОВ-',
-  scope: 'global-section',
+  scope: 'section-wide',
   start: 1,
   suffix: '',
   template: '{prefix}{number}{suffix}',
@@ -99,7 +99,7 @@ function getSelectedAutomaticSequence(
   sequences: DemoDocumentNumberingSequences,
 ): number {
   switch (scope) {
-    case 'global-section':
+    case 'section-wide':
       return sequences.section;
     case 'restart-per-folder':
       return sequences.folder;

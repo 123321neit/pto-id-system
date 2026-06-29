@@ -106,7 +106,7 @@ const objectSettingsSections: readonly {
 
 function getNumberingScopeLabel(numberingScope: DemoDocumentNumberingScope): string {
   switch (numberingScope) {
-    case 'global-section':
+    case 'section-wide':
       return 'сквозная по разделу';
     case 'restart-per-folder':
       return 'отдельно в каждой папке';
@@ -471,10 +471,10 @@ export function DemoObjectSettingsPanel({
                     <label>
                       <input
                         disabled={!isAutomaticNumbering}
-                        checked={objectDefaults.objectTemplate.numberingScope === 'global-section'}
+                        checked={objectDefaults.objectTemplate.numberingScope === 'section-wide'}
                         name="numberingScope"
                         onChange={() => {
-                          onUpdateNumberingScope('global-section');
+                          onUpdateNumberingScope('section-wide');
                         }}
                         type="radio"
                       />

@@ -4894,7 +4894,7 @@ delete/move/reorder lifecycle or generation was introduced.
 - initial frontend-only numbering helper was added for document types;
 - later section-template numbering superseded the initial object-level helper;
 - current section-template numbering uses `{prefix}{number}{suffix}` and
-  supports automatic/manual mode with `global-section` or
+  supports automatic/manual mode with `section-wide` or
   `restart-per-folder`;
 - the create panel shows `Предлагаемый номер: ОВ-3`;
 - the create panel also exposes editable `Номер документа`, prefilled from the
@@ -5229,7 +5229,7 @@ delete/move/reorder lifecycle or generation was introduced.
   template settings;
 - AOSR drafts now carry explicit `sectionId`, `folderId` and
   `sectionTemplateSettingsId` in addition to the folder's `draftIds` list;
-- numbering helper accepts `sectionId` and computes `global-section` sequences
+- numbering helper accepts `sectionId` and computes `section-wide` sequences
   from the selected section, while `restart-per-folder` sequences use only the
   selected folder;
 - frontend package model exposes `buildSectionFinalPackageModel`,
@@ -5670,7 +5670,7 @@ delete/move/reorder lifecycle or generation was introduced.
   numbering settings, but preserves the target section numbering prefix;
 - act creation uses a real radiogroup selection for the currently available
   AOSR type; disabled future types are not selected;
-- numbering supports `global-section` and `restart-per-folder`; previews show
+- numbering supports `section-wide` and `restart-per-folder`; previews show
   `n` as the sequence placeholder;
 - manual edits to an act number mark numbering as manual and show a warning
   without switching the whole act to manual-template mode;
@@ -5741,7 +5741,7 @@ delete/move/reorder lifecycle or generation was introduced.
 Добавлено/уточнено:
 
 - section template numbering now has two modes: `automatic` and `manual`;
-- automatic numbering supports only `global-section` and
+- automatic numbering supports only `section-wide` and
   `restart-per-folder`;
 - section template settings own `numberingStart`; invalid values normalize to
   `1`;
@@ -5761,3 +5761,29 @@ delete/move/reorder lifecycle or generation was introduced.
 - no Prisma/schema/migrations;
 - no persistence or production number reservation;
 - no DOCX/PDF/ZIP generation changes.
+
+### 2026-06-29 — Section-wide scope naming cleanup
+
+- Статус: `Frontend mock naming cleanup only`
+- Описание: renamed the remaining section numbering scope and helper names
+  before starting the DOCX template stage.
+
+Добавлено/уточнено:
+
+- internal section-wide automatic numbering scope is now `section-wide`, with
+  no remaining global-style scope name in the active model;
+- object-wide numbering was not returned;
+- numbering helpers now use section-based names:
+  `updateDemoSectionNumbering...`;
+- while `objectTemplate` remains a legacy compatibility alias, numbering helper
+  updates now build from `sectionTemplate` and assign the same next section
+  template into both alias fields;
+- mass renumber confirmation now includes the number of affected acts.
+
+Что не было введено:
+
+- no backend routes/controllers or API;
+- no Prisma/schema/migrations;
+- no DOCX/PDF/ZIP generation;
+- no project-wide rename of all legacy `objectDefaults` / `objectTemplate`
+  aliases.

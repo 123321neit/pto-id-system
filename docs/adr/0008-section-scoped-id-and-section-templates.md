@@ -135,8 +135,10 @@ settings snapshot and must still be retargeted to the target section on paste.
 - Object-wide final ID is not the default canonical package scope.
 - Folder names remain arbitrary user-defined names.
 - Numbering policy is section-scoped. Automatic numbering can either be
-  continuous across the selected section's folders (`global-section`) or
+  continuous across the selected section's folders (`section-wide`) or
   restarted inside each folder (`restart-per-folder`).
+- Object-wide numbering is intentionally not part of the active section
+  template model.
 - A section template can use automatic numbering or manual numbering. Manual
   numbering creates new acts without a number and does not switch the act's
   template values to manual mode.

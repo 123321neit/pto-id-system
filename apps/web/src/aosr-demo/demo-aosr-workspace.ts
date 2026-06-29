@@ -56,7 +56,7 @@ export type ActTemplateMode = 'linked' | 'manual';
 
 export type DemoDocumentNumberingMode = 'automatic' | 'manual';
 
-export type DemoDocumentNumberingScope = 'global-section' | 'restart-per-folder';
+export type DemoDocumentNumberingScope = 'section-wide' | 'restart-per-folder';
 
 export type DemoDocumentNumberingAffixField = 'numberingPrefix' | 'numberingSuffix';
 
@@ -440,7 +440,7 @@ const defaultWorkContractorName = 'ООО "ПТО Монтаж"';
 
 const defaultNumberingPrefix = 'ОВ-';
 
-const defaultNumberingScope: DemoDocumentNumberingScope = 'global-section';
+const defaultNumberingScope: DemoDocumentNumberingScope = 'section-wide';
 
 const defaultNumberingMode: DemoDocumentNumberingMode = 'automatic';
 
@@ -1505,74 +1505,69 @@ export function updateDemoObjectDefaultsField(
   };
 }
 
-export function updateDemoObjectNumberingScope(
+export function updateDemoSectionNumberingScope(
   objectDefaults: DemoAosrObjectDefaults,
   numberingScope: DemoDocumentNumberingScope,
 ): DemoAosrObjectDefaults {
+  const nextSectionTemplate = {
+    ...objectDefaults.sectionTemplate,
+    numberingScope,
+  };
+
   return {
     ...objectDefaults,
-    objectTemplate: {
-      ...objectDefaults.objectTemplate,
-      numberingScope,
-    },
-    sectionTemplate: {
-      ...objectDefaults.objectTemplate,
-      numberingScope,
-    },
+    objectTemplate: nextSectionTemplate,
+    sectionTemplate: nextSectionTemplate,
   };
 }
 
-export function updateDemoObjectNumberingMode(
+export function updateDemoSectionNumberingMode(
   objectDefaults: DemoAosrObjectDefaults,
   numberingMode: DemoDocumentNumberingMode,
 ): DemoAosrObjectDefaults {
+  const nextSectionTemplate = {
+    ...objectDefaults.sectionTemplate,
+    numberingMode,
+  };
+
   return {
     ...objectDefaults,
-    objectTemplate: {
-      ...objectDefaults.objectTemplate,
-      numberingMode,
-    },
-    sectionTemplate: {
-      ...objectDefaults.objectTemplate,
-      numberingMode,
-    },
+    objectTemplate: nextSectionTemplate,
+    sectionTemplate: nextSectionTemplate,
   };
 }
 
-export function updateDemoObjectNumberingStart(
+export function updateDemoSectionNumberingStart(
   objectDefaults: DemoAosrObjectDefaults,
   numberingStart: number,
 ): DemoAosrObjectDefaults {
   const normalizedNumberingStart = normalizeNumberingStart(numberingStart);
+  const nextSectionTemplate = {
+    ...objectDefaults.sectionTemplate,
+    numberingStart: normalizedNumberingStart,
+  };
 
   return {
     ...objectDefaults,
-    objectTemplate: {
-      ...objectDefaults.objectTemplate,
-      numberingStart: normalizedNumberingStart,
-    },
-    sectionTemplate: {
-      ...objectDefaults.objectTemplate,
-      numberingStart: normalizedNumberingStart,
-    },
+    objectTemplate: nextSectionTemplate,
+    sectionTemplate: nextSectionTemplate,
   };
 }
 
-export function updateDemoObjectNumberingAffix(
+export function updateDemoSectionNumberingAffix(
   objectDefaults: DemoAosrObjectDefaults,
   field: DemoDocumentNumberingAffixField,
   value: string,
 ): DemoAosrObjectDefaults {
+  const nextSectionTemplate = {
+    ...objectDefaults.sectionTemplate,
+    [field]: value,
+  };
+
   return {
     ...objectDefaults,
-    objectTemplate: {
-      ...objectDefaults.objectTemplate,
-      [field]: value,
-    },
-    sectionTemplate: {
-      ...objectDefaults.objectTemplate,
-      [field]: value,
-    },
+    objectTemplate: nextSectionTemplate,
+    sectionTemplate: nextSectionTemplate,
   };
 }
 

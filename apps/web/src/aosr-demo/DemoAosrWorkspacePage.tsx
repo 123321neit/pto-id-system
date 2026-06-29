@@ -38,10 +38,10 @@ import {
   switchDraftToManualTemplateMode,
   toggleApplicationInclusionInDraft,
   updateDemoAosrDraftField,
-  updateDemoObjectNumberingMode,
-  updateDemoObjectNumberingAffix,
-  updateDemoObjectNumberingScope,
-  updateDemoObjectNumberingStart,
+  updateDemoSectionNumberingMode,
+  updateDemoSectionNumberingAffix,
+  updateDemoSectionNumberingScope,
+  updateDemoSectionNumberingStart,
   updateDemoObjectDefaultsField,
   updateHeaderOrganizationInDraft,
   updateHeaderOrganizationBlock,
@@ -574,22 +574,22 @@ export function DemoAosrWorkspacePage({
         onUpdateHeaderOrganization={updateObjectHeaderOrganization}
         onUpdateNumberingMode={(numberingMode: DemoDocumentNumberingMode) => {
           commitObjectDefaults((currentDefaults) =>
-            updateDemoObjectNumberingMode(currentDefaults, numberingMode),
+            updateDemoSectionNumberingMode(currentDefaults, numberingMode),
           );
         }}
         onUpdateNumberingAffix={(field: DemoDocumentNumberingAffixField, value: string) => {
           commitObjectDefaults((currentDefaults) =>
-            updateDemoObjectNumberingAffix(currentDefaults, field, value),
+            updateDemoSectionNumberingAffix(currentDefaults, field, value),
           );
         }}
         onUpdateNumberingScope={(numberingScope: DemoDocumentNumberingScope) => {
           commitObjectDefaults((currentDefaults) =>
-            updateDemoObjectNumberingScope(currentDefaults, numberingScope),
+            updateDemoSectionNumberingScope(currentDefaults, numberingScope),
           );
         }}
         onUpdateNumberingStart={(numberingStart: number) => {
           commitObjectDefaults((currentDefaults) =>
-            updateDemoObjectNumberingStart(currentDefaults, numberingStart),
+            updateDemoSectionNumberingStart(currentDefaults, numberingStart),
           );
         }}
         onUpdateObjectDefaults={updateObjectDefaults}
@@ -911,22 +911,22 @@ export function DemoAosrWorkspacePage({
           onUpdateHeaderOrganization={updateObjectHeaderOrganization}
           onUpdateNumberingMode={(numberingMode: DemoDocumentNumberingMode) => {
             commitObjectDefaults((currentDefaults) =>
-              updateDemoObjectNumberingMode(currentDefaults, numberingMode),
+              updateDemoSectionNumberingMode(currentDefaults, numberingMode),
             );
           }}
           onUpdateNumberingAffix={(field: DemoDocumentNumberingAffixField, value: string) => {
             commitObjectDefaults((currentDefaults) =>
-              updateDemoObjectNumberingAffix(currentDefaults, field, value),
+              updateDemoSectionNumberingAffix(currentDefaults, field, value),
             );
           }}
           onUpdateNumberingScope={(numberingScope: DemoDocumentNumberingScope) => {
             commitObjectDefaults((currentDefaults) =>
-              updateDemoObjectNumberingScope(currentDefaults, numberingScope),
+              updateDemoSectionNumberingScope(currentDefaults, numberingScope),
             );
           }}
           onUpdateNumberingStart={(numberingStart: number) => {
             commitObjectDefaults((currentDefaults) =>
-              updateDemoObjectNumberingStart(currentDefaults, numberingStart),
+              updateDemoSectionNumberingStart(currentDefaults, numberingStart),
             );
           }}
           onUpdateObjectDefaults={updateObjectDefaults}

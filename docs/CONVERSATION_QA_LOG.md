@@ -1035,7 +1035,7 @@ Initial frontend-only numbering helper accepted:
 
 - numbering is per document type;
 - later section-scoped implementation superseded this helper: automatic
-  numbering now supports `global-section` or `restart-per-folder`;
+  numbering now supports `section-wide` or `restart-per-folder`;
 - current AOSR mock mode belongs to section template settings;
 - current template is `{prefix}{number}{suffix}`;
 - current AOSR prefix is `ОВ-`, suffix is empty;
@@ -1394,7 +1394,7 @@ A: The frontend mock was tightened without adding production features:
   `DemoObjectPeriod` in `object-periods.ts`;
 - AOSR drafts now carry explicit `sectionId`, `folderId` and
   `sectionTemplateSettingsId`;
-- numbering uses `global-section` and `restart-per-folder` scopes;
+- numbering uses `section-wide` and `restart-per-folder` scopes;
 - numbering helper can receive `sectionId`, so documents from another section
   do not affect selected-section numbering;
 - final package helpers now expose section-scoped names:
@@ -1626,7 +1626,7 @@ A: The frontend mock now keeps numbering strictly inside section template
 settings:
 
 - object-wide numbering was removed from the active model;
-- automatic numbering supports only `global-section` and `restart-per-folder`;
+- automatic numbering supports only `section-wide` and `restart-per-folder`;
 - section templates now store numbering mode and first number;
 - manual numbering creates new acts without a number and keeps template values
   linked to the section;
@@ -1642,3 +1642,29 @@ Still not implemented:
 - persistence;
 - production number reservation;
 - DOCX/PDF/ZIP generation.
+
+---
+
+## 58. Section-wide naming cleanup before DOCX template work
+
+### Q: Что было переименовано перед следующим этапом с DOCX-шаблоном АОСР?
+
+A: The frontend mock keeps the same product behavior but uses cleaner internal
+names:
+
+- the continuous-in-section scope is now `section-wide`, with no remaining
+  global-style scope name in the active model;
+- object-wide numbering was not returned;
+- numbering update helpers are section-named:
+  `updateDemoSectionNumberingScope`, `updateDemoSectionNumberingMode`,
+  `updateDemoSectionNumberingStart` and `updateDemoSectionNumberingAffix`;
+- those helpers treat `sectionTemplate` as the source and write the same
+  updated section template into the legacy `objectTemplate` alias;
+- mass renumber confirmation now shows how many acts will be affected.
+
+Still not implemented:
+
+- DOCX/PDF generation;
+- backend/API routes;
+- Prisma models/migrations;
+- production number reservation.

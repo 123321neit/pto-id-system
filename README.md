@@ -71,7 +71,7 @@ frontend mock as `DemoIdFolder` in `object-id-folders.ts`, not as object
 periods. Demo sections carry the user-visible `name`, optional `description`
 and `templateSettingsId`; there is no separate inferred short section code.
 AOSR drafts carry explicit `sectionId`, `folderId`, `sectionTemplateId` and
-`sectionTemplateSettingsId`; numbering scopes are `global-section` and
+`sectionTemplateSettingsId`; numbering scopes are `section-wide` and
 `restart-per-folder`, with automatic/manual mode and a configurable first
 number. Section template settings are keyed by
 `templateSettingsId`. Copying settings retargets the copied template to the

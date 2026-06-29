@@ -131,7 +131,7 @@ type ObjectTemplate = {
   numberingPattern?: string;
   numberingPrefix: string;
   numberingMode: 'automatic' | 'manual';
-  numberingScope: 'global-section' | 'restart-per-folder';
+  numberingScope: 'section-wide' | 'restart-per-folder';
   numberingStart: number;
   numberingSuffix: string;
   defaultDateMode?: 'today' | 'folderDate' | 'manual';

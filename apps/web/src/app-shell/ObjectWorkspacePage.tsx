@@ -63,6 +63,25 @@ function normalizeNumberingStart(numberingStart: number): number {
   return Number.isInteger(numberingStart) && numberingStart > 0 ? numberingStart : 1;
 }
 
+function formatRenumberedActCount(count: number): string {
+  const mod100 = count % 100;
+  const mod10 = count % 10;
+
+  if (mod100 >= 11 && mod100 <= 14) {
+    return `${String(count)} актов`;
+  }
+
+  if (mod10 === 1) {
+    return `${String(count)} акт`;
+  }
+
+  if (mod10 >= 2 && mod10 <= 4) {
+    return `${String(count)} акта`;
+  }
+
+  return `${String(count)} актов`;
+}
+
 function buildInitialSectionTemplateSettings(
   hasDemoContent: boolean,
 ): DemoSectionTemplateSettingsById {
@@ -478,7 +497,9 @@ export function ObjectWorkspacePage({
 
     const shouldRenumber = window.confirm(
       'Задать автоматическую нумерацию для всех актов раздела?\n' +
-        'Будут изменены номера всех актов выбранного раздела.\n' +
+        `Будут изменены номера актов выбранного раздела: ${formatRenumberedActCount(
+          selectedSectionDrafts.length,
+        )}.\n` +
         'Шаблонные значения акта и ручной/связанный режим шаблона не изменятся.\n' +
         'Продолжить?',
     );
@@ -512,7 +533,7 @@ export function ObjectWorkspacePage({
           section: sectionSequence,
         };
         const selectedSequence =
-          selectedSectionTemplateSettings.sectionTemplate.numberingScope === 'global-section'
+          selectedSectionTemplateSettings.sectionTemplate.numberingScope === 'section-wide'
             ? sectionSequence
             : folderSequence;
 
