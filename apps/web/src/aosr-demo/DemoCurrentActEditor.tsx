@@ -414,6 +414,10 @@ export function DemoCurrentActEditor({
               value={selectedDraft.workDescription}
             />
           </label>
+          <p className="helper-note act-form-grid__wide">
+            Место выполнения укажите в описании работ, осях и отметках — так оно будет понятно в
+            акте без отдельного технического поля.
+          </p>
           <label>
             Оси
             <input
