@@ -1444,3 +1444,54 @@ Still not implemented:
 - real cross-object template copy command;
 - DOCX/PDF/ZIP generation;
 - production package-builder or number reservation.
+
+---
+
+## 53. Object workspace UX-polish after section workflow
+
+### Q: Что было упрощено в объектном рабочем месте после разделов ИД?
+
+A: The frontend mock was polished around the intended user path:
+
+```text
+Object
+  -> Раздел ИД
+      -> Папка
+          -> Акт
+              -> Редактирование / Предпросмотр
+      -> Шаблонные значения раздела
+```
+
+Updated UX behavior:
+
+- object overview no longer offers folder creation; the user opens a section
+  first, then creates folders inside that section;
+- section overview has `Создать папку`, `Итоговая ИД раздела` and
+  `Шаблонные значения`, but no act/document creation CTA;
+- act creation is available only inside a folder;
+- the act creation dialog has no number field and does not show the future
+  number, while automatic numbering is still assigned after creation;
+- the selected act type uses visual/semantic selection instead of the text badge
+  `Выбран`;
+- the editor left panel is a simple list of acts in the current folder for
+  navigation/manual numbering, not a technical document tree;
+- AOSR editor sections were reordered to the practical filling flow and no
+  longer have duplicated point `6`;
+- section-template-owned blocks use human wording around
+  `Шаблонные значения` / `Шаблонные значения раздела`;
+- user-facing `Шаблон объекта` / `Настройки объекта` wording was removed from
+  the object workflow;
+- MVP status wording such as `Активен`, `Черновик`, `Готовность` and
+  `Поля заполнены` is not shown in the object workflow;
+- the section template screen exposes copy scenarios: from section, to section,
+  from another object and save as template, with copy notes that folders/acts
+  are not copied and current numbering prefix is preserved.
+
+Still not implemented:
+
+- backend/API routes;
+- Prisma models/migrations;
+- persistence;
+- real cross-object template copy command;
+- DOCX/PDF/ZIP generation changes;
+- production package-builder or number reservation.

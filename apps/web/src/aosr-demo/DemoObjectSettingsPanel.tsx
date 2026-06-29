@@ -148,7 +148,9 @@ export function DemoObjectSettingsPanel({
       : 'отдельно в каждой папке';
   const isSectionScopedTemplate = sectionName !== undefined;
   const selectedSectionName = sectionName ?? 'выбранный раздел';
-  const dialogTitle = isSectionScopedTemplate ? 'Шаблонные значения раздела' : 'Шаблон объекта';
+  const dialogTitle = isSectionScopedTemplate
+    ? `Шаблонные значения раздела «${selectedSectionName}»`
+    : 'Шаблонные значения';
   const isPagePresentation = presentation === 'page';
 
   return (
@@ -162,12 +164,12 @@ export function DemoObjectSettingsPanel({
         <div className="object-settings-dialog__header">
           <span>
             <p className="scope-label">
-              {isSectionScopedTemplate ? `Раздел ИД: ${selectedSectionName}` : 'Уровень объекта'}
+              {isSectionScopedTemplate ? `Раздел ИД: ${selectedSectionName}` : 'Общие значения'}
             </p>
             <h2 id="object-settings-title">{dialogTitle}</h2>
             <p className="object-settings-dialog__lead">
-              Единое место для данных, которые автоматически попадают в новые linked-АОСР этого
-              {isSectionScopedTemplate ? ' раздела.' : ' объекта.'}
+              Эти данные автоматически подставляются в новые акты и в акты, связанные с шаблонными
+              значениями раздела.
             </p>
           </span>
           <button className="compact-toggle" onClick={onCloseObjectSettings} type="button">
@@ -175,20 +177,16 @@ export function DemoObjectSettingsPanel({
           </button>
         </div>
 
-        <section
-          className="object-template-status"
-          aria-label={isSectionScopedTemplate ? 'Сводка шаблона раздела' : 'Сводка шаблона объекта'}
-        >
+        <section className="object-template-status" aria-label="Сводка шаблонных значений">
           <article className="object-template-status__card object-template-status__card--wide">
-            <span>Live-цепочка</span>
+            <span>Как применяются значения</span>
             <strong>
               {isSectionScopedTemplate
-                ? 'Библиотеки → шаблон раздела → linked-акты'
-                : 'Библиотеки → шаблон объекта → linked-акты'}
+                ? 'Библиотеки → шаблонные значения раздела → связанные акты'
+                : 'Библиотеки → шаблонные значения → связанные акты'}
             </strong>
             <small>
-              Изменения видны рабочим linked-документам. Ручные версии и выпущенные результаты
-              остаются отдельными снимками.
+              Изменения видны новым и связанным актам. Ручные акты остаются отдельными версиями.
             </small>
           </article>
           <article className="object-template-status__card">
@@ -231,7 +229,7 @@ export function DemoObjectSettingsPanel({
             </div>
             <div className="template-copy-grid">
               <section className="template-copy-card" aria-labelledby="copy-from-section-title">
-                <h4 id="copy-from-section-title">Из раздела этого объекта</h4>
+                <h4 id="copy-from-section-title">Копировать из раздела</h4>
                 {copyTargetSections.length === 0 ? (
                   <p className="object-folders__empty-copy">
                     Создайте ещё один раздел, чтобы можно было скопировать значения.
@@ -255,7 +253,7 @@ export function DemoObjectSettingsPanel({
               </section>
 
               <section className="template-copy-card" aria-labelledby="copy-to-section-title">
-                <h4 id="copy-to-section-title">Копировать на раздел</h4>
+                <h4 id="copy-to-section-title">Копировать в раздел</h4>
                 {copyTargetSections.length === 0 ? (
                   <p className="object-folders__empty-copy">
                     Других разделов в этом объекте пока нет.
@@ -279,7 +277,7 @@ export function DemoObjectSettingsPanel({
               </section>
 
               <section className="template-copy-card" aria-labelledby="copy-from-object-title">
-                <h4 id="copy-from-object-title">Из другого объекта</h4>
+                <h4 id="copy-from-object-title">Копировать из другого объекта</h4>
                 <label>
                   Объект
                   <select disabled>
@@ -292,9 +290,9 @@ export function DemoObjectSettingsPanel({
               </section>
 
               <section className="template-copy-card" aria-labelledby="copy-from-saved-title">
-                <h4 id="copy-from-saved-title">Из сохранённого шаблона</h4>
+                <h4 id="copy-from-saved-title">Сохранить как шаблон</h4>
                 <button className="compact-toggle" disabled type="button">
-                  Выбрать сохранённый шаблон — скоро
+                  Сохранить текущие значения — скоро
                 </button>
               </section>
             </div>
@@ -322,7 +320,7 @@ export function DemoObjectSettingsPanel({
             </div>
 
             {lastTemplateCopyMessage !== '' ? (
-              <p className="status-chip status-chip--active">{lastTemplateCopyMessage}</p>
+              <p className="template-copy-message">{lastTemplateCopyMessage}</p>
             ) : null}
           </section>
         ) : null}
@@ -331,7 +329,9 @@ export function DemoObjectSettingsPanel({
           <nav
             className="object-settings-menu"
             aria-label={
-              isSectionScopedTemplate ? 'Разделы шаблона раздела' : 'Разделы шаблона объекта'
+              isSectionScopedTemplate
+                ? 'Разделы шаблонных значений раздела'
+                : 'Разделы шаблонных значений'
             }
           >
             {objectSettingsSections.map((section) => (
@@ -495,7 +495,7 @@ export function DemoObjectSettingsPanel({
                 </section>
 
                 <section className="form-section" aria-labelledby="object-project-docs-title">
-                  <h3 id="object-project-docs-title">Пункт 4. Проектная документация</h3>
+                  <h3 id="object-project-docs-title">6. Документы-основания</h3>
                   <label className="act-form-grid__wide">
                     Проектная документация шаблона
                     <textarea
@@ -514,9 +514,9 @@ export function DemoObjectSettingsPanel({
                 </section>
 
                 <section className="form-section" aria-labelledby="object-compliance-title">
-                  <h3 id="object-compliance-title">Пункт 6. Соответствие требованиям</h3>
+                  <h3 id="object-compliance-title">7. Соответствие работ требованиям</h3>
                   <label className="act-form-grid__wide">
-                    Текст для пункта 6. Соответствие работ предъявляемым требованиям
+                    Текст соответствия работ требованиям
                     <textarea
                       className="large-field"
                       name="defaultComplianceStatement"

@@ -39,9 +39,9 @@ describe('DemoAosrWorkspacePage', () => {
     renderDemoWorkspace();
 
     expect(screen.getByRole('region', { name: 'Редактор документа' })).toBeTruthy();
-    expect(screen.getByRole('button', { name: 'Шаблон объекта' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Шаблонные значения' })).toBeTruthy();
     expect(screen.getByRole('heading', { name: 'Редактирование акта ОВ-1' })).toBeTruthy();
-    expect(screen.queryByRole('dialog', { name: 'Шаблон объекта' })).toBeNull();
+    expect(screen.queryByRole('dialog', { name: 'Шаблонные значения' })).toBeNull();
     expect(screen.queryByLabelText('Название проекта / объекта')).toBeNull();
   });
 
@@ -132,7 +132,7 @@ describe('DemoAosrWorkspacePage', () => {
     await user.click(screen.getByRole('button', { name: 'Убрать Иванов И.И. из акта' }));
     await user.click(screen.getByRole('button', { name: 'Убрать Петров П.П. из акта' }));
     await user.click(screen.getByRole('button', { name: 'Убрать Смирнова С.С. из акта' }));
-    await user.clear(screen.getByLabelText('Текст пункта 6 в документе'));
+    await user.clear(screen.getByLabelText('Текст соответствия работ требованиям'));
 
     expect(screen.queryByRole('region', { name: 'Подсказки по акту' })).toBeNull();
     expect(screen.getByRole('button', { name: 'Предпросмотр документа' })).toBeTruthy();
@@ -192,8 +192,8 @@ describe('DemoAosrWorkspacePage', () => {
   it('keeps default parameters and libraries compact until opened', () => {
     renderDemoWorkspace();
 
-    expect(screen.getByRole('button', { name: 'Шаблон объекта' })).toBeTruthy();
-    expect(screen.queryByRole('dialog', { name: 'Шаблон объекта' })).toBeNull();
+    expect(screen.getByRole('button', { name: 'Шаблонные значения' })).toBeTruthy();
+    expect(screen.queryByRole('dialog', { name: 'Шаблонные значения' })).toBeNull();
     expect(screen.queryByRole('region', { name: 'Представители для актов' })).toBeNull();
     expect(screen.queryByLabelText('Найти организацию в глобальной библиотеке')).toBeNull();
     expect(screen.queryByLabelText('Найти материал в библиотеке сертификатов')).toBeNull();
@@ -217,7 +217,7 @@ describe('DemoAosrWorkspacePage', () => {
 
     await openObjectSettings(user);
 
-    const dialog = screen.getByRole('dialog', { name: 'Шаблон объекта' });
+    const dialog = screen.getByRole('dialog', { name: 'Шаблонные значения' });
     const objectNameField = within(dialog).getByLabelText('Объект капитального строительства');
 
     await user.clear(objectNameField);
@@ -230,7 +230,7 @@ describe('DemoAosrWorkspacePage', () => {
 
     await user.click(within(dialog).getByRole('button', { name: 'Закрыть' }));
 
-    expect(screen.queryByRole('dialog', { name: 'Шаблон объекта' })).toBeNull();
+    expect(screen.queryByRole('dialog', { name: 'Шаблонные значения' })).toBeNull();
   });
 
   it('shows object-level compliance defaults in a dedicated section', async () => {
@@ -239,19 +239,15 @@ describe('DemoAosrWorkspacePage', () => {
     renderDemoWorkspace();
     await openObjectSettings(user);
 
-    const dialog = screen.getByRole('dialog', { name: 'Шаблон объекта' });
+    const dialog = screen.getByRole('dialog', { name: 'Шаблонные значения' });
 
     expect(
       within(dialog).getByRole('heading', {
-        name: 'Пункт 6. Соответствие требованиям',
+        name: '7. Соответствие работ требованиям',
       }),
     ).toBeTruthy();
     expect(
-      getTextAreaValue(
-        within(dialog).getByLabelText(
-          'Текст для пункта 6. Соответствие работ предъявляемым требованиям',
-        ),
-      ),
+      getTextAreaValue(within(dialog).getByLabelText('Текст соответствия работ требованиям')),
     ).toBe(demoAosrWorkspace.objectDefaults.defaultComplianceStatement);
   });
 
@@ -271,7 +267,7 @@ describe('DemoAosrWorkspacePage', () => {
     );
 
     await openObjectSettings(user);
-    const dialog = screen.getByRole('dialog', { name: 'Шаблон объекта' });
+    const dialog = screen.getByRole('dialog', { name: 'Шаблонные значения' });
     const defaultProjectDocumentationField = within(dialog).getByLabelText(
       'Проектная документация шаблона',
     );
@@ -289,12 +285,12 @@ describe('DemoAosrWorkspacePage', () => {
   it('stores repeated contractor, additional information and copy count in the section template', async () => {
     const user = userEvent.setup();
     const contractorName = 'ООО "Исполнитель из шаблона"';
-    const additionalInfo = 'Печатные сведения из шаблона объекта.';
+    const additionalInfo = 'Печатные сведения из шаблонных значений.';
 
     renderDemoWorkspace({ initialDocumentPreviewOpen: true });
     await openObjectSettings(user);
 
-    const dialog = screen.getByRole('dialog', { name: 'Шаблон объекта' });
+    const dialog = screen.getByRole('dialog', { name: 'Шаблонные значения' });
     const contractorField = within(dialog).getByLabelText('Лицо, выполнившее работы');
     const copiesField = within(dialog).getByLabelText('Количество экземпляров');
 
@@ -319,12 +315,14 @@ describe('DemoAosrWorkspacePage', () => {
   it('uses linked object template compliance text in the act and preview', () => {
     renderDemoWorkspace({ initialDocumentPreviewOpen: true });
 
-    const complianceSection = getSectionByHeading('6. Соответствие работ');
+    const complianceSection = getSectionByHeading('7. Соответствие работ требованиям');
 
     expect(within(complianceSection).queryByText('По шаблону объекта')).toBeNull();
     expect(screen.getAllByText('Шаблонные значения').length).toBeGreaterThan(0);
     expect(
-      getTextAreaValue(within(complianceSection).getByLabelText('Текст пункта 6 в документе')),
+      getTextAreaValue(
+        within(complianceSection).getByLabelText('Текст соответствия работ требованиям'),
+      ),
     ).toBe(demoAosrWorkspace.objectDefaults.defaultComplianceStatement);
     expect(getPreviewText()).toContain(demoAosrWorkspace.objectDefaults.defaultComplianceStatement);
   });
@@ -336,12 +334,12 @@ describe('DemoAosrWorkspacePage', () => {
 
     const templateSections = [
       '2. Объект и участники',
-      'Организации, участвующие в акте',
+      '3. Представители / подписанты',
       'Подписанты текущего акта',
       'Лицо, выполнившее работы',
       '6. Документы-основания',
-      '6. Соответствие работ',
-      'Дополнительные сведения',
+      '7. Соответствие работ требованиям',
+      '10. Дополнительные сведения / экземпляры / подписи',
     ];
 
     for (const sectionName of templateSections) {
@@ -368,7 +366,7 @@ describe('DemoAosrWorkspacePage', () => {
     renderDemoWorkspace({ initialDocumentPreviewOpen: true });
     await switchCurrentActToManualTemplate(user);
 
-    const complianceField = screen.getByLabelText('Текст пункта 6 в документе');
+    const complianceField = screen.getByLabelText('Текст соответствия работ требованиям');
     expect(getTextAreaValue(complianceField)).toBe(
       demoAosrWorkspace.objectDefaults.defaultComplianceStatement,
     );
@@ -376,7 +374,7 @@ describe('DemoAosrWorkspacePage', () => {
     await user.clear(complianceField);
     await user.type(complianceField, documentText);
 
-    expect(screen.getByText('Отличается от шаблона объекта')).toBeTruthy();
+    expect(screen.getByText('Отличается от шаблонных значений раздела')).toBeTruthy();
     expect(getPreviewText()).toContain(documentText);
     expect(getPreviewText()).not.toContain(
       demoAosrWorkspace.objectDefaults.defaultComplianceStatement,
@@ -389,15 +387,15 @@ describe('DemoAosrWorkspacePage', () => {
     renderDemoWorkspace({ initialDocumentPreviewOpen: true });
     await switchCurrentActToManualTemplate(user);
 
-    await user.clear(screen.getByLabelText('Текст пункта 6 в документе'));
+    await user.clear(screen.getByLabelText('Текст соответствия работ требованиям'));
     await user.type(
-      screen.getByLabelText('Текст пункта 6 в документе'),
+      screen.getByLabelText('Текст соответствия работ требованиям'),
       'Индивидуальное исключение для проверки возврата.',
     );
 
     expect(getPreviewText()).toContain('Индивидуальное исключение для проверки возврата.');
 
-    await user.click(screen.getByRole('button', { name: 'Вернуть к linked-режиму' }));
+    await user.click(screen.getByRole('button', { name: 'Вернуть связь с шаблонными значениями' }));
 
     expect(screen.getAllByText('Шаблонные значения').length).toBeGreaterThan(0);
     expect(getPreviewText()).toContain(demoAosrWorkspace.objectDefaults.defaultComplianceStatement);
@@ -410,21 +408,17 @@ describe('DemoAosrWorkspacePage', () => {
     renderDemoWorkspace();
     await switchCurrentActToManualTemplate(user);
 
-    await user.clear(screen.getByLabelText('Текст пункта 6 в документе'));
+    await user.clear(screen.getByLabelText('Текст соответствия работ требованиям'));
     await user.type(
-      screen.getByLabelText('Текст пункта 6 в документе'),
+      screen.getByLabelText('Текст соответствия работ требованиям'),
       'Только этот акт использует отдельную нормативную ссылку.',
     );
 
     await openObjectSettings(user);
 
-    const dialog = screen.getByRole('dialog', { name: 'Шаблон объекта' });
+    const dialog = screen.getByRole('dialog', { name: 'Шаблонные значения' });
     expect(
-      getTextAreaValue(
-        within(dialog).getByLabelText(
-          'Текст для пункта 6. Соответствие работ предъявляемым требованиям',
-        ),
-      ),
+      getTextAreaValue(within(dialog).getByLabelText('Текст соответствия работ требованиям')),
     ).toBe(demoAosrWorkspace.objectDefaults.defaultComplianceStatement);
   });
 
@@ -434,7 +428,7 @@ describe('DemoAosrWorkspacePage', () => {
     renderDemoWorkspace();
     await openObjectSettings(user);
 
-    const dialog = screen.getByRole('dialog', { name: 'Шаблон объекта' });
+    const dialog = screen.getByRole('dialog', { name: 'Шаблонные значения' });
 
     expect(within(dialog).getByRole('button', { name: /Данные и тексты/u })).toBeTruthy();
     expect(within(dialog).getByRole('button', { name: /Организации/u })).toBeTruthy();
@@ -450,10 +444,12 @@ describe('DemoAosrWorkspacePage', () => {
     renderDemoWorkspace();
     await openObjectSettings(user);
 
-    const dialog = screen.getByRole('dialog', { name: 'Шаблон объекта' });
-    const summary = within(dialog).getByRole('region', { name: 'Сводка шаблона объекта' });
+    const dialog = screen.getByRole('dialog', { name: 'Шаблонные значения' });
+    const summary = within(dialog).getByRole('region', { name: 'Сводка шаблонных значений' });
 
-    expect(within(summary).getByText('Библиотеки → шаблон объекта → linked-акты')).toBeTruthy();
+    expect(
+      within(summary).getByText('Библиотеки → шаблонные значения → связанные акты'),
+    ).toBeTruthy();
     expect(within(summary).getByText('3 блока')).toBeTruthy();
     expect(within(summary).getByText('3 группы / 3 участника')).toBeTruthy();
     expect(within(summary).getByText('ОВ-1')).toBeTruthy();
@@ -500,7 +496,7 @@ describe('DemoAosrWorkspacePage', () => {
     renderDemoWorkspace();
 
     const materialsSection = screen
-      .getByRole('heading', { name: '3. Материалы' })
+      .getByRole('heading', { name: '5. Материалы и сертификаты' })
       .closest('.form-section');
 
     if (materialsSection === null) {
@@ -539,7 +535,7 @@ describe('DemoAosrWorkspacePage', () => {
     expect(
       screen.queryByRole('dialog', { name: 'Выбор материалов из библиотеки сертификатов' }),
     ).toBeNull();
-    expect(screen.getByRole('heading', { name: '3. Материалы' })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: '5. Материалы и сертификаты' })).toBeTruthy();
   });
 
   it('renders act editor sections in the intended AOSR order', () => {
@@ -554,21 +550,22 @@ describe('DemoAosrWorkspacePage', () => {
       'АОСР 1',
       '2. Объект и участники',
       'Объект капитального строительства',
-      'Организации, участвующие в акте',
+      '3. Представители / подписанты',
       'Подписанты текущего акта',
       'Лицо, выполнившее работы',
-      '4. Работы',
+      '4. Выполненные работы',
       'Описание скрытых работ',
       'Оси',
       'Отметки',
+      'Начало работ',
+      'Окончание работ',
+      '5. Материалы и сертификаты',
       '6. Документы-основания',
-      '3. Материалы',
-      '4. Документы объекта',
-      '5. Даты выполнения работ',
-      '6. Соответствие работ',
-      '7. Последующие работы',
+      'Исполнительные схемы / документы объекта',
+      '7. Соответствие работ требованиям',
+      '8. Последующие работы',
       'Дополнительные сведения',
-      'Приложения к акту',
+      '9. Приложения',
     ];
 
     for (let index = 0; index < orderedFragments.length - 1; index += 1) {
@@ -584,11 +581,11 @@ describe('DemoAosrWorkspacePage', () => {
 
     const editorText = screen.getByRole('region', { name: 'Редактирование акта ОВ-1' }).textContent;
 
-    expect(editorText.indexOf('Организации, участвующие в акте')).toBeLessThan(
+    expect(editorText.indexOf('3. Представители / подписанты')).toBeLessThan(
       editorText.indexOf('Подписанты текущего акта'),
     );
     expect(editorText.indexOf('Подписанты текущего акта')).toBeLessThan(
-      editorText.indexOf('4. Работы'),
+      editorText.indexOf('4. Выполненные работы'),
     );
     expect(screen.getByRole('list', { name: 'Порядок организаций в акте' })).toBeTruthy();
   });
@@ -627,7 +624,7 @@ describe('DemoAosrWorkspacePage', () => {
     );
 
     await openObjectSettings(user);
-    const dialog = screen.getByRole('dialog', { name: 'Шаблон объекта' });
+    const dialog = screen.getByRole('dialog', { name: 'Шаблонные значения' });
     await user.click(within(dialog).getByRole('button', { name: /Организации/u }));
     await user.click(within(dialog).getByRole('button', { name: 'Переместить Подрядчик вверх' }));
 
@@ -641,7 +638,7 @@ describe('DemoAosrWorkspacePage', () => {
 
     await user.click(within(dialog).getByRole('button', { name: 'Закрыть' }));
 
-    await user.click(screen.getByRole('button', { name: 'Вернуть к linked-режиму' }));
+    await user.click(screen.getByRole('button', { name: 'Вернуть связь с шаблонными значениями' }));
 
     expect(getOrganizationOrderText().indexOf('Подрядчик')).toBeLessThan(
       getOrganizationOrderText().indexOf('Заказчик'),
@@ -704,11 +701,13 @@ describe('DemoAosrWorkspacePage', () => {
   it('shows selected object documents as a clear point 4 section', () => {
     renderDemoWorkspace();
 
-    expect(screen.getByRole('heading', { name: '4. Документы объекта' })).toBeTruthy();
+    expect(
+      screen.getByRole('heading', { name: 'Исполнительные схемы / документы объекта' }),
+    ).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Добавить документ' })).toBeTruthy();
 
     const pointFourList = screen.getByRole('list', {
-      name: 'Документы пункта 4 текущего акта',
+      name: 'Документы-основания текущего акта',
     });
     expect(
       within(pointFourList).getByText('Исполнительная схема скрытых участков вентиляции'),
@@ -721,10 +720,10 @@ describe('DemoAosrWorkspacePage', () => {
     const editorText = screen.getByRole('region', { name: 'Редактирование акта ОВ-1' }).textContent;
 
     expect(editorText.indexOf('Подписанты текущего акта')).toBeLessThan(
-      editorText.indexOf('4. Работы'),
+      editorText.indexOf('4. Выполненные работы'),
     );
     expect(editorText.indexOf('Дополнительные сведения')).toBeLessThan(
-      editorText.indexOf('Приложения к акту'),
+      editorText.indexOf('9. Приложения'),
     );
     expect(screen.queryByText('Итоговые приложения в акте')).toBeNull();
     expect(screen.queryByRole('list', { name: 'Итоговые приложения текущего акта' })).toBeNull();
@@ -784,7 +783,7 @@ describe('DemoAosrWorkspacePage', () => {
     );
 
     const pointFourList = screen.getByRole('list', {
-      name: 'Документы пункта 4 текущего акта',
+      name: 'Документы-основания текущего акта',
     });
     expect(
       within(pointFourList).getByText(
@@ -1118,7 +1117,7 @@ describe('DemoAosrWorkspacePage', () => {
     expect(screen.getByLabelText('ФИО представителя')).toBeTruthy();
     expect(screen.getByLabelText('Группа / роль в ручной версии')).toBeTruthy();
     expect(
-      screen.getAllByText('Акт в ручном режиме. Эти значения меняются только в этом акте.').length,
+      screen.getAllByText(/Акт в ручном режиме\. Эти значения меняются только в этом акте/u).length,
     ).toBeGreaterThan(0);
   });
 
@@ -1185,7 +1184,7 @@ describe('DemoAosrWorkspacePage', () => {
     expect((applicationCheckbox as HTMLInputElement).checked).toBe(false);
 
     const pointFourList = screen.getByRole('list', {
-      name: 'Документы пункта 4 текущего акта',
+      name: 'Документы-основания текущего акта',
     });
     expect(
       within(pointFourList).getByText('Запись журнала входного контроля материалов'),
@@ -1216,7 +1215,7 @@ describe('DemoAosrWorkspacePage', () => {
     expect(screen.queryByLabelText('Материалы / сертификаты простым текстом')).toBeNull();
     expect(screen.queryByLabelText('Приложения / исполнительные схемы простым текстом')).toBeNull();
     expect(screen.queryByLabelText('Итоговые приложения простым текстом')).toBeNull();
-    expect(screen.getByRole('heading', { name: 'Приложения к акту' })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: '9. Приложения' })).toBeTruthy();
     expect(screen.queryByText('Итоговые приложения в акте')).toBeNull();
   });
 
@@ -1575,7 +1574,7 @@ describe('DemoAosrWorkspacePage', () => {
   it('copies current default parameters into new blank AOSR drafts', () => {
     const objectDefaults = {
       ...demoAosrWorkspace.objectDefaults,
-      defaultComplianceStatement: 'Новый пункт 6 по умолчанию.',
+      defaultComplianceStatement: 'Новый текст соответствия по умолчанию.',
       defaultProjectDocumentation: 'Новая проектная документация по умолчанию.',
       headerOrganizations: [
         ...demoAosrWorkspace.objectDefaults.headerOrganizations.slice(1),
@@ -1625,7 +1624,7 @@ interface RepresentativeAssignmentInput {
 }
 
 async function openObjectSettings(user: ReturnType<typeof userEvent.setup>): Promise<void> {
-  const openButton = screen.queryByRole('button', { name: 'Шаблон объекта' });
+  const openButton = screen.queryByRole('button', { name: 'Шаблонные значения' });
 
   if (openButton !== null) {
     await user.click(openButton);

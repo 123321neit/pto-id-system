@@ -33,7 +33,7 @@ export function DemoMaterialsSelector({
       >
         <div className="scope-heading scope-heading--with-action">
           <span>
-            <h3 id="materials-data-title">3. Материалы</h3>
+            <h3 id="materials-data-title">5. Материалы и сертификаты</h3>
             <p className="placeholder-note">
               Выберите материал из библиотеки, чтобы сертификат попал в акт и приложения.
             </p>

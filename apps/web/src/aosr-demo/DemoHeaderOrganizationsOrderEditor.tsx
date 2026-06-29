@@ -35,7 +35,7 @@ export function DemoHeaderOrganizationsOrderEditor({
       <details className="template-data-disclosure" open={isTemplateEditable ? true : undefined}>
         <summary>
           <span>
-            <strong id="act-organizations-title">Организации, участвующие в акте</strong>
+            <strong id="act-organizations-title">3. Представители / подписанты</strong>
             <small>Блоков в печатном порядке: {headerOrganizations.length}</small>
           </span>
           {isTemplateEditable ? <span className="source-chip">{sourceLabel}</span> : null}

@@ -623,7 +623,7 @@ export function DemoAosrWorkspacePage({
                 }}
                 type="button"
               >
-                Шаблон объекта
+                Шаблонные значения
               </button>
             )}
             {isEmbeddedInObjectWorkspace ? (

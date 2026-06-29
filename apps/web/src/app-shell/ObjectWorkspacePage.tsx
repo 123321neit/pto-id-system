@@ -188,6 +188,13 @@ export function ObjectWorkspacePage({
     setActiveSection('sections');
   };
 
+  const openSectionsPage = (): void => {
+    setCreateDocumentPanelOpen(false);
+    setCreateFolderPanelOpen(false);
+    setCreateSectionPanelOpen(false);
+    setActiveSection('sections');
+  };
+
   const createSection = (): void => {
     const sectionName = sectionNameInput.trim();
 
@@ -583,7 +590,7 @@ export function ObjectWorkspacePage({
                   </span>
                   <span className="object-workspace-nav__label">
                     <strong>Шаблонные значения</strong>
-                    <small>Для linked-актов</small>
+                    <small>Для связанных актов</small>
                   </span>
                 </button>
               </>
@@ -630,10 +637,10 @@ export function ObjectWorkspacePage({
             sections={sections}
             selectedSection={selectedSection}
             selectedSectionFolders={selectedSectionFolders}
-            onCreateFolder={openCreateFolderPanel}
             onCreateSection={openCreateSectionPanel}
             onOpenDraft={openDraft}
             onOpenSection={openSection}
+            onOpenSectionsPage={openSectionsPage}
           />
         ) : null}
 
@@ -684,7 +691,6 @@ export function ObjectWorkspacePage({
             drafts={selectedFolderDrafts}
             isCreateDocumentPanelOpen={isCreateDocumentPanelOpen}
             folder={selectedFolder}
-            proposedAosrNumber={proposedAosrNumber}
             sectionName={selectedSection?.name}
             onCloseCreateDocumentPanel={() => {
               setCreateDocumentPanelOpen(false);
@@ -777,7 +783,7 @@ function getSectionBreadcrumb(section: ObjectWorkspaceSection): string {
     case 'section':
       return 'Разделы ИД / Обзор раздела';
     case 'folder':
-      return 'Разделы ИД / Папка ИД';
+      return 'Разделы ИД / Папка';
     case 'intermediate-package':
       return 'Разделы ИД / Промежуточная ИД';
     case 'aosr':
@@ -797,10 +803,10 @@ interface ObjectOverviewProps {
   readonly sections: readonly DemoDocumentationSection[];
   readonly selectedSection: DemoDocumentationSection | undefined;
   readonly selectedSectionFolders: readonly DemoIdFolder[];
-  readonly onCreateFolder: () => void;
   readonly onCreateSection: () => void;
   readonly onOpenDraft: (draft: DemoAosrDraft) => void;
   readonly onOpenSection: (sectionId: DemoDocumentationSectionId) => void;
+  readonly onOpenSectionsPage: () => void;
 }
 
 function ObjectOverview({
@@ -809,10 +815,10 @@ function ObjectOverview({
   sections,
   selectedSection,
   selectedSectionFolders,
-  onCreateFolder,
   onCreateSection,
   onOpenDraft,
   onOpenSection,
+  onOpenSectionsPage,
 }: ObjectOverviewProps): React.JSX.Element {
   return (
     <section className="object-overview" aria-labelledby="object-overview-title">
@@ -857,7 +863,7 @@ function ObjectOverview({
           </div>
           <div className="object-overview__focus-actions">
             <button
-              className="compact-toggle"
+              className="action-button action-button--primary"
               onClick={() => {
                 onOpenSection(selectedSection.id);
               }}
@@ -865,12 +871,8 @@ function ObjectOverview({
             >
               Открыть раздел
             </button>
-            <button
-              className="action-button action-button--primary"
-              onClick={onCreateFolder}
-              type="button"
-            >
-              Создать папку
+            <button className="compact-toggle" onClick={onOpenSectionsPage} type="button">
+              Перейти к разделам ИД
             </button>
           </div>
         </section>
@@ -1365,7 +1367,6 @@ function formatShortDate(isoDate: string): string {
 }
 
 interface CreateDocumentPanelProps {
-  readonly proposedAosrNumber: string;
   readonly selectedSectionName: string | undefined;
   readonly selectedFolder: DemoIdFolder;
   readonly onClose: () => void;
@@ -1373,7 +1374,6 @@ interface CreateDocumentPanelProps {
 }
 
 function CreateDocumentPanel({
-  proposedAosrNumber,
   selectedSectionName,
   selectedFolder,
   onClose,
@@ -1396,18 +1396,21 @@ function CreateDocumentPanel({
       <div className="object-overview__numbering-note">
         <h4>Номер будет присвоен после создания</h4>
         <p>
-          Если в шаблонных значениях раздела включена автоматическая нумерация, mock присвоит номер{' '}
-          <strong>
-            {proposedAosrNumber === '' ? 'после заполнения шаблонных значений' : proposedAosrNumber}
-          </strong>
-          . Если нумерация ручная — номер можно указать в редактировании акта позже.
+          Номер будет назначен после создания акта, если автоматическая нумерация включена в
+          шаблонных значениях раздела. Если нумерация ручная — номер можно указать в редактировании
+          акта.
         </p>
       </div>
-      <ul className="document-type-card-list" aria-label="Тип акта">
+      <ul className="document-type-card-list" role="radiogroup" aria-label="Тип акта">
         {registeredDemoActTypes.map((actType) => (
-          <li className="document-type-card document-type-card--available" key={actType.id}>
+          <li
+            aria-checked="true"
+            className="document-type-card document-type-card--available document-type-card--selected"
+            key={actType.id}
+            role="radio"
+          >
             <span className="document-type-card__icon" aria-hidden="true">
-              {actType.code}
+              ✓
             </span>
             <span className="document-type-card__body">
               <strong>{actType.code}</strong>
@@ -1415,7 +1418,6 @@ function CreateDocumentPanel({
                 {actType.code} — {actType.title}
               </small>
             </span>
-            <span className="status-chip status-chip--active">Выбран</span>
           </li>
         ))}
         <li className="document-type-card document-type-card--disabled" aria-disabled="true">
@@ -1463,7 +1465,6 @@ interface ObjectFolderPageProps {
   readonly drafts: readonly DemoAosrDraft[];
   readonly isCreateDocumentPanelOpen: boolean;
   readonly folder: DemoIdFolder;
-  readonly proposedAosrNumber: string;
   readonly sectionName: string | undefined;
   readonly onCloseCreateDocumentPanel: () => void;
   readonly onCreateAosr: () => void;
@@ -1476,7 +1477,6 @@ function ObjectFolderPage({
   drafts,
   isCreateDocumentPanelOpen,
   folder,
-  proposedAosrNumber,
   sectionName,
   onCloseCreateDocumentPanel,
   onCreateAosr,
@@ -1528,7 +1528,6 @@ function ObjectFolderPage({
 
       {isCreateDocumentPanelOpen ? (
         <CreateDocumentPanel
-          proposedAosrNumber={proposedAosrNumber}
           selectedSectionName={sectionName}
           selectedFolder={folder}
           onClose={onCloseCreateDocumentPanel}

@@ -205,7 +205,7 @@ describe('AOSR live object template model', () => {
             updateDemoObjectDefaultsField(
               demoAosrWorkspace.objectDefaults,
               'defaultComplianceStatement',
-              'Новый live-текст пункта 6.',
+              'Новый live-текст соответствия требованиям.',
             ),
             'defaultWorkContractorName',
             'ООО "Новый исполнитель"',
@@ -226,7 +226,7 @@ describe('AOSR live object template model', () => {
     });
 
     expect(templateFields.objectName).toBe('Новый live-объект.');
-    expect(templateFields.complianceStatement).toBe('Новый live-текст пункта 6.');
+    expect(templateFields.complianceStatement).toBe('Новый live-текст соответствия требованиям.');
     expect(templateFields.workContractorName).toBe('ООО "Новый исполнитель"');
     expect(templateFields.additionalInfo).toBe('Новые live-дополнительные сведения.');
     expect(templateFields.copiesLine).toBe('6');
@@ -288,7 +288,7 @@ describe('AOSR live object template model', () => {
             updateDemoObjectDefaultsField(
               demoAosrWorkspace.objectDefaults,
               'defaultComplianceStatement',
-              'Новый live-текст пункта 6.',
+              'Новый live-текст соответствия требованиям.',
             ),
             'defaultWorkContractorName',
             'ООО "Новый исполнитель"',

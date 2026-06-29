@@ -47,7 +47,7 @@ export function DemoObjectDocumentsEditor({
         <div className="scope-heading scope-heading--with-action">
           <span>
             <p className="section-tag">Пункт 4 акта</p>
-            <h3 id="object-documents-data-title">4. Документы объекта</h3>
+            <h3 id="object-documents-data-title">Исполнительные схемы / документы объекта</h3>
           </span>
           <button
             aria-expanded={isObjectDocumentLibraryOpen}
@@ -61,14 +61,14 @@ export function DemoObjectDocumentsEditor({
         </div>
 
         <p className="helper-note">
-          Выбранный документ появляется в пункте 4. Включение в печатные приложения управляется в
-          отдельной секции ближе к завершению акта.
+          Выбранный документ появляется в документах-основаниях акта. Включение в печатные
+          приложения управляется в отдельной секции ближе к завершению акта.
         </p>
 
         <div className="selected-list" aria-labelledby="selected-object-documents-title">
-          <h4 id="selected-object-documents-title">Документы в пункте 4</h4>
+          <h4 id="selected-object-documents-title">Документы в основаниях акта</h4>
           {selectedObjectDocuments.length > 0 ? (
-            <ul aria-label="Документы пункта 4 текущего акта">
+            <ul aria-label="Документы-основания текущего акта">
               {selectedObjectDocuments.map((document) => (
                 <li key={document.id}>
                   <span>
@@ -126,7 +126,7 @@ export function DemoObjectDocumentsEditor({
                 <dd>{objectDocumentLibrary.length}</dd>
               </div>
               <div>
-                <dt>Выбрано в пункт 4</dt>
+                <dt>Выбрано в основания</dt>
                 <dd>{selectedObjectDocuments.length}</dd>
               </div>
             </dl>

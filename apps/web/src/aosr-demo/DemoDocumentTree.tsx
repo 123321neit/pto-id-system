@@ -29,34 +29,13 @@ export function DemoDocumentTree({
   return (
     <section className="document-tree-panel" aria-labelledby="document-tree-title">
       <div className="panel-heading">
-        <p className="section-kicker">Папка ИД</p>
         <h2 id="document-tree-title">Акты в папке «{folderName ?? 'Рабочая папка'}»</h2>
         <p className="object-folder-panel__note">Для ручной нумерации видно все акты этой папки.</p>
       </div>
 
-      <div className="document-tree" aria-label="Навигация документов папки">
-        <div className="tree-folder">
-          <span className="tree-folder__icon" aria-hidden="true">
-            ▣
-          </span>
-          <span>
-            <strong>{folderName ?? 'Рабочая папка'}</strong>
-            <small>документы и реестр</small>
-          </span>
-        </div>
-
-        <div className="tree-folder tree-folder--nested">
-          <span className="tree-folder__icon" aria-hidden="true">
-            ▤
-          </span>
-          <span>
-            <strong>Документы</strong>
-            <small>{actType.code} / документы папки</small>
-          </span>
-        </div>
-
-        <div className="act-tree-list" role="list" aria-label={`Порядок актов ${actType.code}`}>
-          {drafts.map((draft, index) => (
+      <div className="document-tree" aria-label={`Акты в папке ${folderName ?? 'Рабочая папка'}`}>
+        <div className="act-tree-list" role="list" aria-label={`Акты ${actType.code}`}>
+          {drafts.map((draft) => (
             <button
               aria-pressed={draft.id === selectedDraftId}
               className="act-tree-item"
@@ -79,15 +58,11 @@ export function DemoDocumentTree({
               }}
               type="button"
             >
-              <span className="act-tree-item__drag" aria-hidden="true">
-                ::
-              </span>
-              <span className="act-tree-item__index">{index + 1}</span>
               <span className="act-tree-item__number">
                 {draft.actNumber.trim() === '' ? 'Без номера' : draft.actNumber}
               </span>
               <span className="act-tree-item__meta">
-                <small>{draft.actDate}</small>
+                <small>{formatShortDate(draft.actDate)}</small>
               </span>
             </button>
           ))}
@@ -104,4 +79,14 @@ export function DemoDocumentTree({
       </div>
     </section>
   );
+}
+
+function formatShortDate(isoDate: string): string {
+  const [year, month, day] = isoDate.split('-');
+
+  if (year === undefined || month === undefined || day === undefined) {
+    return isoDate;
+  }
+
+  return `${day}.${month}.${year}`;
 }

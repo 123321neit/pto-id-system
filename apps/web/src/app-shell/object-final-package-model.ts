@@ -238,7 +238,10 @@ export function buildFinalPackageReadiness(
   return {
     issues,
     status,
-    statusLabel: status === 'ready' ? '🟢 Поля заполнены' : '🟡 Есть пустые разделы',
+    statusLabel:
+      status === 'ready'
+        ? 'Файл можно сформировать с текущими значениями'
+        : 'Пустые поля останутся пустыми',
   };
 }
 
