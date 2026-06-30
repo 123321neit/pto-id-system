@@ -5869,7 +5869,7 @@ delete/move/reorder lifecycle or generation was introduced.
 Добавлено/уточнено:
 
 - work start/end dates are printed as Russian date lines, for example
-  `"01" сентября 2026 г.`;
+  `«01» сентября 2026 г.`;
 - point 7 stores/prints only the next-work fragment after the static template
   prefix `Разрешается производство последующих работ по:`;
 - work description, axes and elevations are joined without `.;` artefacts;
@@ -5926,3 +5926,31 @@ delete/move/reorder lifecycle or generation was introduced.
   signature behavior are covered structurally through DOCX XML and tests;
 - the renderer remains a narrow frontend-only handler for the current tagged
   AOSR template, not a universal Word-template engine.
+
+### 2026-06-30 — AOSR preview parity, list captions and act deletion
+
+- Статус: `Frontend-only AOSR DOCX/preview parity and act deletion`
+- Описание: applied the agreed user corrections after reviewing the current
+  tagged AOSR template and the downloaded demo act.
+
+Добавлено/уточнено:
+
+- Russian date lines now use guillemets in UI/preview/DOCX, for example
+  `«04» сентября 2026 г.`;
+- DOCX post-processing keeps explanatory subscript/caption paragraphs for
+  point 3, point 4 and applications to one occurrence after the generated list;
+- the DOCX applications block receives keep markers so `Приложения:` is not
+  orphaned from the list during normal Word pagination;
+- the HTML preview uses the real template captions and the final signature
+  structure from the downloaded DOCX instead of the earlier simplified
+  three-column preview;
+- editor section numbering is now sequential: 8 `Последующие работы`, 9
+  `Дополнительные сведения / экземпляры / подписи`, 10 `Приложения`;
+- the act editor has `Удалить акт` in `Действия с актом`; deletion requires
+  confirmation and removes the draft from the object folder list as well as the
+  draft collection.
+
+Ограничения:
+
+- the DOCX template file and its tags were not edited;
+- no PDF/ZIP/backend/storage work was added.

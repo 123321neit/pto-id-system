@@ -18,7 +18,7 @@ export function DemoActApplicationsSection({
     >
       <div className="scope-heading">
         <p className="section-tag">Финальная часть акта</p>
-        <h3 id="act-applications-title">9. Приложения</h3>
+        <h3 id="act-applications-title">10. Приложения</h3>
         <p className="helper-note">
           Все приложения включены по умолчанию. Чекбокс управляет только итоговым перечнем и
           предпросмотром, не снимая исходный материал или документ с акта.

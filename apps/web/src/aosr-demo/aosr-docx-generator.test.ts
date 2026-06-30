@@ -25,7 +25,8 @@ describe('renderAosrDocxTemplateBytes', () => {
       printState: createPrintState(),
       templateBytes,
     });
-    const { documentXml, renderedEntries } = readRenderedDocumentXml(renderedBytes);
+    const { documentParagraphs, documentXml, documentXmlParagraphs, renderedEntries } =
+      readRenderedDocumentXml(renderedBytes);
 
     expect(renderedEntries['[Content_Types].xml']).toBeDefined();
 
@@ -38,9 +39,29 @@ describe('renderAosrDocxTemplateBytes', () => {
     expect(documentXml).toContain('ПТО Монтаж');
     expect(documentXml).toContain('Воздуховоды оцинкованные');
     expect(documentXml).toContain('Иванов И.И.');
-    expect(documentXml).toContain('&quot;01&quot; сентября 2026 г.');
+    expect(documentXml).toContain('«01» сентября 2026 г.');
     expect(documentXml).toContain('приказ № 1');
     expect(documentXml).toContain('застройщик');
+    expect(
+      countParagraphsWithText(documentParagraphs, 'наименование строительных материалов'),
+    ).toBe(1);
+    expect(
+      countParagraphsWithText(documentParagraphs, 'проведенных в процессе строительного контроля'),
+    ).toBe(1);
+    expect(
+      countParagraphsWithText(
+        documentParagraphs,
+        'исполнительные схемы и чертежи, результаты экспертиз, обследований, лабораторных и иных испытаний',
+      ),
+    ).toBe(2);
+    expect(
+      getRequiredParagraphXml(documentXmlParagraphs, 'Приложения:').includes('<w:keepNext/>'),
+    ).toBe(true);
+    expect(
+      getLastRequiredParagraphXml(documentXmlParagraphs, 'Представитель подрядчика:').includes(
+        '<w:keepNext/>',
+      ),
+    ).toBe(true);
   });
 
   it('renders the current demo AOSR without known formatting regressions', () => {
@@ -77,8 +98,8 @@ describe('renderAosrDocxTemplateBytes', () => {
     expect(documentXml).not.toContain('<<');
     expect(documentXml).not.toContain('>>');
     expect(documentXml).toContain('№ ОВ-1');
-    expect(documentXml).toContain('&quot;01&quot; сентября 2026 г.');
-    expect(documentXml).toContain('&quot;03&quot; сентября 2026 г.');
+    expect(documentXml).toContain('«01» сентября 2026 г.');
+    expect(documentXml).toContain('«03» сентября 2026 г.');
     expect(documentXml).not.toContain('2026-09-01');
     expect(documentXml).not.toContain('2026-09-03');
     expect(documentXml).not.toContain('Разрешается производство последующих работ по: Разрешается');
@@ -144,7 +165,7 @@ function getRequiredParagraphXml(
 ): string {
   const paragraph = paragraphs.find(
     (currentParagraph) =>
-      currentParagraph.includes(textFragment) &&
+      getWordParagraphText(currentParagraph).includes(textFragment) &&
       (requiredXmlFragment === '' || currentParagraph.includes(requiredXmlFragment)),
   );
 
@@ -155,14 +176,32 @@ function getRequiredParagraphXml(
   return paragraph;
 }
 
+function countParagraphsWithText(paragraphs: readonly string[], textFragment: string): number {
+  return paragraphs.filter((paragraph) => paragraph.includes(textFragment)).length;
+}
+
+function getLastRequiredParagraphXml(paragraphs: readonly string[], textFragment: string): string {
+  const paragraph = [...paragraphs]
+    .reverse()
+    .find((currentParagraph) => getWordParagraphText(currentParagraph).includes(textFragment));
+
+  if (paragraph === undefined) {
+    throw new Error(`Rendered DOCX paragraph is missing: ${textFragment}`);
+  }
+
+  return paragraph;
+}
+
 function getWordParagraphTexts(documentXml: string): readonly string[] {
-  return getWordParagraphXmlFragments(documentXml)
-    .map((paragraphXml) => paragraphXml.replace(/<[^>]+>/gu, '').trim())
-    .filter(Boolean);
+  return getWordParagraphXmlFragments(documentXml).map(getWordParagraphText).filter(Boolean);
 }
 
 function getWordParagraphXmlFragments(documentXml: string): readonly string[] {
   return documentXml.match(/<w:p\b[\s\S]*?<\/w:p>/gu) ?? [];
+}
+
+function getWordParagraphText(paragraphXml: string): string {
+  return paragraphXml.replace(/<[^>]+>/gu, '').trim();
 }
 
 function getRequiredDemoDraft() {
@@ -178,10 +217,13 @@ function getRequiredDemoDraft() {
 function createPrintState(): AosrPrintState {
   return {
     applications: {
-      items: [{ displayText: 'Приложение 1 — фотофиксация работ' }],
+      items: [
+        { displayText: 'Приложение 1 — фотофиксация работ' },
+        { displayText: 'Приложение 2 — исполнительная схема' },
+      ],
     },
     confirmationDocuments: {
-      items: [{ displayText: 'Исполнительная схема ИС-1' }],
+      items: [{ displayText: 'Исполнительная схема ИС-1' }, { displayText: 'Журнал работ ЖР-1' }],
     },
     counterparties: [
       {
@@ -197,7 +239,10 @@ function createPrintState(): AosrPrintState {
       number: 'ОВ-1',
     },
     materials: {
-      items: [{ displayText: 'Воздуховоды оцинкованные 0,7 мм' }],
+      items: [
+        { displayText: 'Воздуховоды оцинкованные 0,7 мм' },
+        { displayText: 'Крепежные элементы КМ-12' },
+      ],
     },
     object: {
       name: 'Поликлиника корпус А',

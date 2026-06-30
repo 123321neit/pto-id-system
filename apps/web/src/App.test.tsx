@@ -1012,6 +1012,24 @@ describe('App shell mock navigation', () => {
     expect(screen.getByRole('button', { name: 'Предпросмотр' })).toBeTruthy();
   });
 
+  it('deletes an AOSR draft from the selected object folder after confirmation', async () => {
+    const user = userEvent.setup();
+    const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true);
+
+    render(<App />);
+    await user.click(getFirstOpenObjectButton());
+    await openSeptemberAosrDocument(user);
+
+    const actions = screen.getByRole('region', { name: 'Действия с актом' });
+
+    await user.click(within(actions).getByRole('button', { name: 'Удалить акт' }));
+
+    expect(confirmSpy).toHaveBeenCalledWith('Удалить акт ОВ-1? Акт будет удалён из текущей папки.');
+    expect(screen.getByRole('heading', { name: 'Сентябрь 2026' })).toBeTruthy();
+    expect(screen.getByText('В этой папке пока нет актов')).toBeTruthy();
+    expect(screen.queryByRole('button', { name: /ОВ-1/u })).toBeNull();
+  });
+
   it('keeps representatives in the global library instead of duplicating them in object navigation', async () => {
     const user = userEvent.setup();
 

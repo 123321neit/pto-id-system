@@ -10,11 +10,11 @@ describe('buildAosrDocxTemplateData', () => {
     expect(templateData.document.number).toBe('ОВ-1');
     expect(templateData.document.numberLine).toBe('№ ОВ-1');
     expect(templateData.document.date).toBe('2026-09-03');
-    expect(templateData.document.dateLine).toBe('"03" сентября 2026 г.');
+    expect(templateData.document.dateLine).toBe('«03» сентября 2026 г.');
     expect(templateData.object.name).toBe('Поликлиника, корпус А');
     expect(templateData.materials.items[0]?.displayText).toBe('Воздуховоды оцинкованные');
-    expect(templateData.work.startDateLine).toBe('"01" сентября 2026 г.');
-    expect(templateData.work.endDateLine).toBe('"03" сентября 2026 г.');
+    expect(templateData.work.startDateLine).toBe('«01» сентября 2026 г.');
+    expect(templateData.work.endDateLine).toBe('«03» сентября 2026 г.');
   });
 
   it('does not block empty numbers and leaves numberLine empty for the template', () => {
@@ -31,7 +31,7 @@ describe('buildAosrDocxTemplateData', () => {
 
     expect(templateData.document.number).toBe('   ');
     expect(templateData.document.numberLine).toBe('');
-    expect(templateData.document.dateLine).toBe('"04" сентября 2026 г.');
+    expect(templateData.document.dateLine).toBe('«04» сентября 2026 г.');
   });
 });
 

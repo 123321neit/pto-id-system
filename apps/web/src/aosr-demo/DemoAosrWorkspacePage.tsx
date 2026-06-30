@@ -96,6 +96,7 @@ interface DemoAosrWorkspacePageProps {
   readonly onDraftsChange?: (drafts: readonly DemoAosrDraft[]) => void;
   readonly onCopySectionTemplate?: () => void;
   readonly onCreateActInFolder?: () => void;
+  readonly onDeleteDraft?: (draftId: string, nextSelectedDraftId: string) => void;
   readonly onPasteSectionTemplate?: () => void;
   readonly onRenumberSectionDrafts?: () => void;
   readonly onSectionTemplateSettingsChange?: (
@@ -128,6 +129,7 @@ export function DemoAosrWorkspacePage({
   onDraftsChange,
   onCopySectionTemplate,
   onCreateActInFolder,
+  onDeleteDraft,
   onPasteSectionTemplate,
   onRenumberSectionDrafts,
   onSectionTemplateSettingsChange,
@@ -278,6 +280,25 @@ export function DemoAosrWorkspacePage({
 
   const handleDownloadSelectedAosrDocx = (): void => {
     void downloadSelectedAosrDocx();
+  };
+
+  const deleteSelectedDraft = (): void => {
+    const currentDraftId = selectedDraft.id;
+    const nextSelectedDraftId =
+      visibleDrafts.find((draft) => draft.id !== currentDraftId)?.id ?? '';
+    const shouldDelete = window.confirm(
+      `Удалить акт ${selectedDocumentLabel}? Акт будет удалён из текущей папки.`,
+    );
+
+    if (!shouldDelete) {
+      return;
+    }
+
+    commitDrafts((currentDrafts) => currentDrafts.filter((draft) => draft.id !== currentDraftId));
+    onDeleteDraft?.(currentDraftId, nextSelectedDraftId);
+    setSelectedDraftId(nextSelectedDraftId);
+    setDocxDownloadError('');
+    setActiveActMode('edit');
   };
 
   const updateObjectDefaults = (field: DemoAosrObjectDefaultsField, value: string): void => {
@@ -628,6 +649,50 @@ export function DemoAosrWorkspacePage({
     );
   }
 
+  if (visibleDrafts.length === 0) {
+    return (
+      <section
+        aria-label="Рабочая область АОСР"
+        className={`demo-shell${isEmbeddedInObjectWorkspace ? ' demo-shell--embedded' : ''}`}
+      >
+        <section className="workspace-header" aria-labelledby="workspace-title">
+          <div className="workspace-header__main">
+            <p className="demo-pill">
+              {isEmbeddedInObjectWorkspace ? 'Папка ИД' : demoAosrWorkspace.demoNotice}
+            </p>
+            <h1 id="workspace-title">В папке нет актов</h1>
+            <p className="workspace-header__meta">
+              {sectionName === undefined ? null : <span>{sectionName}</span>}
+              {folderName === undefined ? null : <span>{folderName}</span>}
+            </p>
+          </div>
+          <div className="workspace-header__aside">
+            <div className="workspace-actions">
+              {onBackToObjects === undefined ? null : (
+                <button className="secondary-action" onClick={onBackToObjects} type="button">
+                  Назад к объектам
+                </button>
+              )}
+              {onCreateActInFolder === undefined ? null : (
+                <button
+                  className="secondary-action secondary-action--accent"
+                  onClick={onCreateActInFolder}
+                  type="button"
+                >
+                  Создать акт
+                </button>
+              )}
+            </div>
+          </div>
+        </section>
+        <section className="empty-state-card" aria-label="Пустая папка актов">
+          <h2>Акт удалён</h2>
+          <p>В этой папке пока нет актов. Создайте новый акт, когда будете готовы.</p>
+        </section>
+      </section>
+    );
+  }
+
   return (
     <section
       aria-label="Рабочая область АОСР"
@@ -809,6 +874,7 @@ export function DemoAosrWorkspacePage({
                 onChangeDocumentTypeFilter={setObjectDocumentTypeFilter}
                 onChangeManualRepresentativeForm={updateManualRepresentativeForm}
                 onChangeMaterialSearch={setMaterialSearch}
+                onDeleteAct={deleteSelectedDraft}
                 onDownloadDocx={handleDownloadSelectedAosrDocx}
                 onDragRepresentativeEnd={() => {
                   setDraggedRepresentativeId(null);

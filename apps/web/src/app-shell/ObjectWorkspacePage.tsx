@@ -379,6 +379,24 @@ export function ObjectWorkspacePage({
     setActiveSection('aosr');
   };
 
+  const deleteAosrDraftFromCurrentFolder = (draftId: string, nextSelectedDraftId: string): void => {
+    setFolders((currentFolders) =>
+      currentFolders.map((folder) =>
+        folder.draftIds.includes(draftId)
+          ? {
+              ...folder,
+              draftIds: folder.draftIds.filter((currentDraftId) => currentDraftId !== draftId),
+            }
+          : folder,
+      ),
+    );
+    setSelectedDraftId(nextSelectedDraftId);
+
+    if (nextSelectedDraftId === '') {
+      setActiveSection('folder');
+    }
+  };
+
   const openObjectSettings = (): void => {
     if (selectedSection === undefined) {
       openCreateSectionPanel();
@@ -870,6 +888,7 @@ export function ObjectWorkspacePage({
             isSectionTemplateSettingsPage={activeSection === 'settings'}
             sectionTemplateSettings={selectedSectionTemplateSettings}
             onDraftsChange={setDrafts}
+            onDeleteDraft={deleteAosrDraftFromCurrentFolder}
             onSectionTemplateSettingsChange={updateSelectedSectionTemplateSettings}
             lastTemplateCopyMessage={lastTemplateCopyMessage}
             folderName={selectedFolder?.name}

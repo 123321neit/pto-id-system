@@ -3246,6 +3246,39 @@ h3 {
   color: #1d4ed8;
 }
 
+.empty-state-card {
+  display: grid;
+  gap: 8px;
+  border: 1px solid #d7e2ec;
+  border-radius: 14px;
+  background: #ffffff;
+  padding: 22px;
+  box-shadow: 0 18px 40px rgb(37 48 54 / 8%);
+}
+
+.empty-state-card h2,
+.empty-state-card p {
+  margin: 0;
+}
+
+.empty-state-card h2 {
+  color: #172033;
+  font-size: 1rem;
+}
+
+.empty-state-card p {
+  color: #5d6b76;
+  font-size: 0.88rem;
+  line-height: 1.5;
+}
+
+.act-download-actions__buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
 .print-header-field {
   display: grid;
   gap: 5px;
@@ -3733,6 +3766,12 @@ h3 {
   background: #2563eb;
   color: #ffffff;
   box-shadow: 0 10px 18px rgb(37 99 235 / 16%);
+}
+
+.compact-toggle--danger {
+  border-color: #fecaca;
+  background: #fff1f2;
+  color: #b91c1c;
 }
 
 .act-editor-card--featured .compact-toggle--accent,
@@ -5194,7 +5233,7 @@ h3 {
   gap: 2px;
 }
 
-.act-page__signature-table {
+.act-page__signature-list {
   display: grid;
   gap: 7px;
 }
@@ -5204,15 +5243,16 @@ h3 {
   gap: 2px;
 }
 
-.act-page__signature-person-row,
-.act-page__signature-caption-row {
+.act-page__signature-line-row {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(92px, 0.22fr) minmax(120px, 0.3fr);
+  grid-template-columns: minmax(0, 1fr) minmax(120px, 0.3fr);
   gap: 18px;
   align-items: end;
+  border-bottom: 1px solid #111111;
+  padding-bottom: 1px;
 }
 
-.act-page__signature-person-row span {
+.act-page__signature-line-row span {
   color: #111111;
   font-family: 'Times New Roman', Times, serif;
   font-size: 13.3px;
@@ -5224,23 +5264,8 @@ h3 {
 }
 
 .act-page__signature-name {
-  border-bottom: 1px solid #111111;
   font-style: italic;
-  text-align: center;
-}
-
-.act-page__signature-line {
-  border-bottom: 1px solid #111111;
-  min-height: 16px;
-}
-
-.act-page__signature-caption-row span {
-  color: #4c4c4c;
-  font-family: 'Times New Roman', Times, serif;
-  font-size: 9.3px;
-  font-style: italic;
-  line-height: 1.12;
-  text-align: center;
+  text-align: right;
 }
 
 .act-page__after-body {
@@ -5261,6 +5286,8 @@ h3 {
 .act-page__applications {
   display: grid;
   gap: 2px;
+  break-inside: avoid;
+  page-break-inside: avoid;
 }
 
 .act-page__official-section--final {
@@ -5625,8 +5652,7 @@ h3 {
   }
 
   .act-page__number-date-row,
-  .act-page__signature-person-row,
-  .act-page__signature-caption-row {
+  .act-page__signature-line-row {
     grid-template-columns: 1fr;
   }
 

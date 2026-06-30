@@ -114,8 +114,15 @@ export async function downloadAosrDocx(
 }
 
 function renderAosrDocxTemplateXml(xml: string, data: AosrDocxTemplateData): string {
-  return stabilizeAosrSignatureParagraphs(
-    renderTemplateFragment(normalizeSplitWordTemplateTags(xml), data as unknown as TemplateContext),
+  const renderedXml = renderTemplateFragment(
+    normalizeSplitWordTemplateTags(xml),
+    data as unknown as TemplateContext,
+  );
+
+  return stabilizeAosrFinalSignatureBlock(
+    stabilizeAosrApplicationsBlock(
+      deduplicateAosrListCaptionParagraphs(stabilizeAosrSignatureParagraphs(renderedXml)),
+    ),
   );
 }
 
@@ -424,12 +431,140 @@ function stabilizeAosrSignatureParagraphs(xml: string): string {
       return paragraph;
     }
 
-    if (!paragraph.includes('<w:pPr>') || paragraph.includes('<w:keepNext')) {
+    return addWordParagraphKeepControls(paragraph);
+  });
+}
+
+function deduplicateAosrListCaptionParagraphs(xml: string): string {
+  const paragraphs = getWordParagraphXmlFragments(xml);
+  const lastCaptionParagraphIndexes = new Map<string, number>();
+
+  paragraphs.forEach((paragraph, paragraphIndex) => {
+    const captionKey = getAosrListCaptionKey(getWordParagraphText(paragraph));
+
+    if (captionKey !== null) {
+      lastCaptionParagraphIndexes.set(captionKey, paragraphIndex);
+    }
+  });
+
+  let paragraphIndex = -1;
+
+  return xml.replace(/<w:p\b[\s\S]*?<\/w:p>/gu, (paragraph) => {
+    paragraphIndex += 1;
+
+    const captionKey = getAosrListCaptionKey(getWordParagraphText(paragraph));
+
+    if (captionKey === null) {
       return paragraph;
     }
 
-    return paragraph.replace('<w:pPr>', '<w:pPr><w:keepNext/><w:keepLines/>');
+    return lastCaptionParagraphIndexes.get(captionKey) === paragraphIndex ? paragraph : '';
   });
+}
+
+function stabilizeAosrApplicationsBlock(xml: string): string {
+  let isInsideApplicationsBlock = false;
+
+  return xml.replace(/<w:p\b[\s\S]*?<\/w:p>/gu, (paragraph) => {
+    const paragraphText = getWordParagraphText(paragraph);
+
+    if (paragraphText === 'Приложения:') {
+      isInsideApplicationsBlock = true;
+      return addWordParagraphKeepControls(paragraph);
+    }
+
+    if (!isInsideApplicationsBlock) {
+      return paragraph;
+    }
+
+    if (getAosrListCaptionKey(paragraphText) === 'applications') {
+      isInsideApplicationsBlock = false;
+      return paragraph;
+    }
+
+    return paragraphText === '' ? paragraph : addWordParagraphKeepControls(paragraph);
+  });
+}
+
+function stabilizeAosrFinalSignatureBlock(xml: string): string {
+  let hasSeenApplicationsHeading = false;
+  let isInsideFinalSignatureBlock = false;
+
+  return xml.replace(/<w:p\b[\s\S]*?<\/w:p>/gu, (paragraph) => {
+    const paragraphText = getWordParagraphText(paragraph);
+
+    if (paragraphText === 'Приложения:') {
+      hasSeenApplicationsHeading = true;
+      return paragraph;
+    }
+
+    if (hasSeenApplicationsHeading && getAosrListCaptionKey(paragraphText) === 'applications') {
+      isInsideFinalSignatureBlock = true;
+      return paragraph;
+    }
+
+    if (!isInsideFinalSignatureBlock) {
+      return paragraph;
+    }
+
+    return paragraphText.endsWith(':') || paragraph.includes('<w:pBdr>')
+      ? addWordParagraphKeepControls(paragraph)
+      : paragraph;
+  });
+}
+
+function getAosrListCaptionKey(paragraphText: string): string | null {
+  const normalizedText = paragraphText.trim().replace(/\s+/gu, ' ');
+
+  if (!normalizedText.startsWith('(')) {
+    return null;
+  }
+
+  if (normalizedText.includes('наименование строительных материалов')) {
+    return 'materials';
+  }
+
+  if (normalizedText.includes('проведенных в процессе строительного контроля')) {
+    return 'confirmation-documents';
+  }
+
+  if (
+    normalizedText.includes('исполнительные схемы и чертежи') &&
+    normalizedText.includes('результаты экспертиз') &&
+    normalizedText.includes('иных испытаний')
+  ) {
+    return 'applications';
+  }
+
+  return null;
+}
+
+function addWordParagraphKeepControls(paragraph: string): string {
+  const keepControls = [
+    paragraph.includes('<w:keepNext') ? '' : '<w:keepNext/>',
+    paragraph.includes('<w:keepLines') ? '' : '<w:keepLines/>',
+  ].join('');
+
+  if (keepControls === '') {
+    return paragraph;
+  }
+
+  if (paragraph.includes('<w:pPr>')) {
+    return paragraph.replace('<w:pPr>', `<w:pPr>${keepControls}`);
+  }
+
+  return paragraph.replace(/(<w:p\b[^>]*>)/u, `$1<w:pPr>${keepControls}</w:pPr>`);
+}
+
+function getWordParagraphText(paragraph: string): string {
+  return paragraph
+    .replace(/<[^>]+>/gu, '')
+    .trim()
+    .replace(/\s+/gu, ' ');
+}
+
+function getWordParagraphXmlFragments(documentXml: string): readonly string[] {
+  return documentXml.match(/<w:p\b[\s\S]*?<\/w:p>/gu) ?? [];
 }
 
 function findLastWordParagraphStart(template: string, beforeIndex: number): number {

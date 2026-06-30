@@ -2,6 +2,24 @@ import type { DemoAosrFormVariantMetadata } from '../act-types/act-types.js';
 import type { AosrPrintState } from './demo-aosr-workspace.js';
 import { formatDocumentDate } from './demo-aosr-ui.js';
 
+const objectNameCaption =
+  '(наименование объекта капитального строительства в соответствии с проектной документацией, почтовый или строительный адрес объекта капитального строительства)';
+const workContractorCaption =
+  '(полное и (или) сокращенное наименование или фамилия, имя, отчество (последнее – при наличии) лица, выполнившего работы, подлежащие освидетельствованию)';
+const projectDocumentationCaption =
+  '(номер, другие реквизиты чертежа, наименование проектной и (или) рабочей документации, сведения о лицах, осуществляющих подготовку раздела проектной и (или) рабочей документации)';
+const materialsCaption =
+  '(наименование строительных материалов (изделий), реквизиты сертификатов и (или) других документов, подтверждающих их качество и безопасность, в случае если необходимо указывать более 5 документов, указывается ссылка на их реестр, который является неотъемлемой частью акта)';
+const confirmationDocumentsCaption =
+  '(исполнительные схемы и чертежи, результаты экспертиз, обследований, лабораторных и иных испытаний выполненных работ, проведенных в процессе строительного контроля)';
+const complianceCaption =
+  '(наименования и структурные единицы технических регламентов, иных нормативных правовых актов, разделы проектной и (или) рабочей документации)';
+const nextWorksCaption =
+  '(наименование работ, строительных конструкций, участков сетей инженерно-технического обеспечения)';
+const applicationsCaption =
+  '(исполнительные схемы и чертежи, результаты экспертиз, обследований, лабораторных и иных испытаний)';
+const signatureCaption = '(должность, фамилия, инициалы, подпись)';
+
 interface DemoAosrPreviewProps {
   readonly formVariant: DemoAosrFormVariantMetadata;
   readonly printState: AosrPrintState;
@@ -28,6 +46,7 @@ export function DemoAosrPreview({
                 <p className="act-page__field-line act-page__object-line">
                   {printState.object.name}
                 </p>
+                <p className="act-page__caption">{objectNameCaption}</p>
               </div>
 
               {printState.counterparties.map((counterparty, index) => (
@@ -87,16 +106,14 @@ export function DemoAosrPreview({
                 произвели осмотр работ, выполненных{' '}
                 <span className="act-page__print-value">{printState.work.contractorName}</span>
               </p>
-              <p className="act-page__caption">
-                (наименование лица, выполнившего работы, подлежащие освидетельствованию)
-              </p>
+              <p className="act-page__caption">{workContractorCaption}</p>
               <p>и составили настоящий акт о нижеследующем:</p>
             </section>
 
             <section className="act-page__official-section" aria-label="Скрытые работы">
               <p>
                 <span className="act-page__item-label">
-                  1. К освидетельствованию предъявлены следующие работы:
+                  1.К освидетельствованию предъявлены следующие работы:
                 </span>{' '}
                 <span className="act-page__print-value">{printState.work.description}</span>
               </p>
@@ -106,18 +123,16 @@ export function DemoAosrPreview({
             <section className="act-page__official-section" aria-label="Проектная документация">
               <p>
                 <span className="act-page__item-label">
-                  2. Работы выполнены по проектной документации:
+                  2.Работы выполнены по проектной документации:
                 </span>{' '}
                 <span className="act-page__print-value">{printState.project.documentation}</span>
               </p>
-              <p className="act-page__caption">
-                (номер, другие реквизиты чертежа, наименование проектной и рабочей документации)
-              </p>
+              <p className="act-page__caption">{projectDocumentationCaption}</p>
             </section>
 
             <section className="act-page__official-section" aria-label="Материалы и сертификаты">
               <p>
-                <span className="act-page__item-label">3. При выполнении работ применены:</span>
+                <span className="act-page__item-label">3.При выполнении работ применены:</span>
               </p>
               {printState.materials.items.length > 0 ? (
                 <div className="act-page__inline-list">
@@ -130,15 +145,13 @@ export function DemoAosrPreview({
               ) : (
                 <p className="act-page__field-line" aria-label="Материалы не указаны" />
               )}
-              <p className="act-page__caption">
-                (наименование материалов и реквизиты документов, подтверждающих качество)
-              </p>
+              <p className="act-page__caption">{materialsCaption}</p>
             </section>
 
             <section className="act-page__official-section" aria-label="Документы соответствия">
               <p>
                 <span className="act-page__item-label">
-                  4. Предъявлены документы, подтверждающие соответствие работ предъявляемым к ним
+                  4.Предъявлены документы, подтверждающие соответствие работ предъявляемым к ним
                   требованиям:
                 </span>
               </p>
@@ -153,14 +166,12 @@ export function DemoAosrPreview({
               ) : (
                 <p className="act-page__field-line" aria-label="Документы не указаны" />
               )}
-              <p className="act-page__caption">
-                (исполнительные схемы, результаты обследований, журналы и иные материалы)
-              </p>
+              <p className="act-page__caption">{confirmationDocumentsCaption}</p>
             </section>
 
             <section className="act-page__official-section" aria-label="Период работ">
               <p>
-                <span className="act-page__item-label">5. Даты:</span>
+                <span className="act-page__item-label">5.Даты:</span>
               </p>
               <p>
                 начала работ{' '}
@@ -177,24 +188,20 @@ export function DemoAosrPreview({
             </section>
             <section className="act-page__official-section" aria-label="Соответствие работ">
               <p>
-                <span className="act-page__item-label">6. Работы выполнены в соответствии с:</span>{' '}
+                <span className="act-page__item-label">6.Работы выполнены в соответствии с:</span>{' '}
                 <span className="act-page__print-value">{printState.project.compliance}</span>
               </p>
-              <p className="act-page__caption">
-                (наименования технических регламентов, норм и разделов проектной документации)
-              </p>
+              <p className="act-page__caption">{complianceCaption}</p>
             </section>
 
             <section className="act-page__official-section" aria-label="Последующие работы">
               <p>
                 <span className="act-page__item-label">
-                  7. Разрешается производство последующих работ по:
+                  7.Разрешается производство последующих работ по:
                 </span>{' '}
                 <span className="act-page__print-value">{printState.work.nextWorks}</span>
               </p>
-              <p className="act-page__caption">
-                (наименование работ, конструкций и участков сетей)
-              </p>
+              <p className="act-page__caption">{nextWorksCaption}</p>
             </section>
 
             <section className="act-page__after-body" aria-label="Сведения и приложения">
@@ -222,6 +229,7 @@ export function DemoAosrPreview({
                     <p className="act-page__field-line" aria-label="Приложения не указаны" />
                   )}
                 </div>
+                <p className="act-page__caption">{applicationsCaption}</p>
               </div>
             </section>
 
@@ -229,7 +237,7 @@ export function DemoAosrPreview({
               className="act-page__signature-section act-page__official-section--final"
               aria-label="Подписи представителей"
             >
-              <div className="act-page__signature-table">
+              <div className="act-page__signature-list">
                 {printState.representatives.groups.map((group, groupIndex) => (
                   <div
                     className="act-page__signature-block"
@@ -243,16 +251,11 @@ export function DemoAosrPreview({
                           memberIndex,
                         )}`}
                       >
-                        <div className="act-page__signature-person-row">
+                        <p className="act-page__signature-line-row">
                           <span className="act-page__signature-person">{member.signatureText}</span>
-                          <span className="act-page__signature-line" aria-hidden="true" />
                           <span className="act-page__signature-name">{member.signatureName}</span>
-                        </div>
-                        <div className="act-page__signature-caption-row">
-                          <span>(должность, организация)</span>
-                          <span>(подпись)</span>
-                          <span>(фамилия, инициалы)</span>
-                        </div>
+                        </p>
+                        <p className="act-page__caption">{signatureCaption}</p>
                       </div>
                     ))}
                   </div>

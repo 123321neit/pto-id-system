@@ -104,7 +104,7 @@ replacement had started working. The current frontend-only formatter keeps the
 same data chain and fixes those issues before template rendering:
 
 - work start/end dates are converted from raw ISO values to Russian date lines
-  like `"01" сентября 2026 г.`;
+  like `«01» сентября 2026 г.`;
 - the next-works value is normalized to the fragment expected after the static
   template prefix `Разрешается производство последующих работ по:`;
 - work description, axes and elevation ranges are joined after trimming trailing
@@ -155,3 +155,20 @@ inside a separate `Действия с актом` area with a reminder to check
 work period, materials, applications and signatories. Linked/manual wording in
 the act editor uses user-facing terms such as `Данные из раздела` and
 `Редактировать только для этого акта`.
+
+## Preview parity and delete action notes
+
+- The preview should mirror the current static DOCX template wording, not a
+  shortened UX summary. Captions for the object, project documentation,
+  materials, confirmation documents, compliance, next works, applications and
+  final signatures intentionally use the same text as the template.
+- Date formatting is shared and uses Russian guillemets: `«04» сентября 2026 г.`.
+- List captions for point 3, point 4 and applications are deduplicated after
+  DOCX rendering because Word stores the closing `foreach` tag in the same
+  paragraph as the caption. The template asset stays untouched.
+- The `Приложения:` heading and application lines receive keep markers in DOCX
+  and `break-inside: avoid` in preview to avoid an orphaned heading in normal
+  page-break cases.
+- `Удалить акт` is a confirmed destructive UI action. In object workspace mode
+  it must remove the draft from both the draft collection and the containing
+  folder `draftIds`.

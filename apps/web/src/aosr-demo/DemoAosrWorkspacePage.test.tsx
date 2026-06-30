@@ -188,6 +188,31 @@ describe('DemoAosrWorkspacePage', () => {
     expect(screen.getByRole('heading', { name: 'Редактирование акта ОВ-1' })).toBeTruthy();
   });
 
+  it('deletes the selected act only after user confirmation', async () => {
+    const user = userEvent.setup();
+    const confirmSpy = vi
+      .spyOn(window, 'confirm')
+      .mockReturnValueOnce(false)
+      .mockReturnValueOnce(true);
+
+    renderDemoWorkspace();
+
+    const actions = screen.getByRole('region', { name: 'Действия с актом' });
+    const deleteButton = within(actions).getByRole('button', { name: 'Удалить акт' });
+
+    await user.click(deleteButton);
+
+    expect(confirmSpy).toHaveBeenCalledWith('Удалить акт ОВ-1? Акт будет удалён из текущей папки.');
+    expect(screen.getByRole('heading', { name: 'Редактирование акта ОВ-1' })).toBeTruthy();
+
+    await user.click(deleteButton);
+
+    expect(screen.queryByRole('heading', { name: 'Редактирование акта ОВ-1' })).toBeNull();
+    expect(screen.getByRole('heading', { name: 'Редактирование акта ОВ-2' })).toBeTruthy();
+    expect(screen.queryByLabelText('Текущий акт: ОВ-1')).toBeNull();
+    expect(screen.getByLabelText('Текущий акт: ОВ-2')).toBeTruthy();
+  });
+
   it('opens and closes the document preview drawer with existing preview content', async () => {
     const user = userEvent.setup();
 
@@ -201,7 +226,7 @@ describe('DemoAosrWorkspacePage', () => {
 
     expect(drawerContext.textContent).toContain('Акт ОВ-1');
     expect(drawerContext.textContent).toContain('АОСР 1');
-    expect(drawerContext.textContent).toContain('"04" сентября 2026 г.');
+    expect(drawerContext.textContent).toContain('«04» сентября 2026 г.');
     expect(drawerContext.textContent).toContain('4 приложений');
     expect(within(preview).getByText('Страница 1')).toBeTruthy();
     expect(within(preview).queryByText('Страница 2')).toBeNull();
@@ -369,7 +394,7 @@ describe('DemoAosrWorkspacePage', () => {
       'Лицо, выполнившее работы',
       '6. Документы-основания',
       '7. Соответствие работ требованиям',
-      '10. Дополнительные сведения / экземпляры / подписи',
+      '9. Дополнительные сведения / экземпляры / подписи',
     ];
 
     for (const sectionName of templateSections) {
@@ -599,7 +624,7 @@ describe('DemoAosrWorkspacePage', () => {
       '7. Соответствие работ требованиям',
       '8. Последующие работы',
       'Дополнительные сведения',
-      '9. Приложения',
+      '10. Приложения',
     ];
 
     for (let index = 0; index < orderedFragments.length - 1; index += 1) {
@@ -752,7 +777,7 @@ describe('DemoAosrWorkspacePage', () => {
       editorText.indexOf('4. Выполненные работы'),
     );
     expect(editorText.indexOf('Дополнительные сведения')).toBeLessThan(
-      editorText.indexOf('9. Приложения'),
+      editorText.indexOf('10. Приложения'),
     );
     expect(screen.queryByText('Итоговые приложения в акте')).toBeNull();
     expect(screen.queryByRole('list', { name: 'Итоговые приложения текущего акта' })).toBeNull();
@@ -1244,7 +1269,7 @@ describe('DemoAosrWorkspacePage', () => {
     expect(screen.queryByLabelText('Материалы / сертификаты простым текстом')).toBeNull();
     expect(screen.queryByLabelText('Приложения / исполнительные схемы простым текстом')).toBeNull();
     expect(screen.queryByLabelText('Итоговые приложения простым текстом')).toBeNull();
-    expect(screen.getByRole('heading', { name: '9. Приложения' })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: '10. Приложения' })).toBeTruthy();
     expect(screen.queryByText('Итоговые приложения в акте')).toBeNull();
   });
 
@@ -1277,7 +1302,7 @@ describe('DemoAosrWorkspacePage', () => {
     renderDemoWorkspace({ initialDocumentPreviewOpen: true });
 
     expect(getPreviewText()).toContain(
-      '4. Предъявлены документы, подтверждающие соответствие работ предъявляемым к ним требованиям:',
+      '4.Предъявлены документы, подтверждающие соответствие работ предъявляемым к ним требованиям:',
     );
   });
 
@@ -1292,13 +1317,13 @@ describe('DemoAosrWorkspacePage', () => {
       'Представитель подрядчика:',
       'произвели осмотр работ',
       'и составили настоящий акт о нижеследующем:',
-      '1. К освидетельствованию предъявлены следующие работы:',
-      '2. Работы выполнены по проектной документации:',
-      '3. При выполнении работ применены:',
-      '4. Предъявлены документы, подтверждающие соответствие работ предъявляемым к ним требованиям:',
-      '5. Даты:',
-      '6. Работы выполнены в соответствии с:',
-      '7. Разрешается производство последующих работ по:',
+      '1.К освидетельствованию предъявлены следующие работы:',
+      '2.Работы выполнены по проектной документации:',
+      '3.При выполнении работ применены:',
+      '4.Предъявлены документы, подтверждающие соответствие работ предъявляемым к ним требованиям:',
+      '5.Даты:',
+      '6.Работы выполнены в соответствии с:',
+      '7.Разрешается производство последующих работ по:',
       'Дополнительные сведения:',
       'Акт составлен в 4 экземплярах.',
       'Приложения:',
@@ -1321,7 +1346,7 @@ describe('DemoAosrWorkspacePage', () => {
     expect(preview.querySelector('.act-page__field-line')).toBeTruthy();
     expect(preview.querySelector('.act-page__caption')).toBeTruthy();
     expect(preview.querySelector('.act-page__number-date-row')).toBeTruthy();
-    expect(preview.querySelector('.act-page__signature-person-row')).toBeTruthy();
+    expect(preview.querySelector('.act-page__signature-line-row')).toBeTruthy();
   });
 
   it('keeps current editing behavior after the component split', async () => {

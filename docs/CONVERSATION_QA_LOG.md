@@ -1751,7 +1751,7 @@ A: The follow-up kept the same narrow frontend-only DOCX scope and cleaned up
 the generated single-act AOSR output:
 
 - work dates are computed for DOCX as Russian date lines such as
-  `"01" сентября 2026 г.`;
+  `«01» сентября 2026 г.`;
 - the next-works field now prints only the fragment after the template phrase
   `Разрешается производство последующих работ по:`;
 - work description, axes and elevations are joined without `.;` artefacts;
@@ -1805,3 +1805,35 @@ Still not implemented:
 - Prisma models/migrations;
 - production storage;
 - universal Word-template engine behavior beyond the current AOSR template.
+
+---
+
+## 63. AOSR preview parity, list captions, date quotes and delete action
+
+### Q: Что сделано по последним пользовательским замечаниям к АОСР?
+
+A: The frontend-only AOSR flow was updated according to the agreed corrections:
+
+- dates now use Russian guillemets everywhere the shared formatter is used:
+  `«04» сентября 2026 г.`;
+- DOCX rendering deduplicates explanatory captions after list rendering for
+  point 3, point 4 and `Приложения`, so the subscript text does not repeat after
+  every material/document/application item;
+- the DOCX applications heading/list block receives keep markers to prevent the
+  heading `Приложения:` from being left alone at the bottom of a page in normal
+  pagination cases;
+- the HTML preview now uses the real template captions and final signature
+  layout from the downloaded DOCX;
+- editor numbering is sequential: 8 `Последующие работы`, 9
+  `Дополнительные сведения / экземпляры / подписи`, 10 `Приложения`;
+- the editor includes `Удалить акт`; the action asks for confirmation and, in
+  the object workspace, removes the draft id from the current folder so derived
+  folder views do not keep a stale document reference.
+
+Still not implemented:
+
+- PDF generation;
+- ZIP/final/intermediate package downloads;
+- backend/API routes;
+- Prisma models/migrations;
+- production storage.

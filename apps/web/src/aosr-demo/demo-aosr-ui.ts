@@ -72,7 +72,7 @@ export function formatDocumentDate(dateValue: string): string {
     return dateValue;
   }
 
-  return `"${day}" ${getRussianMonthName(month)} ${year} г.`;
+  return `«${day}» ${getRussianMonthName(month)} ${year} г.`;
 }
 
 export function getRepresentativePreviewLine(representative: DemoAosrRepresentative): string {

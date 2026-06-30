@@ -56,6 +56,7 @@ interface DemoCurrentActEditorProps {
     value: string,
   ) => void;
   readonly onChangeMaterialSearch: (value: string) => void;
+  readonly onDeleteAct: () => void;
   readonly onDownloadDocx: () => void;
   readonly onDragRepresentativeEnd: () => void;
   readonly onDragRepresentativeStart: (representativeId: string) => void;
@@ -131,6 +132,7 @@ export function DemoCurrentActEditor({
   onChangeDocumentTypeFilter,
   onChangeManualRepresentativeForm,
   onChangeMaterialSearch,
+  onDeleteAct,
   onDownloadDocx,
   onDragRepresentativeEnd,
   onDragRepresentativeStart,
@@ -275,13 +277,22 @@ export function DemoCurrentActEditor({
               подписантов.
             </p>
           </span>
-          <button
-            className="compact-toggle compact-toggle--accent"
-            onClick={onDownloadDocx}
-            type="button"
-          >
-            Скачать DOCX
-          </button>
+          <div className="act-download-actions__buttons">
+            <button
+              className="compact-toggle compact-toggle--accent"
+              onClick={onDownloadDocx}
+              type="button"
+            >
+              Скачать DOCX
+            </button>
+            <button
+              className="compact-toggle compact-toggle--danger"
+              onClick={onDeleteAct}
+              type="button"
+            >
+              Удалить акт
+            </button>
+          </div>
           {docxDownloadError === '' ? null : (
             <p className="helper-note" role="alert">
               {docxDownloadError}
@@ -588,7 +599,7 @@ export function DemoCurrentActEditor({
         sourceLabel={additionalInfoSourceLabel}
         summary={`Экземпляров: ${templateFields.copiesLine}`}
         sectionName={sectionName}
-        title="10. Дополнительные сведения / экземпляры / подписи"
+        title="9. Дополнительные сведения / экземпляры / подписи"
       >
         <div className="act-form-grid">
           <label>
