@@ -14,7 +14,7 @@ describe('DemoAosrPreview', () => {
   it('renders a single member exactly once under its group title', () => {
     const groupTitle = 'Представитель подрядчика';
     const introDisplayText =
-      'Производитель работ ООО "ПТО Монтаж", Иванов И.И., Приказ N 12-П от 10.05.2026';
+      'Производитель работ ООО "ПТО Монтаж", Иванов И.И., Приказ № 12-П от 10.05.2026';
 
     render(
       <DemoAosrPreview
@@ -87,7 +87,7 @@ describe('DemoAosrPreview', () => {
 
   it('does not render introDisplayText again when it is duplicated in subscript', () => {
     const duplicateText =
-      'Ведущий инженер ООО "СтройКонтроль", Петров П.П., Договор N СК-7, НРС С-66-212868';
+      'Ведущий инженер ООО "СтройКонтроль", Петров П.П., Договор № СК-7, НРС С-66-212868';
 
     render(
       <DemoAosrPreview

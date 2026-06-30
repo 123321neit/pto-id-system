@@ -86,12 +86,12 @@ describe('DemoAosrWorkspacePage', () => {
     ).toBe(true);
     expect(
       within(firstCard)
-        .getByText('Приказ N 12-П от 10.05.2026')
+        .getByText('Приказ № 12-П от 10.05.2026')
         .classList.contains('signatory-order-item__details'),
     ).toBe(true);
     expect(
       within(secondCard)
-        .getByText('Договор строительного контроля N СК-7, НРС С-66-212868')
+        .getByText('Договор строительного контроля № СК-7, НРС С-66-212868')
         .classList.contains('signatory-order-item__details'),
     ).toBe(true);
   });
@@ -880,7 +880,7 @@ describe('DemoAosrWorkspacePage', () => {
     expect(previewText).toContain('Генподрядчик:');
     expect(previewText).toContain('ООО "Демо-генподряд"');
     expect(previewText).toContain('620075, г. Екатеринбург, ул. Генподрядная, 8');
-    expect(previewText).not.toContain('объектовый договор N ГП-1');
+    expect(previewText).not.toContain('объектовый договор № ГП-1');
   });
 
   it('creates a global organization before linking a new object-template counterparty', async () => {
@@ -1020,7 +1020,7 @@ describe('DemoAosrWorkspacePage', () => {
     await switchCurrentActToManualTemplate(user);
 
     await addRepresentativeAssignmentFromAct(user, {
-      authorityBasis: 'Доверенность N Т-1',
+      authorityBasis: 'Доверенность № Т-1',
       fullName: 'Сидоров С.С.',
       organization: 'ООО "Разовая проверка"',
       position: 'Инженер ПТО',
@@ -1180,10 +1180,10 @@ describe('DemoAosrWorkspacePage', () => {
     const previewText = getPreviewText();
     expect(previewText).toContain('Теплоизоляционные маты ИЗ-50');
     expect(previewText).toContain('ДС-ИЗ-2026-04');
-    expect(previewText).toContain('Декларация о соответствии N ДС-ИЗ-2026-04 от 20.05.2026');
+    expect(previewText).toContain('Декларация о соответствии № ДС-ИЗ-2026-04 от 20.05.2026');
     expect(
       screen.getByRole('checkbox', {
-        name: /Декларация о соответствии N ДС-ИЗ-2026-04 от 20.05.2026/u,
+        name: /Декларация о соответствии № ДС-ИЗ-2026-04 от 20.05.2026/u,
       }),
     ).toBeTruthy();
   });
@@ -1246,7 +1246,7 @@ describe('DemoAosrWorkspacePage', () => {
     const previewText = getPreviewText();
 
     expect(previewText).toContain('Приложения:');
-    expect(previewText).toContain('Сертификат соответствия N СТ-ОВ-2026-017 от 12.05.2026');
+    expect(previewText).toContain('Сертификат соответствия № СТ-ОВ-2026-017 от 12.05.2026');
     expect(previewText).toContain('Исполнительная схема скрытых участков вентиляции');
     expect(previewText.indexOf('Акт составлен в 4 экземплярах.')).toBeLessThan(
       previewText.indexOf('Приложения:'),
@@ -1453,7 +1453,7 @@ describe('DemoAosrWorkspacePage', () => {
 
     const editedDraft = addMaterialCertificateToDraft(sourceDraft, {
       certificateNumber: 'ДС-ИЗ-2026-04',
-      documentName: 'Декларация о соответствии N ДС-ИЗ-2026-04 от 20.05.2026',
+      documentName: 'Декларация о соответствии № ДС-ИЗ-2026-04 от 20.05.2026',
       id: 'certificate-insulation-001',
       materialName: 'Теплоизоляционные маты ИЗ-50',
     });

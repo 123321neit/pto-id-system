@@ -200,14 +200,14 @@ export const initialDemoOrganizations: readonly DemoOrganization[] = [
   },
   {
     caption: 'Наименование, ОГРН, ИНН, адрес и сведения о договоре строительного контроля.',
-    details: 'Договор строительного контроля N СК-7; 620100, г. Екатеринбург, ул. Контрольная, 4.',
+    details: 'Договор строительного контроля № СК-7; 620100, г. Екатеринбург, ул. Контрольная, 4.',
     id: 'global-organization-control',
     name: 'ООО "СтройКонтроль"',
     usageNote: 'Технический заказчик / строительный контроль в шапке объекта.',
   },
   {
     caption: 'Реквизиты лица, осуществляющего подготовку проектной документации, и сведения о СРО.',
-    details: 'ОГРН 1146678008509; ИНН 6678044711; СРО проектировщиков N П-140-27022010.',
+    details: 'ОГРН 1146678008509; ИНН 6678044711; СРО проектировщиков № П-140-27022010.',
     id: 'global-organization-designer',
     name: 'АО "Проектный институт"',
     usageNote: 'Проектная организация и авторский надзор.',
@@ -223,7 +223,7 @@ export const initialDemoOrganizations: readonly DemoOrganization[] = [
 
 export const initialDemoRepresentatives: readonly DemoRepresentative[] = [
   {
-    authorityBasis: 'Приказ N 12-П от 10.05.2026',
+    authorityBasis: 'Приказ № 12-П от 10.05.2026',
     fullName: 'Иванов И.И.',
     id: 'representative-contractor-001',
     organization: 'ООО "ПТО Монтаж"',
@@ -231,7 +231,7 @@ export const initialDemoRepresentatives: readonly DemoRepresentative[] = [
     roleLabel: 'Представитель подрядчика',
   },
   {
-    authorityBasis: 'Договор строительного контроля N СК-7',
+    authorityBasis: 'Договор строительного контроля № СК-7',
     fullName: 'Петров П.П.',
     id: 'representative-builder-control-001',
     nrsDetails: 'С-66-212868',
@@ -240,7 +240,7 @@ export const initialDemoRepresentatives: readonly DemoRepresentative[] = [
     roleLabel: 'Стройконтроль',
   },
   {
-    authorityBasis: 'Приказ N АН-3 от 15.05.2026',
+    authorityBasis: 'Приказ № АН-3 от 15.05.2026',
     fullName: 'Смирнова С.С.',
     id: 'representative-author-001',
     organization: 'АО "Проектный институт"',
@@ -248,7 +248,7 @@ export const initialDemoRepresentatives: readonly DemoRepresentative[] = [
     roleLabel: 'Авторский надзор',
   },
   {
-    authorityBasis: 'Доверенность N З-44 от 01.05.2026',
+    authorityBasis: 'Доверенность № З-44 от 01.05.2026',
     fullName: 'Кузнецова А.А.',
     id: 'representative-customer-001',
     organization: 'ГАУЗ СО "Демо-заказчик"',
@@ -256,7 +256,7 @@ export const initialDemoRepresentatives: readonly DemoRepresentative[] = [
     roleLabel: 'Представитель заказчика',
   },
   {
-    authorityBasis: 'Приказ N ЛК-9 от 12.05.2026',
+    authorityBasis: 'Приказ № ЛК-9 от 12.05.2026',
     details: 'Для объекта полномочия и НРС можно отредактировать перед добавлением.',
     fullName: 'Лебедев Л.Л.',
     id: 'representative-laboratory-001',
@@ -265,7 +265,7 @@ export const initialDemoRepresentatives: readonly DemoRepresentative[] = [
     roleLabel: 'Стройконтроль лаборатории',
   },
   {
-    authorityBasis: 'Доверенность N ГП-18 от 15.05.2026',
+    authorityBasis: 'Доверенность № ГП-18 от 15.05.2026',
     fullName: 'Николаев Н.Н.',
     id: 'representative-general-contractor-001',
     organization: 'ООО "Демо-генподряд"',
@@ -291,5 +291,5 @@ export function getCertificateMaterialNames(certificate: DemoCertificate): reado
 }
 
 export function getCertificateDocumentName(certificate: DemoCertificate): string {
-  return `${certificate.documentType} N ${certificate.documentNumber} от ${certificate.issuedAt}`;
+  return `${certificate.documentType} № ${certificate.documentNumber} от ${certificate.issuedAt}`;
 }

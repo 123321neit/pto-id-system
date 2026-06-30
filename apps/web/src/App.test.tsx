@@ -1499,7 +1499,7 @@ describe('App shell mock navigation', () => {
     const previewText = getDocumentPreview().textContent;
     expect(previewText).toContain('Насос циркуляционный N-25');
     expect(previewText).toContain('ПИ-Н25-2026');
-    expect(previewText).toContain('Паспорт изделия N ПИ-Н25-2026 от 03.06.2026');
+    expect(previewText).toContain('Паспорт изделия № ПИ-Н25-2026 от 03.06.2026');
   });
 
   it('returns from the certificate library page to objects', async () => {
@@ -1838,7 +1838,7 @@ describe('App shell mock navigation', () => {
     expect(previewText).toContain('ДС-ИЗ-2026-04');
     expect(previewText).toContain('Кузнецова А.А.');
     expect(previewText).toContain('Приложения:');
-    expect(previewText).toContain('Декларация о соответствии N ДС-ИЗ-2026-04 от 20.05.2026');
+    expect(previewText).toContain('Декларация о соответствии № ДС-ИЗ-2026-04 от 20.05.2026');
     expect(preview.querySelector('.act-page__sheet')).toBeTruthy();
     expect(preview.querySelector('.act-page__number-date-row')).toBeTruthy();
 
@@ -1856,7 +1856,7 @@ describe('App shell mock navigation', () => {
     await user.click(screen.getByRole('button', { name: 'Редактирование' }));
     expect(
       screen.getByRole('checkbox', {
-        name: /Декларация о соответствии N ДС-ИЗ-2026-04 от 20.05.2026/u,
+        name: /Декларация о соответствии № ДС-ИЗ-2026-04 от 20.05.2026/u,
       }),
     ).toBeTruthy();
   });

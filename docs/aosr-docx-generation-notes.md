@@ -33,7 +33,7 @@ code.
 
 ## Current `AosrPrintState` coverage
 
-Already covered:
+Already covered by the print state:
 
 - object name and object subscript;
 - counterparties with title, display text and subscript;
@@ -56,6 +56,10 @@ Computed template data needed for the current tagged DOCX template:
   `confirmationDocuments.items` and `applications.items`.
 - empty strings instead of `undefined`, because the static template is rendered
   directly in the browser.
+
+Note: the current tagged DOCX template does not consume `object.nameSubscript`,
+so the current DOCX-oriented UI does not present object subscript as an editable
+printed field.
 
 ## First implementation boundary
 
@@ -92,3 +96,27 @@ The renderer now normalizes split template tags inside Word text nodes before
 parsing. It keeps the DOCX template untouched, preserves valid Word XML and is
 covered by a smoke-test that renders the real static template, unzips the
 result and verifies that no `<<...>>` service tags remain.
+
+## Formatting quality pass
+
+The first downloaded demo act exposed several data-formatting issues after tag
+replacement had started working. The current frontend-only formatter keeps the
+same data chain and fixes those issues before template rendering:
+
+- work start/end dates are converted from raw ISO values to Russian date lines
+  like `"01" сентября 2026 г.`;
+- the next-works value is normalized to the fragment expected after the static
+  template prefix `Разрешается производство последующих работ по:`;
+- work description, axes and elevation ranges are joined after trimming trailing
+  sentence/list punctuation, so `.;` is not produced;
+- material certificate lines avoid appending the certificate number when it is
+  already present in the document name;
+- object-document application lines use the document title and reference, not
+  the UI source label `Тип / номер`;
+- demo print text normalizes `N ...` to `№ ...`.
+
+The DOCX smoke-test now renders the current demo `ОВ-1` state through the real
+template and checks `word/document.xml` for the known regressions: leftover
+tags, raw work ISO dates, duplicated next-work phrase, duplicated certificate
+number, duplicated document type in applications and Latin `N` in Russian
+document references.

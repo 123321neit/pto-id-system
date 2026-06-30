@@ -1740,3 +1740,33 @@ Still not implemented:
 - backend/API routes;
 - Prisma models/migrations;
 - production storage.
+
+---
+
+## 61. AOSR DOCX formatting cleanup after the first downloaded act
+
+### Q: Что поправлено после проверки первого скачанного АОСР?
+
+A: The follow-up kept the same narrow frontend-only DOCX scope and cleaned up
+the generated single-act AOSR output:
+
+- work dates are computed for DOCX as Russian date lines such as
+  `"01" сентября 2026 г.`;
+- the next-works field now prints only the fragment after the template phrase
+  `Разрешается производство последующих работ по:`;
+- work description, axes and elevations are joined without `.;` artefacts;
+- material certificate strings no longer duplicate the certificate number;
+- object-document applications print `title + reference` without repeating the
+  document type;
+- demo print strings use `№` instead of `N`;
+- the current real-template smoke-test renders the demo `ОВ-1` act and checks
+  `word/document.xml` for the known bad strings.
+
+Still not implemented:
+
+- PDF generation;
+- ZIP/final/intermediate package downloads;
+- backend/API routes;
+- Prisma models/migrations;
+- production storage;
+- universal Word layout handling beyond the current tagged AOSR template.

@@ -249,20 +249,57 @@ describe('AOSR live object template model', () => {
       'в 5 экземплярах',
     );
     const draft = updateDemoAosrDraftField(
-      getSourceDraft(),
+      updateDemoAosrDraftField(
+        getSourceDraft(),
+        'workDescription',
+        'Монтаж скрытых участков воздуховодов.',
+      ),
       'subsequentWorksPermitted',
       'Разрешается производство последующих работ по устройству теплоизоляции и облицовки.',
     );
     const printState = buildDemoAosrPrintState({
       draft,
-      finalApplications: [],
+      finalApplications: [
+        {
+          id: 'application-object-document-scheme-ov-04',
+          source: 'Исполнительная схема / ИС-ОВ-04',
+          title: 'Исполнительная схема скрытых участков вентиляции',
+        },
+      ],
       objectDefaults,
-      selectedMaterials: [],
-      selectedObjectDocuments: [],
+      selectedMaterials: [
+        {
+          certificateNumber: 'СТ-ОВ-2026-017',
+          documentName: 'Сертификат соответствия N СТ-ОВ-2026-017 от 12.05.2026',
+          id: 'certificate-test',
+          materialName: 'Воздуховоды оцинкованные 0,7 мм',
+        },
+      ],
+      selectedObjectDocuments: [
+        {
+          documentDate: '2026-06-01',
+          id: 'object-document-scheme-ov-04',
+          reference: 'ИС-ОВ-04',
+          title: 'Исполнительная схема скрытых участков вентиляции',
+          type: 'Исполнительная схема',
+        },
+      ],
     });
 
     expect(printState.document.copiesLine).toBe('5');
     expect(printState.work.nextWorks).toBe('устройству теплоизоляции и облицовки');
+    expect(printState.work.description).toBe(
+      'Монтаж скрытых участков воздуховодов; оси 1-4 / А-В; отм. +3.200 - +3.850',
+    );
+    expect(printState.materials.items[0]?.displayText).toBe(
+      'Воздуховоды оцинкованные 0,7 мм (Сертификат соответствия № СТ-ОВ-2026-017 от 12.05.2026)',
+    );
+    expect(printState.confirmationDocuments.items[0]?.displayText).toBe(
+      'Исполнительная схема скрытых участков вентиляции ИС-ОВ-04',
+    );
+    expect(printState.applications.items[0]?.displayText).toBe(
+      'Исполнительная схема скрытых участков вентиляции ИС-ОВ-04',
+    );
   });
 
   it('updates object-level organization and representative values without mutating defaults', () => {

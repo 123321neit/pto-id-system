@@ -4,7 +4,14 @@ import { strFromU8, unzipSync } from 'fflate';
 import { describe, expect, it } from 'vitest';
 
 import { renderAosrDocxTemplateBytes } from './aosr-docx-generator.js';
-import type { AosrPrintState } from './demo-aosr-workspace.js';
+import {
+  buildDemoAosrPrintState,
+  demoAosrWorkspace,
+  getDraftMaterialCertificates,
+  getDraftObjectDocuments,
+  getIncludedDraftApplications,
+  type AosrPrintState,
+} from './demo-aosr-workspace.js';
 
 const realAosrTemplateUrl = new URL(
   '../../public/templates/aosr/AOSR1_template_final_tags_corrected.docx',
@@ -18,17 +25,9 @@ describe('renderAosrDocxTemplateBytes', () => {
       printState: createPrintState(),
       templateBytes,
     });
-    const renderedEntries = unzipSync(renderedBytes);
-    const documentXmlBytes = renderedEntries['word/document.xml'];
+    const { documentXml, renderedEntries } = readRenderedDocumentXml(renderedBytes);
 
     expect(renderedEntries['[Content_Types].xml']).toBeDefined();
-    expect(documentXmlBytes).toBeDefined();
-
-    if (documentXmlBytes === undefined) {
-      throw new Error('Rendered DOCX does not contain word/document.xml.');
-    }
-
-    const documentXml = strFromU8(documentXmlBytes);
 
     expect(documentXml).not.toContain('&lt;&lt;');
     expect(documentXml).not.toContain('&gt;&gt;');
@@ -43,7 +42,85 @@ describe('renderAosrDocxTemplateBytes', () => {
     expect(documentXml).toContain('приказ № 1');
     expect(documentXml).toContain('застройщик');
   });
+
+  it('renders the current demo AOSR without known formatting regressions', () => {
+    const templateBytes = new Uint8Array(readFileSync(realAosrTemplateUrl));
+    const draft = getRequiredDemoDraft();
+    const printState = buildDemoAosrPrintState({
+      draft,
+      finalApplications: getIncludedDraftApplications(
+        draft,
+        [],
+        demoAosrWorkspace.objectDocumentLibrary,
+      ),
+      objectDefaults: demoAosrWorkspace.objectDefaults,
+      selectedMaterials: getDraftMaterialCertificates(draft, []),
+      selectedObjectDocuments: getDraftObjectDocuments(
+        draft,
+        demoAosrWorkspace.objectDocumentLibrary,
+      ),
+    });
+    const renderedBytes = renderAosrDocxTemplateBytes({ printState, templateBytes });
+    const { documentXml } = readRenderedDocumentXml(renderedBytes);
+
+    expect(documentXml).not.toContain('&lt;&lt;');
+    expect(documentXml).not.toContain('&gt;&gt;');
+    expect(documentXml).not.toContain('<<');
+    expect(documentXml).not.toContain('>>');
+    expect(documentXml).toContain('№ ОВ-1');
+    expect(documentXml).toContain('&quot;01&quot; сентября 2026 г.');
+    expect(documentXml).toContain('&quot;03&quot; сентября 2026 г.');
+    expect(documentXml).not.toContain('2026-09-01');
+    expect(documentXml).not.toContain('2026-09-03');
+    expect(documentXml).not.toContain('Разрешается производство последующих работ по: Разрешается');
+    expect(documentXml).not.toContain('облицовкой.;');
+    expect(documentXml).not.toContain('N 12-П');
+    expect(documentXml).not.toContain('N СК-7');
+    expect(documentXml).not.toContain('N СТ-ОВ');
+    expect(documentXml).toContain(
+      'Воздуховоды оцинкованные 0,7 мм (Сертификат соответствия № СТ-ОВ-2026-017 от 12.05.2026)',
+    );
+    expect(documentXml).not.toContain('СТ-ОВ-2026-017 от 12.05.2026, СТ-ОВ-2026-017');
+    expect(documentXml).toContain('Крепежные элементы КМ-12 (Паспорт качества № ПС-КМ-48');
+    expect(documentXml).not.toContain('ПС-КМ-48 от 18.05.2026, ПС-КМ-48');
+    expect(documentXml).toContain('Исполнительная схема скрытых участков вентиляции ИС-ОВ-04');
+    expect(documentXml).toContain('Запись журнала входного контроля материалов ЖВК-2026-05');
+    expect(documentXml).not.toContain(
+      'Исполнительная схема скрытых участков вентиляции Исполнительная схема / ИС-ОВ-04',
+    );
+    expect(documentXml).not.toContain(
+      'Запись журнала входного контроля материалов Журнал / ЖВК-2026-05',
+    );
+    expect(documentXml).not.toContain('при наличии.)Подрядчик');
+    expect(documentXml).not.toContain('при наличии.)Технический заказчик');
+  });
 });
+
+function readRenderedDocumentXml(renderedBytes: Uint8Array): {
+  readonly documentXml: string;
+  readonly renderedEntries: Record<string, Uint8Array>;
+} {
+  const renderedEntries = unzipSync(renderedBytes);
+  const documentXmlBytes = renderedEntries['word/document.xml'];
+
+  expect(documentXmlBytes).toBeDefined();
+
+  if (documentXmlBytes === undefined) {
+    throw new Error('Rendered DOCX does not contain word/document.xml.');
+  }
+
+  return { documentXml: strFromU8(documentXmlBytes), renderedEntries };
+}
+
+function getRequiredDemoDraft() {
+  const draft = demoAosrWorkspace.drafts[0];
+
+  if (draft === undefined) {
+    throw new Error('Expected the demo workspace to include the first AOSR draft.');
+  }
+
+  return draft;
+}
 
 function createPrintState(): AosrPrintState {
   return {

@@ -5859,3 +5859,33 @@ delete/move/reorder lifecycle or generation was introduced.
 - no Prisma/schema/migrations;
 - no production storage;
 - no DOM/UI data reads.
+
+### 2026-06-30 — AOSR DOCX formatting quality pass
+
+- Статус: `Frontend-only DOCX formatting fix`
+- Описание: tightened the first single-AOSR DOCX output after checking the
+  downloaded `ОВ-1` act against the current tagged template.
+
+Добавлено/уточнено:
+
+- work start/end dates are printed as Russian date lines, for example
+  `"01" сентября 2026 г.`;
+- point 7 stores/prints only the next-work fragment after the static template
+  prefix `Разрешается производство последующих работ по:`;
+- work description, axes and elevations are joined without `.;` artefacts;
+- material certificate lines no longer repeat the certificate number after the
+  document name;
+- object-document application lines print `title + reference` without repeating
+  the document type as `Тип / номер`;
+- demo print strings normalize `N ...` to `№ ...`;
+- the real-template smoke-test now renders the current demo AOSR and checks for
+  the known bad strings in `word/document.xml`.
+
+Что не было введено:
+
+- no PDF generation;
+- no ZIP/final/intermediate package generation;
+- no backend routes/controllers or API;
+- no Prisma/schema/migrations;
+- no production storage;
+- no generic Word layout engine.

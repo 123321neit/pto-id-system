@@ -383,7 +383,7 @@ export const defaultAosrCounterpartySubscript =
   'Наименование, ОГРН, ИНН, место нахождения, телефон/факс и иные реквизиты участника.';
 
 const contractorRepresentative: DemoAosrRepresentative = {
-  authorityBasis: 'Приказ N 12-П от 10.05.2026',
+  authorityBasis: 'Приказ № 12-П от 10.05.2026',
   fullName: 'Иванов И.И.',
   id: 'representative-contractor-001',
   organization: 'ООО "ПТО Монтаж"',
@@ -393,7 +393,7 @@ const contractorRepresentative: DemoAosrRepresentative = {
 };
 
 const buildingControlRepresentative: DemoAosrRepresentative = {
-  authorityBasis: 'Договор строительного контроля N СК-7',
+  authorityBasis: 'Договор строительного контроля № СК-7',
   fullName: 'Петров П.П.',
   id: 'representative-builder-control-001',
   nrsId: 'С-66-212868',
@@ -404,7 +404,7 @@ const buildingControlRepresentative: DemoAosrRepresentative = {
 };
 
 const authorSupervisionRepresentative: DemoAosrRepresentative = {
-  authorityBasis: 'Приказ N АН-3 от 15.05.2026',
+  authorityBasis: 'Приказ № АН-3 от 15.05.2026',
   fullName: 'Смирнова С.С.',
   id: 'representative-author-001',
   organization: 'АО "Проектный институт"',
@@ -414,7 +414,7 @@ const authorSupervisionRepresentative: DemoAosrRepresentative = {
 };
 
 const customerRepresentative: DemoAosrRepresentative = {
-  authorityBasis: 'Доверенность N З-44 от 01.05.2026',
+  authorityBasis: 'Доверенность № З-44 от 01.05.2026',
   fullName: 'Кузнецова А.А.',
   id: 'representative-customer-001',
   organization: 'ГАУЗ СО "Демо-заказчик"',
@@ -468,7 +468,7 @@ const defaultHeaderOrganizations: readonly DemoAosrHeaderOrganization[] = [
   },
   {
     caption: 'Блок можно переименовать или заменить под конкретный объект.',
-    details: 'Договор строительного контроля N СК-7; 620100, г. Екатеринбург, ул. Контрольная, 4.',
+    details: 'Договор строительного контроля № СК-7; 620100, г. Екатеринбург, ул. Контрольная, 4.',
     globalOrganizationId: 'global-organization-control',
     id: 'header-organization-control',
     label: 'Технический заказчик',
@@ -625,19 +625,19 @@ const demoObjectDocumentLibrary: readonly DemoObjectDocument[] = [
 const demoMaterialCertificateSnapshots: Readonly<Record<string, DemoMaterialCertificate>> = {
   'certificate-ducts-001': {
     certificateNumber: 'СТ-ОВ-2026-017',
-    documentName: 'Сертификат соответствия N СТ-ОВ-2026-017 от 12.05.2026',
+    documentName: 'Сертификат соответствия № СТ-ОВ-2026-017 от 12.05.2026',
     id: 'certificate-ducts-001',
     materialName: 'Воздуховоды оцинкованные 0,7 мм',
   },
   'certificate-fasteners-001': {
     certificateNumber: 'ПС-КМ-48',
-    documentName: 'Паспорт качества N ПС-КМ-48 от 18.05.2026',
+    documentName: 'Паспорт качества № ПС-КМ-48 от 18.05.2026',
     id: 'certificate-fasteners-001',
     materialName: 'Крепежные элементы КМ-12',
   },
   'certificate-firestop-001': {
     certificateNumber: 'ПП-ОГН-22',
-    documentName: 'Паспорт партии N ПП-ОГН-22 от 21.05.2026',
+    documentName: 'Паспорт партии № ПП-ОГН-22 от 21.05.2026',
     id: 'certificate-firestop-001',
     materialName: 'Противопожарный состав для проходок',
   },
@@ -953,22 +953,19 @@ export function buildDemoAosrPrintState({
   return {
     applications: {
       items: finalApplications.map((application) => ({
-        displayText:
-          application.source === 'Сертификат / материал'
-            ? application.title
-            : `${application.title} ${application.source}`,
+        displayText: formatAosrApplicationDisplayText(application),
       })),
     },
     confirmationDocuments: {
       items: selectedObjectDocuments.map((document) => ({
-        displayText: `${document.title} ${document.reference}`,
+        displayText: formatAosrObjectDocumentDisplayText(document),
       })),
     },
     counterparties:
       manualSnapshot?.counterparties ??
       templateFields.headerOrganizations.map((headerOrganization) => ({
         displayText: getHeaderDisplayText(headerOrganization),
-        subscript: headerOrganization.caption ?? '',
+        subscript: normalizeAosrPrintText(headerOrganization.caption ?? ''),
         title: headerOrganization.label,
       })),
     document: {
@@ -982,7 +979,7 @@ export function buildDemoAosrPrintState({
     },
     materials: {
       items: selectedMaterials.map((certificate) => ({
-        displayText: `${certificate.materialName} (${certificate.documentName}, ${certificate.certificateNumber})`,
+        displayText: formatAosrMaterialDisplayText(certificate),
       })),
     },
     object: {
@@ -999,10 +996,11 @@ export function buildDemoAosrPrintState({
     work: {
       contractorName:
         manualSnapshot?.workTemplateDefaults.contractorName ?? templateFields.workContractorName,
-      description: [draft.workDescription, draft.axes, draft.elevationRange]
-        .map((value) => value.trim())
-        .filter(Boolean)
-        .join('; '),
+      description: formatAosrWorkDescription({
+        axes: draft.axes,
+        elevationRange: draft.elevationRange,
+        workDescription: draft.workDescription,
+      }),
       endDateLine: draft.periodEnd,
       nextWorks: normalizeAosrNextWorks(draft.subsequentWorksPermitted),
       startDateLine: draft.periodStart,
@@ -1024,6 +1022,59 @@ function normalizeAosrNextWorks(value: string): string {
     .replace(/^разрешается\s+производство\s+последующих\s+работ\s+по[:\s]*/iu, '')
     .replace(/\.$/u, '')
     .trim();
+}
+
+function formatAosrWorkDescription({
+  axes,
+  elevationRange,
+  workDescription,
+}: Pick<DemoAosrDraft, 'axes' | 'elevationRange' | 'workDescription'>): string {
+  return [workDescription, axes, elevationRange]
+    .map((value) => trimTrailingListPunctuation(value))
+    .filter(Boolean)
+    .join('; ');
+}
+
+function trimTrailingListPunctuation(value: string): string {
+  return normalizeAosrPrintText(value)
+    .replace(/[.;:]+$/u, '')
+    .trim();
+}
+
+function formatAosrMaterialDisplayText(certificate: DemoMaterialCertificate): string {
+  const materialName = normalizeAosrPrintText(certificate.materialName);
+  const documentName = normalizeAosrPrintText(certificate.documentName);
+  const certificateNumber = normalizeAosrPrintText(certificate.certificateNumber);
+  const documentText =
+    certificateNumber === '' || documentName.includes(certificateNumber)
+      ? documentName
+      : [documentName, certificateNumber].filter(Boolean).join(', ');
+
+  return documentText === '' ? materialName : `${materialName} (${documentText})`;
+}
+
+function formatAosrObjectDocumentDisplayText(document: DemoObjectDocument): string {
+  return [document.title, document.reference]
+    .map((value) => normalizeAosrPrintText(value))
+    .filter(Boolean)
+    .join(' ');
+}
+
+function formatAosrApplicationDisplayText(application: DemoActApplication): string {
+  if (application.source === 'Сертификат / материал') {
+    return normalizeAosrPrintText(application.title);
+  }
+
+  const sourceReference = application.source.split('/').at(-1)?.trim() ?? '';
+
+  return [application.title, sourceReference]
+    .map((value) => normalizeAosrPrintText(value))
+    .filter(Boolean)
+    .join(' ');
+}
+
+function normalizeAosrPrintText(value: string): string {
+  return value.trim().replace(/\bN\s+/gu, '№ ');
 }
 
 export function switchDraftToManualTemplateMode({
@@ -1178,8 +1229,8 @@ function resolveRepresentativesFromTemplate(
       );
       const subscript =
         member.subscriptMode === 'custom'
-          ? (member.customSubscript ?? '')
-          : (libraryItem?.defaultSubscript ?? fallback?.details ?? '');
+          ? normalizeAosrPrintText(member.customSubscript ?? '')
+          : normalizeAosrPrintText(libraryItem?.defaultSubscript ?? fallback?.details ?? '');
       const representative = getRepresentativeFromTemplateMember(
         group,
         member,
@@ -1215,19 +1266,21 @@ function getRepresentativeFromTemplateMember(
   const organization = libraryItem?.organization ?? fallback?.organization ?? '';
   const authorityBasis = libraryItem?.authorityDocument ?? fallback?.authorityBasis ?? '';
   const nrsId = libraryItem?.nrsId ?? fallback?.nrsId;
-  const signatureText =
+  const signatureText = normalizeAosrPrintText(
     libraryItem?.signatureText ??
-    [position, organization]
-      .map((value) => value.trim())
-      .filter(Boolean)
-      .join(' ');
-  const signatureName = libraryItem?.signatureName ?? fullName;
-  const introDisplayText =
+      [position, organization]
+        .map((value) => value.trim())
+        .filter(Boolean)
+        .join(' '),
+  );
+  const signatureName = normalizeAosrPrintText(libraryItem?.signatureName ?? fullName);
+  const introDisplayText = normalizeAosrPrintText(
     libraryItem?.introDisplayText ??
-    [signatureText, fullName, authorityBasis, nrsId === undefined ? '' : `НРС ${nrsId}`]
-      .map((value) => value.trim())
-      .filter(Boolean)
-      .join(', ');
+      [signatureText, fullName, authorityBasis, nrsId === undefined ? '' : `НРС ${nrsId}`]
+        .map((value) => value.trim())
+        .filter(Boolean)
+        .join(', '),
+  );
 
   return {
     authorityBasis,
@@ -1248,11 +1301,11 @@ function getRepresentativeFromTemplateMember(
 
 function getHeaderDisplayText(headerOrganization: DemoAosrHeaderOrganization): string {
   if (headerOrganization.displayText !== undefined) {
-    return headerOrganization.displayText;
+    return normalizeAosrPrintText(headerOrganization.displayText);
   }
 
   return [headerOrganization.organizationName, headerOrganization.details]
-    .map((value) => value.trim())
+    .map((value) => normalizeAosrPrintText(value))
     .filter(Boolean)
     .join(' ');
 }
@@ -1327,18 +1380,18 @@ function syncManualTemplateSnapshotFromDraft(draft: DemoAosrDraft): DemoAosrDraf
 
 function getRepresentativeSignatureText(representative: DemoAosrRepresentative): string {
   if (representative.signatureText !== undefined) {
-    return representative.signatureText;
+    return normalizeAosrPrintText(representative.signatureText);
   }
 
   return [representative.position, representative.organization]
-    .map((value) => value.trim())
+    .map((value) => normalizeAosrPrintText(value))
     .filter(Boolean)
     .join(' ');
 }
 
 function getRepresentativeIntroDisplayText(representative: DemoAosrRepresentative): string {
   if (representative.introDisplayText !== undefined) {
-    return representative.introDisplayText;
+    return normalizeAosrPrintText(representative.introDisplayText);
   }
 
   return [
@@ -1347,7 +1400,7 @@ function getRepresentativeIntroDisplayText(representative: DemoAosrRepresentativ
     representative.authorityBasis,
     representative.nrsId === undefined ? '' : `НРС ${representative.nrsId}`,
   ]
-    .map((value) => value.trim())
+    .map((value) => normalizeAosrPrintText(value))
     .filter(Boolean)
     .join(', ');
 }
@@ -1363,7 +1416,7 @@ function buildRepresentativePrintGroups(
 
   for (const representative of representatives) {
     const introDisplayText = getRepresentativeIntroDisplayText(representative);
-    const rawSubscript = representative.details?.trim() ?? '';
+    const rawSubscript = normalizeAosrPrintText(representative.details ?? '');
     const subscript =
       normalizeRepresentativeText(rawSubscript) === normalizeRepresentativeText(introDisplayText)
         ? ''
