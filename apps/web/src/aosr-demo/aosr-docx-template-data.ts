@@ -16,8 +16,13 @@ export function buildAosrDocxTemplateData(printState: AosrPrintState): AosrDocxT
     ...printState,
     document: {
       ...printState.document,
-      dateLine: documentDate === '' ? '' : formatDocumentDate(documentDate),
+      dateLine: formatAosrDocxDateLine(documentDate),
       numberLine: documentNumber === '' ? '' : `№ ${documentNumber}`,
+    },
+    work: {
+      ...printState.work,
+      endDateLine: formatAosrDocxDateLine(printState.work.endDateLine),
+      startDateLine: formatAosrDocxDateLine(printState.work.startDateLine),
     },
   };
 }
@@ -54,4 +59,14 @@ function replaceUnsafeFileNameCharacters(value: string): string {
 
     return character;
   }).join('');
+}
+
+function formatAosrDocxDateLine(value: string): string {
+  const dateValue = value.trim();
+
+  if (dateValue === '') {
+    return '';
+  }
+
+  return /^\d{4}-\d{2}-\d{2}$/u.test(dateValue) ? formatDocumentDate(dateValue) : value;
 }

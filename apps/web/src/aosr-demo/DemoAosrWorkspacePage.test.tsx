@@ -700,10 +700,6 @@ describe('DemoAosrWorkspacePage', () => {
     await user.clear(signatoryField);
     await user.type(signatoryField, 'Ручной Р.Р.');
 
-    const objectSubscriptField = screen.getByLabelText('Подстрочное пояснение объекта');
-    await user.clear(objectSubscriptField);
-    await user.type(objectSubscriptField, 'Ручной подстрочник объекта');
-
     const introDisplayTextField = screen.getByLabelText(
       'Верхняя печатная строка подписанта Ручной Р.Р.',
     );
@@ -711,7 +707,6 @@ describe('DemoAosrWorkspacePage', () => {
     await user.type(introDisplayTextField, 'РУЧНАЯ ПЕЧАТНАЯ СТРОКА ПРЕДСТАВИТЕЛЯ');
 
     expect(getPreviewText()).toContain('ООО "Ручной заказчик"');
-    expect(getPreviewText()).toContain('Ручной подстрочник объекта');
     expect(getPreviewText()).toContain('РУЧНАЯ ПЕЧАТНАЯ СТРОКА ПРЕДСТАВИТЕЛЯ');
   });
 

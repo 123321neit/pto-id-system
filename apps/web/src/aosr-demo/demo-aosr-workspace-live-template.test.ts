@@ -2,7 +2,6 @@ import { describe, expect, it } from 'vitest';
 
 import {
   buildDemoAosrPrintState,
-  defaultAosrObjectNameSubscript,
   defaultAosrRepresentativeSubscript,
   demoAosrWorkspace,
   getCounterpartyLibraryItemFromGlobalOrganization,
@@ -232,16 +231,38 @@ describe('AOSR live object template model', () => {
     expect(templateFields.copiesLine).toBe('6');
   });
 
-  it('uses the exact editable subscripts from the DOCX template by default', () => {
+  it('uses the exact editable representative subscripts by default', () => {
     const templateFields = resolveDemoAosrTemplateFields({
       draft: getSourceDraft(),
       objectDefaults: demoAosrWorkspace.objectDefaults,
     });
 
-    expect(templateFields.objectNameSubscript).toBe(defaultAosrObjectNameSubscript);
     expect(templateFields.representativeGroups[0]?.members[0]?.subscript).toBe(
       defaultAosrRepresentativeSubscript,
     );
+  });
+
+  it('prints only the fragments that the DOCX template expects', () => {
+    const objectDefaults = updateDemoObjectDefaultsField(
+      demoAosrWorkspace.objectDefaults,
+      'defaultCopiesLine',
+      'в 5 экземплярах',
+    );
+    const draft = updateDemoAosrDraftField(
+      getSourceDraft(),
+      'subsequentWorksPermitted',
+      'Разрешается производство последующих работ по устройству теплоизоляции и облицовки.',
+    );
+    const printState = buildDemoAosrPrintState({
+      draft,
+      finalApplications: [],
+      objectDefaults,
+      selectedMaterials: [],
+      selectedObjectDocuments: [],
+    });
+
+    expect(printState.document.copiesLine).toBe('5');
+    expect(printState.work.nextWorks).toBe('устройству теплоизоляции и облицовки');
   });
 
   it('updates object-level organization and representative values without mutating defaults', () => {

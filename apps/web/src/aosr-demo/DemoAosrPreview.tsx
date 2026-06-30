@@ -28,7 +28,6 @@ export function DemoAosrPreview({
                 <p className="act-page__field-line act-page__object-line">
                   {printState.object.name}
                 </p>
-                <p className="act-page__caption">({printState.object.nameSubscript})</p>
               </div>
 
               {printState.counterparties.map((counterparty, index) => (

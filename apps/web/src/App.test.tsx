@@ -1042,7 +1042,6 @@ describe('App shell mock navigation', () => {
     expect(within(dialog).getByRole('button', { name: /Представители/u })).toBeTruthy();
     expect(within(dialog).queryByRole('button', { name: /Тексты акта/u })).toBeNull();
     expect(within(dialog).getByLabelText('Объект капитального строительства')).toBeTruthy();
-    expect(within(dialog).getByLabelText('Подстрочный текст под названием объекта')).toBeTruthy();
     expect(
       within(dialog).getByRole('heading', { name: '7. Соответствие работ требованиям' }),
     ).toBeTruthy();

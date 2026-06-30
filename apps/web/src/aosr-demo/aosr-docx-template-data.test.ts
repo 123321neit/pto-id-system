@@ -13,6 +13,8 @@ describe('buildAosrDocxTemplateData', () => {
     expect(templateData.document.dateLine).toBe('"03" сентября 2026 г.');
     expect(templateData.object.name).toBe('Поликлиника, корпус А');
     expect(templateData.materials.items[0]?.displayText).toBe('Воздуховоды оцинкованные');
+    expect(templateData.work.startDateLine).toBe('"01" сентября 2026 г.');
+    expect(templateData.work.endDateLine).toBe('"03" сентября 2026 г.');
   });
 
   it('does not block empty numbers and leaves numberLine empty for the template', () => {
@@ -20,7 +22,7 @@ describe('buildAosrDocxTemplateData', () => {
       createPrintState({
         document: {
           additionalInfo: 'Пустой номер допускается.',
-          copiesLine: 'в 2 экземплярах',
+          copiesLine: '2',
           date: '2026-09-04',
           number: '   ',
         },
@@ -71,7 +73,7 @@ function createPrintState(overrides: Partial<AosrPrintState> = {}): AosrPrintSta
     ],
     document: {
       additionalInfo: 'Дополнительные сведения отсутствуют.',
-      copiesLine: 'в 2 экземплярах',
+      copiesLine: '2',
       date: '2026-09-03',
       number: 'ОВ-1',
     },

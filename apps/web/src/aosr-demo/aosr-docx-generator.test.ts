@@ -39,6 +39,7 @@ describe('renderAosrDocxTemplateBytes', () => {
     expect(documentXml).toContain('ПТО Монтаж');
     expect(documentXml).toContain('Воздуховоды оцинкованные');
     expect(documentXml).toContain('Иванов И.И.');
+    expect(documentXml).toContain('&quot;01&quot; сентября 2026 г.');
     expect(documentXml).toContain('приказ № 1');
     expect(documentXml).toContain('застройщик');
   });
@@ -61,7 +62,7 @@ function createPrintState(): AosrPrintState {
     ],
     document: {
       additionalInfo: 'Дополнительные сведения отсутствуют.',
-      copiesLine: 'в 2 экземплярах',
+      copiesLine: '2',
       date: '2026-09-03',
       number: 'ОВ-1',
     },

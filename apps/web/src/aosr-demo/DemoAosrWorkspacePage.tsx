@@ -45,7 +45,6 @@ import {
   updateDemoObjectDefaultsField,
   updateHeaderOrganizationInDraft,
   updateHeaderOrganizationBlock,
-  updateManualObjectNameSubscript,
   updateObjectRepresentative,
   updateObjectRepresentativeGroupTitle,
   updateRepresentativeInDraft,
@@ -828,9 +827,6 @@ export function DemoAosrWorkspacePage({
                   );
                 }}
                 onMoveSelectedSignatory={moveSelectedSignatory}
-                onUpdateObjectNameSubscript={(value) => {
-                  updateSelectedDraftWith((draft) => updateManualObjectNameSubscript(draft, value));
-                }}
                 onRemoveMaterialFromAct={(certificateId) => {
                   updateSelectedDraftWith((draft) =>
                     removeMaterialCertificateFromDraft(draft, certificateId),

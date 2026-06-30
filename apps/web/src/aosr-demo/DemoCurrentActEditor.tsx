@@ -65,7 +65,6 @@ interface DemoCurrentActEditorProps {
     headerOrganizationId: string,
     direction: MoveDirection,
   ) => void;
-  readonly onUpdateObjectNameSubscript: (value: string) => void;
   readonly onUpdateHeaderOrganization: (
     headerOrganizationId: string,
     field: 'caption' | 'details' | 'label' | 'organizationName',
@@ -138,7 +137,6 @@ export function DemoCurrentActEditor({
   onDragRepresentativeTarget,
   onMoveSelectedSignatory,
   onMoveHeaderOrganization,
-  onUpdateObjectNameSubscript,
   onUpdateHeaderOrganization,
   onRemoveMaterialFromAct,
   onRemoveObjectDocumentFromAct,
@@ -173,15 +171,8 @@ export function DemoCurrentActEditor({
     differsFromTemplateSourceLabel,
     linkedTemplateSourceLabel,
   );
-  const objectNameSubscriptSourceLabel = getTemplateFieldSourceLabel(
-    isManualTemplate,
-    templateFields.objectNameSubscript !== linkedTemplateFields.objectNameSubscript,
-    differsFromTemplateSourceLabel,
-    linkedTemplateSourceLabel,
-  );
   const objectDataSourceLabel =
-    objectNameSourceLabel === differsFromTemplateSourceLabel ||
-    objectNameSubscriptSourceLabel === differsFromTemplateSourceLabel
+    objectNameSourceLabel === differsFromTemplateSourceLabel
       ? differsFromTemplateSourceLabel
       : templateSourceLabel;
   const projectDocumentationSourceLabel = getTemplateFieldSourceLabel(
@@ -349,19 +340,6 @@ export function DemoCurrentActEditor({
               readOnly={!isManualTemplate}
               rows={3}
               value={templateFields.objectName}
-            />
-          </label>
-          <label className="act-form-grid__wide">
-            Подстрочное пояснение объекта
-            <textarea
-              onChange={(event) => {
-                if (isManualTemplate) {
-                  onUpdateObjectNameSubscript(event.currentTarget.value);
-                }
-              }}
-              readOnly={!isManualTemplate}
-              rows={2}
-              value={templateFields.objectNameSubscript}
             />
           </label>
         </div>
@@ -570,7 +548,7 @@ export function DemoCurrentActEditor({
       <section className="form-section act-editor-card" aria-labelledby="subsequent-data-title">
         <h3 id="subsequent-data-title">8. Последующие работы</h3>
         <label className="act-form-grid__wide">
-          Последующие работы разрешены
+          Какие последующие работы разрешены
           <textarea
             className="large-field"
             name="subsequentWorksPermitted"
@@ -580,6 +558,10 @@ export function DemoCurrentActEditor({
             rows={5}
             value={selectedDraft.subsequentWorksPermitted}
           />
+          <small>
+            Введите только продолжение после «Разрешается производство последующих работ по:»,
+            например: «устройству теплоизоляции и облицовки».
+          </small>
         </label>
       </section>
 
@@ -610,6 +592,7 @@ export function DemoCurrentActEditor({
           <label>
             Количество экземпляров
             <input
+              aria-label="Количество экземпляров"
               name="copiesCount"
               onChange={(event) => {
                 if (isManualTemplate) {
@@ -619,6 +602,7 @@ export function DemoCurrentActEditor({
               readOnly={!isManualTemplate}
               value={templateFields.copiesLine}
             />
+            <small>Введите только число или форму числа, без слов «в … экземплярах».</small>
           </label>
         </div>
       </TemplateOwnedSection>

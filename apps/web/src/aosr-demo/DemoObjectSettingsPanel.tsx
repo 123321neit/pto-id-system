@@ -374,26 +374,17 @@ export function DemoObjectSettingsPanel({
                         value={objectDefaults.objectName}
                       />
                     </label>
-                    <label className="act-form-grid__wide">
-                      Подстрочный текст под названием объекта
-                      <textarea
-                        name="objectNameSubscript"
-                        onChange={(event) => {
-                          onUpdateObjectDefaults('objectNameSubscript', event.currentTarget.value);
-                        }}
-                        rows={2}
-                        value={objectDefaults.objectNameSubscript}
-                      />
-                    </label>
                     <label>
                       Количество экземпляров
                       <input
+                        aria-label="Количество экземпляров"
                         name="defaultCopiesLine"
                         onChange={(event) => {
                           onUpdateObjectDefaults('defaultCopiesLine', event.currentTarget.value);
                         }}
                         value={objectDefaults.defaultCopiesLine}
                       />
+                      <small>Только число или форма числа, без слов «в … экземплярах».</small>
                     </label>
                     <label className="act-form-grid__wide">
                       Лицо, выполнившее работы

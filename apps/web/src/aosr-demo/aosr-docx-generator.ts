@@ -26,6 +26,12 @@ interface WordTextNode {
   readonly text: string;
 }
 
+interface TemplateTagRange {
+  readonly end: number;
+  readonly start: number;
+  readonly text: string;
+}
+
 interface AosrDocxDownloadOptions {
   readonly browserDocument?: Document;
   readonly browserUrl?: Pick<typeof URL, 'createObjectURL' | 'revokeObjectURL'>;
@@ -121,48 +127,100 @@ function normalizeSplitWordTemplateTags(xml: string): string {
     return xml;
   }
 
-  const normalizedTextNodes = textNodes.map((textNode) => textNode.text);
   const combinedText = textNodes.map((textNode) => textNode.text).join('');
+  const tagRanges = getTemplateTagRanges(combinedText);
+
+  if (tagRanges.length === 0) {
+    return xml;
+  }
+
+  const normalizedTextNodes = getNormalizedWordTextNodes(combinedText, textNodes, tagRanges);
+
+  return replaceWordTextNodeContents(xml, textNodes, normalizedTextNodes);
+}
+
+function getTemplateTagRanges(combinedText: string): readonly TemplateTagRange[] {
   const tagPattern = createTemplateTagPattern();
+  const tagRanges: TemplateTagRange[] = [];
   let tagMatch = tagPattern.exec(combinedText);
 
   while (tagMatch !== null) {
-    const tagText = tagMatch[0];
-    const tagStart = tagMatch.index;
-    const tagEnd = tagStart + tagText.length;
-    const firstTextNodeIndex = getTextNodeIndexAt(textNodes, tagStart);
-    const lastTextNodeIndex = getTextNodeIndexAt(textNodes, tagEnd - 1);
-
-    if (
-      firstTextNodeIndex !== null &&
-      lastTextNodeIndex !== null &&
-      firstTextNodeIndex !== lastTextNodeIndex
-    ) {
-      const firstTextNode = textNodes[firstTextNodeIndex];
-      const lastTextNode = textNodes[lastTextNodeIndex];
-
-      if (firstTextNode !== undefined && lastTextNode !== undefined) {
-        normalizedTextNodes[firstTextNodeIndex] =
-          firstTextNode.text.slice(0, tagStart - firstTextNode.combinedStart) + tagText;
-
-        for (
-          let textNodeIndex = firstTextNodeIndex + 1;
-          textNodeIndex < lastTextNodeIndex;
-          textNodeIndex += 1
-        ) {
-          normalizedTextNodes[textNodeIndex] = '';
-        }
-
-        normalizedTextNodes[lastTextNodeIndex] = lastTextNode.text.slice(
-          tagEnd - lastTextNode.combinedStart,
-        );
-      }
-    }
+    tagRanges.push({
+      end: tagMatch.index + tagMatch[0].length,
+      start: tagMatch.index,
+      text: tagMatch[0],
+    });
 
     tagMatch = tagPattern.exec(combinedText);
   }
 
-  return replaceWordTextNodeContents(xml, textNodes, normalizedTextNodes);
+  return tagRanges;
+}
+
+function getNormalizedWordTextNodes(
+  combinedText: string,
+  textNodes: readonly WordTextNode[],
+  tagRanges: readonly TemplateTagRange[],
+): readonly string[] {
+  let tagIndex = 0;
+
+  return textNodes.map((textNode) => {
+    let cursor = textNode.combinedStart;
+    let normalizedText = '';
+
+    while (cursor < textNode.combinedEnd) {
+      while (tagIndex < tagRanges.length) {
+        const currentTagRange = getRequiredTemplateTagRange(tagRanges, tagIndex);
+
+        if (currentTagRange.end > cursor) {
+          break;
+        }
+
+        tagIndex += 1;
+      }
+
+      const tagRange = getTemplateTagRange(tagRanges, tagIndex);
+
+      if (tagRange === undefined || tagRange.start >= textNode.combinedEnd) {
+        normalizedText += combinedText.slice(cursor, textNode.combinedEnd);
+        break;
+      }
+
+      if (cursor < tagRange.start) {
+        normalizedText += combinedText.slice(cursor, tagRange.start);
+        cursor = tagRange.start;
+        continue;
+      }
+
+      if (cursor === tagRange.start) {
+        normalizedText += tagRange.text;
+      }
+
+      cursor = tagRange.end;
+    }
+
+    return normalizedText;
+  });
+}
+
+function getTemplateTagRange(
+  tagRanges: readonly TemplateTagRange[],
+  tagIndex: number,
+): TemplateTagRange | undefined {
+  return tagRanges[tagIndex];
+}
+
+function getRequiredTemplateTagRange(
+  tagRanges: readonly TemplateTagRange[],
+  tagIndex: number,
+): TemplateTagRange {
+  const tagRange = getTemplateTagRange(tagRanges, tagIndex);
+
+  if (tagRange === undefined) {
+    throw new Error(`AOSR DOCX template tag range is missing: ${String(tagIndex)}`);
+  }
+
+  return tagRange;
 }
 
 function getWordTextNodes(xml: string): readonly WordTextNode[] {
@@ -189,14 +247,6 @@ function getWordTextNodes(xml: string): readonly WordTextNode[] {
   }
 
   return textNodes;
-}
-
-function getTextNodeIndexAt(textNodes: readonly WordTextNode[], position: number): number | null {
-  const textNodeIndex = textNodes.findIndex(
-    (textNode) => position >= textNode.combinedStart && position < textNode.combinedEnd,
-  );
-
-  return textNodeIndex === -1 ? null : textNodeIndex;
 }
 
 function replaceWordTextNodeContents(

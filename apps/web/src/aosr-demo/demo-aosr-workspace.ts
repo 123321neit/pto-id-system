@@ -715,8 +715,7 @@ export const demoAosrWorkspace: DemoAosrWorkspace = {
         buildingControlRepresentative,
         authorSupervisionRepresentative,
       ],
-      subsequentWorksPermitted:
-        'Разрешается производство последующих работ по устройству теплоизоляции и облицовки.',
+      subsequentWorksPermitted: 'устройству теплоизоляции и облицовки',
       workContractorName: 'ООО "ПТО Монтаж"',
       workDescription:
         'Монтаж скрытых участков воздуховодов до закрытия теплоизоляцией и облицовкой.',
@@ -759,8 +758,7 @@ export const demoAosrWorkspace: DemoAosrWorkspace = {
         customerRepresentative,
         buildingControlRepresentative,
       ],
-      subsequentWorksPermitted:
-        'Разрешается производство последующих работ по заделке отверстий в перекрытии.',
+      subsequentWorksPermitted: 'заделке отверстий в перекрытии',
       workContractorName: 'ООО "ПТО Монтаж"',
       workDescription: 'Установка гильз трубопроводов перед заделкой отверстий в перекрытии.',
     },
@@ -976,7 +974,9 @@ export function buildDemoAosrPrintState({
     document: {
       additionalInfo:
         manualSnapshot?.documentTemplateDefaults.additionalInfo ?? templateFields.additionalInfo,
-      copiesLine: manualSnapshot?.documentTemplateDefaults.copiesLine ?? templateFields.copiesLine,
+      copiesLine: normalizeAosrCopiesLine(
+        manualSnapshot?.documentTemplateDefaults.copiesLine ?? templateFields.copiesLine,
+      ),
       date: draft.actDate,
       number: draft.actNumber,
     },
@@ -1004,10 +1004,26 @@ export function buildDemoAosrPrintState({
         .filter(Boolean)
         .join('; '),
       endDateLine: draft.periodEnd,
-      nextWorks: draft.subsequentWorksPermitted,
+      nextWorks: normalizeAosrNextWorks(draft.subsequentWorksPermitted),
       startDateLine: draft.periodStart,
     },
   };
+}
+
+function normalizeAosrCopiesLine(value: string): string {
+  return value
+    .trim()
+    .replace(/^в\s+/iu, '')
+    .replace(/\s+экземпляр(?:ах|ов|а|е)?\.?$/iu, '')
+    .trim();
+}
+
+function normalizeAosrNextWorks(value: string): string {
+  return value
+    .trim()
+    .replace(/^разрешается\s+производство\s+последующих\s+работ\s+по[:\s]*/iu, '')
+    .replace(/\.$/u, '')
+    .trim();
 }
 
 export function switchDraftToManualTemplateMode({
