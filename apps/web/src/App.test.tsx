@@ -210,11 +210,15 @@ describe('App shell mock navigation', () => {
       screen.getByText(/Автоматическая нумерация больше не будет управлять номером/u),
     ).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Предпросмотр' })).toBeTruthy();
-    expect(screen.getByRole('button', { name: 'Сделать акт ручным' })).toBeTruthy();
+    expect(
+      screen.getByRole('button', { name: 'Редактировать только для этого акта' }),
+    ).toBeTruthy();
 
     await openDocumentPreview(user);
     expect(getDocumentPreview()).toBeTruthy();
-    expect(screen.queryByRole('button', { name: 'Сделать акт ручным' })).toBeNull();
+    expect(
+      screen.queryByRole('button', { name: 'Редактировать только для этого акта' }),
+    ).toBeNull();
 
     const objectNavigation = screen.getByRole('navigation', { name: 'Разделы объекта' });
     await user.click(within(objectNavigation).getByRole('button', { name: 'Обзор объекта' }));
@@ -614,7 +618,7 @@ describe('App shell mock navigation', () => {
     expect(newOrganizationOrderText.indexOf('Подрядчик')).toBeLessThan(
       newOrganizationOrderText.indexOf('Заказчик'),
     );
-    expect(screen.getAllByText('Шаблонные значения').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Данные из раздела').length).toBeGreaterThan(0);
   });
 
   it('opens the final ID package page with derived summary counts and grouped composition', async () => {
@@ -1273,8 +1277,14 @@ describe('App shell mock navigation', () => {
 
     expect(screen.getByLabelText('Текущий акт: Без номера')).toBeTruthy();
     expect(screen.getByLabelText<HTMLInputElement>('Номер акта').value).toBe('');
-    expect(screen.getByText('Связан с разделом')).toBeTruthy();
-    expect(screen.getByRole('button', { name: 'Сделать акт ручным' })).toBeTruthy();
+    expect(
+      screen.getByText(
+        'Используются общие данные раздела: объект, участники, проектная документация',
+      ),
+    ).toBeTruthy();
+    expect(
+      screen.getByRole('button', { name: 'Редактировать только для этого акта' }),
+    ).toBeTruthy();
   });
 
   it('renumbers all section acts with the automatic section numbering rule', async () => {
@@ -1315,7 +1325,11 @@ describe('App shell mock navigation', () => {
     await openFolderByName(user, 'Сентябрь 2026');
     expect(screen.getByRole('button', { name: /AUTO-100/u })).toBeTruthy();
     await user.click(screen.getByRole('button', { name: /AUTO-100/u }));
-    expect(screen.getByText('Связан с разделом')).toBeTruthy();
+    expect(
+      screen.getByText(
+        'Используются общие данные раздела: объект, участники, проектная документация',
+      ),
+    ).toBeTruthy();
 
     await openFolderByName(user, 'Октябрь 2026');
     expect(screen.getByRole('button', { name: /AUTO-101/u })).toBeTruthy();

@@ -3212,6 +3212,40 @@ h3 {
   margin: 0;
 }
 
+.act-download-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 10px;
+  border: 1px solid #bfdbfe;
+  border-radius: 8px;
+  background: #eff6ff;
+  padding: 11px 12px;
+}
+
+.act-download-actions > span {
+  display: grid;
+  gap: 4px;
+  min-width: min(100%, 320px);
+}
+
+.act-download-actions strong,
+.act-download-actions p {
+  margin: 0;
+}
+
+.act-download-actions strong {
+  color: #172033;
+  font-size: 0.84rem;
+  font-weight: 900;
+}
+
+.act-download-actions .helper-note {
+  color: #1d4ed8;
+}
+
 .print-header-field {
   display: grid;
   gap: 5px;

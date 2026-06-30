@@ -1770,3 +1770,38 @@ Still not implemented:
 - Prisma models/migrations;
 - production storage;
 - universal Word layout handling beyond the current tagged AOSR template.
+
+---
+
+## 62. AOSR DOCX layout and beginner UX polish
+
+### Q: Что сделано с оставшимися замечаниями по склейке блоков, подписям и UX скачивания?
+
+A: The follow-up kept the DOCX template asset unchanged and fixed the remaining
+quality issues in the frontend renderer and tests:
+
+- `foreach` blocks are rendered as complete Word paragraphs when a loop starts
+  and ends inside paragraph XML. This prevents counterparty blocks such as
+  `)Подрядчик:` and `)Технический заказчик:` from being visually glued to the
+  previous subscript;
+- the renderer removes a service tab placed before paragraph-level block tags,
+  so final signature rows no longer start with an unintended right shift;
+- signature paragraphs with bottom borders receive `keepNext/keepLines` OOXML
+  markers to reduce orphaned group titles during pagination;
+- the real DOCX smoke-test became paragraph-aware and checks counterparty
+  separation, `N -> №` regressions, signature tab placement and the signature
+  keep markers;
+- the editor now has a separate `Действия с актом` block for `Скачать DOCX`,
+  plus a soft reminder to check key fields before downloading;
+- linked/manual template wording in the act editor is clearer for a new user:
+  `Данные из раздела`, `Используются общие данные раздела...`,
+  `Редактировать только для этого акта`.
+
+Still not implemented:
+
+- PDF generation;
+- ZIP/final/intermediate package downloads;
+- backend/API routes;
+- Prisma models/migrations;
+- production storage;
+- universal Word-template engine behavior beyond the current AOSR template.

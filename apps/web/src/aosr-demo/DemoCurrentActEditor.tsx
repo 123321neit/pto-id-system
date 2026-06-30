@@ -160,9 +160,9 @@ export function DemoCurrentActEditor({
         ? 'Номер этого акта задаётся вручную. Проверьте список актов слева, чтобы не сделать дубль.'
         : 'Вы изменили номер вручную. Автоматическая нумерация больше не будет управлять номером этого акта. Проверьте список актов слева, чтобы не сделать дубль.'
       : '';
-  const templateScopeGenitive = 'шаблонных значений раздела';
-  const templateScopeNominative = 'Шаблонные значения';
-  const linkedTemplateSourceLabel = 'Шаблонные значения';
+  const templateScopeGenitive = 'общих данных раздела';
+  const templateScopeNominative = 'Общие данные раздела';
+  const linkedTemplateSourceLabel = 'Данные из раздела';
   const differsFromTemplateSourceLabel = `Отличается от ${templateScopeGenitive}`;
   const templateSourceLabel = isManualTemplate ? 'Ручная версия' : linkedTemplateSourceLabel;
   const objectNameSourceLabel = getTemplateFieldSourceLabel(
@@ -231,24 +231,27 @@ export function DemoCurrentActEditor({
             <dd>{documentLabel}</dd>
           </div>
           <div>
-            <dt>Шаблонные значения</dt>
-            <dd>{isManualTemplate ? 'Ручной режим' : 'Связан с разделом'}</dd>
+            <dt>Данные акта</dt>
+            <dd>
+              {isManualTemplate
+                ? 'Редактируются только здесь'
+                : 'Используются общие данные раздела: объект, участники, проектная документация'}
+            </dd>
           </div>
         </dl>
         <div className="template-mode-actions" aria-label="Режим шаблонных данных">
           {isManualTemplate ? (
             <>
-              <span className="source-chip">Ручной режим</span>
+              <span className="source-chip">Только этот акт</span>
               <p className="helper-note">
-                Акт в ручном режиме. Изменения шаблонных значений раздела не применяются к этому
-                акту.
+                Акт в ручном режиме. Изменения общих данных раздела не применяются к этому акту.
               </p>
               <button
                 className="compact-toggle compact-toggle--accent"
                 onClick={onReturnDraftToLinkedTemplate}
                 type="button"
               >
-                Вернуть связь с шаблонными значениями
+                Вернуть связь с данными раздела
               </button>
             </>
           ) : (
@@ -259,10 +262,19 @@ export function DemoCurrentActEditor({
                 onClick={onSwitchDraftToManualTemplate}
                 type="button"
               >
-                Сделать акт ручным
+                Редактировать только для этого акта
               </button>
             </>
           )}
+        </div>
+        <section className="act-download-actions" aria-label="Действия с актом">
+          <span>
+            <strong>Действия с актом</strong>
+            <p className="helper-note">
+              Перед скачиванием проверьте номер, дату, период работ, материалы, приложения и
+              подписантов.
+            </p>
+          </span>
           <button
             className="compact-toggle compact-toggle--accent"
             onClick={onDownloadDocx}
@@ -275,7 +287,7 @@ export function DemoCurrentActEditor({
               {docxDownloadError}
             </p>
           )}
-        </div>
+        </section>
       </div>
 
       <section
@@ -321,6 +333,7 @@ export function DemoCurrentActEditor({
       <TemplateOwnedSection
         defaultOpen={isManualTemplate}
         id="act-object-data-title"
+        isManualTemplate={isManualTemplate}
         sourceLabel={objectDataSourceLabel}
         summary={templateFields.objectName}
         sectionName={sectionName}
@@ -385,6 +398,7 @@ export function DemoCurrentActEditor({
       <TemplateOwnedSection
         defaultOpen={isManualTemplate}
         id="work-contractor-data-title"
+        isManualTemplate={isManualTemplate}
         sourceLabel={workContractorSourceLabel}
         summary={templateFields.workContractorName}
         sectionName={sectionName}
@@ -484,6 +498,7 @@ export function DemoCurrentActEditor({
       <TemplateOwnedSection
         defaultOpen={isManualTemplate}
         id="project-docs-data-title"
+        isManualTemplate={isManualTemplate}
         sourceLabel={projectDocumentationSourceLabel}
         summary={templateFields.projectDocumentation}
         sectionName={sectionName}
@@ -523,6 +538,7 @@ export function DemoCurrentActEditor({
       <TemplateOwnedSection
         defaultOpen={isManualTemplate}
         id="compliance-data-title"
+        isManualTemplate={isManualTemplate}
         sourceLabel={complianceSourceLabel}
         summary={templateFields.complianceStatement}
         sectionName={sectionName}
@@ -568,6 +584,7 @@ export function DemoCurrentActEditor({
       <TemplateOwnedSection
         defaultOpen={isManualTemplate}
         id="additional-data-title"
+        isManualTemplate={isManualTemplate}
         sourceLabel={additionalInfoSourceLabel}
         summary={`Экземпляров: ${templateFields.copiesLine}`}
         sectionName={sectionName}
@@ -620,6 +637,7 @@ interface TemplateOwnedSectionProps {
   readonly children: ReactNode;
   readonly defaultOpen: boolean;
   readonly id: string;
+  readonly isManualTemplate: boolean;
   readonly sourceLabel: string;
   readonly summary: string;
   readonly sectionName?: string | undefined;
@@ -630,16 +648,16 @@ function TemplateOwnedSection({
   children,
   defaultOpen,
   id,
+  isManualTemplate,
   sourceLabel,
   summary,
   sectionName,
   title,
 }: TemplateOwnedSectionProps): React.JSX.Element {
-  const isManual = sourceLabel !== 'Шаблонные значения';
   const sectionTemplateIntro =
     sectionName === undefined
-      ? 'Эти данные взяты из шаблонных значений раздела.'
-      : `Эти данные взяты из шаблонных значений раздела «${sectionName}».`;
+      ? 'Эти данные взяты из общих данных раздела.'
+      : `Эти данные взяты из общих данных раздела «${sectionName}».`;
 
   return (
     <section className="form-section act-editor-card template-owned-section" aria-labelledby={id}>
@@ -649,13 +667,13 @@ function TemplateOwnedSection({
             <strong id={id}>{title}</strong>
             <small>{summary}</small>
           </span>
-          <span className="source-chip">{isManual ? sourceLabel : 'Шаблонные значения'}</span>
+          <span className="source-chip">{sourceLabel}</span>
         </summary>
         <div className="template-data-disclosure__body">
           <p className="template-data-disclosure__intro">
-            {isManual
-              ? 'Акт в ручном режиме. Эти значения меняются только в этом акте. Изменения шаблонных значений раздела больше не применяются к этому акту.'
-              : `${sectionTemplateIntro} Они автоматически применяются к связанным актам этого раздела. Чтобы изменить их только в этом акте, сначала сделайте акт ручным.`}
+            {isManualTemplate
+              ? 'Эти значения меняются только в этом акте. Изменения общих данных раздела больше не применяются к этому акту.'
+              : `${sectionTemplateIntro} Они автоматически применяются к связанным актам этого раздела. Чтобы изменить их только в этом акте, нажмите «Редактировать только для этого акта».`}
           </p>
           {children}
         </div>

@@ -61,7 +61,16 @@ describe('renderAosrDocxTemplateBytes', () => {
       ),
     });
     const renderedBytes = renderAosrDocxTemplateBytes({ printState, templateBytes });
-    const { documentXml } = readRenderedDocumentXml(renderedBytes);
+    const { documentParagraphs, documentXml, documentXmlParagraphs } =
+      readRenderedDocumentXml(renderedBytes);
+    const contractorSignatureParagraph = getRequiredParagraphXml(
+      documentXmlParagraphs,
+      'Производитель работ ООО',
+      '<w:pBdr>',
+    );
+    const contractorSignatureTextIndex =
+      contractorSignatureParagraph.indexOf('Производитель работ ООО');
+    const contractorSignatureFirstTabIndex = contractorSignatureParagraph.indexOf('<w:tab/>');
 
     expect(documentXml).not.toContain('&lt;&lt;');
     expect(documentXml).not.toContain('&gt;&gt;');
@@ -77,6 +86,7 @@ describe('renderAosrDocxTemplateBytes', () => {
     expect(documentXml).not.toContain('N 12-П');
     expect(documentXml).not.toContain('N СК-7');
     expect(documentXml).not.toContain('N СТ-ОВ');
+    expect(documentXml).not.toContain('N ПС-КМ');
     expect(documentXml).toContain(
       'Воздуховоды оцинкованные 0,7 мм (Сертификат соответствия № СТ-ОВ-2026-017 от 12.05.2026)',
     );
@@ -91,13 +101,21 @@ describe('renderAosrDocxTemplateBytes', () => {
     expect(documentXml).not.toContain(
       'Запись журнала входного контроля материалов Журнал / ЖВК-2026-05',
     );
-    expect(documentXml).not.toContain('при наличии.)Подрядчик');
-    expect(documentXml).not.toContain('при наличии.)Технический заказчик');
+    expect(documentParagraphs).toContain('Подрядчик:');
+    expect(documentParagraphs).toContain('Технический заказчик:');
+    expect(documentParagraphs.some((paragraph) => paragraph.includes(')Подрядчик:'))).toBe(false);
+    expect(
+      documentParagraphs.some((paragraph) => paragraph.includes(')Технический заказчик:')),
+    ).toBe(false);
+    expect(contractorSignatureFirstTabIndex).toBeGreaterThan(contractorSignatureTextIndex);
+    expect(documentXml).toContain('<w:keepNext/><w:keepLines/><w:pBdr>');
   });
 });
 
 function readRenderedDocumentXml(renderedBytes: Uint8Array): {
+  readonly documentParagraphs: readonly string[];
   readonly documentXml: string;
+  readonly documentXmlParagraphs: readonly string[];
   readonly renderedEntries: Record<string, Uint8Array>;
 } {
   const renderedEntries = unzipSync(renderedBytes);
@@ -109,7 +127,42 @@ function readRenderedDocumentXml(renderedBytes: Uint8Array): {
     throw new Error('Rendered DOCX does not contain word/document.xml.');
   }
 
-  return { documentXml: strFromU8(documentXmlBytes), renderedEntries };
+  const documentXml = strFromU8(documentXmlBytes);
+
+  return {
+    documentParagraphs: getWordParagraphTexts(documentXml),
+    documentXml,
+    documentXmlParagraphs: getWordParagraphXmlFragments(documentXml),
+    renderedEntries,
+  };
+}
+
+function getRequiredParagraphXml(
+  paragraphs: readonly string[],
+  textFragment: string,
+  requiredXmlFragment = '',
+): string {
+  const paragraph = paragraphs.find(
+    (currentParagraph) =>
+      currentParagraph.includes(textFragment) &&
+      (requiredXmlFragment === '' || currentParagraph.includes(requiredXmlFragment)),
+  );
+
+  if (paragraph === undefined) {
+    throw new Error(`Rendered DOCX paragraph is missing: ${textFragment}`);
+  }
+
+  return paragraph;
+}
+
+function getWordParagraphTexts(documentXml: string): readonly string[] {
+  return getWordParagraphXmlFragments(documentXml)
+    .map((paragraphXml) => paragraphXml.replace(/<[^>]+>/gu, '').trim())
+    .filter(Boolean);
+}
+
+function getWordParagraphXmlFragments(documentXml: string): readonly string[] {
+  return documentXml.match(/<w:p\b[\s\S]*?<\/w:p>/gu) ?? [];
 }
 
 function getRequiredDemoDraft() {

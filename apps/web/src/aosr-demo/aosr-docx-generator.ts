@@ -18,6 +18,14 @@ interface TemplateBlockBoundary {
   readonly startIndex: number;
 }
 
+interface WordParagraphWrappedTemplateBlock {
+  readonly blockPrefix: string;
+  readonly blockSuffix: string;
+  readonly bodyStartIndex: number;
+  readonly cursorEndIndex: number;
+  readonly staticPrefix: string;
+}
+
 interface WordTextNode {
   readonly combinedEnd: number;
   readonly combinedStart: number;
@@ -106,9 +114,8 @@ export async function downloadAosrDocx(
 }
 
 function renderAosrDocxTemplateXml(xml: string, data: AosrDocxTemplateData): string {
-  return renderTemplateFragment(
-    normalizeSplitWordTemplateTags(xml),
-    data as unknown as TemplateContext,
+  return stabilizeAosrSignatureParagraphs(
+    renderTemplateFragment(normalizeSplitWordTemplateTags(xml), data as unknown as TemplateContext),
   );
 }
 
@@ -283,15 +290,30 @@ function renderTemplateFragment(template: string, context: TemplateContext): str
 
   while (tagMatch !== null) {
     const tagCommand = getTagCommand(tagMatch);
-    renderedXml += template.slice(cursor, tagMatch.index);
 
     if (tagCommand.startsWith('foreach ')) {
       const foreachCommand = parseForeachCommand(tagCommand);
       const blockBoundary = findTemplateBlockBoundary(template, tagPattern.lastIndex, 'foreach');
-      const blockTemplate = template.slice(tagPattern.lastIndex, blockBoundary.startIndex);
+      const wrappedBlock = getWordParagraphWrappedTemplateBlock({
+        blockEndIndex: blockBoundary.endIndex,
+        blockStartIndex: tagMatch.index,
+        blockTagEndIndex: tagPattern.lastIndex,
+        boundaryStartIndex: blockBoundary.startIndex,
+        cursor,
+        template,
+      });
+      const blockTemplate =
+        wrappedBlock === null
+          ? template.slice(tagPattern.lastIndex, blockBoundary.startIndex)
+          : wrappedBlock.blockPrefix +
+            template.slice(wrappedBlock.bodyStartIndex, blockBoundary.startIndex) +
+            wrappedBlock.blockSuffix;
       const collection = toTemplateCollection(
         resolveTemplateValue(context, foreachCommand.collectionPath),
       );
+
+      renderedXml +=
+        wrappedBlock === null ? template.slice(cursor, tagMatch.index) : wrappedBlock.staticPrefix;
 
       if (collection.length > 0) {
         renderedXml += collection
@@ -304,11 +326,13 @@ function renderTemplateFragment(template: string, context: TemplateContext): str
           .join('');
       }
 
-      cursor = blockBoundary.endIndex;
+      cursor = wrappedBlock === null ? blockBoundary.endIndex : wrappedBlock.cursorEndIndex;
       tagPattern.lastIndex = cursor;
       tagMatch = tagPattern.exec(template);
       continue;
     }
+
+    renderedXml += template.slice(cursor, tagMatch.index);
 
     if (tagCommand.startsWith('if ')) {
       const blockBoundary = findTemplateBlockBoundary(template, tagPattern.lastIndex, 'if');
@@ -336,6 +360,92 @@ function renderTemplateFragment(template: string, context: TemplateContext): str
   }
 
   return renderedXml + template.slice(cursor);
+}
+
+function getWordParagraphWrappedTemplateBlock({
+  blockEndIndex,
+  blockStartIndex,
+  blockTagEndIndex,
+  boundaryStartIndex,
+  cursor,
+  template,
+}: {
+  readonly blockEndIndex: number;
+  readonly blockStartIndex: number;
+  readonly blockTagEndIndex: number;
+  readonly boundaryStartIndex: number;
+  readonly cursor: number;
+  readonly template: string;
+}): WordParagraphWrappedTemplateBlock | null {
+  const openingParagraphStartIndex = findLastWordParagraphStart(template, blockStartIndex);
+  const openingParagraphEndIndex = template.indexOf('</w:p>', blockStartIndex);
+  const closingParagraphStartIndex = findLastWordParagraphStart(template, boundaryStartIndex);
+  const closingParagraphEndIndex = template.indexOf('</w:p>', blockEndIndex);
+
+  if (
+    openingParagraphStartIndex === -1 ||
+    openingParagraphEndIndex === -1 ||
+    closingParagraphStartIndex === -1 ||
+    closingParagraphEndIndex === -1
+  ) {
+    return null;
+  }
+
+  const openingParagraphEndExclusive = openingParagraphEndIndex + '</w:p>'.length;
+  const closingParagraphEndExclusive = closingParagraphEndIndex + '</w:p>'.length;
+
+  if (
+    openingParagraphStartIndex < cursor ||
+    blockStartIndex > openingParagraphEndExclusive ||
+    closingParagraphStartIndex < openingParagraphStartIndex ||
+    blockEndIndex > closingParagraphEndExclusive
+  ) {
+    return null;
+  }
+
+  return {
+    blockPrefix: removeLeadingWordTabBeforeBlockTag(
+      template.slice(openingParagraphStartIndex, blockStartIndex),
+    ),
+    blockSuffix: template.slice(blockEndIndex, closingParagraphEndExclusive),
+    bodyStartIndex: blockTagEndIndex,
+    cursorEndIndex: closingParagraphEndExclusive,
+    staticPrefix: template.slice(cursor, openingParagraphStartIndex),
+  };
+}
+
+function removeLeadingWordTabBeforeBlockTag(blockPrefix: string): string {
+  return blockPrefix.replace(/<w:tab\/>(<w:t\b[^>]*>)$/u, '$1');
+}
+
+function stabilizeAosrSignatureParagraphs(xml: string): string {
+  return xml.replace(/<w:p\b[\s\S]*?<\/w:p>/gu, (paragraph) => {
+    if (!paragraph.includes('<w:pBdr>') || !paragraph.includes('<w:bottom')) {
+      return paragraph;
+    }
+
+    if (!paragraph.includes('<w:pPr>') || paragraph.includes('<w:keepNext')) {
+      return paragraph;
+    }
+
+    return paragraph.replace('<w:pPr>', '<w:pPr><w:keepNext/><w:keepLines/>');
+  });
+}
+
+function findLastWordParagraphStart(template: string, beforeIndex: number): number {
+  let paragraphStartIndex = template.lastIndexOf('<w:p', beforeIndex);
+
+  while (paragraphStartIndex !== -1) {
+    const paragraphStartSuffix = template.at(paragraphStartIndex + '<w:p'.length);
+
+    if (paragraphStartSuffix === ' ' || paragraphStartSuffix === '>') {
+      return paragraphStartIndex;
+    }
+
+    paragraphStartIndex = template.lastIndexOf('<w:p', paragraphStartIndex - 1);
+  }
+
+  return -1;
 }
 
 function findTemplateBlockBoundary(

@@ -5889,3 +5889,40 @@ delete/move/reorder lifecycle or generation was introduced.
 - no Prisma/schema/migrations;
 - no production storage;
 - no generic Word layout engine.
+
+### 2026-06-30 — AOSR DOCX paragraph/layout and download UX polish
+
+- Статус: `Frontend-only DOCX quality/UX polish`
+- Описание: tightened the real-template renderer and beginner-facing download
+  area after visual checking the generated `ОВ-1` DOCX.
+
+Добавлено/уточнено:
+
+- the DOCX template asset was not edited; the fix is in the renderer and tests;
+- `foreach` blocks in Word XML are now rendered as complete paragraphs when the
+  opening/closing tags live inside paragraph runs, so repeated counterparty and
+  signature groups do not glue into the previous paragraph;
+- service tabs that Word stores before a paragraph-level block tag are removed
+  before rendering, preventing final signature lines from starting too far to
+  the right while preserving the right-side tab before the signature name;
+- generated signature paragraphs with bottom borders receive `keepNext` and
+  `keepLines` in OOXML, so a group title is less likely to be orphaned from its
+  signature line during Word pagination;
+- the real-template smoke-test now checks paragraph-aware counterparty
+  separation, `N -> №` regressions including material passports, signature-line
+  tab placement and `keepNext` markers;
+- the act editor now separates `Скачать DOCX` into a `Действия с актом` block
+  with a non-blocking reminder to check number, date, work period, materials,
+  applications and signatories;
+- linked/manual wording in the act editor is user-facing: `Данные из раздела`,
+  `Используются общие данные раздела...` and `Редактировать только для этого
+акта`.
+
+Ограничения:
+
+- full LibreOffice render/rasterization was not available locally because the
+  bundled headless LibreOffice could not load `liblcms2.2.dylib`;
+- QuickLook was used for first-page visual checking, while later pages and
+  signature behavior are covered structurally through DOCX XML and tests;
+- the renderer remains a narrow frontend-only handler for the current tagged
+  AOSR template, not a universal Word-template engine.

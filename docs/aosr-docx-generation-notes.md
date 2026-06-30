@@ -120,3 +120,38 @@ template and checks `word/document.xml` for the known regressions: leftover
 tags, raw work ISO dates, duplicated next-work phrase, duplicated certificate
 number, duplicated document type in applications and Latin `N` in Russian
 document references.
+
+## Paragraph and signature layout pass
+
+The current template still stays as a static asset; the layout pass did not
+change template tag names or edit the DOCX file. The renderer now handles the
+Word XML shape more carefully:
+
+- paragraph-level `foreach` blocks are repeated with their full enclosing
+  `<w:p>...</w:p>` fragments instead of only joining the text between service
+  tags. This keeps `Заказчик`, `Подрядчик` and `Технический заказчик` as
+  separate visible paragraphs;
+- if Word stores a tab immediately before a paragraph-level block tag, that
+  service tab is removed before rendering. This prevents signature lines from
+  starting at the right tab stop while keeping the intentional tab before the
+  signature name;
+- signature paragraphs that use bottom borders receive `keepNext` and
+  `keepLines`, reducing the risk that a signature group title is orphaned at
+  the bottom of a page.
+
+Verification notes:
+
+- QuickLook confirmed the first page now shows separated counterparty blocks and
+  normalized dates/materials/application lines;
+- full LibreOffice rasterization was not available in the local environment
+  because headless LibreOffice could not load `liblcms2.2.dylib`;
+- the smoke-test therefore also performs paragraph-aware OOXML checks for
+  counterparty separation, signature tab placement and signature keep markers.
+
+## Download UX note
+
+The act editor keeps download non-blocking, but the `Скачать DOCX` button is now
+inside a separate `Действия с актом` area with a reminder to check number, date,
+work period, materials, applications and signatories. Linked/manual wording in
+the act editor uses user-facing terms such as `Данные из раздела` and
+`Редактировать только для этого акта`.

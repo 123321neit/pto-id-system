@@ -167,9 +167,15 @@ describe('DemoAosrWorkspacePage', () => {
     vi.stubGlobal('fetch', vi.fn().mockRejectedValue(generationError));
     renderDemoWorkspace();
 
-    const downloadButton = screen.getByRole('button', { name: 'Скачать DOCX' });
+    const actions = screen.getByRole('region', { name: 'Действия с актом' });
+    const downloadButton = within(actions).getByRole('button', { name: 'Скачать DOCX' });
 
     expect(downloadButton).toBeTruthy();
+    expect(
+      within(actions).getByText(
+        'Перед скачиванием проверьте номер, дату, период работ, материалы, приложения и подписантов.',
+      ),
+    ).toBeTruthy();
 
     await user.click(downloadButton);
 
@@ -342,7 +348,7 @@ describe('DemoAosrWorkspacePage', () => {
     const complianceSection = getSectionByHeading('7. Соответствие работ требованиям');
 
     expect(within(complianceSection).queryByText('По шаблону объекта')).toBeNull();
-    expect(screen.getAllByText('Шаблонные значения').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Данные из раздела').length).toBeGreaterThan(0);
     expect(
       getTextAreaValue(
         within(complianceSection).getByLabelText('Текст соответствия работ требованиям'),
@@ -380,7 +386,9 @@ describe('DemoAosrWorkspacePage', () => {
       demoAosrWorkspace.objectDefaults.defaultWorkContractorName,
     );
     expect(within(contractorSection).queryByRole('button')).toBeNull();
-    expect(screen.getByRole('button', { name: 'Сделать акт ручным' })).toBeTruthy();
+    expect(
+      screen.getByRole('button', { name: 'Редактировать только для этого акта' }),
+    ).toBeTruthy();
   });
 
   it('allows editing document compliance text and uses it in preview', async () => {
@@ -398,7 +406,7 @@ describe('DemoAosrWorkspacePage', () => {
     await user.clear(complianceField);
     await user.type(complianceField, documentText);
 
-    expect(screen.getByText('Отличается от шаблонных значений раздела')).toBeTruthy();
+    expect(screen.getByText('Отличается от общих данных раздела')).toBeTruthy();
     expect(getPreviewText()).toContain(documentText);
     expect(getPreviewText()).not.toContain(
       demoAosrWorkspace.objectDefaults.defaultComplianceStatement,
@@ -419,9 +427,9 @@ describe('DemoAosrWorkspacePage', () => {
 
     expect(getPreviewText()).toContain('Индивидуальное исключение для проверки возврата.');
 
-    await user.click(screen.getByRole('button', { name: 'Вернуть связь с шаблонными значениями' }));
+    await user.click(screen.getByRole('button', { name: 'Вернуть связь с данными раздела' }));
 
-    expect(screen.getAllByText('Шаблонные значения').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Данные из раздела').length).toBeGreaterThan(0);
     expect(getPreviewText()).toContain(demoAosrWorkspace.objectDefaults.defaultComplianceStatement);
     expect(getPreviewText()).not.toContain('Индивидуальное исключение для проверки возврата.');
   });
@@ -502,7 +510,7 @@ describe('DemoAosrWorkspacePage', () => {
 
     expect(screen.queryByLabelText('Добавить назначение представителя в акт')).toBeNull();
     expect(screen.queryByText('Состав подписантов берётся из шаблона объекта.')).toBeNull();
-    expect(screen.getAllByText('Шаблонные значения').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Данные из раздела').length).toBeGreaterThan(0);
   });
 
   it('explains that act materials must be selected from the certificate library', () => {
@@ -664,7 +672,7 @@ describe('DemoAosrWorkspacePage', () => {
 
     await user.click(within(dialog).getByRole('button', { name: 'Закрыть' }));
 
-    await user.click(screen.getByRole('button', { name: 'Вернуть связь с шаблонными значениями' }));
+    await user.click(screen.getByRole('button', { name: 'Вернуть связь с данными раздела' }));
 
     expect(getOrganizationOrderText().indexOf('Подрядчик')).toBeLessThan(
       getOrganizationOrderText().indexOf('Заказчик'),
@@ -1137,9 +1145,9 @@ describe('DemoAosrWorkspacePage', () => {
     expect(screen.queryByLabelText('ФИО для снимка акта')).toBeNull();
     expect(screen.getByLabelText('ФИО представителя')).toBeTruthy();
     expect(screen.getByLabelText('Группа / роль в ручной версии')).toBeTruthy();
-    expect(
-      screen.getAllByText(/Акт в ручном режиме\. Эти значения меняются только в этом акте/u).length,
-    ).toBeGreaterThan(0);
+    expect(screen.getAllByText(/Эти значения меняются только в этом акте/u).length).toBeGreaterThan(
+      0,
+    );
   });
 
   it('updates the document signatory order in the preview', async () => {
@@ -1657,7 +1665,7 @@ async function switchCurrentActToManualTemplate(
 ): Promise<void> {
   const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true);
 
-  await user.click(screen.getByRole('button', { name: 'Сделать акт ручным' }));
+  await user.click(screen.getByRole('button', { name: 'Редактировать только для этого акта' }));
 
   expect(confirmSpy).toHaveBeenCalledWith(
     'Этот акт станет ручной версией. Шаблонные значения больше не будут обновлять этот акт. Изменения будут действовать только здесь.',
