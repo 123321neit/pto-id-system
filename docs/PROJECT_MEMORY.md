@@ -5954,3 +5954,31 @@ delete/move/reorder lifecycle or generation was introduced.
 
 - the DOCX template file and its tags were not edited;
 - no PDF/ZIP/backend/storage work was added.
+
+### 2026-06-30 — Folder act deletion, drag reorder and DOCX-template preview
+
+- Статус: `Frontend-only object workspace UX polish`
+- Описание: added the next object-workspace corrections for folder act actions,
+  automatic numbering order and AOSR preview behavior.
+
+Добавлено/уточнено:
+
+- folder act cards now include `Удалить акт`; the action asks for confirmation
+  and removes the draft from both the folder `draftIds` and the draft collection;
+- the act list in a folder and the embedded editor side list support drag/pointer
+  reordering with visual feedback; when section numbering is automatic, numbers
+  are recalculated from the current folder order;
+- folder helpers preserve `draftIds` order, which is now the source of truth for
+  folder act display and reorder behavior;
+- the noisy section-template summary cards (`Как применяются значения`,
+  `Организации`, `Представители`, `Нумерация`) were removed from the settings UI;
+- AOSR preview now tries to generate the same DOCX as download and render it
+  through `docx-preview`; the existing HTML preview remains as a fallback/test
+  layer and uses `buildAosrDocxTemplateData`, so visible tag placeholders are not
+  shown.
+
+Ограничения:
+
+- no PDF/ZIP/backend/storage work was added;
+- DOCX preview is browser-side and depends on `docx-preview`; HTML fallback is
+  still kept for resilience and tests.

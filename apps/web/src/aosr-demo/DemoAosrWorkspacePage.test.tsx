@@ -495,23 +495,16 @@ describe('DemoAosrWorkspacePage', () => {
     ).toBeNull();
   });
 
-  it('summarizes the section template before the user edits detailed sections', async () => {
+  it('keeps the noisy section template summary out of the settings page', async () => {
     const user = userEvent.setup();
 
     renderDemoWorkspace();
     await openObjectSettings(user);
 
     const dialog = screen.getByRole('dialog', { name: 'Шаблонные значения' });
-    const summary = within(dialog).getByRole('region', { name: 'Сводка шаблонных значений' });
 
-    expect(
-      within(summary).getByText('Библиотеки → шаблонные значения → связанные акты'),
-    ).toBeTruthy();
-    expect(within(summary).getByText('3 блока')).toBeTruthy();
-    expect(within(summary).getByText('3 группы / 3 участника')).toBeTruthy();
-    expect(within(summary).getByText('ОВ-n')).toBeTruthy();
-    expect(summary.textContent).toContain('сквозная по разделу');
-    expect(summary.textContent).toContain('пример первого номера: ОВ-1');
+    expect(within(dialog).queryByRole('region', { name: 'Сводка шаблонных значений' })).toBeNull();
+    expect(within(dialog).queryByText('Как применяются значения')).toBeNull();
 
     await user.click(within(dialog).getByRole('button', { name: /Организации/u }));
     expect(

@@ -71,7 +71,11 @@ export function getDemoIdFolderDrafts(
   folder: DemoIdFolder,
   drafts: readonly DemoAosrDraft[],
 ): readonly DemoAosrDraft[] {
-  return drafts.filter((draft) => folder.draftIds.includes(draft.id));
+  const draftById = new Map(drafts.map((draft) => [draft.id, draft]));
+
+  return folder.draftIds
+    .map((draftId) => draftById.get(draftId))
+    .filter((draft): draft is DemoAosrDraft => draft !== undefined);
 }
 
 export function addDemoIdFolderDraft(
@@ -82,4 +86,52 @@ export function addDemoIdFolderDraft(
   return folders.map((folder) =>
     folder.id === folderId ? { ...folder, draftIds: [...folder.draftIds, draftId] } : folder,
   );
+}
+
+export function removeDemoIdFolderDraft(folders: DemoIdFolders, draftId: string): DemoIdFolders {
+  return folders.map((folder) =>
+    folder.draftIds.includes(draftId)
+      ? {
+          ...folder,
+          draftIds: folder.draftIds.filter((currentDraftId) => currentDraftId !== draftId),
+        }
+      : folder,
+  );
+}
+
+export function moveDemoIdFolderDraftBefore(
+  folders: DemoIdFolders,
+  folderId: DemoIdFolderId,
+  draggedDraftId: string,
+  targetDraftId: string,
+): DemoIdFolders {
+  if (draggedDraftId === targetDraftId) {
+    return folders;
+  }
+
+  return folders.map((folder) => {
+    if (
+      folder.id !== folderId ||
+      !folder.draftIds.includes(draggedDraftId) ||
+      !folder.draftIds.includes(targetDraftId)
+    ) {
+      return folder;
+    }
+
+    const withoutDraggedDraft = folder.draftIds.filter((draftId) => draftId !== draggedDraftId);
+    const targetIndex = withoutDraggedDraft.indexOf(targetDraftId);
+
+    if (targetIndex < 0) {
+      return folder;
+    }
+
+    return {
+      ...folder,
+      draftIds: [
+        ...withoutDraggedDraft.slice(0, targetIndex),
+        draggedDraftId,
+        ...withoutDraggedDraft.slice(targetIndex),
+      ],
+    };
+  });
 }

@@ -1743,6 +1743,36 @@ Still not implemented:
 
 ---
 
+## 64. Folder deletion, drag reorder, template preview and settings cleanup
+
+### Q: Что сделано по замечаниям про список актов в папке, нумерацию, preview и лишние карточки?
+
+A: The object workspace UX was polished without adding backend/storage scope:
+
+- folder act cards now have a `Удалить акт` action with confirmation;
+- deleting from either the folder card or the embedded act editor removes the
+  draft from the folder and the draft collection, then returns to the folder if
+  no act remains;
+- folder act order is stored in `folder.draftIds`; lists render in that order;
+- folder and editor act lists can be reordered by drag/pointer interaction, and
+  automatic section numbering is recalculated from the new folder order;
+- the clutter summary cards in section template settings were removed;
+- AOSR preview now attempts to render the generated DOCX from the same static
+  template used for download via `docx-preview`; HTML preview remains as fallback
+  and is fed by `buildAosrDocxTemplateData`, so template tags are not visible when
+  fields are empty;
+- added `docx-preview` as a web dependency and tests for folder-order helpers,
+  folder deletion and automatic renumbering after reorder.
+
+Still not implemented:
+
+- PDF generation;
+- ZIP/final/intermediate package downloads;
+- backend/API routes;
+- production storage.
+
+---
+
 ## 61. AOSR DOCX formatting cleanup after the first downloaded act
 
 ### Q: Что поправлено после проверки первого скачанного АОСР?

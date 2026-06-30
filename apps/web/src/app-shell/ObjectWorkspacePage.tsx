@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, type PointerEvent } from 'react';
 
 import { getDemoActTypeById, registeredDemoActTypes } from '../act-types/act-types.js';
 import { DemoAosrWorkspacePage } from '../aosr-demo/DemoAosrWorkspacePage.js';
@@ -31,6 +31,8 @@ import {
   demoIdFolders,
   getDemoIdFolderById,
   getDemoIdFolderDrafts,
+  moveDemoIdFolderDraftBefore,
+  removeDemoIdFolderDraft,
   type DemoIdFolder,
   type DemoIdFolderId,
   type DemoIdFolders,
@@ -82,6 +84,105 @@ function formatRenumberedActCount(count: number): string {
   return `${String(count)} актов`;
 }
 
+function renumberSectionDraftsByFolderOrder({
+  currentDrafts,
+  currentFolders,
+  mode = 'all',
+  section,
+  sectionTemplateSettings,
+}: {
+  readonly currentDrafts: readonly DemoAosrDraft[];
+  readonly currentFolders: DemoIdFolders;
+  readonly mode?: 'all' | 'automatic-only';
+  readonly section: DemoDocumentationSection;
+  readonly sectionTemplateSettings: DemoSectionTemplateSettings;
+}): readonly DemoAosrDraft[] {
+  const numberingStart = normalizeNumberingStart(
+    sectionTemplateSettings.sectionTemplate.numberingStart,
+  );
+  const nextNumberingByDraftId = new Map<
+    string,
+    { readonly actNumber: string; readonly sequences: DemoDocumentNumberingSequences }
+  >();
+  let sectionSequence = numberingStart;
+
+  for (const folderId of section.folderIds) {
+    const folder = getDemoIdFolderById(folderId, currentFolders);
+    let folderSequence = numberingStart;
+
+    for (const draftId of folder.draftIds) {
+      const draft = currentDrafts.find((currentDraft) => currentDraft.id === draftId);
+
+      if (
+        draft?.sectionId !== section.id ||
+        (mode === 'automatic-only' && draft.numberingAssignment.source !== 'automatic')
+      ) {
+        continue;
+      }
+
+      const sequences = {
+        folder: folderSequence,
+        section: sectionSequence,
+      };
+      const selectedSequence =
+        sectionTemplateSettings.sectionTemplate.numberingScope === 'section-wide'
+          ? sectionSequence
+          : folderSequence;
+
+      nextNumberingByDraftId.set(draft.id, {
+        actNumber: formatSectionDocumentNumber(sectionTemplateSettings, selectedSequence),
+        sequences,
+      });
+      sectionSequence += 1;
+      folderSequence += 1;
+    }
+  }
+
+  return currentDrafts.map((draft) => {
+    const nextNumbering = nextNumberingByDraftId.get(draft.id);
+
+    if (nextNumbering === undefined) {
+      return draft;
+    }
+
+    return {
+      ...draft,
+      actNumber: nextNumbering.actNumber,
+      numberingAssignment: {
+        automaticSequences: nextNumbering.sequences,
+        source: 'automatic',
+      },
+    };
+  });
+}
+
+function maybeRenumberAutomaticSectionDrafts({
+  currentDrafts,
+  currentFolders,
+  section,
+  sectionTemplateSettings,
+}: {
+  readonly currentDrafts: readonly DemoAosrDraft[];
+  readonly currentFolders: DemoIdFolders;
+  readonly section: DemoDocumentationSection | undefined;
+  readonly sectionTemplateSettings: DemoSectionTemplateSettings;
+}): readonly DemoAosrDraft[] {
+  if (
+    section === undefined ||
+    sectionTemplateSettings.sectionTemplate.numberingMode !== 'automatic'
+  ) {
+    return currentDrafts;
+  }
+
+  return renumberSectionDraftsByFolderOrder({
+    currentDrafts,
+    currentFolders,
+    mode: 'automatic-only',
+    section,
+    sectionTemplateSettings,
+  });
+}
+
 function buildInitialSectionTemplateSettings(
   hasDemoContent: boolean,
 ): DemoSectionTemplateSettingsById {
@@ -95,6 +196,17 @@ function buildInitialSectionTemplateSettings(
       createSectionTemplateSettings(section),
     ]),
   );
+}
+
+function getPointerTargetFolderDraftId(
+  element: HTMLElement,
+  clientX: number,
+  clientY: number,
+): string | null {
+  const targetElement = element.ownerDocument.elementFromPoint(clientX, clientY);
+  const targetDraft = targetElement?.closest<HTMLElement>('[data-folder-draft-id]');
+
+  return targetDraft?.dataset['folderDraftId'] ?? null;
 }
 
 type ObjectWorkspaceSection =
@@ -380,21 +492,74 @@ export function ObjectWorkspacePage({
   };
 
   const deleteAosrDraftFromCurrentFolder = (draftId: string, nextSelectedDraftId: string): void => {
-    setFolders((currentFolders) =>
-      currentFolders.map((folder) =>
-        folder.draftIds.includes(draftId)
-          ? {
-              ...folder,
-              draftIds: folder.draftIds.filter((currentDraftId) => currentDraftId !== draftId),
-            }
-          : folder,
-      ),
+    const nextFolders = removeDemoIdFolderDraft(folders, draftId);
+
+    setFolders(nextFolders);
+    setDrafts((currentDrafts) =>
+      maybeRenumberAutomaticSectionDrafts({
+        currentDrafts: currentDrafts.filter((currentDraft) => currentDraft.id !== draftId),
+        currentFolders: nextFolders,
+        section: selectedSection,
+        sectionTemplateSettings: selectedSectionTemplateSettings,
+      }),
     );
     setSelectedDraftId(nextSelectedDraftId);
 
     if (nextSelectedDraftId === '') {
       setActiveSection('folder');
     }
+  };
+
+  const deleteAosrDraftFromFolder = (draftId: string): void => {
+    const draft = drafts.find((currentDraft) => currentDraft.id === draftId);
+
+    if (draft === undefined) {
+      return;
+    }
+
+    const draftLabel = getDocumentDisplayNumber(draft.actNumber);
+    const shouldDelete = window.confirm(
+      `Удалить акт ${draftLabel}? Акт будет удалён из текущей папки.`,
+    );
+
+    if (!shouldDelete) {
+      return;
+    }
+
+    const nextSelectedDraftId = selectedFolderDrafts.find(({ id }) => id !== draftId)?.id ?? '';
+
+    deleteAosrDraftFromCurrentFolder(draftId, nextSelectedDraftId);
+  };
+
+  const reorderAosrDraftInSelectedFolder = (
+    draggedDraftId: string,
+    targetDraftId: string,
+  ): void => {
+    if (
+      selectedFolderId === null ||
+      selectedSection === undefined ||
+      draggedDraftId === targetDraftId
+    ) {
+      return;
+    }
+
+    const nextFolders = moveDemoIdFolderDraftBefore(
+      folders,
+      selectedFolderId,
+      draggedDraftId,
+      targetDraftId,
+    );
+
+    setFolders(nextFolders);
+
+    setDrafts((currentDrafts) =>
+      maybeRenumberAutomaticSectionDrafts({
+        currentDrafts,
+        currentFolders: nextFolders,
+        section: selectedSection,
+        sectionTemplateSettings: selectedSectionTemplateSettings,
+      }),
+    );
   };
 
   const openObjectSettings = (): void => {
@@ -526,60 +691,12 @@ export function ObjectWorkspacePage({
       return;
     }
 
-    const numberingStart = normalizeNumberingStart(
-      selectedSectionTemplateSettings.sectionTemplate.numberingStart,
-    );
-    const nextNumberingByDraftId = new Map<
-      string,
-      { readonly actNumber: string; readonly sequences: DemoDocumentNumberingSequences }
-    >();
-    let sectionSequence = numberingStart;
-
-    for (const folderId of selectedSection.folderIds) {
-      const folder = getDemoIdFolderById(folderId, folders);
-      let folderSequence = numberingStart;
-
-      for (const draftId of folder.draftIds) {
-        const draft = drafts.find((currentDraft) => currentDraft.id === draftId);
-
-        if (draft?.sectionId !== selectedSection.id) {
-          continue;
-        }
-
-        const sequences = {
-          folder: folderSequence,
-          section: sectionSequence,
-        };
-        const selectedSequence =
-          selectedSectionTemplateSettings.sectionTemplate.numberingScope === 'section-wide'
-            ? sectionSequence
-            : folderSequence;
-
-        nextNumberingByDraftId.set(draft.id, {
-          actNumber: formatSectionDocumentNumber(selectedSectionTemplateSettings, selectedSequence),
-          sequences,
-        });
-        sectionSequence += 1;
-        folderSequence += 1;
-      }
-    }
-
     setDrafts((currentDrafts) =>
-      currentDrafts.map((draft) => {
-        const nextNumbering = nextNumberingByDraftId.get(draft.id);
-
-        if (nextNumbering === undefined) {
-          return draft;
-        }
-
-        return {
-          ...draft,
-          actNumber: nextNumbering.actNumber,
-          numberingAssignment: {
-            automaticSequences: nextNumbering.sequences,
-            source: 'automatic',
-          },
-        };
+      renumberSectionDraftsByFolderOrder({
+        currentDrafts,
+        currentFolders: folders,
+        section: selectedSection,
+        sectionTemplateSettings: selectedSectionTemplateSettings,
       }),
     );
     setLastTemplateCopyMessage('Автоматическая нумерация применена ко всем актам раздела.');
@@ -865,6 +982,7 @@ export function ObjectWorkspacePage({
               setCreateDocumentPanelOpen(false);
             }}
             onCreateAosr={createAosrDraft}
+            onDeleteAosr={deleteAosrDraftFromFolder}
             onOpenAosr={(draftId) => {
               openAosr(selectedFolder.id, draftId);
             }}
@@ -873,6 +991,7 @@ export function ObjectWorkspacePage({
               setCreateDocumentPanelOpen(false);
               setActiveSection('intermediate-package');
             }}
+            onReorderAosr={reorderAosrDraftInSelectedFolder}
           />
         ) : null}
 
@@ -906,6 +1025,7 @@ export function ObjectWorkspacePage({
             }}
             onPasteSectionTemplate={pasteSectionTemplateFromClipboard}
             onRenumberSectionDrafts={renumberSelectedSectionDrafts}
+            onReorderDrafts={reorderAosrDraftInSelectedFolder}
           />
         ) : null}
 
@@ -1624,9 +1744,11 @@ interface ObjectFolderPageProps {
   readonly sectionName: string | undefined;
   readonly onCloseCreateDocumentPanel: () => void;
   readonly onCreateAosr: () => void;
+  readonly onDeleteAosr: (draftId: string) => void;
   readonly onOpenAosr: (draftId: string) => void;
   readonly onOpenCreateDocumentPanel: () => void;
   readonly onOpenIntermediatePackage: () => void;
+  readonly onReorderAosr: (draggedDraftId: string, targetDraftId: string) => void;
 }
 
 function ObjectFolderPage({
@@ -1636,10 +1758,53 @@ function ObjectFolderPage({
   sectionName,
   onCloseCreateDocumentPanel,
   onCreateAosr,
+  onDeleteAosr,
   onOpenAosr,
   onOpenCreateDocumentPanel,
   onOpenIntermediatePackage,
+  onReorderAosr,
 }: ObjectFolderPageProps): React.JSX.Element {
+  const [draggedDraftId, setDraggedDraftId] = useState<string | null>(null);
+  const [dropTargetDraftId, setDropTargetDraftId] = useState<string | null>(null);
+
+  const clearDragState = (): void => {
+    setDraggedDraftId(null);
+    setDropTargetDraftId(null);
+  };
+
+  const reorderDraggedDraft = (targetDraftId: string): void => {
+    if (draggedDraftId !== null && draggedDraftId !== targetDraftId) {
+      onReorderAosr(draggedDraftId, targetDraftId);
+      setDropTargetDraftId(targetDraftId);
+    }
+  };
+
+  const updatePointerDropTarget = (event: PointerEvent<HTMLElement>): void => {
+    const targetDraftId = getPointerTargetFolderDraftId(
+      event.currentTarget,
+      event.clientX,
+      event.clientY,
+    );
+
+    if (targetDraftId !== null) {
+      reorderDraggedDraft(targetDraftId);
+    }
+  };
+
+  const finishPointerReorder = (event: PointerEvent<HTMLElement>): void => {
+    const targetDraftId = getPointerTargetFolderDraftId(
+      event.currentTarget,
+      event.clientX,
+      event.clientY,
+    );
+
+    if (targetDraftId !== null) {
+      reorderDraggedDraft(targetDraftId);
+    }
+
+    clearDragState();
+  };
+
   return (
     <section className="object-folder-workspace" aria-labelledby="object-folder-title">
       <div className="object-folder-hero">
@@ -1701,13 +1866,77 @@ function ObjectFolderPage({
               <p>Создайте первый акт — он сразу появится в составе папки.</p>
             </div>
           ) : (
-            <ul className="object-overview__recent-list object-overview__recent-list--wide">
+            <ul className="object-folder-draft-list" aria-label={`Акты в папке ${folder.name}`}>
               {drafts.map((draft) => (
-                <li key={draft.id}>
+                <li
+                  className="object-folder-draft-card"
+                  data-dragging={draggedDraftId === draft.id ? 'true' : undefined}
+                  data-drop-target={dropTargetDraftId === draft.id ? 'true' : undefined}
+                  data-folder-draft-id={draft.id}
+                  draggable
+                  key={draft.id}
+                  onDragEnd={clearDragState}
+                  onDragEnter={() => {
+                    if (draggedDraftId !== null && draggedDraftId !== draft.id) {
+                      setDropTargetDraftId(draft.id);
+                      reorderDraggedDraft(draft.id);
+                    }
+                  }}
+                  onDragOver={(event) => {
+                    event.preventDefault();
+                    event.dataTransfer.dropEffect = 'move';
+                  }}
+                  onDragStart={(event) => {
+                    event.dataTransfer.effectAllowed = 'move';
+                    event.dataTransfer.setData('text/plain', draft.id);
+                    setDraggedDraftId(draft.id);
+                  }}
+                  onDrop={(event) => {
+                    event.preventDefault();
+                    reorderDraggedDraft(draft.id);
+                    clearDragState();
+                  }}
+                  onPointerEnter={() => {
+                    if (draggedDraftId !== null && draggedDraftId !== draft.id) {
+                      reorderDraggedDraft(draft.id);
+                    }
+                  }}
+                >
                   <button
+                    className="object-folder-draft-card__handle"
+                    aria-label="Перетащить акт"
+                    draggable
+                    onDragStart={(event) => {
+                      event.dataTransfer.effectAllowed = 'move';
+                      event.dataTransfer.setData('text/plain', draft.id);
+                      setDraggedDraftId(draft.id);
+                    }}
+                    onPointerDown={(event) => {
+                      if (event.button !== 0) {
+                        return;
+                      }
+
+                      event.preventDefault();
+                      setDraggedDraftId(draft.id);
+
+                      if (typeof event.currentTarget.setPointerCapture === 'function') {
+                        event.currentTarget.setPointerCapture(event.pointerId);
+                      }
+                    }}
+                    onPointerMove={updatePointerDropTarget}
+                    onPointerUp={finishPointerReorder}
+                    title={`Перетащить акт ${getDocumentDisplayNumber(draft.actNumber)}`}
+                    type="button"
+                  >
+                    ↕
+                  </button>
+                  <button
+                    aria-label={`Открыть акт ${getDocumentDisplayNumber(draft.actNumber)}`}
+                    className="object-folder-draft-card__open"
                     onClick={() => {
                       onOpenAosr(draft.id);
                     }}
+                    title={`Открыть акт ${getDocumentDisplayNumber(draft.actNumber)}`}
                     type="button"
                   >
                     <span>
@@ -1725,12 +1954,24 @@ function ObjectFolderPage({
                       <strong aria-hidden="true">→</strong>
                     </span>
                   </button>
+                  <button
+                    aria-label="Удалить акт"
+                    className="compact-toggle compact-toggle--danger object-folder-draft-card__delete"
+                    onClick={() => {
+                      onDeleteAosr(draft.id);
+                    }}
+                    title={`Удалить акт ${getDocumentDisplayNumber(draft.actNumber)}`}
+                    type="button"
+                  >
+                    Удалить акт
+                  </button>
                 </li>
               ))}
             </ul>
           )}
           <p className="object-folder-panel__note">
-            Для ручной нумерации видно все акты этой папки.
+            Перетаскивайте акты за ручку ↕. При автоматической нумерации порядок сразу пересчитывает
+            номера.
           </p>
         </section>
 

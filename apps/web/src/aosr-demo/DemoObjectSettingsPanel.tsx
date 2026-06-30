@@ -104,15 +104,6 @@ const objectSettingsSections: readonly {
   },
 ];
 
-function getNumberingScopeLabel(numberingScope: DemoDocumentNumberingScope): string {
-  switch (numberingScope) {
-    case 'section-wide':
-      return 'сквозная по разделу';
-    case 'restart-per-folder':
-      return 'отдельно в каждой папке';
-  }
-}
-
 export function DemoObjectSettingsPanel({
   globalOrganizations,
   globalRepresentatives,
@@ -156,23 +147,13 @@ export function DemoObjectSettingsPanel({
   onUpdateRepresentativeGroupTitle,
 }: DemoObjectSettingsPanelProps): React.JSX.Element {
   const [activeSectionId, setActiveSectionId] = useState<ObjectSettingsSectionId>('main');
-  const representativeGroupCount = objectDefaults.objectTemplate.representativeGroups.length;
-  const representativeMemberCount = objectDefaults.objectTemplate.representativeGroups.reduce(
-    (count, group) => count + group.members.length,
-    0,
-  );
   const numberingStart =
     Number.isInteger(objectDefaults.objectTemplate.numberingStart) &&
     objectDefaults.objectTemplate.numberingStart > 0
       ? objectDefaults.objectTemplate.numberingStart
       : 1;
   const isAutomaticNumbering = objectDefaults.objectTemplate.numberingMode === 'automatic';
-  const numberingPatternPreview = `${objectDefaults.objectTemplate.numberingPrefix}n${objectDefaults.objectTemplate.numberingSuffix}`;
   const firstNumberingExample = `${objectDefaults.objectTemplate.numberingPrefix}${String(numberingStart)}${objectDefaults.objectTemplate.numberingSuffix}`;
-  const numberingScopeLabel = getNumberingScopeLabel(objectDefaults.objectTemplate.numberingScope);
-  const numberingSummary = isAutomaticNumbering
-    ? `${numberingScopeLabel}; пример первого номера: ${firstNumberingExample}`
-    : 'ручная нумерация; новые акты создаются без номера';
   const [numberingStartInput, setNumberingStartInput] = useState(() => String(numberingStart));
   const isSectionScopedTemplate = sectionName !== undefined;
   const selectedSectionName = sectionName ?? 'выбранный раздел';
@@ -214,41 +195,6 @@ export function DemoObjectSettingsPanel({
             {isPagePresentation ? 'Вернуться к разделу' : 'Закрыть'}
           </button>
         </div>
-
-        <section className="object-template-status" aria-label="Сводка шаблонных значений">
-          <article className="object-template-status__card object-template-status__card--wide">
-            <span>Как применяются значения</span>
-            <strong>
-              {isSectionScopedTemplate
-                ? 'Библиотеки → шаблонные значения раздела → связанные акты'
-                : 'Библиотеки → шаблонные значения → связанные акты'}
-            </strong>
-            <small>
-              Изменения видны новым и связанным актам. Ручные акты остаются отдельными версиями.
-            </small>
-          </article>
-          <article className="object-template-status__card">
-            <span>Организации</span>
-            <strong>{objectDefaults.headerOrganizations.length} блока</strong>
-            <small>Порядок шапки печатного АОСР</small>
-          </article>
-          <article className="object-template-status__card">
-            <span>Представители</span>
-            <strong>
-              {representativeGroupCount} группы / {representativeMemberCount} участника
-            </strong>
-            <small>
-              {isSectionScopedTemplate
-                ? 'Назначения раздела для подписей'
-                : 'Назначения объекта для подписей'}
-            </small>
-          </article>
-          <article className="object-template-status__card">
-            <span>Нумерация</span>
-            <strong>{numberingPatternPreview}</strong>
-            <small>{numberingSummary}</small>
-          </article>
-        </section>
 
         {isSectionScopedTemplate ? (
           <section className="form-section" aria-labelledby="section-template-copy-title">
@@ -411,10 +357,6 @@ export function DemoObjectSettingsPanel({
                         меняются только по кнопке массовой перенумерации.
                       </p>
                     </span>
-                    <output aria-label="Шаблон номера" className="object-numbering-preview">
-                      {objectDefaults.objectTemplate.numberingPrefix}n
-                      {objectDefaults.objectTemplate.numberingSuffix}
-                    </output>
                   </div>
                   <p className="object-folders__empty-copy">
                     Пример первого номера: {firstNumberingExample}

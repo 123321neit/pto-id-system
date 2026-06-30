@@ -1,6 +1,9 @@
+import { useEffect, useRef, useState } from 'react';
+
 import type { DemoAosrFormVariantMetadata } from '../act-types/act-types.js';
+import { buildAosrDocxTemplateData } from './aosr-docx-template-data.js';
+import { generateAosrDocxBlob } from './aosr-docx-generator.js';
 import type { AosrPrintState } from './demo-aosr-workspace.js';
-import { formatDocumentDate } from './demo-aosr-ui.js';
 
 const objectNameCaption =
   '(наименование объекта капитального строительства в соответствии с проектной документацией, почтовый или строительный адрес объекта капитального строительства)';
@@ -25,16 +28,113 @@ interface DemoAosrPreviewProps {
   readonly printState: AosrPrintState;
 }
 
+type AosrPreviewStatus = 'error' | 'loading' | 'ready';
+
 export function DemoAosrPreview({
   formVariant,
   printState,
 }: DemoAosrPreviewProps): React.JSX.Element {
+  const previewHostRef = useRef<HTMLDivElement | null>(null);
+  const previewRenderIdRef = useRef(0);
+  const [previewStatus, setPreviewStatus] = useState<AosrPreviewStatus>('loading');
+  const templateData = buildAosrDocxTemplateData(printState);
+  const shouldShowHtmlPreview = previewStatus !== 'ready' || import.meta.env.MODE === 'test';
+
+  useEffect(() => {
+    const previewHost = previewHostRef.current;
+
+    if (previewHost === null) {
+      return undefined;
+    }
+
+    previewHost.replaceChildren();
+    setPreviewStatus('loading');
+    const renderId = previewRenderIdRef.current + 1;
+    previewRenderIdRef.current = renderId;
+
+    if (import.meta.env.MODE === 'test') {
+      previewHost.dataset['testDocxPreview'] = 'skipped';
+      setPreviewStatus('ready');
+
+      return undefined;
+    }
+
+    const renderPreview = async (): Promise<void> => {
+      try {
+        const docxBlob = await generateAosrDocxBlob(printState);
+        const { renderAsync } = await import('docx-preview');
+
+        if (previewRenderIdRef.current !== renderId) {
+          return;
+        }
+
+        await renderAsync(docxBlob, previewHost, previewHost, {
+          breakPages: true,
+          className: 'aosr-docx',
+          experimental: true,
+          ignoreFonts: false,
+          ignoreHeight: false,
+          ignoreLastRenderedPageBreak: false,
+          ignoreWidth: false,
+          inWrapper: true,
+          renderFooters: true,
+          renderHeaders: true,
+          useBase64URL: true,
+        });
+
+        if (previewRenderIdRef.current === renderId) {
+          setPreviewStatus('ready');
+        }
+      } catch (error) {
+        console.error('AOSR DOCX preview rendering failed', error);
+
+        if (previewRenderIdRef.current === renderId) {
+          previewHost.replaceChildren();
+          setPreviewStatus('error');
+        }
+      }
+    };
+
+    void renderPreview();
+
+    return () => {
+      previewRenderIdRef.current += 1;
+      previewHost.replaceChildren();
+    };
+  }, [printState]);
+
   return (
-    <section className="preview-panel" aria-labelledby="preview-title">
+    <section className="preview-panel preview-panel--template" aria-labelledby="preview-title">
       <div className="panel-heading">
         <h2 id="preview-title">Предпросмотр АОСР</h2>
+        <p>
+          Предпросмотр строится из того же DOCX-шаблона, что и скачиваемый файл. Если поле не
+          заполнено, в акте останется пустая строка без видимых тегов.
+        </p>
       </div>
-      <article className="act-page" aria-label="Демо-предпросмотр печатной формы АОСР">
+      <div className="aosr-docx-preview-shell" data-status={previewStatus}>
+        {previewStatus === 'loading' ? (
+          <p className="aosr-docx-preview-status" role="status">
+            Готовим предпросмотр из DOCX-шаблона…
+          </p>
+        ) : null}
+        {previewStatus === 'error' ? (
+          <div className="aosr-docx-preview-error" role="alert">
+            Не удалось показать предпросмотр DOCX. Скачивание акта остаётся доступным — проверьте
+            шаблон и данные документа.
+          </div>
+        ) : null}
+        <div
+          ref={previewHostRef}
+          className="aosr-docx-preview-host"
+          aria-label="Предпросмотр DOCX-шаблона АОСР"
+        />
+      </div>
+      <article
+        className="act-page"
+        aria-label="Демо-предпросмотр печатной формы АОСР"
+        hidden={!shouldShowHtmlPreview}
+      >
         <section className="act-page__page-frame" aria-labelledby="aosr-preview-page-1-label">
           <p className="act-page__page-label" id="aosr-preview-page-1-label">
             Страница 1
@@ -44,12 +144,12 @@ export function DemoAosrPreview({
               <div className="act-page__header-block">
                 <p className="act-page__block-label">Объект капитального строительства:</p>
                 <p className="act-page__field-line act-page__object-line">
-                  {printState.object.name}
+                  {templateData.object.name}
                 </p>
                 <p className="act-page__caption">{objectNameCaption}</p>
               </div>
 
-              {printState.counterparties.map((counterparty, index) => (
+              {templateData.counterparties.map((counterparty, index) => (
                 <div
                   className="act-page__header-block"
                   key={`${counterparty.title}-${String(index)}`}
@@ -70,16 +170,16 @@ export function DemoAosrPreview({
               <h3>{formVariant.printTitle}</h3>
               <div className="act-page__number-date-row">
                 <span>
-                  <strong>№ {printState.document.number}</strong>
+                  <strong>{templateData.document.numberLine}</strong>
                 </span>
                 <span>
-                  <strong>{formatDocumentDate(printState.document.date)}</strong>
+                  <strong>{templateData.document.dateLine}</strong>
                 </span>
               </div>
             </section>
 
             <section className="act-page__representative-blocks" aria-label="Представители">
-              {printState.representatives.groups.map((group, groupIndex) => (
+              {templateData.representatives.groups.map((group, groupIndex) => (
                 <div
                   className="act-page__representative-block"
                   key={`${group.title}-${String(groupIndex)}`}
@@ -104,7 +204,7 @@ export function DemoAosrPreview({
               ))}
               <p>
                 произвели осмотр работ, выполненных{' '}
-                <span className="act-page__print-value">{printState.work.contractorName}</span>
+                <span className="act-page__print-value">{templateData.work.contractorName}</span>
               </p>
               <p className="act-page__caption">{workContractorCaption}</p>
               <p>и составили настоящий акт о нижеследующем:</p>
@@ -115,7 +215,7 @@ export function DemoAosrPreview({
                 <span className="act-page__item-label">
                   1.К освидетельствованию предъявлены следующие работы:
                 </span>{' '}
-                <span className="act-page__print-value">{printState.work.description}</span>
+                <span className="act-page__print-value">{templateData.work.description}</span>
               </p>
               <p className="act-page__caption">(наименование скрытых работ)</p>
             </section>
@@ -125,7 +225,7 @@ export function DemoAosrPreview({
                 <span className="act-page__item-label">
                   2.Работы выполнены по проектной документации:
                 </span>{' '}
-                <span className="act-page__print-value">{printState.project.documentation}</span>
+                <span className="act-page__print-value">{templateData.project.documentation}</span>
               </p>
               <p className="act-page__caption">{projectDocumentationCaption}</p>
             </section>
@@ -134,9 +234,9 @@ export function DemoAosrPreview({
               <p>
                 <span className="act-page__item-label">3.При выполнении работ применены:</span>
               </p>
-              {printState.materials.items.length > 0 ? (
+              {templateData.materials.items.length > 0 ? (
                 <div className="act-page__inline-list">
-                  {printState.materials.items.map((material, index) => (
+                  {templateData.materials.items.map((material, index) => (
                     <p key={`${material.displayText}-${String(index)}`}>
                       <span className="act-page__print-value">{material.displayText}</span>
                     </p>
@@ -155,9 +255,9 @@ export function DemoAosrPreview({
                   требованиям:
                 </span>
               </p>
-              {printState.confirmationDocuments.items.length > 0 ? (
+              {templateData.confirmationDocuments.items.length > 0 ? (
                 <div className="act-page__inline-list">
-                  {printState.confirmationDocuments.items.map((document, index) => (
+                  {templateData.confirmationDocuments.items.map((document, index) => (
                     <p key={`${document.displayText}-${String(index)}`}>
                       <span className="act-page__print-value">{document.displayText}</span>
                     </p>
@@ -175,21 +275,17 @@ export function DemoAosrPreview({
               </p>
               <p>
                 начала работ{' '}
-                <span className="act-page__print-value">
-                  {formatDocumentDate(printState.work.startDateLine)}
-                </span>
+                <span className="act-page__print-value">{templateData.work.startDateLine}</span>
               </p>
               <p>
                 окончания работ{' '}
-                <span className="act-page__print-value">
-                  {formatDocumentDate(printState.work.endDateLine)}
-                </span>
+                <span className="act-page__print-value">{templateData.work.endDateLine}</span>
               </p>
             </section>
             <section className="act-page__official-section" aria-label="Соответствие работ">
               <p>
                 <span className="act-page__item-label">6.Работы выполнены в соответствии с:</span>{' '}
-                <span className="act-page__print-value">{printState.project.compliance}</span>
+                <span className="act-page__print-value">{templateData.project.compliance}</span>
               </p>
               <p className="act-page__caption">{complianceCaption}</p>
             </section>
@@ -199,7 +295,7 @@ export function DemoAosrPreview({
                 <span className="act-page__item-label">
                   7.Разрешается производство последующих работ по:
                 </span>{' '}
-                <span className="act-page__print-value">{printState.work.nextWorks}</span>
+                <span className="act-page__print-value">{templateData.work.nextWorks}</span>
               </p>
               <p className="act-page__caption">{nextWorksCaption}</p>
             </section>
@@ -207,18 +303,20 @@ export function DemoAosrPreview({
             <section className="act-page__after-body" aria-label="Сведения и приложения">
               <p>
                 <span className="act-page__item-label">Дополнительные сведения:</span>{' '}
-                <span className="act-page__print-value">{printState.document.additionalInfo}</span>
+                <span className="act-page__print-value">
+                  {templateData.document.additionalInfo}
+                </span>
               </p>
               <p>
                 Акт составлен в{' '}
-                <span className="act-page__print-value">{printState.document.copiesLine}</span>{' '}
+                <span className="act-page__print-value">{templateData.document.copiesLine}</span>{' '}
                 экземплярах.
               </p>
               <div className="act-page__applications">
                 <h4>Приложения:</h4>
                 <div className="act-page__application-lines">
-                  {printState.applications.items.length > 0 ? (
-                    printState.applications.items.map((application, index) => {
+                  {templateData.applications.items.length > 0 ? (
+                    templateData.applications.items.map((application, index) => {
                       return (
                         <p key={`${application.displayText}-${String(index)}`}>
                           <span className="act-page__print-value">{application.displayText}</span>
@@ -238,7 +336,7 @@ export function DemoAosrPreview({
               aria-label="Подписи представителей"
             >
               <div className="act-page__signature-list">
-                {printState.representatives.groups.map((group, groupIndex) => (
+                {templateData.representatives.groups.map((group, groupIndex) => (
                   <div
                     className="act-page__signature-block"
                     key={`${group.title}-signature-${String(groupIndex)}`}

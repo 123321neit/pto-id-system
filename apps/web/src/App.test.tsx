@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { cleanup, render, screen, within } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
@@ -1030,6 +1030,75 @@ describe('App shell mock navigation', () => {
     expect(screen.queryByRole('button', { name: /ОВ-1/u })).toBeNull();
   });
 
+  it('deletes an AOSR draft directly from the folder act list after confirmation', async () => {
+    const user = userEvent.setup();
+    const confirmSpy = vi
+      .spyOn(window, 'confirm')
+      .mockReturnValueOnce(false)
+      .mockReturnValueOnce(true);
+
+    render(<App />);
+    await user.click(getFirstOpenObjectButton());
+    await openFolderByName(user, 'Сентябрь 2026');
+
+    const folderDocuments = within(getSectionByHeading('Акты в папке'));
+    const deleteButton = folderDocuments.getByRole('button', { name: 'Удалить акт' });
+
+    await user.click(deleteButton);
+
+    expect(confirmSpy).toHaveBeenCalledWith('Удалить акт ОВ-1? Акт будет удалён из текущей папки.');
+    expect(screen.getByRole('button', { name: /ОВ-1/u })).toBeTruthy();
+
+    await user.click(deleteButton);
+
+    expect(screen.getByText('В этой папке пока нет актов')).toBeTruthy();
+    expect(screen.queryByRole('button', { name: /ОВ-1/u })).toBeNull();
+  });
+
+  it('reorders folder acts by drag and recalculates automatic section numbering', async () => {
+    const user = userEvent.setup();
+
+    render(<App />);
+    await user.click(getFirstOpenObjectButton());
+    await openFolderByName(user, 'Сентябрь 2026');
+
+    await user.click(screen.getByRole('button', { name: 'Создать акт' }));
+    await user.click(
+      within(screen.getByRole('dialog', { name: 'Создание акта' })).getByRole('button', {
+        name: 'Создать акт',
+      }),
+    );
+    await user.clear(screen.getByLabelText('Дата акта'));
+    await user.type(screen.getByLabelText('Дата акта'), '2026-09-05');
+    await openFolderByName(user, 'Сентябрь 2026');
+
+    let folderActs = screen.getByRole('list', { name: 'Акты в папке Сентябрь 2026' });
+    let rows = within(folderActs).getAllByRole('listitem');
+
+    expect(rows[0]?.textContent).toContain('ОВ-1');
+    expect(rows[0]?.textContent).toContain('04.09.2026');
+    expect(rows[1]?.textContent).toContain('ОВ-3');
+    expect(rows[1]?.textContent).toContain('05.09.2026');
+
+    const dataTransfer = createDragDataTransfer();
+    const draggedRow = getRequiredListItem(rows, 1);
+    const targetRow = getRequiredListItem(rows, 0);
+
+    fireEvent.dragStart(draggedRow, { dataTransfer });
+    fireEvent.drop(targetRow, { dataTransfer });
+
+    folderActs = screen.getByRole('list', { name: 'Акты в папке Сентябрь 2026' });
+    rows = within(folderActs).getAllByRole('listitem');
+
+    expect(rows[0]?.textContent).toContain('ОВ-1');
+    expect(rows[0]?.textContent).toContain('05.09.2026');
+    expect(rows[1]?.textContent).toContain('ОВ-2');
+    expect(rows[1]?.textContent).toContain('04.09.2026');
+
+    await openFolderByName(user, 'Октябрь 2026');
+    expect(screen.getByRole('button', { name: /ОВ-3/u })).toBeTruthy();
+  });
+
   it('keeps representatives in the global library instead of duplicating them in object navigation', async () => {
     const user = userEvent.setup();
 
@@ -1258,7 +1327,6 @@ describe('App shell mock navigation', () => {
     await user.type(firstNumber, '100');
     await user.type(suffix, '/2026');
 
-    expect(within(dialog).getByLabelText('Шаблон номера').textContent).toBe('АОСР/n/2026');
     expect(dialog.textContent).toContain('Пример первого номера: АОСР/100/2026');
     await user.click(within(dialog).getByRole('button', { name: 'Вернуться к разделу' }));
 
@@ -1952,6 +2020,30 @@ function getTextAreaValue(element: HTMLElement): string {
   }
 
   return element.value;
+}
+
+function createDragDataTransfer(): DataTransfer {
+  return {
+    dropEffect: 'move',
+    effectAllowed: 'move',
+    files: [] as unknown as FileList,
+    items: [] as unknown as DataTransferItemList,
+    types: [],
+    clearData: vi.fn(),
+    getData: vi.fn(() => ''),
+    setData: vi.fn(),
+    setDragImage: vi.fn(),
+  };
+}
+
+function getRequiredListItem(items: readonly HTMLElement[], index: number): HTMLElement {
+  const item = items[index];
+
+  if (item === undefined) {
+    throw new Error(`В списке актов ожидалась строка с индексом ${String(index)}.`);
+  }
+
+  return item;
 }
 
 function expectNoForbiddenObjectWorkspaceText(): void {

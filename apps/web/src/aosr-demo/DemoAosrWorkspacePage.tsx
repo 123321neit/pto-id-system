@@ -99,6 +99,7 @@ interface DemoAosrWorkspacePageProps {
   readonly onDeleteDraft?: (draftId: string, nextSelectedDraftId: string) => void;
   readonly onPasteSectionTemplate?: () => void;
   readonly onRenumberSectionDrafts?: () => void;
+  readonly onReorderDrafts?: (draggedDraftId: string, targetDraftId: string) => void;
   readonly onSectionTemplateSettingsChange?: (
     sectionTemplateSettings: DemoSectionTemplateSettings,
   ) => void;
@@ -132,6 +133,7 @@ export function DemoAosrWorkspacePage({
   onDeleteDraft,
   onPasteSectionTemplate,
   onRenumberSectionDrafts,
+  onReorderDrafts,
   onSectionTemplateSettingsChange,
   onObjectDefaultsChange,
   onBackToObjects,
@@ -173,7 +175,9 @@ export function DemoAosrWorkspacePage({
   const visibleDrafts =
     visibleDraftIds === undefined
       ? drafts
-      : drafts.filter((draft) => visibleDraftIds.includes(draft.id));
+      : visibleDraftIds
+          .map((draftId) => drafts.find((draft) => draft.id === draftId))
+          .filter((draft): draft is DemoAosrDraft => draft !== undefined);
   const [selectedDraftId, setSelectedDraftId] = useState(
     initialSelectedDraftId ?? demoAosrWorkspace.drafts[0]?.id ?? '',
   );
@@ -282,12 +286,22 @@ export function DemoAosrWorkspacePage({
     void downloadSelectedAosrDocx();
   };
 
-  const deleteSelectedDraft = (): void => {
-    const currentDraftId = selectedDraft.id;
+  const deleteDraft = (draftId: string = selectedDraft.id): void => {
+    const draftToDelete = visibleDrafts.find((draft) => draft.id === draftId);
+
+    if (draftToDelete === undefined) {
+      return;
+    }
+
+    const currentDraftId = draftToDelete.id;
+    const currentDocumentLabel =
+      draftToDelete.actNumber.trim() === '' ? 'без номера' : draftToDelete.actNumber;
     const nextSelectedDraftId =
-      visibleDrafts.find((draft) => draft.id !== currentDraftId)?.id ?? '';
+      selectedDraft.id === currentDraftId
+        ? (visibleDrafts.find((draft) => draft.id !== currentDraftId)?.id ?? '')
+        : selectedDraft.id;
     const shouldDelete = window.confirm(
-      `Удалить акт ${selectedDocumentLabel}? Акт будет удалён из текущей папки.`,
+      `Удалить акт ${currentDocumentLabel}? Акт будет удалён из текущей папки.`,
     );
 
     if (!shouldDelete) {
@@ -565,8 +579,11 @@ export function DemoAosrWorkspacePage({
       return;
     }
 
-    commitDrafts((currentDrafts) => moveItemBefore(currentDrafts, draggedDraftId, targetDraftId));
-    setDraggedDraftId(null);
+    if (onReorderDrafts === undefined) {
+      commitDrafts((currentDrafts) => moveItemBefore(currentDrafts, draggedDraftId, targetDraftId));
+    } else {
+      onReorderDrafts(draggedDraftId, targetDraftId);
+    }
   };
 
   const closeObjectSettings = (): void => {
@@ -808,6 +825,7 @@ export function DemoAosrWorkspacePage({
             folderName={folderName}
             selectedDraftId={selectedDraft.id}
             onCreateAct={onCreateActInFolder}
+            onDeleteDraft={deleteDraft}
             onDragEnd={() => {
               setDraggedDraftId(null);
             }}
@@ -874,7 +892,9 @@ export function DemoAosrWorkspacePage({
                 onChangeDocumentTypeFilter={setObjectDocumentTypeFilter}
                 onChangeManualRepresentativeForm={updateManualRepresentativeForm}
                 onChangeMaterialSearch={setMaterialSearch}
-                onDeleteAct={deleteSelectedDraft}
+                onDeleteAct={() => {
+                  deleteDraft();
+                }}
                 onDownloadDocx={handleDownloadSelectedAosrDocx}
                 onDragRepresentativeEnd={() => {
                   setDraggedRepresentativeId(null);
