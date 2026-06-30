@@ -67,3 +67,28 @@ AosrPrintState -> AOSR template data -> static DOCX template -> downloaded .docx
 
 It does not implement PDF, ZIP, final/intermediate ID package generation,
 backend storage, Prisma schema changes or production number reservation.
+
+## Runtime download fix notes
+
+The first browser download attempt failed with the user-safe message
+`Не удалось сформировать DOCX. Проверьте шаблон акта и данные документа.`
+because the renderer could not close several `foreach` blocks in the real
+template.
+
+Root cause:
+
+- the static template file itself was valid and was not edited;
+- the public asset path `/templates/aosr/AOSR1_template_final_tags_corrected.docx`
+  is copied by Vite into `dist/templates/aosr/`;
+- most template tags are stored as normal escaped Word text, for example
+  `&lt;&lt;[object.name]&gt;&gt;`;
+- several closing `&lt;&lt;/foreach&gt;&gt;` tags were split by Word between
+  multiple `<w:t>` / `<w:r>` runs, for example `&lt;&lt;/`, then XML run markup,
+  then `foreach`, then `&gt;&gt;`;
+- the original parser read that split sequence as an unsupported large tag, so
+  loop rendering failed before a DOCX could be downloaded.
+
+The renderer now normalizes split template tags inside Word text nodes before
+parsing. It keeps the DOCX template untouched, preserves valid Word XML and is
+covered by a smoke-test that renders the real static template, unzips the
+result and verifies that no `<<...>>` service tags remain.

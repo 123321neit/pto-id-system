@@ -5824,3 +5824,38 @@ delete/move/reorder lifecycle or generation was introduced.
 - no production storage;
 - no production seed from real acts;
 - no object-wide numbering rollback.
+
+### 2026-06-30 — AOSR DOCX split-run renderer fix
+
+- Статус: `Frontend-only DOCX runtime fix`
+- Описание: fixed the first AOSR DOCX download failure found in the real static
+  DOCX template.
+
+Добавлено/уточнено:
+
+- the act editor still shows the same user-safe failure message, but now also
+  logs `AOSR DOCX generation failed` with the original error to `console.error`;
+- the real static template was smoke-tested through the generator, not through
+  a pseudo mock;
+- the actual failure was `AOSR DOCX template block is not closed: foreach`;
+- the cause was Word split-runs in several closing `</foreach>` template tags:
+  the visible tag text was continuous, but the XML stored it across multiple
+  `<w:t>` / `<w:r>` runs;
+- `renderAosrDocxTemplateBytes` now renders DOCX bytes from a static template
+  and `AosrPrintState`, so generator tests do not depend on browser download
+  APIs;
+- the renderer normalizes split Word template tags before parsing loops and
+  fields, while leaving the template asset itself unchanged;
+- the smoke-test unzips the generated DOCX, checks `word/document.xml`, verifies
+  that service tags are gone and confirms representative/material/contractor
+  values from `AosrPrintState`.
+
+Что не было введено:
+
+- no edits to the DOCX template or template tags;
+- no PDF generation;
+- no ZIP/final/intermediate package generation;
+- no backend routes/controllers or API;
+- no Prisma/schema/migrations;
+- no production storage;
+- no DOM/UI data reads.

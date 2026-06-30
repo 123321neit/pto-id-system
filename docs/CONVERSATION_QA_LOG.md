@@ -1699,3 +1699,44 @@ Still not implemented:
 - backend/API routes;
 - Prisma models/migrations;
 - production storage or production parsing of the real acts.
+
+---
+
+## 60. AOSR DOCX browser download failure
+
+### Q: Почему первое скачивание АОСР DOCX падало и как это исправлено?
+
+A: The first runtime failure was reproduced by a real-template generator
+smoke-test. The error was:
+
+```text
+AOSR DOCX template block is not closed: foreach
+```
+
+The static template was valid and the Vite public path was correct. The problem
+was inside the renderer: Word had split several closing `</foreach>` template
+tags across multiple `<w:t>` / `<w:r>` runs. The previous parser expected
+complete escaped tags in one text run and therefore failed to match the loop
+closing tag.
+
+The fix keeps the DOCX template unchanged:
+
+- generation still starts from `AosrPrintState`;
+- the renderer now normalizes split Word template tags before parsing;
+- `renderAosrDocxTemplateBytes` lets tests render the real template bytes
+  without browser download APIs;
+- `DemoAosrWorkspacePage` logs the original exception through
+  `console.error('AOSR DOCX generation failed', error)` while keeping the
+  friendly UI message;
+- the new smoke-test reads
+  `apps/web/public/templates/aosr/AOSR1_template_final_tags_corrected.docx`,
+  renders it, unzips the result, verifies `word/document.xml`, checks that no
+  service tags remain and checks expected act/material/representative values.
+
+Still not implemented:
+
+- PDF generation;
+- ZIP/final/intermediate package downloads;
+- backend/API routes;
+- Prisma models/migrations;
+- production storage.

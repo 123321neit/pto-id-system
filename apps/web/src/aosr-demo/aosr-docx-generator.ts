@@ -18,10 +18,23 @@ interface TemplateBlockBoundary {
   readonly startIndex: number;
 }
 
+interface WordTextNode {
+  readonly combinedEnd: number;
+  readonly combinedStart: number;
+  readonly contentEnd: number;
+  readonly contentStart: number;
+  readonly text: string;
+}
+
 interface AosrDocxDownloadOptions {
   readonly browserDocument?: Document;
   readonly browserUrl?: Pick<typeof URL, 'createObjectURL' | 'revokeObjectURL'>;
   readonly templateUrl?: string;
+}
+
+export interface RenderAosrDocxTemplateBytesInput {
+  readonly printState: AosrPrintState;
+  readonly templateBytes: Uint8Array;
 }
 
 export async function generateAosrDocxBlob(
@@ -34,9 +47,21 @@ export async function generateAosrDocxBlob(
     throw new Error(`AOSR DOCX template request failed: ${String(templateResponse.status)}`);
   }
 
-  const templateData = buildAosrDocxTemplateData(printState);
   const templateBuffer = await templateResponse.arrayBuffer();
-  const templateEntries = unzipSync(new Uint8Array(templateBuffer));
+  const renderedBytes = renderAosrDocxTemplateBytes({
+    printState,
+    templateBytes: new Uint8Array(templateBuffer),
+  });
+
+  return new Blob([copyBytesToArrayBuffer(renderedBytes)], { type: DOCX_MIME_TYPE });
+}
+
+export function renderAosrDocxTemplateBytes({
+  printState,
+  templateBytes,
+}: RenderAosrDocxTemplateBytesInput): Uint8Array {
+  const templateData = buildAosrDocxTemplateData(printState);
+  const templateEntries = unzipSync(templateBytes);
   const renderedEntries: Record<string, Uint8Array> = {};
 
   for (const [entryName, entryData] of Object.entries(templateEntries)) {
@@ -50,7 +75,7 @@ export async function generateAosrDocxBlob(
     renderedEntries[entryName] = entryData;
   }
 
-  return new Blob([zipSync(renderedEntries)], { type: DOCX_MIME_TYPE });
+  return zipSync(renderedEntries);
 }
 
 export async function downloadAosrDocx(
@@ -75,7 +100,129 @@ export async function downloadAosrDocx(
 }
 
 function renderAosrDocxTemplateXml(xml: string, data: AosrDocxTemplateData): string {
-  return renderTemplateFragment(xml, data as unknown as TemplateContext);
+  return renderTemplateFragment(
+    normalizeSplitWordTemplateTags(xml),
+    data as unknown as TemplateContext,
+  );
+}
+
+function copyBytesToArrayBuffer(bytes: Uint8Array): ArrayBuffer {
+  const arrayBuffer = new ArrayBuffer(bytes.byteLength);
+
+  new Uint8Array(arrayBuffer).set(bytes);
+
+  return arrayBuffer;
+}
+
+function normalizeSplitWordTemplateTags(xml: string): string {
+  const textNodes = getWordTextNodes(xml);
+
+  if (textNodes.length === 0) {
+    return xml;
+  }
+
+  const normalizedTextNodes = textNodes.map((textNode) => textNode.text);
+  const combinedText = textNodes.map((textNode) => textNode.text).join('');
+  const tagPattern = createTemplateTagPattern();
+  let tagMatch = tagPattern.exec(combinedText);
+
+  while (tagMatch !== null) {
+    const tagText = tagMatch[0];
+    const tagStart = tagMatch.index;
+    const tagEnd = tagStart + tagText.length;
+    const firstTextNodeIndex = getTextNodeIndexAt(textNodes, tagStart);
+    const lastTextNodeIndex = getTextNodeIndexAt(textNodes, tagEnd - 1);
+
+    if (
+      firstTextNodeIndex !== null &&
+      lastTextNodeIndex !== null &&
+      firstTextNodeIndex !== lastTextNodeIndex
+    ) {
+      const firstTextNode = textNodes[firstTextNodeIndex];
+      const lastTextNode = textNodes[lastTextNodeIndex];
+
+      if (firstTextNode !== undefined && lastTextNode !== undefined) {
+        normalizedTextNodes[firstTextNodeIndex] =
+          firstTextNode.text.slice(0, tagStart - firstTextNode.combinedStart) + tagText;
+
+        for (
+          let textNodeIndex = firstTextNodeIndex + 1;
+          textNodeIndex < lastTextNodeIndex;
+          textNodeIndex += 1
+        ) {
+          normalizedTextNodes[textNodeIndex] = '';
+        }
+
+        normalizedTextNodes[lastTextNodeIndex] = lastTextNode.text.slice(
+          tagEnd - lastTextNode.combinedStart,
+        );
+      }
+    }
+
+    tagMatch = tagPattern.exec(combinedText);
+  }
+
+  return replaceWordTextNodeContents(xml, textNodes, normalizedTextNodes);
+}
+
+function getWordTextNodes(xml: string): readonly WordTextNode[] {
+  const textNodePattern = /<w:t\b[^>]*>([\s\S]*?)<\/w:t>/gu;
+  const textNodes: WordTextNode[] = [];
+  let combinedCursor = 0;
+  let textNodeMatch = textNodePattern.exec(xml);
+
+  while (textNodeMatch !== null) {
+    const text = textNodeMatch[1] ?? '';
+    const fullTextNode = textNodeMatch[0];
+    const contentStart = textNodeMatch.index + fullTextNode.indexOf('>') + 1;
+    const contentEnd = contentStart + text.length;
+
+    textNodes.push({
+      combinedEnd: combinedCursor + text.length,
+      combinedStart: combinedCursor,
+      contentEnd,
+      contentStart,
+      text,
+    });
+    combinedCursor += text.length;
+    textNodeMatch = textNodePattern.exec(xml);
+  }
+
+  return textNodes;
+}
+
+function getTextNodeIndexAt(textNodes: readonly WordTextNode[], position: number): number | null {
+  const textNodeIndex = textNodes.findIndex(
+    (textNode) => position >= textNode.combinedStart && position < textNode.combinedEnd,
+  );
+
+  return textNodeIndex === -1 ? null : textNodeIndex;
+}
+
+function replaceWordTextNodeContents(
+  xml: string,
+  textNodes: readonly WordTextNode[],
+  normalizedTextNodes: readonly string[],
+): string {
+  let normalizedXml = xml;
+
+  for (let textNodeIndex = textNodes.length - 1; textNodeIndex >= 0; textNodeIndex -= 1) {
+    const textNode = textNodes[textNodeIndex];
+    const normalizedText = normalizedTextNodes[textNodeIndex];
+
+    if (
+      textNode !== undefined &&
+      normalizedText !== undefined &&
+      normalizedText !== textNode.text
+    ) {
+      normalizedXml =
+        normalizedXml.slice(0, textNode.contentStart) +
+        normalizedText +
+        normalizedXml.slice(textNode.contentEnd);
+    }
+  }
+
+  return normalizedXml;
 }
 
 function renderTemplateFragment(template: string, context: TemplateContext): string {

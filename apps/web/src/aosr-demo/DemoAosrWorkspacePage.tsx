@@ -268,7 +268,8 @@ export function DemoAosrWorkspacePage({
 
     try {
       await downloadAosrDocx(printState);
-    } catch {
+    } catch (error) {
+      console.error('AOSR DOCX generation failed', error);
       setDocxDownloadError(
         'Не удалось сформировать DOCX. Проверьте шаблон акта и данные документа.',
       );

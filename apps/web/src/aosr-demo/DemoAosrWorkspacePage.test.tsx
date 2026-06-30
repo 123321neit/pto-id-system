@@ -161,8 +161,10 @@ describe('DemoAosrWorkspacePage', () => {
 
   it('shows the AOSR DOCX download action and reports generation errors', async () => {
     const user = userEvent.setup();
+    const generationError = new Error('DOCX template error');
+    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => undefined);
 
-    vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('DOCX template error')));
+    vi.stubGlobal('fetch', vi.fn().mockRejectedValue(generationError));
     renderDemoWorkspace();
 
     const downloadButton = screen.getByRole('button', { name: 'Скачать DOCX' });
@@ -176,6 +178,7 @@ describe('DemoAosrWorkspacePage', () => {
     expect(alert.textContent).toBe(
       'Не удалось сформировать DOCX. Проверьте шаблон акта и данные документа.',
     );
+    expect(consoleErrorSpy).toHaveBeenCalledWith('AOSR DOCX generation failed', generationError);
     expect(screen.getByRole('heading', { name: 'Редактирование акта ОВ-1' })).toBeTruthy();
   });
 
