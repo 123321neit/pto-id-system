@@ -431,8 +431,16 @@ function stabilizeAosrSignatureParagraphs(xml: string): string {
       return paragraph;
     }
 
-    return addWordParagraphKeepControls(paragraph);
+    return addWordParagraphKeepControls(leftAlignWordParagraph(paragraph));
   });
+}
+
+function leftAlignWordParagraph(paragraph: string): string {
+  if (paragraph.includes('<w:jc ')) {
+    return paragraph.replace(/<w:jc\b[^>]*\/>/u, '<w:jc w:val="left"/>');
+  }
+
+  return paragraph.replace('</w:pPr>', '<w:jc w:val="left"/></w:pPr>');
 }
 
 function deduplicateAosrListCaptionParagraphs(xml: string): string {

@@ -123,6 +123,8 @@ describe('renderAosrDocxTemplateBytes', () => {
     expect(documentXml).not.toContain(
       'Запись журнала входного контроля материалов Журнал / ЖВК-2026-05',
     );
+    expect(contractorSignatureParagraph).toContain('<w:jc w:val="left"/>');
+    expect(contractorSignatureParagraph).not.toContain('<w:jc w:val="both"/>');
     expect(documentParagraphs).toContain('Подрядчик:');
     expect(documentParagraphs).toContain('Технический заказчик:');
     expect(documentParagraphs.some((paragraph) => paragraph.includes(')Подрядчик:'))).toBe(false);

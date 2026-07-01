@@ -6014,3 +6014,30 @@ delete/move/reorder lifecycle or generation was introduced.
   by breakable data, not by template markup;
 - no backend/API/database/storage was implemented;
 - no AI ingestion/generation code was implemented yet.
+
+### 2026-07-01 — Signature alignment and pointer drag stabilization
+
+- Статус: `Frontend-only DOCX/drag regression fix`
+- Описание: fixed the follow-up regressions reported after checking the
+  preview and manual drag behavior in the object workspace.
+
+Добавлено/уточнено:
+
+- generated DOCX signature paragraphs with bottom borders are forced to
+  left-aligned Word paragraphs instead of `both`/justify alignment, so the
+  position text stays on the left and the right-tabbed surname/initials are not
+  visually split by stretched spaces;
+- folder and editor act reordering now chooses the target by the pointer
+  Y-coordinate against list item midpoints, not by `elementFromPoint`, which is
+  unstable while pointer capture/animation is active;
+- the folder act list listens for pointer move/up on the whole list, not only on
+  the small drag handle;
+- native draggable attributes were removed from the folder card gesture path to
+  avoid the browser drag ghost conflicting with custom pointer reordering;
+- browser checks covered editor side-list top→bottom and bottom→top, plus folder
+  card top→bottom and bottom→top.
+
+Ограничения:
+
+- the DOCX template file itself was not edited; the renderer normalizes the
+  generated signature paragraphs.

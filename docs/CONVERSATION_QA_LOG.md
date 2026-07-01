@@ -1898,3 +1898,32 @@ Still not implemented:
 - backend/API/database/storage;
 - AI document ingestion, validation or act generation;
 - PDF/ZIP/final package generation.
+
+---
+
+## 65. Signature alignment and drag reorder regression
+
+### Q: Что исправлено после скриншота, где слова подписи растянулись, а drag актов работал плохо?
+
+A: The follow-up fixed the two reported regressions and was verified both with
+automated checks and browser interaction:
+
+- DOCX signature paragraphs are normalized from Word `both`/justify alignment to
+  left alignment while preserving the right tab before surname/initials. This
+  keeps the position text on the left and prevents words like
+  `Производитель работ ООО...` from spreading across the whole line;
+- act drag reordering no longer depends on `elementFromPoint` during pointer
+  capture. The target is calculated from pointer Y against item midpoints, which
+  is stable while the list animates;
+- folder cards no longer start native HTML draggable ghost behavior; the gesture
+  is handled by the custom pointer reorder path;
+- the folder list listens for pointer movement on the whole list, not just the
+  handle, so dragging away from the handle does not lose the gesture.
+
+Verified variations:
+
+- editor side list: top act dragged down;
+- editor side list: bottom act dragged up;
+- folder card list: top act dragged down;
+- folder card list: bottom act dragged up;
+- `corepack pnpm ci:check`.

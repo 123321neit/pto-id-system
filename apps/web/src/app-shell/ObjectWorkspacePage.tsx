@@ -273,22 +273,40 @@ function WorkspaceNavIcon({ name }: { readonly name: WorkspaceNavIconName }): Re
 }
 
 function getPointerTargetFolderDraftId(
-  element: HTMLElement,
-  clientX: number,
+  listElement: HTMLElement | null,
+  draggedDraftId: string,
   clientY: number,
 ): { readonly draftId: string; readonly placement: DemoIdFolderDraftPlacement } | null {
-  const targetElement = element.ownerDocument.elementFromPoint(clientX, clientY);
-  const targetDraft = targetElement?.closest<HTMLElement>('[data-folder-draft-id]');
-  const draftId = targetDraft?.dataset['folderDraftId'];
-
-  if (targetDraft === null || targetDraft === undefined || draftId === undefined) {
+  if (listElement === null || !Number.isFinite(clientY)) {
     return null;
   }
 
-  const targetRect = targetDraft.getBoundingClientRect();
-  const placement = clientY > targetRect.top + targetRect.height / 2 ? 'after' : 'before';
+  const draftElements = Array.from(
+    listElement.querySelectorAll<HTMLElement>('[data-folder-draft-id]'),
+  );
+  let lastTarget: {
+    readonly draftId: string;
+    readonly placement: DemoIdFolderDraftPlacement;
+  } | null = null;
 
-  return { draftId, placement };
+  for (const draftElement of draftElements) {
+    const draftId = draftElement.dataset['folderDraftId'];
+
+    if (draftId === undefined || draftId === draggedDraftId) {
+      continue;
+    }
+
+    const targetRect = draftElement.getBoundingClientRect();
+    const targetMiddle = targetRect.top + targetRect.height / 2;
+
+    if (clientY < targetMiddle) {
+      return { draftId, placement: 'before' };
+    }
+
+    lastTarget = { draftId, placement: 'after' };
+  }
+
+  return lastTarget;
 }
 
 function animateDraftListReorder(
@@ -1957,9 +1975,15 @@ function ObjectFolderPage({
   };
 
   const updatePointerDropTarget = (event: PointerEvent<HTMLElement>): void => {
+    const currentDraggedDraftId = draggedDraftIdRef.current ?? draggedDraftId;
+
+    if (currentDraggedDraftId === null) {
+      return;
+    }
+
     const dropTarget = getPointerTargetFolderDraftId(
-      event.currentTarget,
-      event.clientX,
+      draftListRef.current,
+      currentDraggedDraftId,
       event.clientY,
     );
 
@@ -1969,9 +1993,16 @@ function ObjectFolderPage({
   };
 
   const finishPointerReorder = (event: PointerEvent<HTMLElement>): void => {
+    const currentDraggedDraftId = draggedDraftIdRef.current ?? draggedDraftId;
+
+    if (currentDraggedDraftId === null) {
+      clearDragState();
+      return;
+    }
+
     const dropTarget = getPointerTargetFolderDraftId(
-      event.currentTarget,
-      event.clientX,
+      draftListRef.current,
+      currentDraggedDraftId,
       event.clientY,
     );
 
@@ -2077,6 +2108,9 @@ function ObjectFolderPage({
               ref={draftListRef}
               className="object-folder-draft-list"
               aria-label={`Акты в папке ${folder.name}`}
+              onPointerCancel={clearDragState}
+              onPointerMove={updatePointerDropTarget}
+              onPointerUp={finishPointerReorder}
             >
               {drafts.map((draft) => (
                 <li
@@ -2085,7 +2119,6 @@ function ObjectFolderPage({
                   data-drop-target={dropTargetDraftId === draft.id ? 'true' : undefined}
                   data-drop-placement={dropTargetDraftId === draft.id ? dropPlacement : undefined}
                   data-folder-draft-id={draft.id}
-                  draggable
                   key={draft.id}
                   onDragEnd={clearDragState}
                   onDragEnter={() => {
@@ -2133,16 +2166,10 @@ function ObjectFolderPage({
                     reorderDraggedDraft(draft.id, placement, fallbackDraggedDraftId);
                     clearDragState();
                   }}
-                  onPointerEnter={() => {
-                    if (draggedDraftId !== null && draggedDraftId !== draft.id) {
-                      setDropTargetDraftId(draft.id);
-                    }
-                  }}
                 >
                   <button
                     className="object-folder-draft-card__handle"
                     aria-label="Перетащить акт"
-                    draggable
                     onDragStart={(event) => {
                       event.dataTransfer.effectAllowed = 'move';
                       event.dataTransfer.setData('text/plain', draft.id);
@@ -2160,8 +2187,6 @@ function ObjectFolderPage({
                         event.currentTarget.setPointerCapture(event.pointerId);
                       }
                     }}
-                    onPointerMove={updatePointerDropTarget}
-                    onPointerUp={finishPointerReorder}
                     title={`Перетащить акт ${getDocumentDisplayNumber(draft.actNumber)}`}
                     type="button"
                   >

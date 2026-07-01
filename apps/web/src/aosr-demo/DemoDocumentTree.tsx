@@ -44,7 +44,7 @@ export function DemoDocumentTree({
       return;
     }
 
-    const targetDraft = getPointerTargetDraft(event.currentTarget, event.clientX, event.clientY);
+    const targetDraft = getPointerTargetDraft(draftListRef.current, draggedDraftId, event.clientY);
 
     if (targetDraft !== null && targetDraft.draftId !== draggedDraftId) {
       onReorderDrafts(targetDraft.draftId, targetDraft.placement);
@@ -153,22 +153,36 @@ export function DemoDocumentTree({
 }
 
 function getPointerTargetDraft(
-  element: HTMLElement,
-  clientX: number,
+  listElement: HTMLElement | null,
+  draggedDraftId: string,
   clientY: number,
 ): { readonly draftId: string; readonly placement: DraftDropPlacement } | null {
-  const targetElement = element.ownerDocument.elementFromPoint(clientX, clientY);
-  const targetDraft = targetElement?.closest<HTMLElement>('[data-draft-id]');
-  const draftId = targetDraft?.dataset['draftId'];
-
-  if (targetDraft === null || targetDraft === undefined || draftId === undefined) {
+  if (listElement === null || !Number.isFinite(clientY)) {
     return null;
   }
 
-  const targetRect = targetDraft.getBoundingClientRect();
-  const placement = clientY > targetRect.top + targetRect.height / 2 ? 'after' : 'before';
+  const draftElements = Array.from(listElement.querySelectorAll<HTMLElement>('[data-draft-id]'));
+  let lastTarget: { readonly draftId: string; readonly placement: DraftDropPlacement } | null =
+    null;
 
-  return { draftId, placement };
+  for (const draftElement of draftElements) {
+    const draftId = draftElement.dataset['draftId'];
+
+    if (draftId === undefined || draftId === draggedDraftId) {
+      continue;
+    }
+
+    const targetRect = draftElement.getBoundingClientRect();
+    const targetMiddle = targetRect.top + targetRect.height / 2;
+
+    if (clientY < targetMiddle) {
+      return { draftId, placement: 'before' };
+    }
+
+    lastTarget = { draftId, placement: 'after' };
+  }
+
+  return lastTarget;
 }
 
 function animateDraftListReorder(
