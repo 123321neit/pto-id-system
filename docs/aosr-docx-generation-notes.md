@@ -166,6 +166,10 @@ the act editor uses user-facing terms such as `Данные из раздела`
 - List captions for point 3, point 4 and applications are deduplicated after
   DOCX rendering because Word stores the closing `foreach` tag in the same
   paragraph as the caption. The template asset stays untouched.
+- The normative applications caption remains exactly:
+  `(исполнительные схемы и чертежи, результаты экспертиз, обследований, лабораторных и иных испытаний)`.
+  Regression tests scope captions by act section, because point 4 and
+  `Приложения:` intentionally share the same opening phrase.
 - The `Приложения:` heading and application lines receive keep markers in DOCX
   and `break-inside: avoid` in preview to avoid an orphaned heading in normal
   page-break cases.

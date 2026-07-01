@@ -17,6 +17,12 @@ const realAosrTemplateUrl = new URL(
   '../../public/templates/aosr/AOSR1_template_final_tags_corrected.docx',
   import.meta.url,
 );
+const materialsCaption =
+  '(наименование строительных материалов (изделий), реквизиты сертификатов и (или) других документов, подтверждающих их качество и безопасность, в случае если необходимо указывать более 5 документов, указывается ссылка на их реестр, который является неотъемлемой частью акта)';
+const confirmationDocumentsCaption =
+  '(исполнительные схемы и чертежи, результаты экспертиз, обследований, лабораторных и иных испытаний выполненных работ, проведенных в процессе строительного контроля)';
+const applicationsCaption =
+  '(исполнительные схемы и чертежи, результаты экспертиз, обследований, лабораторных и иных испытаний)';
 
 describe('renderAosrDocxTemplateBytes', () => {
   it('renders the real static AOSR DOCX template without leaving template tags', () => {
@@ -43,18 +49,25 @@ describe('renderAosrDocxTemplateBytes', () => {
     expect(documentXml).toContain('«01» сентября 2026 г.');
     expect(documentXml).toContain('приказ № 1');
     expect(documentXml).toContain('застройщик');
-    expect(
-      countParagraphsWithText(documentParagraphs, 'наименование строительных материалов'),
-    ).toBe(1);
-    expect(
-      countParagraphsWithText(documentParagraphs, 'проведенных в процессе строительного контроля'),
-    ).toBe(1);
-    expect(
-      countParagraphsWithText(
-        documentParagraphs,
-        'исполнительные схемы и чертежи, результаты экспертиз, обследований, лабораторных и иных испытаний',
-      ),
-    ).toBe(2);
+    expectSingleCaptionAfterList(documentParagraphs, {
+      caption: materialsCaption,
+      endFragment: '4.Предъявлены документы',
+      itemFragments: ['Воздуховоды оцинкованные 0,7 мм', 'Крепежные элементы КМ-12'],
+      startFragment: '3.При выполнении работ применены',
+    });
+    expectSingleCaptionAfterList(documentParagraphs, {
+      caption: confirmationDocumentsCaption,
+      endFragment: '5.Даты',
+      itemFragments: ['Исполнительная схема ИС-1', 'Журнал работ ЖР-1'],
+      startFragment: '4.Предъявлены документы',
+    });
+    expectSingleCaptionAfterList(documentParagraphs, {
+      caption: applicationsCaption,
+      endFragment: 'Представитель подрядчика:',
+      itemFragments: ['Приложение 1 — фотофиксация работ', 'Приложение 2 — исполнительная схема'],
+      startFragment: 'Приложения:',
+    });
+    expect(countParagraphsEqualTo(documentParagraphs, applicationsCaption)).toBe(1);
     expect(
       getRequiredParagraphXml(documentXmlParagraphs, 'Приложения:').includes('<w:keepNext/>'),
     ).toBe(true);
@@ -179,10 +192,6 @@ function getRequiredParagraphXml(
   return paragraph;
 }
 
-function countParagraphsWithText(paragraphs: readonly string[], textFragment: string): number {
-  return paragraphs.filter((paragraph) => paragraph.includes(textFragment)).length;
-}
-
 function getLastRequiredParagraphXml(paragraphs: readonly string[], textFragment: string): string {
   const paragraph = [...paragraphs]
     .reverse()
@@ -205,6 +214,97 @@ function getWordParagraphXmlFragments(documentXml: string): readonly string[] {
 
 function getWordParagraphText(paragraphXml: string): string {
   return paragraphXml.replace(/<[^>]+>/gu, '').trim();
+}
+
+function expectSingleCaptionAfterList(
+  paragraphs: readonly string[],
+  {
+    caption,
+    endFragment,
+    itemFragments,
+    startFragment,
+  }: {
+    readonly caption: string;
+    readonly endFragment: string;
+    readonly itemFragments: readonly string[];
+    readonly startFragment: string;
+  },
+): void {
+  const scopedParagraphs = getParagraphRange(paragraphs, startFragment, endFragment);
+  const captionIndexes = getParagraphIndexesEqualTo(scopedParagraphs, caption);
+  const itemIndexes = itemFragments.map((itemFragment) =>
+    getRequiredParagraphIndex(scopedParagraphs, itemFragment),
+  );
+
+  expect(captionIndexes).toHaveLength(1);
+  expect(getRequiredArrayItem(captionIndexes, 0)).toBeGreaterThan(Math.max(...itemIndexes));
+}
+
+function getParagraphRange(
+  paragraphs: readonly string[],
+  startFragment: string,
+  endFragment: string,
+): readonly string[] {
+  const startIndex = getRequiredParagraphIndex(paragraphs, startFragment);
+  const endIndex = getRequiredParagraphIndexAfter(paragraphs, endFragment, startIndex);
+
+  expect(endIndex).toBeGreaterThan(startIndex);
+
+  return paragraphs.slice(startIndex, endIndex);
+}
+
+function getRequiredParagraphIndex(paragraphs: readonly string[], textFragment: string): number {
+  const paragraphIndex = paragraphs.findIndex((paragraph) => paragraph.includes(textFragment));
+
+  if (paragraphIndex < 0) {
+    throw new Error(`Rendered DOCX paragraph is missing: ${textFragment}`);
+  }
+
+  return paragraphIndex;
+}
+
+function getRequiredParagraphIndexAfter(
+  paragraphs: readonly string[],
+  textFragment: string,
+  startIndex: number,
+): number {
+  const paragraphIndex = paragraphs.findIndex(
+    (paragraph, paragraphIndexCandidate) =>
+      paragraphIndexCandidate > startIndex && paragraph.includes(textFragment),
+  );
+
+  if (paragraphIndex < 0) {
+    throw new Error(`Rendered DOCX paragraph is missing after range start: ${textFragment}`);
+  }
+
+  return paragraphIndex;
+}
+
+function countParagraphsEqualTo(paragraphs: readonly string[], text: string): number {
+  return getParagraphIndexesEqualTo(paragraphs, text).length;
+}
+
+function getParagraphIndexesEqualTo(
+  paragraphs: readonly string[],
+  text: string,
+): readonly number[] {
+  return paragraphs.flatMap((paragraph, paragraphIndex) =>
+    normalizeParagraphText(paragraph) === text ? [paragraphIndex] : [],
+  );
+}
+
+function normalizeParagraphText(text: string): string {
+  return text.trim().replace(/\s+/gu, ' ');
+}
+
+function getRequiredArrayItem<TItem>(items: readonly TItem[], index: number): TItem {
+  const item = items[index];
+
+  if (item === undefined) {
+    throw new Error(`Expected array item at index ${String(index)}.`);
+  }
+
+  return item;
 }
 
 function getRequiredDemoDraft() {

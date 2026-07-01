@@ -1927,3 +1927,32 @@ Verified variations:
 - folder card list: top act dragged down;
 - folder card list: bottom act dragged up;
 - `corepack pnpm ci:check`.
+
+---
+
+## 66. Scoped AOSR DOCX caption tests and AGENTS guardrails
+
+### Q: Что уточнено после аудита подстрочников АОСР и устаревших запретов в AGENTS.md?
+
+A: The residual audit was correct: the previous applications-caption regression
+check was too broad because point 4 and the applications block share the phrase
+`исполнительные схемы и чертежи...`.
+
+The follow-up keeps the DOCX template and normative caption text unchanged and
+tightens coverage instead:
+
+- the real DOCX smoke-test now scopes point 3 and proves the materials caption
+  appears once after the material list;
+- it scopes point 4 and proves the confirmation-documents caption appears once
+  after the document list;
+- it scopes `Приложения:` and proves the applications caption appears once
+  after the applications list;
+- it also asserts the exact applications caption paragraph appears once, so it
+  cannot repeat after every application item.
+
+`docs/AGENTS.md` now reflects the actual state: frontend-only download of one
+AOSR DOCX is allowed and implemented as a narrow renderer for the current tagged
+template, while DOCX remains a derived artifact and structured data remains the
+source of truth. PDF, ZIP, package downloads, backend file APIs, storage,
+Prisma domain models, auth, AI/OCR, package builder and new act types remain
+blocked without a separate explicit task.

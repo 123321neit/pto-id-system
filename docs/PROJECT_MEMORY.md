@@ -6041,3 +6041,28 @@ delete/move/reorder lifecycle or generation was introduced.
 
 - the DOCX template file itself was not edited; the renderer normalizes the
   generated signature paragraphs.
+
+### 2026-07-01 — Scoped AOSR DOCX caption regression tests and agent guardrails
+
+- Статус: `Frontend-only AOSR DOCX regression coverage / documentation cleanup`
+- Описание: closed the residual audit note around statutory captions and
+  outdated scaffold guardrails.
+
+Добавлено/уточнено:
+
+- the real-template DOCX smoke-test now proves captions inside their exact
+  sections: point 3 materials, point 4 confirmation documents and
+  `Приложения:`;
+- the applications caption is asserted once as its own paragraph, so it cannot
+  silently repeat after each application item;
+- the narrow renderer behavior was documented in code as AOSR-specific cleanup,
+  not a generic Word-template engine;
+- `docs/AGENTS.md` now records that one frontend-only single-AOSR DOCX download
+  is already implemented and allowed, while backend generation, PDF, ZIP,
+  package downloads, storage, Prisma domain models, auth, AI/OCR, package
+  builder and new act types still require separate tasks.
+
+Ограничения:
+
+- the DOCX template asset and normative applications caption were not changed;
+- no PDF/ZIP/backend/storage/auth/AI work was added.

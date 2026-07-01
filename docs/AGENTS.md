@@ -141,7 +141,9 @@ First allowed infrastructure/bootstrap scaffold accepted; canonical ADR baseline
   into another demo section and final ID filtered to the selected section. This
   is in-memory frontend mock behavior only: no backend/API, Prisma schema,
   persistence, real cross-object copy, package-builder, released snapshots or
-  document generation exists for it yet.
+  backend document-generation API exists for it yet. The accepted exception is
+  the already implemented frontend-only single-AOSR DOCX download described
+  below.
 - frontend-only section model architecture cleanup:
   frontend mock code should use `DemoIdFolder` / `object-id-folders.ts`, not
   `DemoObjectPeriod` / `object-periods.ts`, for ID folders. Section-scoped
@@ -157,12 +159,23 @@ First allowed infrastructure/bootstrap scaffold accepted; canonical ADR baseline
   must keep the target section's own numbering prefix. Strict folder/section
   helpers should throw on corrupted links instead of silently falling back to
   demo defaults.
+- frontend-only single-AOSR DOCX download:
+  one current AOSR can be rendered in the browser from structured
+  `AosrPrintState` through a narrow renderer for the current tagged DOCX
+  template at
+  `apps/web/public/templates/aosr/AOSR1_template_final_tags_corrected.docx`.
+  DOCX remains a derived artifact only; the source of truth remains structured
+  data. This renderer is not a generic Word-template engine and must not be
+  expanded to PDF, ZIP, final/intermediate package downloads, backend file APIs,
+  storage, Prisma domain models, auth, AI/OCR, package builder or new act types
+  without a separate explicit task.
 
 The technical status, database foundation and object storage foundation slices are not product
-implementation. They must not be expanded into domain readiness, АОСР,
-certificates, registry, package builder, auth, domain database schema,
-uploads, file metadata, download APIs, queues, AI/OCR, CRUD APIs or OpenAPI
-without a new explicit task.
+implementation. They must not be expanded into domain readiness, АОСР beyond
+the current narrow frontend-only single-document DOCX renderer, certificates,
+registry, package builder, auth, domain database schema, uploads, file metadata,
+download APIs, queues, AI/OCR, CRUD APIs or OpenAPI without a new explicit
+task.
 
 `InfrastructureModule` is not global. The current approved import path is
 `HealthModule -> InfrastructureModule` for technical health composition only.
@@ -180,7 +193,8 @@ accepted ADR 0001-0007 in `docs/adr/`.
 
 Запрещено в рамках текущего scaffold:
 
-- AOSR implementation;
+- AOSR implementation beyond the current frontend-only single-AOSR DOCX
+  download;
 - certificates implementation;
 - package builder implementation;
 - domain Prisma models or migrations;
@@ -189,7 +203,9 @@ accepted ADR 0001-0007 in `docs/adr/`.
 - admin routes/controllers, admin UI or support tenant browsing;
 - uploads, download APIs or business file storage implementation;
 - queue workers;
-- document generation;
+- PDF/ZIP/package generation, backend document/file-generation APIs or generic
+  document generation beyond the current narrow frontend-only single-AOSR DOCX
+  renderer;
 - AI/OCR;
 - CRUD APIs;
 - business database tables;
@@ -204,8 +220,9 @@ Any separate feature/database/API task must comply with accepted ADR 0001-0007
 Recommended next step: review Phase 3 owned workspace baseline, then request a
 separate, explicitly scoped Phase 4 workspace share codes task from
 `docs/20`. Do not start AOSR, domain Prisma models, migrations, uploads/file
-APIs, queues, package generation, OpenAPI, sharing codes/grants, AI/OCR, or
-domain validation without a new task.
+APIs, queues, package generation, OpenAPI, sharing codes/grants, AI/OCR,
+backend/generic document generation, new act types or domain validation without
+a new task.
 
 `docs/12-database-schema-v1.md` по прямому заданию применяет baseline decisions из `docs/09-aggregate-boundaries-and-invariants.md` по:
 
@@ -323,7 +340,7 @@ Privacy/data-processing policy, access to project originals and concrete AI proc
 - Foreman active permissions are blocked without separate approval;
 - first AOSR template participant requirements must not be hardcoded before template review.
 
-Открытыми остаются exact first AOSR template baseline/participant requirements, retention/privacy/share-grant details, physical migrations/ORM schema/OpenAPI and production implementation. Зафиксированный SectionTemplate contract now has only one narrow framework-free `read_document_creation_context` application slice. It must not be interpreted as approval to implement routes, controllers, DTO serialization, OpenAPI, Prisma/domain schema, migrations, repositories, queues, storage, renderer, draft creation, number reservation or persistence mapping.
+Открытыми остаются exact first AOSR template baseline/participant requirements, retention/privacy/share-grant details, physical migrations/ORM schema/OpenAPI and production implementation. Зафиксированный SectionTemplate contract now has only one narrow framework-free `read_document_creation_context` application slice. It must not be interpreted as approval to implement routes, controllers, DTO serialization, OpenAPI, Prisma/domain schema, migrations, repositories, queues, storage, backend/generic renderer beyond the existing frontend-only AOSR DOCX renderer, draft creation, number reservation or persistence mapping.
 
 Следующий отдельный implementation task должен проверяться против:
 
@@ -331,4 +348,4 @@ Privacy/data-processing policy, access to project originals and concrete AI proc
 accepted ADR 0001-0007 in docs/adr/ and docs/20-auth-sharing-implementation-plan-v1.md when auth/sharing is involved
 ```
 
-Feature coding остается заблокированным без отдельного явного задания; нельзя писать production features, SQL/migrations/ORM schema, OpenAPI, real auth/uploads/queue/storage/generation, AI/OCR или deployment files без отдельного разрешения.
+Feature coding остается заблокированным без отдельного явного задания; нельзя писать production features, SQL/migrations/ORM schema, OpenAPI, real auth/uploads/queue/storage/generation beyond the current frontend-only AOSR DOCX renderer, AI/OCR или deployment files без отдельного разрешения.

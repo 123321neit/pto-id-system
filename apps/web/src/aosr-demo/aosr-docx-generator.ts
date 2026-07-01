@@ -444,6 +444,9 @@ function leftAlignWordParagraph(paragraph: string): string {
 }
 
 function deduplicateAosrListCaptionParagraphs(xml: string): string {
+  // Word can leave the closing foreach service tag in the same paragraph as
+  // the statutory list caption. Keep only the final caption paragraph for the
+  // narrow AOSR form keys below; this is not a generic DOCX dedupe engine.
   const paragraphs = getWordParagraphXmlFragments(xml);
   const lastCaptionParagraphIndexes = new Map<string, number>();
 
