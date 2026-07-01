@@ -1972,3 +1972,23 @@ The unused direct dependencies were removed from `apps/api/package.json`, and
 examples and ESLint restricted-import guardrails may still mention Redis/BullMQ
 as a future direction, but no Redis infrastructure, queue workers, backend file
 generation or new backend features were added.
+
+---
+
+## 68. Object workspace refactor-only cleanup
+
+### Q: Что сделано при декомпозиции `ObjectWorkspacePage.tsx`?
+
+A: The object workspace was split into smaller frontend-only pieces without
+changing UX or behavior:
+
+- section/folder/draft numbering and renumbering helpers moved out of the page;
+- common object-workspace labels/date formatters moved out of the page;
+- the left object navigation/tree moved into an explicit component with typed
+  props;
+- focused helper tests now cover section-wide numbering, restart-per-folder
+  numbering, automatic-only renumbering and corrupted folder links.
+
+No new product features were added. Backend, Prisma schema/migrations,
+PDF/ZIP/package builder, auth, storage, AI/OCR, new act types and the AOSR DOCX
+renderer were not touched.

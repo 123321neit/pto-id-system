@@ -6,11 +6,11 @@ import {
   createEmptyDemoAosrDraft,
   demoAosrWorkspace,
   type DemoAosrDraft,
-  type DemoDocumentNumberingSequences,
   type DemoSectionTemplateSettings,
 } from '../aosr-demo/demo-aosr-workspace.js';
 import { ObjectDocumentsPage } from './ObjectDocumentsPage.js';
 import { ObjectFinalPackagePage, ObjectIntermediatePackagePage } from './ObjectFinalPackagePage.js';
+import { ObjectWorkspaceNavigation } from './ObjectWorkspaceNavigation.js';
 import type { MockObjectCard } from './mock-dashboard.js';
 import {
   addDemoDocumentationSectionFolder,
@@ -39,6 +39,19 @@ import {
   type DemoIdFolders,
 } from './object-id-folders.js';
 import {
+  formatRenumberedActCount,
+  formatShortDate,
+  getActCountLabel,
+  getDocumentDisplayNumber,
+  getFolderCountLabel,
+  getLatestDraft,
+} from './object-workspace-formatters.js';
+import {
+  maybeRenumberAutomaticSectionDrafts,
+  renumberSectionDraftsByFolderOrder,
+} from './object-workspace-numbering.js';
+import type { ObjectWorkspaceSection } from './object-workspace-types.js';
+import {
   copySectionTemplateSettingsToTarget,
   createSectionTemplateSettings,
   type DemoSectionTemplateSettingsById,
@@ -49,140 +62,6 @@ import {
 } from './section-template-clipboard.js';
 
 const aosrActType = getDemoActTypeById('aosr');
-const untitledDocumentLabel = 'Без номера';
-
-function getDocumentDisplayNumber(documentNumber: string): string {
-  return documentNumber.trim() === '' ? untitledDocumentLabel : documentNumber;
-}
-
-function formatSectionDocumentNumber(
-  sectionTemplateSettings: DemoSectionTemplateSettings,
-  sequence: number,
-): string {
-  return `${sectionTemplateSettings.sectionTemplate.numberingPrefix}${String(sequence)}${sectionTemplateSettings.sectionTemplate.numberingSuffix}`;
-}
-
-function normalizeNumberingStart(numberingStart: number): number {
-  return Number.isInteger(numberingStart) && numberingStart > 0 ? numberingStart : 1;
-}
-
-function formatRenumberedActCount(count: number): string {
-  const mod100 = count % 100;
-  const mod10 = count % 10;
-
-  if (mod100 >= 11 && mod100 <= 14) {
-    return `${String(count)} актов`;
-  }
-
-  if (mod10 === 1) {
-    return `${String(count)} акт`;
-  }
-
-  if (mod10 >= 2 && mod10 <= 4) {
-    return `${String(count)} акта`;
-  }
-
-  return `${String(count)} актов`;
-}
-
-function renumberSectionDraftsByFolderOrder({
-  currentDrafts,
-  currentFolders,
-  mode = 'all',
-  section,
-  sectionTemplateSettings,
-}: {
-  readonly currentDrafts: readonly DemoAosrDraft[];
-  readonly currentFolders: DemoIdFolders;
-  readonly mode?: 'all' | 'automatic-only';
-  readonly section: DemoDocumentationSection;
-  readonly sectionTemplateSettings: DemoSectionTemplateSettings;
-}): readonly DemoAosrDraft[] {
-  const numberingStart = normalizeNumberingStart(
-    sectionTemplateSettings.sectionTemplate.numberingStart,
-  );
-  const nextNumberingByDraftId = new Map<
-    string,
-    { readonly actNumber: string; readonly sequences: DemoDocumentNumberingSequences }
-  >();
-  let sectionSequence = numberingStart;
-
-  for (const folderId of section.folderIds) {
-    const folder = getDemoIdFolderById(folderId, currentFolders);
-    let folderSequence = numberingStart;
-
-    for (const draftId of folder.draftIds) {
-      const draft = currentDrafts.find((currentDraft) => currentDraft.id === draftId);
-
-      if (
-        draft?.sectionId !== section.id ||
-        (mode === 'automatic-only' && draft.numberingAssignment.source !== 'automatic')
-      ) {
-        continue;
-      }
-
-      const sequences = {
-        folder: folderSequence,
-        section: sectionSequence,
-      };
-      const selectedSequence =
-        sectionTemplateSettings.sectionTemplate.numberingScope === 'section-wide'
-          ? sectionSequence
-          : folderSequence;
-
-      nextNumberingByDraftId.set(draft.id, {
-        actNumber: formatSectionDocumentNumber(sectionTemplateSettings, selectedSequence),
-        sequences,
-      });
-      sectionSequence += 1;
-      folderSequence += 1;
-    }
-  }
-
-  return currentDrafts.map((draft) => {
-    const nextNumbering = nextNumberingByDraftId.get(draft.id);
-
-    if (nextNumbering === undefined) {
-      return draft;
-    }
-
-    return {
-      ...draft,
-      actNumber: nextNumbering.actNumber,
-      numberingAssignment: {
-        automaticSequences: nextNumbering.sequences,
-        source: 'automatic',
-      },
-    };
-  });
-}
-
-function maybeRenumberAutomaticSectionDrafts({
-  currentDrafts,
-  currentFolders,
-  section,
-  sectionTemplateSettings,
-}: {
-  readonly currentDrafts: readonly DemoAosrDraft[];
-  readonly currentFolders: DemoIdFolders;
-  readonly section: DemoDocumentationSection | undefined;
-  readonly sectionTemplateSettings: DemoSectionTemplateSettings;
-}): readonly DemoAosrDraft[] {
-  if (
-    section === undefined ||
-    sectionTemplateSettings.sectionTemplate.numberingMode !== 'automatic'
-  ) {
-    return currentDrafts;
-  }
-
-  return renumberSectionDraftsByFolderOrder({
-    currentDrafts,
-    currentFolders,
-    mode: 'automatic-only',
-    section,
-    sectionTemplateSettings,
-  });
-}
 
 function buildInitialSectionTemplateSettings(
   hasDemoContent: boolean,
@@ -205,71 +84,6 @@ function FolderGripIcon(): React.JSX.Element {
       <path d="M7 4.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Zm0 5.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Zm0 5.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Zm9-11a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Zm0 5.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Zm0 5.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Z" />
     </svg>
   );
-}
-
-type WorkspaceNavIconName =
-  | 'documents'
-  | 'final-package'
-  | 'folder'
-  | 'home'
-  | 'section'
-  | 'sections'
-  | 'settings';
-
-function WorkspaceNavIcon({ name }: { readonly name: WorkspaceNavIconName }): React.JSX.Element {
-  switch (name) {
-    case 'documents':
-      return (
-        <svg aria-hidden="true" viewBox="0 0 24 24" focusable="false">
-          <path d="M7 4.75h7.2L18 8.55v10.7H7z" />
-          <path d="M14 4.75v4h4" />
-          <path d="M9.5 12h6M9.5 15h5" />
-        </svg>
-      );
-    case 'final-package':
-      return (
-        <svg aria-hidden="true" viewBox="0 0 24 24" focusable="false">
-          <path d="M6.5 7.25h11v12h-11z" />
-          <path d="M8.5 4.75h7v2.5h-7zM9.5 11h5M9.5 14h4" />
-          <path d="m15.2 15.7 1.1 1.1 2-2.4" />
-        </svg>
-      );
-    case 'folder':
-      return (
-        <svg aria-hidden="true" viewBox="0 0 24 24" focusable="false">
-          <path d="M4.75 8.25h5l1.55 2h7.95v8H4.75z" />
-          <path d="M4.75 8.25v-1.5h4.2l1.45 1.5" />
-        </svg>
-      );
-    case 'home':
-      return (
-        <svg aria-hidden="true" viewBox="0 0 24 24" focusable="false">
-          <path d="m5 11.2 7-5.7 7 5.7" />
-          <path d="M7.25 10.25v8.5h9.5v-8.5" />
-          <path d="M10.25 18.75v-4h3.5v4" />
-        </svg>
-      );
-    case 'section':
-      return (
-        <svg aria-hidden="true" viewBox="0 0 24 24" focusable="false">
-          <path d="M6.5 5.75h11v12.5h-11z" />
-          <path d="M9 9h6M9 12h6M9 15h3.5" />
-        </svg>
-      );
-    case 'sections':
-      return (
-        <svg aria-hidden="true" viewBox="0 0 24 24" focusable="false">
-          <path d="M5.5 6h5.25v5.25H5.5zM13.25 6h5.25v5.25h-5.25zM5.5 13.25h5.25v5.25H5.5zM13.25 13.25h5.25v5.25h-5.25z" />
-        </svg>
-      );
-    case 'settings':
-      return (
-        <svg aria-hidden="true" viewBox="0 0 24 24" focusable="false">
-          <path d="M6 8.25h12M6 15.75h12" />
-          <path d="M9.25 6.5v3.5M14.75 14v3.5" />
-        </svg>
-      );
-  }
 }
 
 function getPointerTargetFolderDraftId(
@@ -359,17 +173,6 @@ function animateDraftListReorder(
 
   previousRects.current = nextRects;
 }
-
-type ObjectWorkspaceSection =
-  | 'overview'
-  | 'sections'
-  | 'section'
-  | 'folder'
-  | 'intermediate-package'
-  | 'aosr'
-  | 'documents'
-  | 'final-package'
-  | 'settings';
 
 interface ObjectWorkspacePageProps {
   readonly object: MockObjectCard;
@@ -859,217 +662,27 @@ export function ObjectWorkspacePage({
 
   return (
     <main className="object-workspace-shell">
-      <aside className="object-workspace-nav" aria-label="Навигация объекта">
-        <button
-          aria-label="Назад к объектам"
-          className="object-workspace-nav__back"
-          onClick={onBackToObjects}
-          type="button"
-        >
-          ← Назад к объектам
-        </button>
-
-        <div className="object-workspace-nav__identity">
-          <p className="section-kicker">Объект</p>
-          <strong>{object.title}</strong>
-          <small>{object.address}</small>
-        </div>
-
-        <nav className="object-workspace-nav__sections" aria-label="Разделы объекта">
-          <div className="object-workspace-nav__group" aria-labelledby="object-nav-work-title">
-            <p className="object-workspace-nav__group-label" id="object-nav-work-title">
-              Работа
-            </p>
-            <button
-              aria-current={activeSection === 'overview' ? 'page' : undefined}
-              aria-label="Обзор объекта"
-              onClick={() => {
-                setCreateDocumentPanelOpen(false);
-                setCreateFolderPanelOpen(false);
-                setCreateSectionPanelOpen(false);
-                setActiveSection('overview');
-              }}
-              type="button"
-            >
-              <span className="object-workspace-nav__icon" aria-hidden="true">
-                <WorkspaceNavIcon name="home" />
-              </span>
-              <span className="object-workspace-nav__label">
-                <strong>Обзор объекта</strong>
-                <small>Общая картина</small>
-              </span>
-            </button>
-            <button
-              aria-label="Разделы ИД"
-              aria-current={activeSection === 'sections' ? 'page' : undefined}
-              onClick={() => {
-                setCreateDocumentPanelOpen(false);
-                setCreateFolderPanelOpen(false);
-                setCreateSectionPanelOpen(false);
-                setActiveSection('sections');
-              }}
-              type="button"
-            >
-              <span className="object-workspace-nav__icon" aria-hidden="true">
-                <WorkspaceNavIcon name="sections" />
-              </span>
-              <span className="object-workspace-nav__label">
-                <strong>Разделы ИД</strong>
-                <small>Список разделов</small>
-              </span>
-            </button>
-          </div>
-
-          <div
-            className="object-workspace-nav__group object-workspace-nav__group--tree"
-            aria-labelledby="object-nav-current-title"
-          >
-            <p className="object-workspace-nav__group-label" id="object-nav-current-title">
-              Объект
-            </p>
-            {sections.length === 0 ? (
-              <div className="object-workspace-nav__empty-current">
-                <strong>Разделов пока нет</strong>
-                <small>Создайте первый раздел в «Разделы ИД».</small>
-              </div>
-            ) : (
-              <ul className="object-workspace-tree" aria-label="Дерево разделов и папок объекта">
-                {sections.map((section) => {
-                  const sectionFolders = getDemoDocumentationSectionFolders(section, folders);
-                  const isSelectedSection = selectedSectionId === section.id;
-
-                  return (
-                    <li className="object-workspace-tree__section" key={section.id}>
-                      <button
-                        aria-current={
-                          isSelectedSection && activeSection === 'section' ? 'page' : undefined
-                        }
-                        aria-label={`Открыть раздел ${section.name}`}
-                        onClick={() => {
-                          openSection(section.id);
-                        }}
-                        type="button"
-                      >
-                        <span className="object-workspace-nav__icon" aria-hidden="true">
-                          <WorkspaceNavIcon name="section" />
-                        </span>
-                        <span className="object-workspace-nav__label">
-                          <strong>{section.name}</strong>
-                          <small>
-                            {sectionFolders.length === 0
-                              ? 'Папок пока нет'
-                              : `${String(sectionFolders.length)} ${getFolderCountLabel(
-                                  sectionFolders.length,
-                                )}`}
-                          </small>
-                        </span>
-                      </button>
-
-                      <ul className="object-workspace-tree__children">
-                        <li>
-                          <button
-                            aria-current={
-                              isSelectedSection && activeSection === 'settings' ? 'page' : undefined
-                            }
-                            aria-label={`Шаблонные значения раздела ${section.name}`}
-                            className="object-workspace-nav__subitem"
-                            onClick={() => {
-                              openSectionTemplateSettings(section.id);
-                            }}
-                            type="button"
-                          >
-                            <span className="object-workspace-nav__icon" aria-hidden="true">
-                              <WorkspaceNavIcon name="settings" />
-                            </span>
-                            <span className="object-workspace-nav__label">
-                              <strong>Шаблонные значения раздела</strong>
-                              <small>{section.name}</small>
-                            </span>
-                          </button>
-                        </li>
-                        {sectionFolders.map((folder) => (
-                          <li key={folder.id}>
-                            <button
-                              aria-current={
-                                selectedFolderId === folder.id &&
-                                (activeSection === 'folder' ||
-                                  activeSection === 'intermediate-package' ||
-                                  activeSection === 'aosr')
-                                  ? 'page'
-                                  : undefined
-                              }
-                              aria-label={`Открыть папку ${folder.name}`}
-                              className="object-workspace-nav__subitem"
-                              onClick={() => {
-                                openFolder(folder.id);
-                              }}
-                              type="button"
-                            >
-                              <span className="object-workspace-nav__icon" aria-hidden="true">
-                                <WorkspaceNavIcon name="folder" />
-                              </span>
-                              <span className="object-workspace-nav__label">
-                                <strong>{folder.name}</strong>
-                                <small>Папка раздела</small>
-                              </span>
-                            </button>
-                          </li>
-                        ))}
-                        <li>
-                          <button
-                            aria-current={
-                              isSelectedSection && activeSection === 'final-package'
-                                ? 'page'
-                                : undefined
-                            }
-                            aria-label={`Итоговая ИД по разделу ${section.name}`}
-                            className="object-workspace-nav__subitem"
-                            onClick={() => {
-                              openSectionFinalPackage(section.id);
-                            }}
-                            type="button"
-                          >
-                            <span className="object-workspace-nav__icon" aria-hidden="true">
-                              <WorkspaceNavIcon name="final-package" />
-                            </span>
-                            <span className="object-workspace-nav__label">
-                              <strong>Итоговая ИД по разделу</strong>
-                              <small>{section.name}</small>
-                            </span>
-                          </button>
-                        </li>
-                      </ul>
-                    </li>
-                  );
-                })}
-              </ul>
-            )}
-          </div>
-
-          <div
-            className="object-workspace-nav__group object-workspace-nav__group--service"
-            aria-labelledby="object-nav-service-title"
-          >
-            <p className="object-workspace-nav__group-label" id="object-nav-service-title">
-              Сервис
-            </p>
-            <button
-              aria-current={activeSection === 'documents' ? 'page' : undefined}
-              aria-label="Открыть документы объекта"
-              onClick={openObjectDocumentsPage}
-              type="button"
-            >
-              <span className="object-workspace-nav__icon" aria-hidden="true">
-                <WorkspaceNavIcon name="documents" />
-              </span>
-              <span className="object-workspace-nav__label">
-                <strong>Документы объекта</strong>
-                <small>Схемы и журналы</small>
-              </span>
-            </button>
-          </div>
-        </nav>
-      </aside>
+      <ObjectWorkspaceNavigation
+        activeSection={activeSection}
+        folders={folders}
+        object={object}
+        sections={sections}
+        selectedFolderId={selectedFolderId}
+        selectedSectionId={selectedSectionId}
+        onBackToObjects={onBackToObjects}
+        onOpenFolder={openFolder}
+        onOpenObjectDocumentsPage={openObjectDocumentsPage}
+        onOpenOverview={() => {
+          setCreateDocumentPanelOpen(false);
+          setCreateFolderPanelOpen(false);
+          setCreateSectionPanelOpen(false);
+          setActiveSection('overview');
+        }}
+        onOpenSection={openSection}
+        onOpenSectionFinalPackage={openSectionFinalPackage}
+        onOpenSectionTemplateSettings={openSectionTemplateSettings}
+        onOpenSectionsPage={openSectionsPage}
+      />
 
       <section className="object-workspace-main" aria-labelledby="object-workspace-title">
         <ObjectWorkspaceHeader object={object} activeSection={activeSection} />
@@ -1726,58 +1339,6 @@ function ObjectSectionPage({
       </section>
     </section>
   );
-}
-
-function getFolderCountLabel(count: number): string {
-  const remainder100 = count % 100;
-  const remainder10 = count % 10;
-
-  if (remainder100 >= 11 && remainder100 <= 14) {
-    return 'папок';
-  }
-
-  if (remainder10 === 1) {
-    return 'папка';
-  }
-
-  if (remainder10 >= 2 && remainder10 <= 4) {
-    return 'папки';
-  }
-
-  return 'папок';
-}
-
-function getActCountLabel(count: number): string {
-  const remainder100 = count % 100;
-  const remainder10 = count % 10;
-
-  if (remainder100 >= 11 && remainder100 <= 14) {
-    return 'актов';
-  }
-
-  if (remainder10 === 1) {
-    return 'акт';
-  }
-
-  if (remainder10 >= 2 && remainder10 <= 4) {
-    return 'акта';
-  }
-
-  return 'актов';
-}
-
-function getLatestDraft(drafts: readonly DemoAosrDraft[]): DemoAosrDraft | undefined {
-  return [...drafts].sort((left, right) => right.actDate.localeCompare(left.actDate))[0];
-}
-
-function formatShortDate(isoDate: string): string {
-  const [year, month, day] = isoDate.split('-');
-
-  if (year === undefined || month === undefined || day === undefined) {
-    return isoDate;
-  }
-
-  return `${day}.${month}.${year}`;
 }
 
 interface CreateDocumentPanelProps {
