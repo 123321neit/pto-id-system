@@ -1,4 +1,4 @@
-import { type SetStateAction, type SyntheticEvent, useEffect, useState } from 'react';
+import { type SetStateAction, type SyntheticEvent, useEffect, useRef, useState } from 'react';
 
 import { getDemoActTypeById, getDemoAosrFormVariantById } from '../act-types/act-types.js';
 import type { SectionTemplateClipboard } from '../app-shell/section-template-clipboard.js';
@@ -80,6 +80,7 @@ import { DemoDocumentTree } from './DemoDocumentTree.js';
 import { DemoObjectSettingsPanel } from './DemoObjectSettingsPanel.js';
 
 const aosrActType = getDemoActTypeById('aosr');
+type DraftDropPlacement = 'after' | 'before';
 
 interface DemoAosrWorkspacePageProps {
   readonly drafts?: readonly DemoAosrDraft[];
@@ -99,7 +100,11 @@ interface DemoAosrWorkspacePageProps {
   readonly onDeleteDraft?: (draftId: string, nextSelectedDraftId: string) => void;
   readonly onPasteSectionTemplate?: () => void;
   readonly onRenumberSectionDrafts?: () => void;
-  readonly onReorderDrafts?: (draggedDraftId: string, targetDraftId: string) => void;
+  readonly onReorderDrafts?: (
+    draggedDraftId: string,
+    targetDraftId: string,
+    placement: DraftDropPlacement,
+  ) => void;
   readonly onSectionTemplateSettingsChange?: (
     sectionTemplateSettings: DemoSectionTemplateSettings,
   ) => void;
@@ -181,6 +186,7 @@ export function DemoAosrWorkspacePage({
   const [selectedDraftId, setSelectedDraftId] = useState(
     initialSelectedDraftId ?? demoAosrWorkspace.drafts[0]?.id ?? '',
   );
+  const draggedDraftIdRef = useRef<string | null>(null);
   const [draggedDraftId, setDraggedDraftId] = useState<string | null>(null);
   const [draggedRepresentativeId, setDraggedRepresentativeId] = useState<string | null>(null);
   const [representativeDropTargetId, setRepresentativeDropTargetId] = useState<string | null>(null);
@@ -574,16 +580,30 @@ export function DemoAosrWorkspacePage({
     setRepresentativeDropTargetId(null);
   };
 
-  const reorderDrafts = (targetDraftId: string): void => {
-    if (draggedDraftId === null || draggedDraftId === targetDraftId) {
+  const reorderDrafts = (targetDraftId: string, placement: DraftDropPlacement): void => {
+    const currentDraggedDraftId = draggedDraftIdRef.current ?? draggedDraftId;
+
+    if (currentDraggedDraftId === null || currentDraggedDraftId === targetDraftId) {
       return;
     }
 
     if (onReorderDrafts === undefined) {
-      commitDrafts((currentDrafts) => moveItemBefore(currentDrafts, draggedDraftId, targetDraftId));
+      commitDrafts((currentDrafts) =>
+        moveItem(currentDrafts, currentDraggedDraftId, targetDraftId, placement),
+      );
     } else {
-      onReorderDrafts(draggedDraftId, targetDraftId);
+      onReorderDrafts(currentDraggedDraftId, targetDraftId, placement);
     }
+  };
+
+  const startDraggingDraft = (draftId: string): void => {
+    draggedDraftIdRef.current = draftId;
+    setDraggedDraftId(draftId);
+  };
+
+  const stopDraggingDraft = (): void => {
+    draggedDraftIdRef.current = null;
+    setDraggedDraftId(null);
   };
 
   const closeObjectSettings = (): void => {
@@ -826,10 +846,8 @@ export function DemoAosrWorkspacePage({
             selectedDraftId={selectedDraft.id}
             onCreateAct={onCreateActInFolder}
             onDeleteDraft={deleteDraft}
-            onDragEnd={() => {
-              setDraggedDraftId(null);
-            }}
-            onDragStart={setDraggedDraftId}
+            onDragEnd={stopDraggingDraft}
+            onDragStart={startDraggingDraft}
             onReorderDrafts={reorderDrafts}
             onSelectDraft={setSelectedDraftId}
           />
@@ -1074,10 +1092,11 @@ function getSelectedDraft(
   return selectedDraft;
 }
 
-function moveItemBefore<TItem extends { readonly id: string }>(
+function moveItem<TItem extends { readonly id: string }>(
   items: readonly TItem[],
   itemId: string,
   targetItemId: string,
+  placement: DraftDropPlacement,
 ): readonly TItem[] {
   const itemIndex = items.findIndex((item) => item.id === itemId);
   const targetIndex = items.findIndex((item) => item.id === targetItemId);
@@ -1093,8 +1112,15 @@ function moveItemBefore<TItem extends { readonly id: string }>(
     return items;
   }
 
-  const adjustedTargetIndex = itemIndex < targetIndex ? targetIndex - 1 : targetIndex;
-  nextItems.splice(adjustedTargetIndex, 0, item);
+  const targetIndexAfterRemoval = nextItems.findIndex((candidate) => candidate.id === targetItemId);
+
+  if (targetIndexAfterRemoval < 0) {
+    return items;
+  }
+
+  const insertionIndex =
+    placement === 'before' ? targetIndexAfterRemoval : targetIndexAfterRemoval + 1;
+  nextItems.splice(insertionIndex, 0, item);
 
   return nextItems;
 }

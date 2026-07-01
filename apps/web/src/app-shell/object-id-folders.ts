@@ -1,6 +1,7 @@
 import type { DemoAosrDraft } from '../aosr-demo/demo-aosr-workspace.js';
 
 export type DemoIdFolderId = string;
+export type DemoIdFolderDraftPlacement = 'after' | 'before';
 
 export interface DemoIdFolder {
   readonly draftIds: readonly string[];
@@ -105,6 +106,16 @@ export function moveDemoIdFolderDraftBefore(
   draggedDraftId: string,
   targetDraftId: string,
 ): DemoIdFolders {
+  return moveDemoIdFolderDraft(folders, folderId, draggedDraftId, targetDraftId, 'before');
+}
+
+export function moveDemoIdFolderDraft(
+  folders: DemoIdFolders,
+  folderId: DemoIdFolderId,
+  draggedDraftId: string,
+  targetDraftId: string,
+  placement: DemoIdFolderDraftPlacement,
+): DemoIdFolders {
   if (draggedDraftId === targetDraftId) {
     return folders;
   }
@@ -125,12 +136,14 @@ export function moveDemoIdFolderDraftBefore(
       return folder;
     }
 
+    const insertionIndex = placement === 'before' ? targetIndex : targetIndex + 1;
+
     return {
       ...folder,
       draftIds: [
-        ...withoutDraggedDraft.slice(0, targetIndex),
+        ...withoutDraggedDraft.slice(0, insertionIndex),
         draggedDraftId,
-        ...withoutDraggedDraft.slice(targetIndex),
+        ...withoutDraggedDraft.slice(insertionIndex),
       ],
     };
   });

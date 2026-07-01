@@ -1,4 +1,4 @@
-import { useMemo, useState, type PointerEvent } from 'react';
+import { useLayoutEffect, useMemo, useRef, useState, type PointerEvent } from 'react';
 
 import { getDemoActTypeById, registeredDemoActTypes } from '../act-types/act-types.js';
 import { DemoAosrWorkspacePage } from '../aosr-demo/DemoAosrWorkspacePage.js';
@@ -31,9 +31,10 @@ import {
   demoIdFolders,
   getDemoIdFolderById,
   getDemoIdFolderDrafts,
-  moveDemoIdFolderDraftBefore,
+  moveDemoIdFolderDraft,
   removeDemoIdFolderDraft,
   type DemoIdFolder,
+  type DemoIdFolderDraftPlacement,
   type DemoIdFolderId,
   type DemoIdFolders,
 } from './object-id-folders.js';
@@ -198,15 +199,147 @@ function buildInitialSectionTemplateSettings(
   );
 }
 
+function FolderGripIcon(): React.JSX.Element {
+  return (
+    <svg aria-hidden="true" viewBox="0 0 20 20" focusable="false">
+      <path d="M7 4.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Zm0 5.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Zm0 5.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Zm9-11a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Zm0 5.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Zm0 5.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Z" />
+    </svg>
+  );
+}
+
+type WorkspaceNavIconName =
+  | 'documents'
+  | 'final-package'
+  | 'folder'
+  | 'home'
+  | 'section'
+  | 'sections'
+  | 'settings';
+
+function WorkspaceNavIcon({ name }: { readonly name: WorkspaceNavIconName }): React.JSX.Element {
+  switch (name) {
+    case 'documents':
+      return (
+        <svg aria-hidden="true" viewBox="0 0 24 24" focusable="false">
+          <path d="M7 4.75h7.2L18 8.55v10.7H7z" />
+          <path d="M14 4.75v4h4" />
+          <path d="M9.5 12h6M9.5 15h5" />
+        </svg>
+      );
+    case 'final-package':
+      return (
+        <svg aria-hidden="true" viewBox="0 0 24 24" focusable="false">
+          <path d="M6.5 7.25h11v12h-11z" />
+          <path d="M8.5 4.75h7v2.5h-7zM9.5 11h5M9.5 14h4" />
+          <path d="m15.2 15.7 1.1 1.1 2-2.4" />
+        </svg>
+      );
+    case 'folder':
+      return (
+        <svg aria-hidden="true" viewBox="0 0 24 24" focusable="false">
+          <path d="M4.75 8.25h5l1.55 2h7.95v8H4.75z" />
+          <path d="M4.75 8.25v-1.5h4.2l1.45 1.5" />
+        </svg>
+      );
+    case 'home':
+      return (
+        <svg aria-hidden="true" viewBox="0 0 24 24" focusable="false">
+          <path d="m5 11.2 7-5.7 7 5.7" />
+          <path d="M7.25 10.25v8.5h9.5v-8.5" />
+          <path d="M10.25 18.75v-4h3.5v4" />
+        </svg>
+      );
+    case 'section':
+      return (
+        <svg aria-hidden="true" viewBox="0 0 24 24" focusable="false">
+          <path d="M6.5 5.75h11v12.5h-11z" />
+          <path d="M9 9h6M9 12h6M9 15h3.5" />
+        </svg>
+      );
+    case 'sections':
+      return (
+        <svg aria-hidden="true" viewBox="0 0 24 24" focusable="false">
+          <path d="M5.5 6h5.25v5.25H5.5zM13.25 6h5.25v5.25h-5.25zM5.5 13.25h5.25v5.25H5.5zM13.25 13.25h5.25v5.25h-5.25z" />
+        </svg>
+      );
+    case 'settings':
+      return (
+        <svg aria-hidden="true" viewBox="0 0 24 24" focusable="false">
+          <path d="M6 8.25h12M6 15.75h12" />
+          <path d="M9.25 6.5v3.5M14.75 14v3.5" />
+        </svg>
+      );
+  }
+}
+
 function getPointerTargetFolderDraftId(
   element: HTMLElement,
   clientX: number,
   clientY: number,
-): string | null {
+): { readonly draftId: string; readonly placement: DemoIdFolderDraftPlacement } | null {
   const targetElement = element.ownerDocument.elementFromPoint(clientX, clientY);
   const targetDraft = targetElement?.closest<HTMLElement>('[data-folder-draft-id]');
+  const draftId = targetDraft?.dataset['folderDraftId'];
 
-  return targetDraft?.dataset['folderDraftId'] ?? null;
+  if (targetDraft === null || targetDraft === undefined || draftId === undefined) {
+    return null;
+  }
+
+  const targetRect = targetDraft.getBoundingClientRect();
+  const placement = clientY > targetRect.top + targetRect.height / 2 ? 'after' : 'before';
+
+  return { draftId, placement };
+}
+
+function animateDraftListReorder(
+  listElement: HTMLElement | null,
+  previousRects: { current: Map<string, DOMRect> },
+  selector: string,
+  idAttribute: string,
+): void {
+  if (listElement === null || !('animate' in HTMLElement.prototype)) {
+    return;
+  }
+
+  const draftElements = Array.from(listElement.querySelectorAll<HTMLElement>(selector));
+  const nextRects = new Map<string, DOMRect>();
+
+  draftElements.forEach((draftElement) => {
+    const draftId = draftElement.dataset[idAttribute];
+
+    if (draftId === undefined) {
+      return;
+    }
+
+    const nextRect = draftElement.getBoundingClientRect();
+    const previousRect = previousRects.current.get(draftId);
+
+    nextRects.set(draftId, nextRect);
+
+    if (previousRect === undefined) {
+      return;
+    }
+
+    const deltaX = previousRect.left - nextRect.left;
+    const deltaY = previousRect.top - nextRect.top;
+
+    if (Math.abs(deltaX) < 1 && Math.abs(deltaY) < 1) {
+      return;
+    }
+
+    draftElement.animate(
+      [
+        { transform: `translate(${String(deltaX)}px, ${String(deltaY)}px)` },
+        { transform: 'translate(0, 0)' },
+      ],
+      {
+        duration: 260,
+        easing: 'cubic-bezier(0.22, 1, 0.36, 1)',
+      },
+    );
+  });
+
+  previousRects.current = nextRects;
 }
 
 type ObjectWorkspaceSection =
@@ -534,6 +667,7 @@ export function ObjectWorkspacePage({
   const reorderAosrDraftInSelectedFolder = (
     draggedDraftId: string,
     targetDraftId: string,
+    placement: DemoIdFolderDraftPlacement = 'before',
   ): void => {
     if (
       selectedFolderId === null ||
@@ -543,23 +677,26 @@ export function ObjectWorkspacePage({
       return;
     }
 
-    const nextFolders = moveDemoIdFolderDraftBefore(
-      folders,
-      selectedFolderId,
-      draggedDraftId,
-      targetDraftId,
-    );
+    setFolders((currentFolders) => {
+      const nextFolders = moveDemoIdFolderDraft(
+        currentFolders,
+        selectedFolderId,
+        draggedDraftId,
+        targetDraftId,
+        placement,
+      );
 
-    setFolders(nextFolders);
+      setDrafts((currentDrafts) =>
+        maybeRenumberAutomaticSectionDrafts({
+          currentDrafts,
+          currentFolders: nextFolders,
+          section: selectedSection,
+          sectionTemplateSettings: selectedSectionTemplateSettings,
+        }),
+      );
 
-    setDrafts((currentDrafts) =>
-      maybeRenumberAutomaticSectionDrafts({
-        currentDrafts,
-        currentFolders: nextFolders,
-        section: selectedSection,
-        sectionTemplateSettings: selectedSectionTemplateSettings,
-      }),
-    );
+      return nextFolders;
+    });
   };
 
   const openObjectSettings = (): void => {
@@ -737,7 +874,7 @@ export function ObjectWorkspacePage({
               type="button"
             >
               <span className="object-workspace-nav__icon" aria-hidden="true">
-                ⌂
+                <WorkspaceNavIcon name="home" />
               </span>
               <span className="object-workspace-nav__label">
                 <strong>Обзор объекта</strong>
@@ -756,7 +893,7 @@ export function ObjectWorkspacePage({
               type="button"
             >
               <span className="object-workspace-nav__icon" aria-hidden="true">
-                ▦
+                <WorkspaceNavIcon name="sections" />
               </span>
               <span className="object-workspace-nav__label">
                 <strong>Разделы ИД</strong>
@@ -796,7 +933,7 @@ export function ObjectWorkspacePage({
                         type="button"
                       >
                         <span className="object-workspace-nav__icon" aria-hidden="true">
-                          ◧
+                          <WorkspaceNavIcon name="section" />
                         </span>
                         <span className="object-workspace-nav__label">
                           <strong>{section.name}</strong>
@@ -824,7 +961,7 @@ export function ObjectWorkspacePage({
                             type="button"
                           >
                             <span className="object-workspace-nav__icon" aria-hidden="true">
-                              ⌁
+                              <WorkspaceNavIcon name="settings" />
                             </span>
                             <span className="object-workspace-nav__label">
                               <strong>Шаблонные значения раздела</strong>
@@ -851,7 +988,7 @@ export function ObjectWorkspacePage({
                               type="button"
                             >
                               <span className="object-workspace-nav__icon" aria-hidden="true">
-                                ▣
+                                <WorkspaceNavIcon name="folder" />
                               </span>
                               <span className="object-workspace-nav__label">
                                 <strong>{folder.name}</strong>
@@ -875,7 +1012,7 @@ export function ObjectWorkspacePage({
                             type="button"
                           >
                             <span className="object-workspace-nav__icon" aria-hidden="true">
-                              ◫
+                              <WorkspaceNavIcon name="final-package" />
                             </span>
                             <span className="object-workspace-nav__label">
                               <strong>Итоговая ИД по разделу</strong>
@@ -905,7 +1042,7 @@ export function ObjectWorkspacePage({
               type="button"
             >
               <span className="object-workspace-nav__icon" aria-hidden="true">
-                ▤
+                <WorkspaceNavIcon name="documents" />
               </span>
               <span className="object-workspace-nav__label">
                 <strong>Документы объекта</strong>
@@ -1748,7 +1885,11 @@ interface ObjectFolderPageProps {
   readonly onOpenAosr: (draftId: string) => void;
   readonly onOpenCreateDocumentPanel: () => void;
   readonly onOpenIntermediatePackage: () => void;
-  readonly onReorderAosr: (draggedDraftId: string, targetDraftId: string) => void;
+  readonly onReorderAosr: (
+    draggedDraftId: string,
+    targetDraftId: string,
+    placement: DemoIdFolderDraftPlacement,
+  ) => void;
 }
 
 function ObjectFolderPage({
@@ -1764,45 +1905,111 @@ function ObjectFolderPage({
   onOpenIntermediatePackage,
   onReorderAosr,
 }: ObjectFolderPageProps): React.JSX.Element {
+  const draftListRef = useRef<HTMLUListElement | null>(null);
+  const previousDraftRectsRef = useRef(new Map<string, DOMRect>());
+  const currentDropTargetRef = useRef<{
+    readonly draftId: string;
+    readonly placement: DemoIdFolderDraftPlacement;
+  } | null>(null);
+  const draggedDraftIdRef = useRef<string | null>(null);
   const [draggedDraftId, setDraggedDraftId] = useState<string | null>(null);
   const [dropTargetDraftId, setDropTargetDraftId] = useState<string | null>(null);
+  const [dropPlacement, setDropPlacement] = useState<DemoIdFolderDraftPlacement>('before');
+
+  useLayoutEffect(() => {
+    animateDraftListReorder(
+      draftListRef.current,
+      previousDraftRectsRef,
+      '[data-folder-draft-id]',
+      'folderDraftId',
+    );
+  }, [drafts]);
 
   const clearDragState = (): void => {
+    draggedDraftIdRef.current = null;
+    currentDropTargetRef.current = null;
     setDraggedDraftId(null);
     setDropTargetDraftId(null);
+    setDropPlacement('before');
   };
 
-  const reorderDraggedDraft = (targetDraftId: string): void => {
-    if (draggedDraftId !== null && draggedDraftId !== targetDraftId) {
-      onReorderAosr(draggedDraftId, targetDraftId);
+  const startDraggingDraft = (draftId: string): void => {
+    draggedDraftIdRef.current = draftId;
+    setDraggedDraftId(draftId);
+  };
+
+  const reorderDraggedDraft = (
+    targetDraftId: string,
+    placement: DemoIdFolderDraftPlacement,
+    fallbackDraggedDraftId = '',
+  ): void => {
+    const currentDraggedDraftId =
+      fallbackDraggedDraftId === ''
+        ? (draggedDraftIdRef.current ?? draggedDraftId ?? '')
+        : fallbackDraggedDraftId;
+
+    if (currentDraggedDraftId !== '' && currentDraggedDraftId !== targetDraftId) {
+      onReorderAosr(currentDraggedDraftId, targetDraftId, placement);
+      currentDropTargetRef.current = { draftId: targetDraftId, placement };
       setDropTargetDraftId(targetDraftId);
+      setDropPlacement(placement);
     }
   };
 
   const updatePointerDropTarget = (event: PointerEvent<HTMLElement>): void => {
-    const targetDraftId = getPointerTargetFolderDraftId(
+    const dropTarget = getPointerTargetFolderDraftId(
       event.currentTarget,
       event.clientX,
       event.clientY,
     );
 
-    if (targetDraftId !== null) {
-      reorderDraggedDraft(targetDraftId);
+    if (dropTarget !== null) {
+      reorderDraggedDraft(dropTarget.draftId, dropTarget.placement);
     }
   };
 
   const finishPointerReorder = (event: PointerEvent<HTMLElement>): void => {
-    const targetDraftId = getPointerTargetFolderDraftId(
+    const dropTarget = getPointerTargetFolderDraftId(
       event.currentTarget,
       event.clientX,
       event.clientY,
     );
 
-    if (targetDraftId !== null) {
-      reorderDraggedDraft(targetDraftId);
+    if (dropTarget !== null) {
+      reorderDraggedDraft(dropTarget.draftId, dropTarget.placement);
     }
 
     clearDragState();
+  };
+
+  const getDefaultDropPlacement = (
+    targetDraftId: string,
+    fallbackDraggedDraftId: string,
+  ): DemoIdFolderDraftPlacement => {
+    const currentDraggedDraftId =
+      fallbackDraggedDraftId === ''
+        ? (draggedDraftIdRef.current ?? draggedDraftId ?? '')
+        : fallbackDraggedDraftId;
+    const draggedDraftIndex = drafts.findIndex((draft) => draft.id === currentDraggedDraftId);
+    const targetDraftIndex = drafts.findIndex((draft) => draft.id === targetDraftId);
+
+    return draggedDraftIndex >= 0 && targetDraftIndex >= 0 && draggedDraftIndex < targetDraftIndex
+      ? 'after'
+      : 'before';
+  };
+
+  const getNativeDropPlacement = (
+    targetElement: HTMLElement,
+    clientY: number,
+    fallbackPlacement: DemoIdFolderDraftPlacement,
+  ): DemoIdFolderDraftPlacement => {
+    const targetRect = targetElement.getBoundingClientRect();
+
+    if (!Number.isFinite(clientY) || targetRect.height <= 0) {
+      return fallbackPlacement;
+    }
+
+    return clientY > targetRect.top + targetRect.height / 2 ? 'after' : 'before';
   };
 
   return (
@@ -1866,12 +2073,17 @@ function ObjectFolderPage({
               <p>Создайте первый акт — он сразу появится в составе папки.</p>
             </div>
           ) : (
-            <ul className="object-folder-draft-list" aria-label={`Акты в папке ${folder.name}`}>
+            <ul
+              ref={draftListRef}
+              className="object-folder-draft-list"
+              aria-label={`Акты в папке ${folder.name}`}
+            >
               {drafts.map((draft) => (
                 <li
                   className="object-folder-draft-card"
                   data-dragging={draggedDraftId === draft.id ? 'true' : undefined}
                   data-drop-target={dropTargetDraftId === draft.id ? 'true' : undefined}
+                  data-drop-placement={dropTargetDraftId === draft.id ? dropPlacement : undefined}
                   data-folder-draft-id={draft.id}
                   draggable
                   key={draft.id}
@@ -1879,26 +2091,51 @@ function ObjectFolderPage({
                   onDragEnter={() => {
                     if (draggedDraftId !== null && draggedDraftId !== draft.id) {
                       setDropTargetDraftId(draft.id);
-                      reorderDraggedDraft(draft.id);
+                      setDropPlacement('before');
                     }
                   }}
                   onDragOver={(event) => {
                     event.preventDefault();
                     event.dataTransfer.dropEffect = 'move';
+                    const placement = getNativeDropPlacement(
+                      event.currentTarget,
+                      event.clientY,
+                      getDefaultDropPlacement(draft.id, event.dataTransfer.getData('text/plain')),
+                    );
+
+                    currentDropTargetRef.current = { draftId: draft.id, placement };
+                    setDropTargetDraftId(draft.id);
+                    setDropPlacement(placement);
                   }}
                   onDragStart={(event) => {
                     event.dataTransfer.effectAllowed = 'move';
                     event.dataTransfer.setData('text/plain', draft.id);
-                    setDraggedDraftId(draft.id);
+                    startDraggingDraft(draft.id);
                   }}
                   onDrop={(event) => {
                     event.preventDefault();
-                    reorderDraggedDraft(draft.id);
+                    const savedDropTarget = currentDropTargetRef.current;
+                    const fallbackDraggedDraftId = event.dataTransfer.getData('text/plain');
+                    const fallbackPlacement = getDefaultDropPlacement(
+                      draft.id,
+                      fallbackDraggedDraftId,
+                    );
+                    const savedPlacement =
+                      savedDropTarget?.draftId === draft.id
+                        ? savedDropTarget.placement
+                        : fallbackPlacement;
+                    const placement = getNativeDropPlacement(
+                      event.currentTarget,
+                      event.clientY,
+                      savedPlacement,
+                    );
+
+                    reorderDraggedDraft(draft.id, placement, fallbackDraggedDraftId);
                     clearDragState();
                   }}
                   onPointerEnter={() => {
                     if (draggedDraftId !== null && draggedDraftId !== draft.id) {
-                      reorderDraggedDraft(draft.id);
+                      setDropTargetDraftId(draft.id);
                     }
                   }}
                 >
@@ -1909,7 +2146,7 @@ function ObjectFolderPage({
                     onDragStart={(event) => {
                       event.dataTransfer.effectAllowed = 'move';
                       event.dataTransfer.setData('text/plain', draft.id);
-                      setDraggedDraftId(draft.id);
+                      startDraggingDraft(draft.id);
                     }}
                     onPointerDown={(event) => {
                       if (event.button !== 0) {
@@ -1917,7 +2154,7 @@ function ObjectFolderPage({
                       }
 
                       event.preventDefault();
-                      setDraggedDraftId(draft.id);
+                      startDraggingDraft(draft.id);
 
                       if (typeof event.currentTarget.setPointerCapture === 'function') {
                         event.currentTarget.setPointerCapture(event.pointerId);
@@ -1928,7 +2165,7 @@ function ObjectFolderPage({
                     title={`Перетащить акт ${getDocumentDisplayNumber(draft.actNumber)}`}
                     type="button"
                   >
-                    ↕
+                    <FolderGripIcon />
                   </button>
                   <button
                     aria-label={`Открыть акт ${getDocumentDisplayNumber(draft.actNumber)}`}
@@ -1970,7 +2207,7 @@ function ObjectFolderPage({
             </ul>
           )}
           <p className="object-folder-panel__note">
-            Перетаскивайте акты за ручку ↕. При автоматической нумерации порядок сразу пересчитывает
+            Перетаскивайте акты за ручку. При автоматической нумерации порядок сразу пересчитывает
             номера.
           </p>
         </section>

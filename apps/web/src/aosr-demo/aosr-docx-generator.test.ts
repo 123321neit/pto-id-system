@@ -39,6 +39,7 @@ describe('renderAosrDocxTemplateBytes', () => {
     expect(documentXml).toContain('ПТО Монтаж');
     expect(documentXml).toContain('Воздуховоды оцинкованные');
     expect(documentXml).toContain('Иванов И.И.');
+    expect(documentXml).toContain('Иванов\u00a0И.И.');
     expect(documentXml).toContain('«01» сентября 2026 г.');
     expect(documentXml).toContain('приказ № 1');
     expect(documentXml).toContain('застройщик');

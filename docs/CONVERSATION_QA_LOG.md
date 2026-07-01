@@ -1867,3 +1867,34 @@ Still not implemented:
 - backend/API routes;
 - Prisma models/migrations;
 - production storage.
+
+---
+
+## 64. Object workspace polish, manual-fill DOCX fields and AI direction
+
+### Q: Что сделано после замечаний по выравниванию, подписям, drag reorder и будущему AI?
+
+A: The follow-up stayed frontend-only and fixed the current object-workspace and
+single-AOSR DOCX issues:
+
+- act cards now handle long numbers with ellipsis and keep date/type text from
+  visually gluing to the number;
+- drag reorder now handles both directions in a two-act folder and recalculates
+  automatic section numbering after the move;
+- reorder animations use a lightweight FLIP transition for smoother movement;
+- the object workspace left tree uses proper SVG icons instead of placeholder
+  square/dash glyphs;
+- DOCX signature names use a non-breaking space between surname and initials,
+  so Word does not split `Иванов И.И.` onto two visual lines;
+- empty non-template printable fields produce two underlined manual-fill lines
+  instead of staying invisible;
+- `docs/ai-and-temporary-infrastructure-prep.md` captures the temporary
+  server/database direction and the first AI assistant architecture: Postgres
+  via `DATABASE_URL`, S3-compatible storage abstraction, AI via retrieval,
+  rules, fixtures and evals before any fine-tuning.
+
+Still not implemented:
+
+- backend/API/database/storage;
+- AI document ingestion, validation or act generation;
+- PDF/ZIP/final package generation.

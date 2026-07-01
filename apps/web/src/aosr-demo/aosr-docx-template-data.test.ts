@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
 
-import { buildAosrDocxFileName, buildAosrDocxTemplateData } from './aosr-docx-template-data.js';
+import {
+  AOSR_MANUAL_FILL_LINES,
+  buildAosrDocxFileName,
+  buildAosrDocxTemplateData,
+} from './aosr-docx-template-data.js';
 import type { AosrPrintState } from './demo-aosr-workspace.js';
 
 describe('buildAosrDocxTemplateData', () => {
@@ -13,6 +17,9 @@ describe('buildAosrDocxTemplateData', () => {
     expect(templateData.document.dateLine).toBe('«03» сентября 2026 г.');
     expect(templateData.object.name).toBe('Поликлиника, корпус А');
     expect(templateData.materials.items[0]?.displayText).toBe('Воздуховоды оцинкованные');
+    expect(templateData.representatives.groups[0]?.members[0]?.signatureName).toBe(
+      'Иванов\u00a0И.И.',
+    );
     expect(templateData.work.startDateLine).toBe('«01» сентября 2026 г.');
     expect(templateData.work.endDateLine).toBe('«03» сентября 2026 г.');
   });
@@ -32,6 +39,39 @@ describe('buildAosrDocxTemplateData', () => {
     expect(templateData.document.number).toBe('   ');
     expect(templateData.document.numberLine).toBe('');
     expect(templateData.document.dateLine).toBe('«04» сентября 2026 г.');
+  });
+
+  it('uses two underlined manual-fill lines for empty printable body fields', () => {
+    const templateData = buildAosrDocxTemplateData(
+      createPrintState({
+        applications: { items: [] },
+        confirmationDocuments: { items: [] },
+        document: {
+          additionalInfo: '',
+          copiesLine: '2',
+          date: '2026-09-04',
+          number: 'ОВ-2',
+        },
+        materials: { items: [] },
+        project: {
+          compliance: '',
+          documentation: '',
+        },
+        work: {
+          contractorName: '',
+          description: '',
+          endDateLine: '',
+          nextWorks: '',
+          startDateLine: '',
+        },
+      }),
+    );
+
+    expect(templateData.work.description).toBe(AOSR_MANUAL_FILL_LINES);
+    expect(templateData.project.documentation).toBe(AOSR_MANUAL_FILL_LINES);
+    expect(templateData.materials.items[0]?.displayText).toBe(AOSR_MANUAL_FILL_LINES);
+    expect(templateData.confirmationDocuments.items[0]?.displayText).toBe(AOSR_MANUAL_FILL_LINES);
+    expect(templateData.applications.items[0]?.displayText).toBe(AOSR_MANUAL_FILL_LINES);
   });
 });
 

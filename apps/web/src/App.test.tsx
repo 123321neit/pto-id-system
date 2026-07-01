@@ -1095,6 +1095,30 @@ describe('App shell mock navigation', () => {
     expect(rows[1]?.textContent).toContain('ОВ-2');
     expect(rows[1]?.textContent).toContain('04.09.2026');
 
+    const reverseDataTransfer = createDragDataTransfer();
+    const reverseDraggedRow = getRequiredListItem(rows, 0);
+    const reverseTargetRow = getRequiredListItem(rows, 1);
+    const reverseDraggedId = reverseDraggedRow.dataset['folderDraftId'];
+    const reverseTargetId = reverseTargetRow.dataset['folderDraftId'];
+
+    if (reverseDraggedId === undefined || reverseTargetId === undefined) {
+      throw new Error('В строках актов ожидались data-folder-draft-id.');
+    }
+
+    fireEvent.dragStart(reverseDraggedRow, { dataTransfer: reverseDataTransfer });
+    expect(reverseDraggedId).not.toBe(reverseTargetId);
+    expect(reverseDataTransfer.getData('text/plain')).toBe(reverseDraggedId);
+    fireEvent.dragOver(reverseTargetRow, { clientY: 999, dataTransfer: reverseDataTransfer });
+    fireEvent.drop(reverseTargetRow, { dataTransfer: reverseDataTransfer });
+
+    folderActs = screen.getByRole('list', { name: 'Акты в папке Сентябрь 2026' });
+    rows = within(folderActs).getAllByRole('listitem');
+
+    expect(rows[0]?.textContent).toContain('ОВ-1');
+    expect(rows[0]?.textContent).toContain('04.09.2026');
+    expect(rows[1]?.textContent).toContain('ОВ-2');
+    expect(rows[1]?.textContent).toContain('05.09.2026');
+
     await openFolderByName(user, 'Октябрь 2026');
     expect(screen.getByRole('button', { name: /ОВ-3/u })).toBeTruthy();
   });
@@ -2023,6 +2047,8 @@ function getTextAreaValue(element: HTMLElement): string {
 }
 
 function createDragDataTransfer(): DataTransfer {
+  const data = new Map<string, string>();
+
   return {
     dropEffect: 'move',
     effectAllowed: 'move',
@@ -2030,8 +2056,10 @@ function createDragDataTransfer(): DataTransfer {
     items: [] as unknown as DataTransferItemList,
     types: [],
     clearData: vi.fn(),
-    getData: vi.fn(() => ''),
-    setData: vi.fn(),
+    getData: vi.fn((format: string) => data.get(format) ?? ''),
+    setData: vi.fn((format: string, value: string) => {
+      data.set(format, value);
+    }),
     setDragImage: vi.fn(),
   };
 }

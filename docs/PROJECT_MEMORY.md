@@ -5982,3 +5982,35 @@ delete/move/reorder lifecycle or generation was introduced.
 - no PDF/ZIP/backend/storage work was added;
 - DOCX preview is browser-side and depends on `docx-preview`; HTML fallback is
   still kept for resilience and tests.
+
+### 2026-07-01 — Folder reorder stability, DOCX manual-fill lines and AI prep
+
+- Статус: `Frontend-only UX/DOCX polish and architecture prep`
+- Описание: applied the next user corrections for act-card alignment, long
+  numbers, signature wrapping, empty printable fields and drag reorder
+  stability.
+
+Добавлено/уточнено:
+
+- folder act cards and the embedded act tree now truncate long act numbers
+  safely instead of letting the number collide with the act type/date text;
+- folder drag/drop supports both directions, including the two-row case where a
+  user drags the first act below the second; automatic section numbering is
+  recalculated after reorder;
+- drag animations use a small FLIP transition for smoother visual movement;
+- the left object tree now uses SVG icons for object overview, sections,
+  settings, folders, final ID and object documents instead of placeholder
+  glyphs;
+- DOCX template data keeps signature surname and initials together with a
+  non-breaking space, preventing `Иванов И.И.` from splitting between lines;
+- empty non-template printable fields are converted to two underlined
+  manual-fill lines, so a printed act can still be filled by hand;
+- `docs/ai-and-temporary-infrastructure-prep.md` records the temporary
+  infrastructure direction and the first AI-assistant architecture notes.
+
+Ограничения:
+
+- the DOCX template asset was not edited because the signature issue was caused
+  by breakable data, not by template markup;
+- no backend/API/database/storage was implemented;
+- no AI ingestion/generation code was implemented yet.
