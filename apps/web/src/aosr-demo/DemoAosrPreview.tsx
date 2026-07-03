@@ -26,19 +26,21 @@ const signatureCaption = '(должность, фамилия, инициалы,
 interface DemoAosrPreviewProps {
   readonly formVariant: DemoAosrFormVariantMetadata;
   readonly printState: AosrPrintState;
+  readonly previewMode?: 'auto' | 'html-fallback';
 }
 
 type AosrPreviewStatus = 'error' | 'loading' | 'ready';
 
 export function DemoAosrPreview({
   formVariant,
+  previewMode = 'auto',
   printState,
 }: DemoAosrPreviewProps): React.JSX.Element {
   const previewHostRef = useRef<HTMLDivElement | null>(null);
   const previewRenderIdRef = useRef(0);
   const [previewStatus, setPreviewStatus] = useState<AosrPreviewStatus>('loading');
   const templateData = buildAosrDocxTemplateData(printState);
-  const shouldShowHtmlPreview = previewStatus !== 'ready' || import.meta.env.MODE === 'test';
+  const shouldShowHtmlPreview = previewMode === 'html-fallback' || previewStatus === 'error';
 
   useEffect(() => {
     const previewHost = previewHostRef.current;
@@ -51,6 +53,13 @@ export function DemoAosrPreview({
     setPreviewStatus('loading');
     const renderId = previewRenderIdRef.current + 1;
     previewRenderIdRef.current = renderId;
+
+    if (previewMode === 'html-fallback') {
+      previewHost.dataset['testDocxPreview'] = 'forced-fallback';
+      setPreviewStatus('ready');
+
+      return undefined;
+    }
 
     if (import.meta.env.MODE === 'test') {
       previewHost.dataset['testDocxPreview'] = 'skipped';
@@ -101,7 +110,7 @@ export function DemoAosrPreview({
       previewRenderIdRef.current += 1;
       previewHost.replaceChildren();
     };
-  }, [printState]);
+  }, [previewMode, printState]);
 
   return (
     <section className="preview-panel preview-panel--template" aria-labelledby="preview-title">

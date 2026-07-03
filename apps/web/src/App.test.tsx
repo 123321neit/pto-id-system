@@ -396,7 +396,23 @@ describe('App shell mock navigation', () => {
     expect(screen.getByRole('heading', { name: 'Сентябрь 2026' })).toBeTruthy();
     expect(screen.getByRole('heading', { name: 'Акты в папке' })).toBeTruthy();
     expect(screen.getByRole('button', { name: /ОВ-1/u })).toBeTruthy();
-    expect(screen.queryByRole('heading', { name: 'Реестр папки «Сентябрь 2026»' })).toBeNull();
+    expect(screen.getByRole('heading', { name: 'Реестр папки' })).toBeTruthy();
+    const septemberRegistry = within(getSectionByHeading('Реестр папки'));
+    expect(septemberRegistry.getByRole('columnheader', { name: '№ п/п' })).toBeTruthy();
+    expect(
+      septemberRegistry.getByRole('columnheader', { name: 'Обозначение / номер' }),
+    ).toBeTruthy();
+    expect(
+      septemberRegistry.getByRole('columnheader', { name: 'Наименование документа' }),
+    ).toBeTruthy();
+    expect(septemberRegistry.getByRole('columnheader', { name: 'Дата' })).toBeTruthy();
+    expect(
+      septemberRegistry.getByRole('columnheader', { name: 'Примечание / статус' }),
+    ).toBeTruthy();
+    expect(septemberRegistry.getByText('ОВ-1')).toBeTruthy();
+    expect(septemberRegistry.getByText('04.09.2026')).toBeTruthy();
+    expect(septemberRegistry.getByText(/АОСР — Монтаж скрытых участков/u)).toBeTruthy();
+    expect(septemberRegistry.getByText('Готово')).toBeTruthy();
     expect(screen.getByRole('heading', { name: 'Промежуточная ИД по папке' })).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Открыть промежуточную ИД по папке' })).toBeTruthy();
 
@@ -420,7 +436,7 @@ describe('App shell mock navigation', () => {
 
     expect(screen.getByRole('heading', { name: 'Октябрь 2026' })).toBeTruthy();
     expect(screen.getAllByText('ОВ-2').length).toBeGreaterThan(0);
-    expect(screen.queryByRole('heading', { name: 'Реестр папки «Октябрь 2026»' })).toBeNull();
+    expect(screen.getByRole('heading', { name: 'Реестр папки' })).toBeTruthy();
     expect(screen.getByRole('heading', { name: 'Промежуточная ИД по папке' })).toBeTruthy();
     expect(
       screen.getByText('Реестр и печатный состав открываются в промежуточной ИД этой папки.'),
@@ -501,10 +517,10 @@ describe('App shell mock navigation', () => {
     expect(folderRows[1]?.textContent).toContain('Сентябрь 2026');
 
     await openFolderByName(user, 'Октябрь 2026');
-    expect(screen.getByText('ОВ-1')).toBeTruthy();
+    expect(within(getSectionByHeading('Реестр папки')).getByText('ОВ-1')).toBeTruthy();
 
     await openFolderByName(user, 'Сентябрь 2026');
-    expect(screen.getByText('ОВ-2')).toBeTruthy();
+    expect(within(getSectionByHeading('Реестр папки')).getByText('ОВ-2')).toBeTruthy();
   });
 
   it('opens a frontend-only intermediate ID page derived from the selected folder', async () => {
@@ -545,13 +561,14 @@ describe('App shell mock navigation', () => {
         'Построен из текущих документов папки. Реестр не сохраняется, не блокируется и не закрывает папку.',
       ),
     ).toBeTruthy();
-    expect(intermediateRegistry.getByRole('columnheader', { name: '№' })).toBeTruthy();
-    expect(intermediateRegistry.getAllByText('АОСР').length).toBeGreaterThan(0);
+    expect(intermediateRegistry.getByRole('columnheader', { name: '№ п/п' })).toBeTruthy();
     expect(
-      intermediateRegistry.getAllByText('Акт освидетельствования скрытых работ').length,
-    ).toBeGreaterThan(0);
+      intermediateRegistry.getByRole('columnheader', { name: 'Обозначение / номер' }),
+    ).toBeTruthy();
+    expect(intermediateRegistry.getByText(/АОСР — Установка гильз/u)).toBeTruthy();
     expect(intermediateRegistry.getByText('ОВ-2')).toBeTruthy();
-    expect(intermediateRegistry.getByText('Октябрь 2026')).toBeTruthy();
+    expect(intermediateRegistry.getByText('06.10.2026')).toBeTruthy();
+    expect(intermediateRegistry.getByText('Готово')).toBeTruthy();
     expect(intermediateRegistry.queryByText('ОВ-1')).toBeNull();
     expect(
       within(intermediatePackagePage).getByRole('heading', { name: 'Документы папки' }),
@@ -743,18 +760,15 @@ describe('App shell mock navigation', () => {
     expect(finalRegistry.getByText('ОВ-2')).toBeTruthy();
     expect(finalRegistry.getByText('Сентябрь 2026')).toBeTruthy();
     expect(finalRegistry.getByText('Октябрь 2026')).toBeTruthy();
-    expect(finalRegistry.getAllByText('АОСР').length).toBeGreaterThan(1);
-    expect(
-      finalRegistry.getAllByText('Акт освидетельствования скрытых работ').length,
-    ).toBeGreaterThan(1);
+    expect(finalRegistry.getAllByText(/АОСР —/u).length).toBeGreaterThan(1);
     expect(
       finalRegistry.getByText(
-        'Монтаж скрытых участков воздуховодов до закрытия теплоизоляцией и облицовкой в осях 1-4 / А-В с отм. +3.200 - +3.850.',
+        'АОСР — Монтаж скрытых участков воздуховодов до закрытия теплоизоляцией и облицовкой в осях 1-4 / А-В с отм. +3.200 - +3.850.',
       ),
     ).toBeTruthy();
     expect(
       finalRegistry.getByText(
-        'Установка гильз трубопроводов перед заделкой отверстий в перекрытии в осях 5-7 / Г-Д с отм. 0.000 - +0.600.',
+        'АОСР — Установка гильз трубопроводов перед заделкой отверстий в перекрытии в осях 5-7 / Г-Д с отм. 0.000 - +0.600.',
       ),
     ).toBeTruthy();
     expect(
@@ -830,10 +844,12 @@ describe('App shell mock navigation', () => {
     ).toEqual([
       expect.objectContaining({
         documentNumber: 'ОВ-2',
+        documentNumberDisplay: 'ОВ-2',
         documentTypeCode: 'АОСР',
         documentTypeTitle: 'Акт освидетельствования скрытых работ',
         folderName: 'Октябрь 2026',
         rowNumber: 1,
+        statusText: 'Готово',
         workDescription:
           'Установка гильз трубопроводов перед заделкой отверстий в перекрытии в осях 5-7 / Г-Д с отм. 0.000 - +0.600.',
       }),
@@ -848,9 +864,11 @@ describe('App shell mock navigation', () => {
     expect(octoberRegistry.rows).toEqual([
       expect.objectContaining({
         documentNumber: 'ОВ-2',
+        documentNumberDisplay: 'ОВ-2',
         documentTypeCode: 'АОСР',
         documentTypeTitle: 'Акт освидетельствования скрытых работ',
         folderName: 'Октябрь 2026',
+        statusText: 'Готово',
       }),
     ]);
 
@@ -865,19 +883,32 @@ describe('App shell mock navigation', () => {
       buildDerivedRegistryRows([
         {
           actTypeId: 'aosr',
-          documentDate: '2026-11-01',
-          documentNumber: 'ОВ-meta',
+          confirmationDocumentCount: 0,
+          documentDate: '',
+          documentNumber: '',
           id: 'metadata-driven-row',
+          materialCount: 0,
           folderName: 'Ноябрь 2026',
-          workDescription: 'Проверка строки через метаданные типа документа',
+          workDescription: '',
         },
       ]),
     ).toEqual([
       expect.objectContaining({
-        documentNumber: 'ОВ-meta',
+        documentDateDisplay: 'Не заполнена',
+        documentName: 'АОСР — работы не заполнены',
+        documentNumberDisplay: 'Без номера',
         documentTypeCode: 'АОСР',
         documentTypeTitle: 'Акт освидетельствования скрытых работ',
         folderName: 'Ноябрь 2026',
+        statusMessages: [
+          'Нет номера',
+          'Нет даты',
+          'Не заполнено описание работ',
+          'Нет материалов',
+          'Нет документов',
+        ],
+        statusText:
+          'Нет номера; Нет даты; Не заполнено описание работ; Нет материалов; Нет документов',
       }),
     ]);
   });
@@ -1079,7 +1110,7 @@ describe('App shell mock navigation', () => {
     await user.click(getFirstOpenObjectButton());
 
     await openFolderByName(user, 'Сентябрь 2026');
-    expect(screen.queryByRole('heading', { name: 'Реестр папки «Сентябрь 2026»' })).toBeNull();
+    expect(screen.getByRole('heading', { name: 'Реестр папки' })).toBeTruthy();
     expect(screen.getByRole('heading', { name: 'Промежуточная ИД по папке' })).toBeTruthy();
     await user.click(screen.getByRole('button', { name: /ОВ-1/u }));
 
@@ -1160,6 +1191,14 @@ describe('App shell mock navigation', () => {
       'listitem',
     );
     expect(rows[1]?.textContent).toContain('Работы не заполнены');
+
+    const registry = within(getSectionByHeading('Реестр папки'));
+    expect(registry.getByText('АОСР — работы не заполнены')).toBeTruthy();
+    expect(registry.getByText('Не заполнена')).toBeTruthy();
+    expect(
+      registry.getByText('Нет даты; Не заполнено описание работ; Нет материалов; Нет документов'),
+    ).toBeTruthy();
+    expect(registry.queryByRole('button', { name: /Скачать/u })).toBeNull();
   });
 
   it('duplicates an AOSR draft from the folder act list without opening the editor', async () => {
@@ -1214,6 +1253,12 @@ describe('App shell mock navigation', () => {
     expect(rows[0]?.textContent).toContain('04.09.2026');
     expect(rows[1]?.textContent).toContain('ОВ-3');
     expect(rows[1]?.textContent).toContain('05.09.2026');
+    let registryRows = within(getSectionByHeading('Реестр папки')).getAllByRole('row').slice(1);
+
+    expect(registryRows[0]?.textContent).toContain('ОВ-1');
+    expect(registryRows[0]?.textContent).toContain('04.09.2026');
+    expect(registryRows[1]?.textContent).toContain('ОВ-3');
+    expect(registryRows[1]?.textContent).toContain('05.09.2026');
 
     expect(
       within(getRequiredListItem(rows, 0)).getByRole('button', { name: '↑ Вверх' }),
@@ -1228,6 +1273,11 @@ describe('App shell mock navigation', () => {
     expect(rows[0]?.textContent).toContain('05.09.2026');
     expect(rows[1]?.textContent).toContain('ОВ-2');
     expect(rows[1]?.textContent).toContain('04.09.2026');
+    registryRows = within(getSectionByHeading('Реестр папки')).getAllByRole('row').slice(1);
+    expect(registryRows[0]?.textContent).toContain('ОВ-1');
+    expect(registryRows[0]?.textContent).toContain('05.09.2026');
+    expect(registryRows[1]?.textContent).toContain('ОВ-2');
+    expect(registryRows[1]?.textContent).toContain('04.09.2026');
 
     await user.click(within(getRequiredListItem(rows, 0)).getByRole('button', { name: '↓ Вниз' }));
 
@@ -1238,6 +1288,11 @@ describe('App shell mock navigation', () => {
     expect(rows[0]?.textContent).toContain('04.09.2026');
     expect(rows[1]?.textContent).toContain('ОВ-2');
     expect(rows[1]?.textContent).toContain('05.09.2026');
+    registryRows = within(getSectionByHeading('Реестр папки')).getAllByRole('row').slice(1);
+    expect(registryRows[0]?.textContent).toContain('ОВ-1');
+    expect(registryRows[0]?.textContent).toContain('04.09.2026');
+    expect(registryRows[1]?.textContent).toContain('ОВ-2');
+    expect(registryRows[1]?.textContent).toContain('05.09.2026');
 
     await openFolderByName(user, 'Октябрь 2026');
     expect(screen.getByRole('button', { name: /ОВ-3/u })).toBeTruthy();

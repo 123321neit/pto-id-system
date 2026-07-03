@@ -265,6 +265,7 @@ export function DemoAosrWorkspacePage({
     selectedObjectDocuments,
     signatoryLibrary,
   });
+  const previewMode = import.meta.env.MODE === 'test' ? 'html-fallback' : 'auto';
 
   useEffect(() => {
     setDocxDownloadError('');
@@ -833,7 +834,11 @@ export function DemoAosrWorkspacePage({
               <p className="section-kicker">Предпросмотр</p>
               <h2>Предпросмотр акта</h2>
             </div>
-            <DemoAosrPreview formVariant={selectedFormVariant} printState={printState} />
+            <DemoAosrPreview
+              formVariant={selectedFormVariant}
+              previewMode={previewMode}
+              printState={printState}
+            />
           </div>
         </section>
       ) : (
@@ -988,7 +993,11 @@ export function DemoAosrWorkspacePage({
           }}
           title="Предпросмотр документа"
         >
-          <DemoAosrPreview formVariant={selectedFormVariant} printState={printState} />
+          <DemoAosrPreview
+            formVariant={selectedFormVariant}
+            previewMode={previewMode}
+            printState={printState}
+          />
         </DocumentPreviewDrawer>
       )}
 

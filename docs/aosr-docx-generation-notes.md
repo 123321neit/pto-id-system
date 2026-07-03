@@ -176,3 +176,11 @@ the act editor uses user-facing terms such as `Данные из раздела`
 - `Удалить акт` is a confirmed destructive UI action. In object workspace mode
   it must remove the draft from both the draft collection and the containing
   folder `draftIds`.
+- The normal live preview must prefer the generated DOCX rendered through
+  `docx-preview`; the custom HTML `.act-page` layout is only a fallback/test
+  layer. This prevents the fallback from visually drifting away from the
+  downloaded DOCX while still keeping lightweight structure tests available.
+- The DOCX preview host is lightly isolated from project UI CSS. If
+  `docx-preview` fails, the fallback must not show service tags/placeholders;
+  empty printable fields remain blank/manual-fill lines, matching the
+  downloaded DOCX behavior.

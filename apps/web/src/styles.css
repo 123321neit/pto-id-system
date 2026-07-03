@@ -5324,6 +5324,10 @@ h3 {
   display: grid;
   justify-items: center;
   min-height: 0;
+  color: #000000;
+  font-family: initial;
+  line-height: normal;
+  text-align: initial;
 }
 
 .aosr-docx-preview-host .aosr-docx-wrapper {
@@ -5542,10 +5546,10 @@ h3 {
 }
 
 .act-page__signature-line-row {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) max-content;
+  display: flex;
   gap: 18px;
   align-items: end;
+  justify-content: space-between;
   border-bottom: 1px solid #111111;
   min-height: 20px;
   padding-bottom: 1px;
@@ -5560,15 +5564,18 @@ h3 {
 }
 
 .act-page__signature-line-row .act-page__signature-person {
+  flex: 1 1 auto;
   font-style: italic;
   min-width: 0;
-  overflow-wrap: normal;
+  overflow-wrap: break-word;
+  text-align: left;
   white-space: normal;
   word-break: normal;
 }
 
 .act-page__signature-line-row .act-page__signature-name {
-  justify-self: end;
+  flex: 0 0 auto;
+  margin-left: auto;
   max-width: 210px;
   font-style: italic;
   text-align: right;

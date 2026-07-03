@@ -8,6 +8,7 @@ import {
   type DemoAosrDraft,
   type DemoSectionTemplateSettings,
 } from '../aosr-demo/demo-aosr-workspace.js';
+import { DerivedRegistryTable } from './DerivedRegistryTable.js';
 import { ObjectDocumentsPage } from './ObjectDocumentsPage.js';
 import { ObjectFinalPackagePage, ObjectIntermediatePackagePage } from './ObjectFinalPackagePage.js';
 import { ObjectWorkspaceNavigation } from './ObjectWorkspaceNavigation.js';
@@ -63,6 +64,7 @@ import {
   cloneSectionTemplateSettingsForClipboard,
   type SectionTemplateClipboard,
 } from './section-template-clipboard.js';
+import { buildFolderRegistryModel } from './object-registry-model.js';
 
 const aosrActType = getDemoActTypeById('aosr');
 
@@ -1509,6 +1511,8 @@ function ObjectFolderPage({
   onOpenCreateDocumentPanel,
   onOpenIntermediatePackage,
 }: ObjectFolderPageProps): React.JSX.Element {
+  const folderRegistry = buildFolderRegistryModel(folder, drafts);
+
   return (
     <section className="object-folder-workspace" aria-labelledby="object-folder-title">
       <div className="object-folder-hero">
@@ -1669,6 +1673,18 @@ function ObjectFolderPage({
         </section>
 
         <div className="object-folder-generated-views" aria-label="Действия папки">
+          <section
+            className="object-folder-panel object-folder-panel--secondary"
+            aria-labelledby="folder-registry-title"
+          >
+            <div className="object-overview__panel-heading">
+              <p className="section-kicker">Экранный реестр</p>
+              <h3 id="folder-registry-title">Реестр папки</h3>
+              <p>{folderRegistry.description}</p>
+            </div>
+            <DerivedRegistryTable registry={folderRegistry} />
+          </section>
+
           <section
             className="object-folder-panel object-folder-placeholder object-folder-panel--secondary"
             aria-labelledby="folder-package-title"

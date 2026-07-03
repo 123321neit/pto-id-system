@@ -7,6 +7,8 @@ interface DerivedRegistryTableProps {
 }
 
 export function DerivedRegistryTable({ registry }: DerivedRegistryTableProps): React.JSX.Element {
+  const shouldShowFolderColumn = registry.scope === 'final';
+
   if (registry.rows.length === 0) {
     return (
       <p className="derived-registry-empty">
@@ -20,37 +22,29 @@ export function DerivedRegistryTable({ registry }: DerivedRegistryTableProps): R
       <table className="object-documents-table derived-registry-table">
         <thead>
           <tr>
-            <th scope="col">№</th>
-            <th scope="col">Код</th>
-            <th scope="col">Тип документа</th>
-            <th scope="col">Номер</th>
+            <th scope="col">№ п/п</th>
+            <th scope="col">Обозначение / номер</th>
+            <th scope="col">Наименование документа</th>
             <th scope="col">Дата</th>
-            <th scope="col">Папка</th>
-            <th scope="col">Документ / работы</th>
+            <th scope="col">Примечание / статус</th>
+            {shouldShowFolderColumn ? <th scope="col">Папка</th> : null}
           </tr>
         </thead>
         <tbody>
           {registry.rows.map((row) => (
             <tr key={row.id}>
               <td>{row.rowNumber}</td>
-              <td>{row.documentTypeCode}</td>
               <td>
-                <strong>{row.documentTypeTitle}</strong>
+                <strong>{row.documentNumberDisplay}</strong>
               </td>
-              <td>{formatRegistryCell(row.documentNumber)}</td>
-              <td>{formatRegistryCell(row.documentDate)}</td>
-              <td>{row.folderName}</td>
-              <td>{formatRegistryCell(row.workDescription)}</td>
+              <td>{row.documentName}</td>
+              <td>{row.documentDateDisplay}</td>
+              <td>{row.statusText}</td>
+              {shouldShowFolderColumn ? <td>{row.folderName}</td> : null}
             </tr>
           ))}
         </tbody>
       </table>
     </div>
   );
-}
-
-function formatRegistryCell(value: string): string {
-  const trimmedValue = value.trim();
-
-  return trimmedValue === '' ? '—' : trimmedValue;
 }

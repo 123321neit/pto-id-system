@@ -2064,3 +2064,27 @@ are preserved.
 This was frontend demo UX/data work only. Drag/drop was not restored. The DOCX
 renderer/template, backend, Prisma, PDF/ZIP/package builder, auth, storage and
 AI/OCR were not touched.
+
+---
+
+## 72. AOSR preview parity and folder registry screen
+
+### Q: Что изменено после сравнения предпросмотра с тем же скачанным DOCX?
+
+A: The downloaded AOSR DOCX remains the display reference. The normal preview
+path now shows the generated DOCX through `docx-preview`; the custom HTML act
+layout is kept as an explicit fallback/test layer and is no longer shown during
+normal loading/ready states. Its final signature fallback layout was tightened
+so role/organization text stays left, surname/initials stay right, and the
+single normative caption remains below the line.
+
+The folder workspace now starts a readonly on-screen `Реестр папки` built from
+the current folder acts. It uses the current `folder.draftIds` order, shows
+`№ п/п`, `Обозначение / номер`, `Наименование документа`, `Дата` and
+`Примечание / статус`, and updates as act/folder ordering changes. Missing
+fields are shown as user-facing registry statuses such as `Без номера`,
+`Не заполнена`, `работы не заполнены`, `Нет материалов` and `Нет документов`.
+
+This stayed frontend-only. No registry download, PDF, ZIP, backend, Prisma,
+auth, storage, AI/OCR, package builder, DOCX renderer change or DOCX template
+edit was added.
