@@ -674,12 +674,12 @@ describe('App shell mock navigation', () => {
     ).toBeGreaterThan(1);
     expect(
       finalRegistry.getByText(
-        'Монтаж скрытых участков воздуховодов до закрытия теплоизоляцией и облицовкой.',
+        'Монтаж скрытых участков воздуховодов до закрытия теплоизоляцией и облицовкой в осях 1-4 / А-В с отм. +3.200 - +3.850.',
       ),
     ).toBeTruthy();
     expect(
       finalRegistry.getByText(
-        'Установка гильз трубопроводов перед заделкой отверстий в перекрытии.',
+        'Установка гильз трубопроводов перед заделкой отверстий в перекрытии в осях 5-7 / Г-Д с отм. 0.000 - +0.600.',
       ),
     ).toBeTruthy();
     expect(
@@ -759,7 +759,8 @@ describe('App shell mock navigation', () => {
         documentTypeTitle: 'Акт освидетельствования скрытых работ',
         folderName: 'Октябрь 2026',
         rowNumber: 1,
-        workDescription: 'Установка гильз трубопроводов перед заделкой отверстий в перекрытии.',
+        workDescription:
+          'Установка гильз трубопроводов перед заделкой отверстий в перекрытии в осях 5-7 / Г-Д с отм. 0.000 - +0.600.',
       }),
     ]);
     expect(intermediatePackage.groups.find((group) => group.id === 'acts')?.items).toEqual([
@@ -1055,7 +1056,37 @@ describe('App shell mock navigation', () => {
     expect(screen.queryByRole('button', { name: /ОВ-1/u })).toBeNull();
   });
 
-  it('duplicates an AOSR draft from the folder act list and selects the copy', async () => {
+  it('shows number, date and work description in folder act cards', async () => {
+    const user = userEvent.setup();
+
+    render(<App />);
+    await user.click(getFirstOpenObjectButton());
+    await openFolderByName(user, 'Сентябрь 2026');
+
+    const folderActs = screen.getByRole('list', { name: 'Акты в папке Сентябрь 2026' });
+    let rows = within(folderActs).getAllByRole('listitem');
+
+    expect(rows[0]?.textContent).toContain('ОВ-1');
+    expect(rows[0]?.textContent).toContain('Дата: 04.09.2026');
+    expect(rows[0]?.textContent).toContain(
+      'Монтаж скрытых участков воздуховодов до закрытия теплоизоляцией и облицовкой в осях 1-4 / А-В с отм. +3.200 - +3.850.',
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Создать акт' }));
+    await user.click(
+      within(screen.getByRole('dialog', { name: 'Создание акта' })).getByRole('button', {
+        name: 'Создать акт',
+      }),
+    );
+    await openFolderByName(user, 'Сентябрь 2026');
+
+    rows = within(screen.getByRole('list', { name: 'Акты в папке Сентябрь 2026' })).getAllByRole(
+      'listitem',
+    );
+    expect(rows[1]?.textContent).toContain('Работы не заполнены');
+  });
+
+  it('duplicates an AOSR draft from the folder act list without opening the editor', async () => {
     const user = userEvent.setup();
 
     render(<App />);
@@ -1066,8 +1097,21 @@ describe('App shell mock navigation', () => {
 
     await user.click(folderDocuments.getByRole('button', { name: 'Дублировать' }));
 
-    expect(screen.getByRole('heading', { name: 'Редактирование акта ОВ-2' })).toBeTruthy();
-    expect(screen.getByLabelText('Текущий акт: ОВ-2')).toBeTruthy();
+    expect(screen.getByRole('heading', { name: 'Сентябрь 2026' })).toBeTruthy();
+    expect(screen.queryByRole('heading', { name: /Редактирование акта/u })).toBeNull();
+
+    const rows = within(
+      screen.getByRole('list', { name: 'Акты в папке Сентябрь 2026' }),
+    ).getAllByRole('listitem');
+
+    expect(rows[0]?.textContent).toContain('ОВ-1');
+    expect(rows[1]?.textContent).toContain('ОВ-2');
+    expect(rows[1]?.textContent).toContain(
+      'Монтаж скрытых участков воздуховодов до закрытия теплоизоляцией и облицовкой в осях 1-4 / А-В с отм. +3.200 - +3.850.',
+    );
+
+    await openFolderByName(user, 'Октябрь 2026');
+    expect(screen.getByRole('button', { name: /ОВ-3/u })).toBeTruthy();
   });
 
   it('moves folder acts with up/down buttons and recalculates automatic section numbering', async () => {

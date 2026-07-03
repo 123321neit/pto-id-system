@@ -50,19 +50,6 @@ export function DemoDocumentTree({
                 key={draft.id}
                 role="listitem"
               >
-                <button
-                  aria-pressed={draft.id === selectedDraftId}
-                  className="act-tree-item__select"
-                  onClick={() => {
-                    onSelectDraft(draft.id);
-                  }}
-                  type="button"
-                >
-                  <span className="act-tree-item__number">{draftLabel}</span>
-                  <span className="act-tree-item__meta">
-                    <small>{formatShortDate(draft.actDate)}</small>
-                  </span>
-                </button>
                 <div className="act-tree-item__order" aria-label={`Порядок акта ${draftLabel}`}>
                   <button
                     disabled={draftIndex === 0}
@@ -83,31 +70,60 @@ export function DemoDocumentTree({
                     ↓ Вниз
                   </button>
                 </div>
-                {onDuplicateDraft === undefined ? null : (
-                  <button
-                    className="act-tree-item__duplicate"
-                    onClick={() => {
-                      onDuplicateDraft(draft.id);
-                    }}
-                    title={`Дублировать акт ${draftLabel}`}
-                    type="button"
+                <button
+                  aria-pressed={draft.id === selectedDraftId}
+                  className="act-tree-item__select"
+                  onClick={() => {
+                    onSelectDraft(draft.id);
+                  }}
+                  type="button"
+                >
+                  <span className="act-tree-item__number">{draftLabel}</span>
+                  <span className="act-tree-item__type">
+                    {actType.code} — {actType.title}
+                  </span>
+                  <span
+                    className={
+                      draft.workDescription.trim() === ''
+                        ? 'act-tree-item__work act-tree-item__work--empty'
+                        : 'act-tree-item__work'
+                    }
                   >
-                    Дублировать
-                  </button>
-                )}
-                {onDeleteDraft === undefined ? null : (
-                  <button
-                    aria-label="Удалить акт"
-                    className="act-tree-item__delete"
-                    onClick={() => {
-                      onDeleteDraft(draft.id);
-                    }}
-                    title={`Удалить акт ${draftLabel}`}
-                    type="button"
-                  >
-                    <TrashIcon />
-                  </button>
-                )}
+                    {getDraftWorkDescriptionPreview(draft)}
+                  </span>
+                  {draft.actDate.trim() === '' ? null : (
+                    <span className="act-tree-item__meta">
+                      Дата: <small>{formatShortDate(draft.actDate)}</small>
+                    </span>
+                  )}
+                </button>
+                <div className="act-tree-item__actions">
+                  {onDuplicateDraft === undefined ? null : (
+                    <button
+                      className="act-tree-item__duplicate"
+                      onClick={() => {
+                        onDuplicateDraft(draft.id);
+                      }}
+                      title={`Дублировать акт ${draftLabel}`}
+                      type="button"
+                    >
+                      Дублировать
+                    </button>
+                  )}
+                  {onDeleteDraft === undefined ? null : (
+                    <button
+                      aria-label="Удалить акт"
+                      className="act-tree-item__delete"
+                      onClick={() => {
+                        onDeleteDraft(draft.id);
+                      }}
+                      title={`Удалить акт ${draftLabel}`}
+                      type="button"
+                    >
+                      <TrashIcon />
+                    </button>
+                  )}
+                </div>
               </div>
             );
           })}
@@ -124,6 +140,12 @@ export function DemoDocumentTree({
       </div>
     </section>
   );
+}
+
+function getDraftWorkDescriptionPreview(draft: DemoAosrDraft): string {
+  const workDescription = draft.workDescription.trim();
+
+  return workDescription === '' ? 'Работы не заполнены' : workDescription;
 }
 
 function TrashIcon(): React.JSX.Element {

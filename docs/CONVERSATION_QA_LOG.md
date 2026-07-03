@@ -2016,3 +2016,27 @@ does not reuse the source final number, and becomes the selected act.
 This stayed frontend-only. The AOSR DOCX renderer, backend, Prisma,
 PDF/ZIP/package builder, auth, storage, AI/OCR and new act types were not
 touched.
+
+---
+
+## 70. AOSR act list cards and single work-description field
+
+### Q: Что доработано после проверки live-списка актов?
+
+A: The folder act list now keeps reorder controls in a fixed left column, shows
+the act number/type/work description/date in the readable center area, and keeps
+Open/Duplicate/Delete as explicit right-side actions. Long work descriptions are
+clamped/wrapped safely, and empty descriptions show `Работы не заполнены`.
+
+Duplicating from the folder list now creates the copy immediately after the
+source act, recalculates automatic numbering and stays on the folder list
+instead of opening the editor. Duplicating from inside the editor may still open
+the copied act.
+
+The separate `Оси` and `Отметки` inputs were removed from the AOSR editor UI.
+Users now enter axes/elevations as part of the single work-description text.
+Existing demo axes/elevation meaning was moved into demo `workDescription`, while
+the compatibility fields remain in the mock model.
+
+This was a frontend demo UX/data cleanup only. The DOCX renderer, backend,
+Prisma, PDF/ZIP/package builder, auth, storage and AI/OCR were not touched.

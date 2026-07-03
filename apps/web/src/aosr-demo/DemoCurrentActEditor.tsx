@@ -446,29 +446,9 @@ export function DemoCurrentActEditor({
             />
           </label>
           <p className="helper-note act-form-grid__wide">
-            Место выполнения укажите в описании работ, осях и отметках — так оно будет понятно в
-            акте без отдельного технического поля.
+            Например: монтаж воздуховодов из оцинкованной стали в осях 1-4/Б-Г с отм. 0,000 до отм.
+            +3,950.
           </p>
-          <label>
-            Оси
-            <input
-              name="axes"
-              onChange={(event) => {
-                onUpdateSelectedDraft('axes', event.currentTarget.value);
-              }}
-              value={selectedDraft.axes}
-            />
-          </label>
-          <label>
-            Отметки
-            <input
-              name="elevationRange"
-              onChange={(event) => {
-                onUpdateSelectedDraft('elevationRange', event.currentTarget.value);
-              }}
-              value={selectedDraft.elevationRange}
-            />
-          </label>
           <label>
             Начало работ
             <input

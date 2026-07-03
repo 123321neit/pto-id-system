@@ -425,6 +425,17 @@ export function ObjectWorkspacePage({
   };
 
   const duplicateAosrDraft = (sourceDraftId: string): void => {
+    duplicateAosrDraftWithMode(sourceDraftId, { openEditor: true });
+  };
+
+  const duplicateAosrDraftFromFolderList = (sourceDraftId: string): void => {
+    duplicateAosrDraftWithMode(sourceDraftId, { openEditor: false });
+  };
+
+  const duplicateAosrDraftWithMode = (
+    sourceDraftId: string,
+    { openEditor }: { readonly openEditor: boolean },
+  ): void => {
     if (selectedSection === undefined) {
       return;
     }
@@ -446,7 +457,9 @@ export function ObjectWorkspacePage({
     setFolders(result.folders);
     setCreatedAosrDraftCount((currentCount) => currentCount + 1);
     setSelectedDraftId(result.duplicatedDraft.id);
-    setActiveSection('aosr');
+    if (openEditor) {
+      setActiveSection('aosr');
+    }
   };
 
   const openObjectSettings = (): void => {
@@ -680,7 +693,7 @@ export function ObjectWorkspacePage({
             }}
             onCreateAosr={createAosrDraft}
             onDeleteAosr={deleteAosrDraftFromFolder}
-            onDuplicateAosr={duplicateAosrDraft}
+            onDuplicateAosr={duplicateAosrDraftFromFolderList}
             onMoveAosr={moveAosrDraftInSelectedFolder}
             onOpenAosr={(draftId) => {
               openAosr(selectedFolder.id, draftId);
@@ -1504,31 +1517,42 @@ function ObjectFolderPage({
                       ↓ Вниз
                     </button>
                   </div>
-                  <button
-                    aria-label={`Открыть акт ${getDocumentDisplayNumber(draft.actNumber)}`}
-                    className="object-folder-draft-card__open"
-                    onClick={() => {
-                      onOpenAosr(draft.id);
-                    }}
-                    title={`Открыть акт ${getDocumentDisplayNumber(draft.actNumber)}`}
-                    type="button"
-                  >
-                    <span>
-                      <strong>{getDocumentDisplayNumber(draft.actNumber)}</strong>
-                      <small>
+                  <div className="object-folder-draft-card__body">
+                    <div className="object-folder-draft-card__title">
+                      <strong className="object-folder-draft-card__number">
+                        {getDocumentDisplayNumber(draft.actNumber)}
+                      </strong>
+                      <span className="object-folder-draft-card__type">
                         {aosrActType.code} — {aosrActType.title}
-                      </small>
-                    </span>
-                    <span>
-                      <small>Дата</small>
-                      <strong>{formatShortDate(draft.actDate)}</strong>
-                    </span>
-                    <span>
-                      <small>Открыть</small>
-                      <strong aria-hidden="true">→</strong>
-                    </span>
-                  </button>
+                      </span>
+                    </div>
+                    <p
+                      className={
+                        draft.workDescription.trim() === ''
+                          ? 'object-folder-draft-card__work object-folder-draft-card__work--empty'
+                          : 'object-folder-draft-card__work'
+                      }
+                    >
+                      {getDraftWorkDescriptionPreview(draft)}
+                    </p>
+                    {draft.actDate.trim() === '' ? null : (
+                      <p className="object-folder-draft-card__date">
+                        Дата: <span>{formatShortDate(draft.actDate)}</span>
+                      </p>
+                    )}
+                  </div>
                   <div className="object-folder-draft-card__actions">
+                    <button
+                      aria-label={`Открыть акт ${getDocumentDisplayNumber(draft.actNumber)}`}
+                      className="compact-toggle"
+                      onClick={() => {
+                        onOpenAosr(draft.id);
+                      }}
+                      title={`Открыть акт ${getDocumentDisplayNumber(draft.actNumber)}`}
+                      type="button"
+                    >
+                      Открыть
+                    </button>
                     <button
                       className="compact-toggle"
                       onClick={() => {
@@ -1582,4 +1606,10 @@ function ObjectFolderPage({
       </div>
     </section>
   );
+}
+
+function getDraftWorkDescriptionPreview(draft: DemoAosrDraft): string {
+  const workDescription = draft.workDescription.trim();
+
+  return workDescription === '' ? 'Работы не заполнены' : workDescription;
 }

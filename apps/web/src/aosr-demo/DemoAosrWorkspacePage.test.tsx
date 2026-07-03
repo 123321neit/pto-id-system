@@ -606,9 +606,7 @@ describe('DemoAosrWorkspacePage', () => {
       'Лицо, выполнившее работы',
       '4. Выполненные работы',
       'Описание скрытых работ',
-      'Место выполнения укажите в описании работ, осях и отметках',
-      'Оси',
-      'Отметки',
+      'Например: монтаж воздуховодов из оцинкованной стали в осях 1-4/Б-Г с отм. 0,000 до отм. +3,950.',
       'Начало работ',
       'Окончание работ',
       '5. Материалы и сертификаты',
@@ -626,6 +624,21 @@ describe('DemoAosrWorkspacePage', () => {
 
       expect(editorText.indexOf(currentFragment)).toBeLessThan(editorText.indexOf(nextFragment));
     }
+  });
+
+  it('keeps axes and elevations inside the work description field in the editor UI', () => {
+    renderDemoWorkspace();
+
+    const editor = screen.getByRole('region', { name: 'Редактирование акта ОВ-1' });
+
+    expect(within(editor).getByLabelText('Описание скрытых работ')).toBeTruthy();
+    expect(
+      within(editor).getByText(
+        'Например: монтаж воздуховодов из оцинкованной стали в осях 1-4/Б-Г с отм. 0,000 до отм. +3,950.',
+      ),
+    ).toBeTruthy();
+    expect(within(editor).queryByLabelText('Оси')).toBeNull();
+    expect(within(editor).queryByLabelText('Отметки')).toBeNull();
   });
 
   it('renders organization order before signatories and the numbered act body', () => {
@@ -1369,7 +1382,7 @@ describe('DemoAosrWorkspacePage', () => {
 
     expect(editedDraft.workDescription).toBe('Проверены скрытые крепления воздуховодов.');
     expect(sourceDraft.workDescription).toBe(
-      'Монтаж скрытых участков воздуховодов до закрытия теплоизоляцией и облицовкой.',
+      'Монтаж скрытых участков воздуховодов до закрытия теплоизоляцией и облицовкой в осях 1-4 / А-В с отм. +3.200 - +3.850.',
     );
     expect(editedDraft).not.toBe(sourceDraft);
   });

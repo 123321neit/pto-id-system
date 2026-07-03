@@ -288,9 +288,7 @@ describe('AOSR live object template model', () => {
 
     expect(printState.document.copiesLine).toBe('5');
     expect(printState.work.nextWorks).toBe('устройству теплоизоляции и облицовки');
-    expect(printState.work.description).toBe(
-      'Монтаж скрытых участков воздуховодов; оси 1-4 / А-В; отм. +3.200 - +3.850',
-    );
+    expect(printState.work.description).toBe('Монтаж скрытых участков воздуховодов');
     expect(printState.materials.items[0]?.displayText).toBe(
       'Воздуховоды оцинкованные 0,7 мм (Сертификат соответствия № СТ-ОВ-2026-017 от 12.05.2026)',
     );
