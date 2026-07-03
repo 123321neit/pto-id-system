@@ -218,7 +218,7 @@ describe('DemoAosrWorkspacePage', () => {
     await user.click(screen.getByRole('button', { name: 'Предпросмотр документа' }));
 
     const drawer = screen.getByRole('dialog', { name: 'Предпросмотр документа' });
-    const preview = within(drawer).getByLabelText('Демо-предпросмотр печатной формы АОСР');
+    const preview = within(drawer).getByLabelText('Тестовый HTML fallback АОСР');
     const drawerContext = within(drawer).getByLabelText('Контекст предпросмотра документа');
 
     expect(drawerContext.textContent).toContain('Акт ОВ-1');
@@ -239,6 +239,22 @@ describe('DemoAosrWorkspacePage', () => {
 
     expect(screen.queryByRole('dialog', { name: 'Предпросмотр документа' })).toBeNull();
     expect(screen.getByRole('region', { name: 'Редактор документа' })).toBeTruthy();
+  });
+
+  it('uses only the DOCX preview host in normal user preview mode', async () => {
+    const user = userEvent.setup();
+
+    renderDemoWorkspace({ previewModeForTests: 'auto' });
+
+    await user.click(screen.getByRole('button', { name: 'Предпросмотр документа' }));
+
+    const drawer = screen.getByRole('dialog', { name: 'Предпросмотр документа' });
+
+    expect(within(drawer).getByLabelText('Предпросмотр DOCX-шаблона АОСР')).toBeTruthy();
+    expect(within(drawer).queryByLabelText('Тестовый HTML fallback АОСР')).toBeNull();
+    expect(drawer.querySelector('.act-page')).toBeNull();
+    expect(drawer.querySelector('.act-page__signature-line-row')).toBeNull();
+    expect(drawer.textContent).not.toContain('5.Даты:');
   });
 
   it('keeps default parameters and libraries compact until opened', () => {
@@ -1660,14 +1676,19 @@ describe('DemoAosrWorkspacePage', () => {
 
 interface RenderDemoWorkspaceOptions {
   readonly initialDocumentPreviewOpen?: boolean;
+  readonly previewModeForTests?: 'auto' | 'html-fallback-for-tests-only';
 }
 
 function renderDemoWorkspace({
   initialDocumentPreviewOpen = false,
+  previewModeForTests = 'html-fallback-for-tests-only',
 }: RenderDemoWorkspaceOptions = {}): void {
   render(
     <DemoStoreProvider>
-      <DemoAosrWorkspacePage initialDocumentPreviewOpen={initialDocumentPreviewOpen} />
+      <DemoAosrWorkspacePage
+        initialDocumentPreviewOpen={initialDocumentPreviewOpen}
+        previewModeForTests={previewModeForTests}
+      />
     </DemoStoreProvider>,
   );
 }
@@ -1727,7 +1748,7 @@ function getPreviewText(): string {
 function getDocumentPreview(): HTMLElement {
   const drawer = screen.getByRole('dialog', { name: 'Предпросмотр документа' });
 
-  return within(drawer).getByLabelText('Демо-предпросмотр печатной формы АОСР');
+  return within(drawer).getByLabelText('Тестовый HTML fallback АОСР');
 }
 
 function getTextAreaValue(element: HTMLElement): string {

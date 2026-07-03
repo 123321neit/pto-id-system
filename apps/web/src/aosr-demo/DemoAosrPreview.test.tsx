@@ -12,18 +12,53 @@ afterEach(() => {
 });
 
 describe('DemoAosrPreview', () => {
-  it('keeps the HTML fallback hidden when the DOCX preview path is ready', () => {
+  it('does not render the manual HTML act in normal DOCX preview mode', () => {
     render(
       <DemoAosrPreview formVariant={demoAosrFormVariant1} printState={createPrintState([])} />,
     );
 
-    const fallbackPreview = screen.getByLabelText('Демо-предпросмотр печатной формы АОСР');
-
-    expect(fallbackPreview.hidden).toBe(true);
     expect(screen.getByLabelText('Предпросмотр DOCX-шаблона АОСР')).toBeTruthy();
+    expect(screen.queryByLabelText('Демо-предпросмотр печатной формы АОСР')).toBeNull();
+    expect(screen.queryByLabelText('Тестовый HTML fallback АОСР')).toBeNull();
+    expect(document.querySelector('.act-page')).toBeNull();
+    expect(document.querySelector('.act-page__signature-line-row')).toBeNull();
+    expect(document.body.textContent).not.toContain('5.Даты:');
   });
 
-  it('renders a single member exactly once under its group title', () => {
+  it('shows loading status without rendering the manual HTML act', () => {
+    render(
+      <DemoAosrPreview
+        formVariant={demoAosrFormVariant1}
+        printState={createPrintState([])}
+        testOnlyPreviewStatus="loading"
+      />,
+    );
+
+    expect(screen.getByRole('status').textContent).toContain(
+      'Готовим предпросмотр из DOCX-шаблона',
+    );
+    expect(screen.queryByLabelText('Тестовый HTML fallback АОСР')).toBeNull();
+    expect(document.querySelector('.act-page')).toBeNull();
+  });
+
+  it('shows a DOCX preview error without rendering a fake HTML preview', () => {
+    render(
+      <DemoAosrPreview
+        formVariant={demoAosrFormVariant1}
+        printState={createPrintState([])}
+        testOnlyPreviewStatus="error"
+      />,
+    );
+
+    expect(screen.getByRole('alert').textContent).toBe(
+      'Не удалось показать предпросмотр DOCX. Скачайте DOCX и проверьте файл.',
+    );
+    expect(screen.getByLabelText('Предпросмотр DOCX-шаблона АОСР')).toBeTruthy();
+    expect(screen.queryByLabelText('Тестовый HTML fallback АОСР')).toBeNull();
+    expect(document.querySelector('.act-page')).toBeNull();
+  });
+
+  it('renders a single member exactly once under its group title in explicit test-only fallback', () => {
     const groupTitle = 'Представитель подрядчика';
     const introDisplayText =
       'Производитель работ ООО "ПТО Монтаж", Иванов И.И., Приказ № 12-П от 10.05.2026';
@@ -167,12 +202,12 @@ describe('DemoAosrPreview', () => {
     expect(signatureBlock?.querySelectorAll('.act-page__signature-caption')).toHaveLength(1);
   });
 
-  it('does not show DOCX tags or technical placeholders in the fallback preview', () => {
+  it('does not show DOCX tags or technical placeholders in the explicit test-only fallback', () => {
     renderFallback(
       <DemoAosrPreview formVariant={demoAosrFormVariant1} printState={createEmptyPrintState()} />,
     );
 
-    const fallbackPreview = screen.getByLabelText('Демо-предпросмотр печатной формы АОСР');
+    const fallbackPreview = screen.getByLabelText('Тестовый HTML fallback АОСР');
     const previewText = fallbackPreview.textContent;
 
     expect(previewText).not.toContain('<<');
@@ -214,9 +249,11 @@ describe('DemoAosrPreview', () => {
 });
 
 function renderFallback(
-  component: ReactElement<{ readonly previewMode?: 'auto' | 'html-fallback' }>,
+  component: ReactElement<{
+    readonly previewMode?: 'auto' | 'html-fallback-for-tests-only';
+  }>,
 ): ReturnType<typeof render> {
-  return render(cloneElement(component, { previewMode: 'html-fallback' }));
+  return render(cloneElement(component, { previewMode: 'html-fallback-for-tests-only' }));
 }
 
 function createPrintState(groups: AosrPrintState['representatives']['groups']): AosrPrintState {

@@ -26,7 +26,8 @@ const signatureCaption = '(должность, фамилия, инициалы,
 interface DemoAosrPreviewProps {
   readonly formVariant: DemoAosrFormVariantMetadata;
   readonly printState: AosrPrintState;
-  readonly previewMode?: 'auto' | 'html-fallback';
+  readonly previewMode?: 'auto' | 'html-fallback-for-tests-only';
+  readonly testOnlyPreviewStatus?: AosrPreviewStatus;
 }
 
 type AosrPreviewStatus = 'error' | 'loading' | 'ready';
@@ -35,12 +36,13 @@ export function DemoAosrPreview({
   formVariant,
   previewMode = 'auto',
   printState,
+  testOnlyPreviewStatus,
 }: DemoAosrPreviewProps): React.JSX.Element {
   const previewHostRef = useRef<HTMLDivElement | null>(null);
   const previewRenderIdRef = useRef(0);
   const [previewStatus, setPreviewStatus] = useState<AosrPreviewStatus>('loading');
   const templateData = buildAosrDocxTemplateData(printState);
-  const shouldShowHtmlPreview = previewMode === 'html-fallback' || previewStatus === 'error';
+  const shouldShowHtmlPreview = previewMode === 'html-fallback-for-tests-only';
 
   useEffect(() => {
     const previewHost = previewHostRef.current;
@@ -54,7 +56,14 @@ export function DemoAosrPreview({
     const renderId = previewRenderIdRef.current + 1;
     previewRenderIdRef.current = renderId;
 
-    if (previewMode === 'html-fallback') {
+    if (testOnlyPreviewStatus !== undefined) {
+      previewHost.dataset['testDocxPreview'] = testOnlyPreviewStatus;
+      setPreviewStatus(testOnlyPreviewStatus);
+
+      return undefined;
+    }
+
+    if (previewMode === 'html-fallback-for-tests-only') {
       previewHost.dataset['testDocxPreview'] = 'forced-fallback';
       setPreviewStatus('ready');
 
@@ -110,7 +119,7 @@ export function DemoAosrPreview({
       previewRenderIdRef.current += 1;
       previewHost.replaceChildren();
     };
-  }, [previewMode, printState]);
+  }, [previewMode, printState, testOnlyPreviewStatus]);
 
   return (
     <section className="preview-panel preview-panel--template" aria-labelledby="preview-title">
@@ -129,8 +138,7 @@ export function DemoAosrPreview({
         ) : null}
         {previewStatus === 'error' ? (
           <div className="aosr-docx-preview-error" role="alert">
-            Не удалось показать предпросмотр DOCX. Скачивание акта остаётся доступным — проверьте
-            шаблон и данные документа.
+            Не удалось показать предпросмотр DOCX. Скачайте DOCX и проверьте файл.
           </div>
         ) : null}
         <div
@@ -139,241 +147,243 @@ export function DemoAosrPreview({
           aria-label="Предпросмотр DOCX-шаблона АОСР"
         />
       </div>
-      <article
-        className="act-page"
-        aria-label="Демо-предпросмотр печатной формы АОСР"
-        hidden={!shouldShowHtmlPreview}
-      >
-        <section className="act-page__page-frame" aria-labelledby="aosr-preview-page-1-label">
-          <p className="act-page__page-label" id="aosr-preview-page-1-label">
-            Страница 1
-          </p>
-          <div className="act-page__sheet">
-            <header className="act-page__top-blocks">
-              <div className="act-page__header-block">
-                <p className="act-page__block-label">Объект капитального строительства:</p>
-                <p className="act-page__field-line act-page__object-line">
-                  {templateData.object.name}
-                </p>
-                <p className="act-page__caption">{objectNameCaption}</p>
-              </div>
-
-              {templateData.counterparties.map((counterparty, index) => (
-                <div
-                  className="act-page__header-block"
-                  key={`${counterparty.title}-${String(index)}`}
-                >
-                  <p className="act-page__block-label">{counterparty.title}:</p>
-                  <p className="act-page__field-line act-page__details-line">
-                    {counterparty.displayText}
+      {shouldShowHtmlPreview ? (
+        <article className="act-page" aria-label="Тестовый HTML fallback АОСР">
+          <section className="act-page__page-frame" aria-labelledby="aosr-preview-page-1-label">
+            <p className="act-page__page-label" id="aosr-preview-page-1-label">
+              Страница 1
+            </p>
+            <div className="act-page__sheet">
+              <header className="act-page__top-blocks">
+                <div className="act-page__header-block">
+                  <p className="act-page__block-label">Объект капитального строительства:</p>
+                  <p className="act-page__field-line act-page__object-line">
+                    {templateData.object.name}
                   </p>
-                  {counterparty.subscript ? (
-                    <p className="act-page__caption">({counterparty.subscript})</p>
-                  ) : null}
+                  <p className="act-page__caption">{objectNameCaption}</p>
                 </div>
-              ))}
-            </header>
 
-            <section className="act-page__title-block">
-              <p>АКТ</p>
-              <h3>{formVariant.printTitle}</h3>
-              <div className="act-page__number-date-row">
-                <span>
-                  <strong>{templateData.document.numberLine}</strong>
-                </span>
-                <span>
-                  <strong>{templateData.document.dateLine}</strong>
-                </span>
-              </div>
-            </section>
-
-            <section className="act-page__representative-blocks" aria-label="Представители">
-              {templateData.representatives.groups.map((group, groupIndex) => (
-                <div
-                  className="act-page__representative-block"
-                  key={`${group.title}-${String(groupIndex)}`}
-                >
-                  <p className="act-page__block-label">{group.title}:</p>
-                  {group.members.map((member, memberIndex) => {
-                    const subscript = getDistinctRepresentativeSubscript(
-                      member.introDisplayText,
-                      member.subscript,
-                    );
-
-                    return (
-                      <div key={`${member.introDisplayText}-${String(memberIndex)}`}>
-                        <p className="act-page__field-line">{member.introDisplayText}</p>
-                        {subscript === '' ? null : (
-                          <p className="act-page__caption">({subscript})</p>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              ))}
-              <p>
-                произвели осмотр работ, выполненных{' '}
-                <span className="act-page__print-value">{templateData.work.contractorName}</span>
-              </p>
-              <p className="act-page__caption">{workContractorCaption}</p>
-              <p>и составили настоящий акт о нижеследующем:</p>
-            </section>
-
-            <section className="act-page__official-section" aria-label="Скрытые работы">
-              <p>
-                <span className="act-page__item-label">
-                  1.К освидетельствованию предъявлены следующие работы:
-                </span>{' '}
-                <span className="act-page__print-value">{templateData.work.description}</span>
-              </p>
-              <p className="act-page__caption">(наименование скрытых работ)</p>
-            </section>
-
-            <section className="act-page__official-section" aria-label="Проектная документация">
-              <p>
-                <span className="act-page__item-label">
-                  2.Работы выполнены по проектной документации:
-                </span>{' '}
-                <span className="act-page__print-value">{templateData.project.documentation}</span>
-              </p>
-              <p className="act-page__caption">{projectDocumentationCaption}</p>
-            </section>
-
-            <section className="act-page__official-section" aria-label="Материалы и сертификаты">
-              <p>
-                <span className="act-page__item-label">3.При выполнении работ применены:</span>
-              </p>
-              {templateData.materials.items.length > 0 ? (
-                <div className="act-page__inline-list">
-                  {templateData.materials.items.map((material, index) => (
-                    <p key={`${material.displayText}-${String(index)}`}>
-                      <span className="act-page__print-value">{material.displayText}</span>
-                    </p>
-                  ))}
-                </div>
-              ) : (
-                <p className="act-page__field-line" aria-label="Материалы не указаны" />
-              )}
-              <p className="act-page__caption">{materialsCaption}</p>
-            </section>
-
-            <section className="act-page__official-section" aria-label="Документы соответствия">
-              <p>
-                <span className="act-page__item-label">
-                  4.Предъявлены документы, подтверждающие соответствие работ предъявляемым к ним
-                  требованиям:
-                </span>
-              </p>
-              {templateData.confirmationDocuments.items.length > 0 ? (
-                <div className="act-page__inline-list">
-                  {templateData.confirmationDocuments.items.map((document, index) => (
-                    <p key={`${document.displayText}-${String(index)}`}>
-                      <span className="act-page__print-value">{document.displayText}</span>
-                    </p>
-                  ))}
-                </div>
-              ) : (
-                <p className="act-page__field-line" aria-label="Документы не указаны" />
-              )}
-              <p className="act-page__caption">{confirmationDocumentsCaption}</p>
-            </section>
-
-            <section className="act-page__official-section" aria-label="Период работ">
-              <p>
-                <span className="act-page__item-label">5.Даты:</span>
-              </p>
-              <p>
-                начала работ{' '}
-                <span className="act-page__print-value">{templateData.work.startDateLine}</span>
-              </p>
-              <p>
-                окончания работ{' '}
-                <span className="act-page__print-value">{templateData.work.endDateLine}</span>
-              </p>
-            </section>
-            <section className="act-page__official-section" aria-label="Соответствие работ">
-              <p>
-                <span className="act-page__item-label">6.Работы выполнены в соответствии с:</span>{' '}
-                <span className="act-page__print-value">{templateData.project.compliance}</span>
-              </p>
-              <p className="act-page__caption">{complianceCaption}</p>
-            </section>
-
-            <section className="act-page__official-section" aria-label="Последующие работы">
-              <p>
-                <span className="act-page__item-label">
-                  7.Разрешается производство последующих работ по:
-                </span>{' '}
-                <span className="act-page__print-value">{templateData.work.nextWorks}</span>
-              </p>
-              <p className="act-page__caption">{nextWorksCaption}</p>
-            </section>
-
-            <section className="act-page__after-body" aria-label="Сведения и приложения">
-              <p>
-                <span className="act-page__item-label">Дополнительные сведения:</span>{' '}
-                <span className="act-page__print-value">
-                  {templateData.document.additionalInfo}
-                </span>
-              </p>
-              <p>
-                Акт составлен в{' '}
-                <span className="act-page__print-value">{templateData.document.copiesLine}</span>{' '}
-                экземплярах.
-              </p>
-              <div className="act-page__applications">
-                <h4>Приложения:</h4>
-                <div className="act-page__application-lines">
-                  {templateData.applications.items.length > 0 ? (
-                    templateData.applications.items.map((application, index) => {
-                      return (
-                        <p key={`${application.displayText}-${String(index)}`}>
-                          <span className="act-page__print-value">{application.displayText}</span>
-                        </p>
-                      );
-                    })
-                  ) : (
-                    <p className="act-page__field-line" aria-label="Приложения не указаны" />
-                  )}
-                </div>
-                <p className="act-page__caption">{applicationsCaption}</p>
-              </div>
-            </section>
-
-            <section
-              className="act-page__signature-section act-page__official-section--final"
-              aria-label="Подписи представителей"
-            >
-              <div className="act-page__signature-list">
-                {templateData.representatives.groups.map((group, groupIndex) => (
+                {templateData.counterparties.map((counterparty, index) => (
                   <div
-                    className="act-page__signature-block"
-                    key={`${group.title}-signature-${String(groupIndex)}`}
+                    className="act-page__header-block"
+                    key={`${counterparty.title}-${String(index)}`}
                   >
-                    <p className="act-page__block-label">{group.title}:</p>
-                    {group.members.map((member, memberIndex) => (
-                      <div
-                        className="act-page__signature-member"
-                        key={`${member.signatureText}-${member.signatureName}-${String(
-                          memberIndex,
-                        )}`}
-                      >
-                        <p className="act-page__signature-line-row">
-                          <span className="act-page__signature-person">{member.signatureText}</span>
-                          <span className="act-page__signature-name">{member.signatureName}</span>
-                        </p>
-                        <p className="act-page__caption act-page__signature-caption">
-                          {signatureCaption}
-                        </p>
-                      </div>
-                    ))}
+                    <p className="act-page__block-label">{counterparty.title}:</p>
+                    <p className="act-page__field-line act-page__details-line">
+                      {counterparty.displayText}
+                    </p>
+                    {counterparty.subscript ? (
+                      <p className="act-page__caption">({counterparty.subscript})</p>
+                    ) : null}
                   </div>
                 ))}
-              </div>
-            </section>
-          </div>
-        </section>
-      </article>
+              </header>
+
+              <section className="act-page__title-block">
+                <p>АКТ</p>
+                <h3>{formVariant.printTitle}</h3>
+                <div className="act-page__number-date-row">
+                  <span>
+                    <strong>{templateData.document.numberLine}</strong>
+                  </span>
+                  <span>
+                    <strong>{templateData.document.dateLine}</strong>
+                  </span>
+                </div>
+              </section>
+
+              <section className="act-page__representative-blocks" aria-label="Представители">
+                {templateData.representatives.groups.map((group, groupIndex) => (
+                  <div
+                    className="act-page__representative-block"
+                    key={`${group.title}-${String(groupIndex)}`}
+                  >
+                    <p className="act-page__block-label">{group.title}:</p>
+                    {group.members.map((member, memberIndex) => {
+                      const subscript = getDistinctRepresentativeSubscript(
+                        member.introDisplayText,
+                        member.subscript,
+                      );
+
+                      return (
+                        <div key={`${member.introDisplayText}-${String(memberIndex)}`}>
+                          <p className="act-page__field-line">{member.introDisplayText}</p>
+                          {subscript === '' ? null : (
+                            <p className="act-page__caption">({subscript})</p>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                ))}
+                <p>
+                  произвели осмотр работ, выполненных{' '}
+                  <span className="act-page__print-value">{templateData.work.contractorName}</span>
+                </p>
+                <p className="act-page__caption">{workContractorCaption}</p>
+                <p>и составили настоящий акт о нижеследующем:</p>
+              </section>
+
+              <section className="act-page__official-section" aria-label="Скрытые работы">
+                <p>
+                  <span className="act-page__item-label">
+                    1.К освидетельствованию предъявлены следующие работы:
+                  </span>{' '}
+                  <span className="act-page__print-value">{templateData.work.description}</span>
+                </p>
+                <p className="act-page__caption">(наименование скрытых работ)</p>
+              </section>
+
+              <section className="act-page__official-section" aria-label="Проектная документация">
+                <p>
+                  <span className="act-page__item-label">
+                    2.Работы выполнены по проектной документации:
+                  </span>{' '}
+                  <span className="act-page__print-value">
+                    {templateData.project.documentation}
+                  </span>
+                </p>
+                <p className="act-page__caption">{projectDocumentationCaption}</p>
+              </section>
+
+              <section className="act-page__official-section" aria-label="Материалы и сертификаты">
+                <p>
+                  <span className="act-page__item-label">3.При выполнении работ применены:</span>
+                </p>
+                {templateData.materials.items.length > 0 ? (
+                  <div className="act-page__inline-list">
+                    {templateData.materials.items.map((material, index) => (
+                      <p key={`${material.displayText}-${String(index)}`}>
+                        <span className="act-page__print-value">{material.displayText}</span>
+                      </p>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="act-page__field-line" aria-label="Материалы не указаны" />
+                )}
+                <p className="act-page__caption">{materialsCaption}</p>
+              </section>
+
+              <section className="act-page__official-section" aria-label="Документы соответствия">
+                <p>
+                  <span className="act-page__item-label">
+                    4.Предъявлены документы, подтверждающие соответствие работ предъявляемым к ним
+                    требованиям:
+                  </span>
+                </p>
+                {templateData.confirmationDocuments.items.length > 0 ? (
+                  <div className="act-page__inline-list">
+                    {templateData.confirmationDocuments.items.map((document, index) => (
+                      <p key={`${document.displayText}-${String(index)}`}>
+                        <span className="act-page__print-value">{document.displayText}</span>
+                      </p>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="act-page__field-line" aria-label="Документы не указаны" />
+                )}
+                <p className="act-page__caption">{confirmationDocumentsCaption}</p>
+              </section>
+
+              <section className="act-page__official-section" aria-label="Период работ">
+                <p>
+                  <span className="act-page__item-label">5.Даты:</span>
+                </p>
+                <p>
+                  начала работ{' '}
+                  <span className="act-page__print-value">{templateData.work.startDateLine}</span>
+                </p>
+                <p>
+                  окончания работ{' '}
+                  <span className="act-page__print-value">{templateData.work.endDateLine}</span>
+                </p>
+              </section>
+              <section className="act-page__official-section" aria-label="Соответствие работ">
+                <p>
+                  <span className="act-page__item-label">6.Работы выполнены в соответствии с:</span>{' '}
+                  <span className="act-page__print-value">{templateData.project.compliance}</span>
+                </p>
+                <p className="act-page__caption">{complianceCaption}</p>
+              </section>
+
+              <section className="act-page__official-section" aria-label="Последующие работы">
+                <p>
+                  <span className="act-page__item-label">
+                    7.Разрешается производство последующих работ по:
+                  </span>{' '}
+                  <span className="act-page__print-value">{templateData.work.nextWorks}</span>
+                </p>
+                <p className="act-page__caption">{nextWorksCaption}</p>
+              </section>
+
+              <section className="act-page__after-body" aria-label="Сведения и приложения">
+                <p>
+                  <span className="act-page__item-label">Дополнительные сведения:</span>{' '}
+                  <span className="act-page__print-value">
+                    {templateData.document.additionalInfo}
+                  </span>
+                </p>
+                <p>
+                  Акт составлен в{' '}
+                  <span className="act-page__print-value">{templateData.document.copiesLine}</span>{' '}
+                  экземплярах.
+                </p>
+                <div className="act-page__applications">
+                  <h4>Приложения:</h4>
+                  <div className="act-page__application-lines">
+                    {templateData.applications.items.length > 0 ? (
+                      templateData.applications.items.map((application, index) => {
+                        return (
+                          <p key={`${application.displayText}-${String(index)}`}>
+                            <span className="act-page__print-value">{application.displayText}</span>
+                          </p>
+                        );
+                      })
+                    ) : (
+                      <p className="act-page__field-line" aria-label="Приложения не указаны" />
+                    )}
+                  </div>
+                  <p className="act-page__caption">{applicationsCaption}</p>
+                </div>
+              </section>
+
+              <section
+                className="act-page__signature-section act-page__official-section--final"
+                aria-label="Подписи представителей"
+              >
+                <div className="act-page__signature-list">
+                  {templateData.representatives.groups.map((group, groupIndex) => (
+                    <div
+                      className="act-page__signature-block"
+                      key={`${group.title}-signature-${String(groupIndex)}`}
+                    >
+                      <p className="act-page__block-label">{group.title}:</p>
+                      {group.members.map((member, memberIndex) => (
+                        <div
+                          className="act-page__signature-member"
+                          key={`${member.signatureText}-${member.signatureName}-${String(
+                            memberIndex,
+                          )}`}
+                        >
+                          <p className="act-page__signature-line-row">
+                            <span className="act-page__signature-person">
+                              {member.signatureText}
+                            </span>
+                            <span className="act-page__signature-name">{member.signatureName}</span>
+                          </p>
+                          <p className="act-page__caption act-page__signature-caption">
+                            {signatureCaption}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  ))}
+                </div>
+              </section>
+            </div>
+          </section>
+        </article>
+      ) : null}
     </section>
   );
 }

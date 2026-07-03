@@ -2088,3 +2088,24 @@ fields are shown as user-facing registry statuses such as `Без номера`,
 This stayed frontend-only. No registry download, PDF, ZIP, backend, Prisma,
 auth, storage, AI/OCR, package builder, DOCX renderer change or DOCX template
 edit was added.
+
+---
+
+## 73. AOSR preview DOCX-only user path
+
+### Q: Почему снова расходились подписи и даты в предпросмотре АОСР?
+
+A: The live preview could still show the old manual HTML `.act-page` layer in
+some paths/tests. That HTML layout tried to imitate Word with CSS, so signature
+alignment and point-5 dates could drift away from the downloaded DOCX.
+
+The normal user preview now renders only the generated DOCX through
+`docx-preview`. Loading shows only `Готовим предпросмотр из DOCX-шаблона…`; if
+the preview cannot be rendered, the UI shows a compact message asking the user
+to download the DOCX for checking. The manual HTML act remains only behind an
+explicit `html-fallback-for-tests-only` prop for focused tests and is not used by
+the live/user UI.
+
+This was a frontend preview/test cleanup only. The DOCX renderer/template,
+backend, Prisma, PDF/ZIP/package builder, auth, storage, AI/OCR and new act
+types were not touched.

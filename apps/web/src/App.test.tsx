@@ -1793,12 +1793,14 @@ describe('App shell mock navigation', () => {
     );
 
     await user.click(screen.getByRole('button', { name: 'Закрыть библиотеку' }));
+    expect(screen.getByText('Насос циркуляционный N-25')).toBeTruthy();
+    expect(screen.getAllByText(/Паспорт изделия № ПИ-Н25-2026/u).length).toBeGreaterThan(0);
+
     await openDocumentPreview(user);
 
-    const previewText = getDocumentPreview().textContent;
-    expect(previewText).toContain('Насос циркуляционный N-25');
-    expect(previewText).toContain('ПИ-Н25-2026');
-    expect(previewText).toContain('Паспорт изделия № ПИ-Н25-2026 от 03.06.2026');
+    expect(getDocumentPreview()).toBeTruthy();
+    expect(screen.queryByLabelText('Тестовый HTML fallback АОСР')).toBeNull();
+    expect(document.querySelector('.act-page')).toBeNull();
   });
 
   it('returns from the certificate library page to objects', async () => {
@@ -1963,12 +1965,13 @@ describe('App shell mock navigation', () => {
 
     await user.click(screen.getByRole('button', { name: 'Вернуться к разделу' }));
     await openSeptemberAosrDocument(user);
-    await openDocumentPreview(user);
 
-    const previewText = getDocumentPreview().textContent;
-    expect(previewText).toContain('Авторский контроль:');
-    expect(previewText).toContain('ООО "Авторский контроль"');
-    expect(previewText).toContain('ИНН 6600000002; ОГРН 1266600000002.');
+    expect(screen.getByText('Авторский контроль')).toBeTruthy();
+    expect(screen.getByText(/ООО "Авторский контроль"/u)).toBeTruthy();
+
+    await openDocumentPreview(user);
+    expect(getDocumentPreview()).toBeTruthy();
+    expect(document.querySelector('.act-page')).toBeNull();
   });
 
   it('adds a mock representative in memory on the management page', async () => {
@@ -2056,14 +2059,18 @@ describe('App shell mock navigation', () => {
       }),
     );
     await user.click(screen.getByRole('button', { name: 'Добавить представителя в шаблон' }));
+    const representativeAssignments = screen.getByRole('list', {
+      name: 'Назначения представителей объекта',
+    });
+    expect(within(representativeAssignments).getByText('Яковлев Я.Я.')).toBeTruthy();
+    expect(within(representativeAssignments).getByText(/Инженер службы качества/u)).toBeTruthy();
     await user.click(screen.getByRole('button', { name: 'Вернуться к разделу' }));
 
     await openSeptemberAosrDocument(user);
-    await openDocumentPreview(user);
 
-    const previewText = getDocumentPreview().textContent;
-    expect(previewText).toContain('Яковлев Я.Я.');
-    expect(previewText).toContain('Представитель службы качества:');
+    await openDocumentPreview(user);
+    expect(getDocumentPreview()).toBeTruthy();
+    expect(document.querySelector('.act-page')).toBeNull();
   });
 
   it('returns from the representatives management page to objects', async () => {
@@ -2125,32 +2132,22 @@ describe('App shell mock navigation', () => {
 
     await user.click(within(customerRow as HTMLElement).getByRole('button', { name: 'Выбрать' }));
     await user.click(screen.getByRole('button', { name: 'Добавить представителя в шаблон' }));
+    const representativeAssignments = screen.getByRole('list', {
+      name: 'Назначения представителей объекта',
+    });
+    expect(within(representativeAssignments).getByText('Кузнецова А.А.')).toBeTruthy();
     await user.click(screen.getByRole('button', { name: 'Вернуться к разделу' }));
 
     await openSeptemberAosrDocument(user);
-    await openDocumentPreview(user);
-
-    const preview = getDocumentPreview();
-    const previewText = preview.textContent;
-
-    expect(previewText).toContain('Теплоизоляционные маты ИЗ-50');
-    expect(previewText).toContain('ДС-ИЗ-2026-04');
-    expect(previewText).toContain('Кузнецова А.А.');
-    expect(previewText).toContain('Приложения:');
-    expect(previewText).toContain('Декларация о соответствии № ДС-ИЗ-2026-04 от 20.05.2026');
-    expect(preview.querySelector('.act-page__sheet')).toBeTruthy();
-    expect(preview.querySelector('.act-page__number-date-row')).toBeTruthy();
-
-    const applications = preview.querySelector('.act-page__applications');
-    const signatures = preview.querySelector('.act-page__signature-section');
-
-    if (applications === null || signatures === null) {
-      throw new Error('В preview ожидаются приложения и блок подписей.');
-    }
-
+    expect(screen.getByText('Теплоизоляционные маты ИЗ-50')).toBeTruthy();
     expect(
-      Boolean(applications.compareDocumentPosition(signatures) & Node.DOCUMENT_POSITION_FOLLOWING),
-    ).toBe(true);
+      screen.getAllByText(/Декларация о соответствии № ДС-ИЗ-2026-04/u).length,
+    ).toBeGreaterThan(0);
+
+    await openDocumentPreview(user);
+    expect(getDocumentPreview()).toBeTruthy();
+    expect(screen.queryByText('5.Даты:')).toBeNull();
+    expect(document.querySelector('.act-page')).toBeNull();
 
     await user.click(screen.getByRole('button', { name: 'Редактирование' }));
     expect(
@@ -2311,5 +2308,5 @@ async function openDocumentPreview(user: ReturnType<typeof userEvent.setup>): Pr
 }
 
 function getDocumentPreview(): HTMLElement {
-  return screen.getByLabelText('Демо-предпросмотр печатной формы АОСР');
+  return screen.getByLabelText('Предпросмотр DOCX-шаблона АОСР');
 }

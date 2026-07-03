@@ -87,6 +87,7 @@ interface DemoAosrWorkspacePageProps {
   readonly initialDocumentPreviewOpen?: boolean;
   readonly initialSelectedDraftId?: string;
   readonly isEmbeddedInObjectWorkspace?: boolean;
+  readonly previewModeForTests?: 'auto' | 'html-fallback-for-tests-only';
   readonly isSectionTemplateSettingsPage?: boolean;
   readonly lastTemplateCopyMessage?: string;
   readonly sectionTemplateClipboard?: SectionTemplateClipboard | null;
@@ -123,6 +124,7 @@ export function DemoAosrWorkspacePage({
   initialDocumentPreviewOpen = false,
   initialSelectedDraftId,
   isEmbeddedInObjectWorkspace = false,
+  previewModeForTests = 'auto',
   isSectionTemplateSettingsPage = false,
   lastTemplateCopyMessage = '',
   sectionTemplateClipboard = null,
@@ -265,7 +267,6 @@ export function DemoAosrWorkspacePage({
     selectedObjectDocuments,
     signatoryLibrary,
   });
-  const previewMode = import.meta.env.MODE === 'test' ? 'html-fallback' : 'auto';
 
   useEffect(() => {
     setDocxDownloadError('');
@@ -836,7 +837,7 @@ export function DemoAosrWorkspacePage({
             </div>
             <DemoAosrPreview
               formVariant={selectedFormVariant}
-              previewMode={previewMode}
+              previewMode={previewModeForTests}
               printState={printState}
             />
           </div>
@@ -995,7 +996,7 @@ export function DemoAosrWorkspacePage({
         >
           <DemoAosrPreview
             formVariant={selectedFormVariant}
-            previewMode={previewMode}
+            previewMode={previewModeForTests}
             printState={printState}
           />
         </DocumentPreviewDrawer>
