@@ -1,4 +1,4 @@
-import { useLayoutEffect, useMemo, useRef, useState, type PointerEvent } from 'react';
+import { useMemo, useState } from 'react';
 
 import { getDemoActTypeById, registeredDemoActTypes } from '../act-types/act-types.js';
 import { DemoAosrWorkspacePage } from '../aosr-demo/DemoAosrWorkspacePage.js';
@@ -31,10 +31,10 @@ import {
   demoIdFolders,
   getDemoIdFolderById,
   getDemoIdFolderDrafts,
-  moveDemoIdFolderDraft,
+  moveDemoIdFolderDraftByDirection,
   removeDemoIdFolderDraft,
   type DemoIdFolder,
-  type DemoIdFolderDraftPlacement,
+  type DemoIdFolderDraftMoveDirection,
   type DemoIdFolderId,
   type DemoIdFolders,
 } from './object-id-folders.js';
@@ -50,6 +50,7 @@ import {
   maybeRenumberAutomaticSectionDrafts,
   renumberSectionDraftsByFolderOrder,
 } from './object-workspace-numbering.js';
+import { duplicateAosrDraftInFolder } from './object-workspace-drafts.js';
 import type { ObjectWorkspaceSection } from './object-workspace-types.js';
 import {
   copySectionTemplateSettingsToTarget,
@@ -76,102 +77,6 @@ function buildInitialSectionTemplateSettings(
       createSectionTemplateSettings(section),
     ]),
   );
-}
-
-function FolderGripIcon(): React.JSX.Element {
-  return (
-    <svg aria-hidden="true" viewBox="0 0 20 20" focusable="false">
-      <path d="M7 4.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Zm0 5.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Zm0 5.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Zm9-11a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Zm0 5.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Zm0 5.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Z" />
-    </svg>
-  );
-}
-
-function getPointerTargetFolderDraftId(
-  listElement: HTMLElement | null,
-  draggedDraftId: string,
-  clientY: number,
-): { readonly draftId: string; readonly placement: DemoIdFolderDraftPlacement } | null {
-  if (listElement === null || !Number.isFinite(clientY)) {
-    return null;
-  }
-
-  const draftElements = Array.from(
-    listElement.querySelectorAll<HTMLElement>('[data-folder-draft-id]'),
-  );
-  let lastTarget: {
-    readonly draftId: string;
-    readonly placement: DemoIdFolderDraftPlacement;
-  } | null = null;
-
-  for (const draftElement of draftElements) {
-    const draftId = draftElement.dataset['folderDraftId'];
-
-    if (draftId === undefined || draftId === draggedDraftId) {
-      continue;
-    }
-
-    const targetRect = draftElement.getBoundingClientRect();
-    const targetMiddle = targetRect.top + targetRect.height / 2;
-
-    if (clientY < targetMiddle) {
-      return { draftId, placement: 'before' };
-    }
-
-    lastTarget = { draftId, placement: 'after' };
-  }
-
-  return lastTarget;
-}
-
-function animateDraftListReorder(
-  listElement: HTMLElement | null,
-  previousRects: { current: Map<string, DOMRect> },
-  selector: string,
-  idAttribute: string,
-): void {
-  if (listElement === null || !('animate' in HTMLElement.prototype)) {
-    return;
-  }
-
-  const draftElements = Array.from(listElement.querySelectorAll<HTMLElement>(selector));
-  const nextRects = new Map<string, DOMRect>();
-
-  draftElements.forEach((draftElement) => {
-    const draftId = draftElement.dataset[idAttribute];
-
-    if (draftId === undefined) {
-      return;
-    }
-
-    const nextRect = draftElement.getBoundingClientRect();
-    const previousRect = previousRects.current.get(draftId);
-
-    nextRects.set(draftId, nextRect);
-
-    if (previousRect === undefined) {
-      return;
-    }
-
-    const deltaX = previousRect.left - nextRect.left;
-    const deltaY = previousRect.top - nextRect.top;
-
-    if (Math.abs(deltaX) < 1 && Math.abs(deltaY) < 1) {
-      return;
-    }
-
-    draftElement.animate(
-      [
-        { transform: `translate(${String(deltaX)}px, ${String(deltaY)}px)` },
-        { transform: 'translate(0, 0)' },
-      ],
-      {
-        duration: 260,
-        easing: 'cubic-bezier(0.22, 1, 0.36, 1)',
-      },
-    );
-  });
-
-  previousRects.current = nextRects;
 }
 
 interface ObjectWorkspacePageProps {
@@ -485,27 +390,25 @@ export function ObjectWorkspacePage({
     deleteAosrDraftFromCurrentFolder(draftId, nextSelectedDraftId);
   };
 
-  const reorderAosrDraftInSelectedFolder = (
-    draggedDraftId: string,
-    targetDraftId: string,
-    placement: DemoIdFolderDraftPlacement = 'before',
+  const moveAosrDraftInSelectedFolder = (
+    draftId: string,
+    direction: DemoIdFolderDraftMoveDirection,
   ): void => {
-    if (
-      selectedFolderId === null ||
-      selectedSection === undefined ||
-      draggedDraftId === targetDraftId
-    ) {
+    if (selectedFolderId === null || selectedSection === undefined) {
       return;
     }
 
     setFolders((currentFolders) => {
-      const nextFolders = moveDemoIdFolderDraft(
+      const nextFolders = moveDemoIdFolderDraftByDirection(
         currentFolders,
         selectedFolderId,
-        draggedDraftId,
-        targetDraftId,
-        placement,
+        draftId,
+        direction,
       );
+
+      if (nextFolders === currentFolders) {
+        return currentFolders;
+      }
 
       setDrafts((currentDrafts) =>
         maybeRenumberAutomaticSectionDrafts({
@@ -518,6 +421,32 @@ export function ObjectWorkspacePage({
 
       return nextFolders;
     });
+    setSelectedDraftId(draftId);
+  };
+
+  const duplicateAosrDraft = (sourceDraftId: string): void => {
+    if (selectedSection === undefined) {
+      return;
+    }
+
+    const result = duplicateAosrDraftInFolder({
+      currentDrafts: drafts,
+      currentFolders: folders,
+      duplicateDraftId: `aosr-draft-duplicate-${String(createdAosrDraftCount)}`,
+      section: selectedSection,
+      sectionTemplateSettings: selectedSectionTemplateSettings,
+      sourceDraftId,
+    });
+
+    if (result === null) {
+      return;
+    }
+
+    setDrafts(result.drafts);
+    setFolders(result.folders);
+    setCreatedAosrDraftCount((currentCount) => currentCount + 1);
+    setSelectedDraftId(result.duplicatedDraft.id);
+    setActiveSection('aosr');
   };
 
   const openObjectSettings = (): void => {
@@ -751,6 +680,8 @@ export function ObjectWorkspacePage({
             }}
             onCreateAosr={createAosrDraft}
             onDeleteAosr={deleteAosrDraftFromFolder}
+            onDuplicateAosr={duplicateAosrDraft}
+            onMoveAosr={moveAosrDraftInSelectedFolder}
             onOpenAosr={(draftId) => {
               openAosr(selectedFolder.id, draftId);
             }}
@@ -759,7 +690,6 @@ export function ObjectWorkspacePage({
               setCreateDocumentPanelOpen(false);
               setActiveSection('intermediate-package');
             }}
-            onReorderAosr={reorderAosrDraftInSelectedFolder}
           />
         ) : null}
 
@@ -788,12 +718,13 @@ export function ObjectWorkspacePage({
             visibleDraftIds={selectedFolder?.draftIds ?? []}
             onCopySectionTemplate={copySelectedSectionTemplateToClipboard}
             onCreateActInFolder={openCreateDocumentPanel}
+            onDuplicateDraft={duplicateAosrDraft}
+            onMoveDraft={moveAosrDraftInSelectedFolder}
             onObjectSettingsClosed={() => {
               setActiveSection('section');
             }}
             onPasteSectionTemplate={pasteSectionTemplateFromClipboard}
             onRenumberSectionDrafts={renumberSelectedSectionDrafts}
-            onReorderDrafts={reorderAosrDraftInSelectedFolder}
           />
         ) : null}
 
@@ -1461,14 +1392,11 @@ interface ObjectFolderPageProps {
   readonly onCloseCreateDocumentPanel: () => void;
   readonly onCreateAosr: () => void;
   readonly onDeleteAosr: (draftId: string) => void;
+  readonly onDuplicateAosr: (draftId: string) => void;
+  readonly onMoveAosr: (draftId: string, direction: DemoIdFolderDraftMoveDirection) => void;
   readonly onOpenAosr: (draftId: string) => void;
   readonly onOpenCreateDocumentPanel: () => void;
   readonly onOpenIntermediatePackage: () => void;
-  readonly onReorderAosr: (
-    draggedDraftId: string,
-    targetDraftId: string,
-    placement: DemoIdFolderDraftPlacement,
-  ) => void;
 }
 
 function ObjectFolderPage({
@@ -1479,131 +1407,12 @@ function ObjectFolderPage({
   onCloseCreateDocumentPanel,
   onCreateAosr,
   onDeleteAosr,
+  onDuplicateAosr,
+  onMoveAosr,
   onOpenAosr,
   onOpenCreateDocumentPanel,
   onOpenIntermediatePackage,
-  onReorderAosr,
 }: ObjectFolderPageProps): React.JSX.Element {
-  const draftListRef = useRef<HTMLUListElement | null>(null);
-  const previousDraftRectsRef = useRef(new Map<string, DOMRect>());
-  const currentDropTargetRef = useRef<{
-    readonly draftId: string;
-    readonly placement: DemoIdFolderDraftPlacement;
-  } | null>(null);
-  const draggedDraftIdRef = useRef<string | null>(null);
-  const [draggedDraftId, setDraggedDraftId] = useState<string | null>(null);
-  const [dropTargetDraftId, setDropTargetDraftId] = useState<string | null>(null);
-  const [dropPlacement, setDropPlacement] = useState<DemoIdFolderDraftPlacement>('before');
-
-  useLayoutEffect(() => {
-    animateDraftListReorder(
-      draftListRef.current,
-      previousDraftRectsRef,
-      '[data-folder-draft-id]',
-      'folderDraftId',
-    );
-  }, [drafts]);
-
-  const clearDragState = (): void => {
-    draggedDraftIdRef.current = null;
-    currentDropTargetRef.current = null;
-    setDraggedDraftId(null);
-    setDropTargetDraftId(null);
-    setDropPlacement('before');
-  };
-
-  const startDraggingDraft = (draftId: string): void => {
-    draggedDraftIdRef.current = draftId;
-    setDraggedDraftId(draftId);
-  };
-
-  const reorderDraggedDraft = (
-    targetDraftId: string,
-    placement: DemoIdFolderDraftPlacement,
-    fallbackDraggedDraftId = '',
-  ): void => {
-    const currentDraggedDraftId =
-      fallbackDraggedDraftId === ''
-        ? (draggedDraftIdRef.current ?? draggedDraftId ?? '')
-        : fallbackDraggedDraftId;
-
-    if (currentDraggedDraftId !== '' && currentDraggedDraftId !== targetDraftId) {
-      onReorderAosr(currentDraggedDraftId, targetDraftId, placement);
-      currentDropTargetRef.current = { draftId: targetDraftId, placement };
-      setDropTargetDraftId(targetDraftId);
-      setDropPlacement(placement);
-    }
-  };
-
-  const updatePointerDropTarget = (event: PointerEvent<HTMLElement>): void => {
-    const currentDraggedDraftId = draggedDraftIdRef.current ?? draggedDraftId;
-
-    if (currentDraggedDraftId === null) {
-      return;
-    }
-
-    const dropTarget = getPointerTargetFolderDraftId(
-      draftListRef.current,
-      currentDraggedDraftId,
-      event.clientY,
-    );
-
-    if (dropTarget !== null) {
-      reorderDraggedDraft(dropTarget.draftId, dropTarget.placement);
-    }
-  };
-
-  const finishPointerReorder = (event: PointerEvent<HTMLElement>): void => {
-    const currentDraggedDraftId = draggedDraftIdRef.current ?? draggedDraftId;
-
-    if (currentDraggedDraftId === null) {
-      clearDragState();
-      return;
-    }
-
-    const dropTarget = getPointerTargetFolderDraftId(
-      draftListRef.current,
-      currentDraggedDraftId,
-      event.clientY,
-    );
-
-    if (dropTarget !== null) {
-      reorderDraggedDraft(dropTarget.draftId, dropTarget.placement);
-    }
-
-    clearDragState();
-  };
-
-  const getDefaultDropPlacement = (
-    targetDraftId: string,
-    fallbackDraggedDraftId: string,
-  ): DemoIdFolderDraftPlacement => {
-    const currentDraggedDraftId =
-      fallbackDraggedDraftId === ''
-        ? (draggedDraftIdRef.current ?? draggedDraftId ?? '')
-        : fallbackDraggedDraftId;
-    const draggedDraftIndex = drafts.findIndex((draft) => draft.id === currentDraggedDraftId);
-    const targetDraftIndex = drafts.findIndex((draft) => draft.id === targetDraftId);
-
-    return draggedDraftIndex >= 0 && targetDraftIndex >= 0 && draggedDraftIndex < targetDraftIndex
-      ? 'after'
-      : 'before';
-  };
-
-  const getNativeDropPlacement = (
-    targetElement: HTMLElement,
-    clientY: number,
-    fallbackPlacement: DemoIdFolderDraftPlacement,
-  ): DemoIdFolderDraftPlacement => {
-    const targetRect = targetElement.getBoundingClientRect();
-
-    if (!Number.isFinite(clientY) || targetRect.height <= 0) {
-      return fallbackPlacement;
-    }
-
-    return clientY > targetRect.top + targetRect.height / 2 ? 'after' : 'before';
-  };
-
   return (
     <section className="object-folder-workspace" aria-labelledby="object-folder-title">
       <div className="object-folder-hero">
@@ -1665,94 +1474,36 @@ function ObjectFolderPage({
               <p>Создайте первый акт — он сразу появится в составе папки.</p>
             </div>
           ) : (
-            <ul
-              ref={draftListRef}
-              className="object-folder-draft-list"
-              aria-label={`Акты в папке ${folder.name}`}
-              onPointerCancel={clearDragState}
-              onPointerMove={updatePointerDropTarget}
-              onPointerUp={finishPointerReorder}
-            >
-              {drafts.map((draft) => (
+            <ul className="object-folder-draft-list" aria-label={`Акты в папке ${folder.name}`}>
+              {drafts.map((draft, draftIndex) => (
                 <li
                   className="object-folder-draft-card"
-                  data-dragging={draggedDraftId === draft.id ? 'true' : undefined}
-                  data-drop-target={dropTargetDraftId === draft.id ? 'true' : undefined}
-                  data-drop-placement={dropTargetDraftId === draft.id ? dropPlacement : undefined}
                   data-folder-draft-id={draft.id}
                   key={draft.id}
-                  onDragEnd={clearDragState}
-                  onDragEnter={() => {
-                    if (draggedDraftId !== null && draggedDraftId !== draft.id) {
-                      setDropTargetDraftId(draft.id);
-                      setDropPlacement('before');
-                    }
-                  }}
-                  onDragOver={(event) => {
-                    event.preventDefault();
-                    event.dataTransfer.dropEffect = 'move';
-                    const placement = getNativeDropPlacement(
-                      event.currentTarget,
-                      event.clientY,
-                      getDefaultDropPlacement(draft.id, event.dataTransfer.getData('text/plain')),
-                    );
-
-                    currentDropTargetRef.current = { draftId: draft.id, placement };
-                    setDropTargetDraftId(draft.id);
-                    setDropPlacement(placement);
-                  }}
-                  onDragStart={(event) => {
-                    event.dataTransfer.effectAllowed = 'move';
-                    event.dataTransfer.setData('text/plain', draft.id);
-                    startDraggingDraft(draft.id);
-                  }}
-                  onDrop={(event) => {
-                    event.preventDefault();
-                    const savedDropTarget = currentDropTargetRef.current;
-                    const fallbackDraggedDraftId = event.dataTransfer.getData('text/plain');
-                    const fallbackPlacement = getDefaultDropPlacement(
-                      draft.id,
-                      fallbackDraggedDraftId,
-                    );
-                    const savedPlacement =
-                      savedDropTarget?.draftId === draft.id
-                        ? savedDropTarget.placement
-                        : fallbackPlacement;
-                    const placement = getNativeDropPlacement(
-                      event.currentTarget,
-                      event.clientY,
-                      savedPlacement,
-                    );
-
-                    reorderDraggedDraft(draft.id, placement, fallbackDraggedDraftId);
-                    clearDragState();
-                  }}
                 >
-                  <button
-                    className="object-folder-draft-card__handle"
-                    aria-label="Перетащить акт"
-                    onDragStart={(event) => {
-                      event.dataTransfer.effectAllowed = 'move';
-                      event.dataTransfer.setData('text/plain', draft.id);
-                      startDraggingDraft(draft.id);
-                    }}
-                    onPointerDown={(event) => {
-                      if (event.button !== 0) {
-                        return;
-                      }
-
-                      event.preventDefault();
-                      startDraggingDraft(draft.id);
-
-                      if (typeof event.currentTarget.setPointerCapture === 'function') {
-                        event.currentTarget.setPointerCapture(event.pointerId);
-                      }
-                    }}
-                    title={`Перетащить акт ${getDocumentDisplayNumber(draft.actNumber)}`}
-                    type="button"
+                  <div
+                    className="object-folder-draft-card__order"
+                    aria-label={`Порядок акта ${getDocumentDisplayNumber(draft.actNumber)}`}
                   >
-                    <FolderGripIcon />
-                  </button>
+                    <button
+                      disabled={draftIndex === 0}
+                      onClick={() => {
+                        onMoveAosr(draft.id, 'up');
+                      }}
+                      type="button"
+                    >
+                      ↑ Вверх
+                    </button>
+                    <button
+                      disabled={draftIndex === drafts.length - 1}
+                      onClick={() => {
+                        onMoveAosr(draft.id, 'down');
+                      }}
+                      type="button"
+                    >
+                      ↓ Вниз
+                    </button>
+                  </div>
                   <button
                     aria-label={`Открыть акт ${getDocumentDisplayNumber(draft.actNumber)}`}
                     className="object-folder-draft-card__open"
@@ -1777,24 +1528,36 @@ function ObjectFolderPage({
                       <strong aria-hidden="true">→</strong>
                     </span>
                   </button>
-                  <button
-                    aria-label="Удалить акт"
-                    className="compact-toggle compact-toggle--danger object-folder-draft-card__delete"
-                    onClick={() => {
-                      onDeleteAosr(draft.id);
-                    }}
-                    title={`Удалить акт ${getDocumentDisplayNumber(draft.actNumber)}`}
-                    type="button"
-                  >
-                    Удалить акт
-                  </button>
+                  <div className="object-folder-draft-card__actions">
+                    <button
+                      className="compact-toggle"
+                      onClick={() => {
+                        onDuplicateAosr(draft.id);
+                      }}
+                      title={`Дублировать акт ${getDocumentDisplayNumber(draft.actNumber)}`}
+                      type="button"
+                    >
+                      Дублировать
+                    </button>
+                    <button
+                      aria-label="Удалить акт"
+                      className="compact-toggle compact-toggle--danger object-folder-draft-card__delete"
+                      onClick={() => {
+                        onDeleteAosr(draft.id);
+                      }}
+                      title={`Удалить акт ${getDocumentDisplayNumber(draft.actNumber)}`}
+                      type="button"
+                    >
+                      Удалить акт
+                    </button>
+                  </div>
                 </li>
               ))}
             </ul>
           )}
           <p className="object-folder-panel__note">
-            Перетаскивайте акты за ручку. При автоматической нумерации порядок сразу пересчитывает
-            номера.
+            Меняйте порядок кнопками ↑ Вверх / ↓ Вниз. При автоматической нумерации порядок сразу
+            пересчитывает номера.
           </p>
         </section>
 

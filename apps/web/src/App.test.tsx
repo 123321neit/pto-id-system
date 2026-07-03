@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
+import { cleanup, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
@@ -1055,7 +1055,22 @@ describe('App shell mock navigation', () => {
     expect(screen.queryByRole('button', { name: /ОВ-1/u })).toBeNull();
   });
 
-  it('reorders folder acts by drag and recalculates automatic section numbering', async () => {
+  it('duplicates an AOSR draft from the folder act list and selects the copy', async () => {
+    const user = userEvent.setup();
+
+    render(<App />);
+    await user.click(getFirstOpenObjectButton());
+    await openFolderByName(user, 'Сентябрь 2026');
+
+    const folderDocuments = within(getSectionByHeading('Акты в папке'));
+
+    await user.click(folderDocuments.getByRole('button', { name: 'Дублировать' }));
+
+    expect(screen.getByRole('heading', { name: 'Редактирование акта ОВ-2' })).toBeTruthy();
+    expect(screen.getByLabelText('Текущий акт: ОВ-2')).toBeTruthy();
+  });
+
+  it('moves folder acts with up/down buttons and recalculates automatic section numbering', async () => {
     const user = userEvent.setup();
 
     render(<App />);
@@ -1080,12 +1095,11 @@ describe('App shell mock navigation', () => {
     expect(rows[1]?.textContent).toContain('ОВ-3');
     expect(rows[1]?.textContent).toContain('05.09.2026');
 
-    const dataTransfer = createDragDataTransfer();
-    const draggedRow = getRequiredListItem(rows, 1);
-    const targetRow = getRequiredListItem(rows, 0);
+    expect(
+      within(getRequiredListItem(rows, 0)).getByRole('button', { name: '↑ Вверх' }),
+    ).toHaveProperty('disabled', true);
 
-    fireEvent.dragStart(draggedRow, { dataTransfer });
-    fireEvent.drop(targetRow, { dataTransfer });
+    await user.click(within(getRequiredListItem(rows, 1)).getByRole('button', { name: '↑ Вверх' }));
 
     folderActs = screen.getByRole('list', { name: 'Акты в папке Сентябрь 2026' });
     rows = within(folderActs).getAllByRole('listitem');
@@ -1095,21 +1109,7 @@ describe('App shell mock navigation', () => {
     expect(rows[1]?.textContent).toContain('ОВ-2');
     expect(rows[1]?.textContent).toContain('04.09.2026');
 
-    const reverseDataTransfer = createDragDataTransfer();
-    const reverseDraggedRow = getRequiredListItem(rows, 0);
-    const reverseTargetRow = getRequiredListItem(rows, 1);
-    const reverseDraggedId = reverseDraggedRow.dataset['folderDraftId'];
-    const reverseTargetId = reverseTargetRow.dataset['folderDraftId'];
-
-    if (reverseDraggedId === undefined || reverseTargetId === undefined) {
-      throw new Error('В строках актов ожидались data-folder-draft-id.');
-    }
-
-    fireEvent.dragStart(reverseDraggedRow, { dataTransfer: reverseDataTransfer });
-    expect(reverseDraggedId).not.toBe(reverseTargetId);
-    expect(reverseDataTransfer.getData('text/plain')).toBe(reverseDraggedId);
-    fireEvent.dragOver(reverseTargetRow, { clientY: 999, dataTransfer: reverseDataTransfer });
-    fireEvent.drop(reverseTargetRow, { dataTransfer: reverseDataTransfer });
+    await user.click(within(getRequiredListItem(rows, 0)).getByRole('button', { name: '↓ Вниз' }));
 
     folderActs = screen.getByRole('list', { name: 'Акты в папке Сентябрь 2026' });
     rows = within(folderActs).getAllByRole('listitem');
@@ -2044,24 +2044,6 @@ function getTextAreaValue(element: HTMLElement): string {
   }
 
   return element.value;
-}
-
-function createDragDataTransfer(): DataTransfer {
-  const data = new Map<string, string>();
-
-  return {
-    dropEffect: 'move',
-    effectAllowed: 'move',
-    files: [] as unknown as FileList,
-    items: [] as unknown as DataTransferItemList,
-    types: [],
-    clearData: vi.fn(),
-    getData: vi.fn((format: string) => data.get(format) ?? ''),
-    setData: vi.fn((format: string, value: string) => {
-      data.set(format, value);
-    }),
-    setDragImage: vi.fn(),
-  };
 }
 
 function getRequiredListItem(items: readonly HTMLElement[], index: number): HTMLElement {

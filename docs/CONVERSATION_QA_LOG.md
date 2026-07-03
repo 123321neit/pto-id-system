@@ -1992,3 +1992,27 @@ changing UX or behavior:
 No new product features were added. Backend, Prisma schema/migrations,
 PDF/ZIP/package builder, auth, storage, AI/OCR, new act types and the AOSR DOCX
 renderer were not touched.
+
+---
+
+## 69. AOSR preview signature, act order controls and duplication
+
+### Q: Что исправлено после замечаний по подписи preview и нестабильному reorder актов?
+
+A: The AOSR HTML preview signature block was aligned with the downloaded DOCX
+structure: group title stays bold, the signature line spans the available width,
+role/organization text is kept on the left, the name is kept on the right, and
+the normative caption stays centered below the line.
+
+The unstable act drag/drop UX was removed from act lists. Folder and editor act
+lists now use explicit `↑ Вверх` / `↓ Вниз` buttons; boundary buttons are
+disabled, selected act stays selected, automatic numbering recalculates by the
+same section/folder rules, and manual numbers remain manual.
+
+`Дублировать` was added for acts. The copy is inserted in the same folder right
+after the source act, receives a new id, copies act content and template links,
+does not reuse the source final number, and becomes the selected act.
+
+This stayed frontend-only. The AOSR DOCX renderer, backend, Prisma,
+PDF/ZIP/package builder, auth, storage, AI/OCR and new act types were not
+touched.

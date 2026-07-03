@@ -3,8 +3,10 @@ import { describe, expect, it } from 'vitest';
 import { demoAosrWorkspace } from '../aosr-demo/demo-aosr-workspace.js';
 import {
   getDemoIdFolderDrafts,
+  insertDemoIdFolderDraftAfter,
   moveDemoIdFolderDraft,
   moveDemoIdFolderDraftBefore,
+  moveDemoIdFolderDraftByDirection,
   removeDemoIdFolderDraft,
   type DemoIdFolder,
 } from './object-id-folders.js';
@@ -64,6 +66,32 @@ describe('object ID folder helpers', () => {
     );
   });
 
+  it('moves a draft up or down by one position inside one folder', () => {
+    const folders = createTestFolders(['draft-1', 'draft-2', 'draft-3']);
+
+    expect(moveDemoIdFolderDraftByDirection(folders, 'folder-a', 'draft-2', 'up')).toMatchObject([
+      { draftIds: ['draft-2', 'draft-1', 'draft-3'] },
+    ]);
+    expect(moveDemoIdFolderDraftByDirection(folders, 'folder-a', 'draft-2', 'down')).toMatchObject([
+      { draftIds: ['draft-1', 'draft-3', 'draft-2'] },
+    ]);
+  });
+
+  it('does not move a draft past folder boundaries', () => {
+    const folders = createTestFolders(['draft-1', 'draft-2']);
+
+    expect(moveDemoIdFolderDraftByDirection(folders, 'folder-a', 'draft-1', 'up')).toBe(folders);
+    expect(moveDemoIdFolderDraftByDirection(folders, 'folder-a', 'draft-2', 'down')).toBe(folders);
+  });
+
+  it('inserts a duplicated draft immediately after the source draft', () => {
+    const folders = createTestFolders(['draft-1', 'draft-2', 'draft-3']);
+
+    expect(
+      insertDemoIdFolderDraftAfter(folders, 'folder-a', 'draft-2', 'draft-copy'),
+    ).toMatchObject([{ draftIds: ['draft-1', 'draft-2', 'draft-copy', 'draft-3'] }]);
+  });
+
   it('removes a draft from every folder list', () => {
     const folders = [
       {
@@ -88,3 +116,15 @@ describe('object ID folder helpers', () => {
     ]);
   });
 });
+
+function createTestFolders(draftIds: readonly string[]): readonly DemoIdFolder[] {
+  return [
+    {
+      draftIds,
+      id: 'folder-a',
+      intermediateIdTitle: 'Промежуточная ИД A',
+      name: 'Папка A',
+      registryTitle: 'Реестр A',
+    },
+  ];
+}

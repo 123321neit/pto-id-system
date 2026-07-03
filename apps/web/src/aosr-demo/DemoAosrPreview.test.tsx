@@ -85,6 +85,40 @@ describe('DemoAosrPreview', () => {
     expect(within(signatures).getByText('Петров П.П.')).toBeTruthy();
   });
 
+  it('renders final signature as one line with left role and right name plus centered caption row', () => {
+    render(
+      <DemoAosrPreview
+        formVariant={demoAosrFormVariant1}
+        printState={createPrintState([
+          {
+            members: [
+              {
+                introDisplayText: 'Производитель работ ООО "ПТО Монтаж", Иванов И.И.',
+                signatureName: 'Иванов И.И.',
+                signatureText: 'Производитель работ ООО "ПТО Монтаж"',
+                subscript: '',
+              },
+            ],
+            title: 'Представитель подрядчика',
+          },
+        ])}
+      />,
+    );
+
+    const signatures = screen.getByRole('region', { name: 'Подписи представителей' });
+    const signatureLine = signatures.querySelector('.act-page__signature-line-row');
+    const signatureCaption = signatures.querySelector('.act-page__signature-caption');
+
+    expect(signatureLine).not.toBeNull();
+    expect(signatureLine?.querySelector('.act-page__signature-person')?.textContent).toBe(
+      'Производитель работ ООО "ПТО Монтаж"',
+    );
+    expect(signatureLine?.querySelector('.act-page__signature-name')?.textContent).toBe(
+      'Иванов\u00a0И.И.',
+    );
+    expect(signatureCaption?.textContent).toBe('(должность, фамилия, инициалы, подпись)');
+  });
+
   it('does not render introDisplayText again when it is duplicated in subscript', () => {
     const duplicateText =
       'Ведущий инженер ООО "СтройКонтроль", Петров П.П., Договор № СК-7, НРС С-66-212868';

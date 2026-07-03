@@ -2,6 +2,7 @@ import type { DemoAosrDraft } from '../aosr-demo/demo-aosr-workspace.js';
 
 export type DemoIdFolderId = string;
 export type DemoIdFolderDraftPlacement = 'after' | 'before';
+export type DemoIdFolderDraftMoveDirection = 'down' | 'up';
 
 export interface DemoIdFolder {
   readonly draftIds: readonly string[];
@@ -89,6 +90,41 @@ export function addDemoIdFolderDraft(
   );
 }
 
+export function insertDemoIdFolderDraftAfter(
+  folders: DemoIdFolders,
+  folderId: DemoIdFolderId,
+  sourceDraftId: string,
+  insertedDraftId: string,
+): DemoIdFolders {
+  const sourceFolder = folders.find((folder) => folder.id === folderId);
+
+  if (sourceFolder?.draftIds.includes(sourceDraftId) !== true) {
+    return folders;
+  }
+
+  const draftIdsWithoutInserted = sourceFolder.draftIds.filter(
+    (draftId) => draftId !== insertedDraftId,
+  );
+  const sourceIndex = draftIdsWithoutInserted.indexOf(sourceDraftId);
+
+  if (sourceIndex < 0) {
+    return folders;
+  }
+
+  return folders.map((folder) =>
+    folder.id === folderId
+      ? {
+          ...folder,
+          draftIds: [
+            ...draftIdsWithoutInserted.slice(0, sourceIndex + 1),
+            insertedDraftId,
+            ...draftIdsWithoutInserted.slice(sourceIndex + 1),
+          ],
+        }
+      : folder,
+  );
+}
+
 export function removeDemoIdFolderDraft(folders: DemoIdFolders, draftId: string): DemoIdFolders {
   return folders.map((folder) =>
     folder.draftIds.includes(draftId)
@@ -107,6 +143,39 @@ export function moveDemoIdFolderDraftBefore(
   targetDraftId: string,
 ): DemoIdFolders {
   return moveDemoIdFolderDraft(folders, folderId, draggedDraftId, targetDraftId, 'before');
+}
+
+export function moveDemoIdFolderDraftByDirection(
+  folders: DemoIdFolders,
+  folderId: DemoIdFolderId,
+  draftId: string,
+  direction: DemoIdFolderDraftMoveDirection,
+): DemoIdFolders {
+  const sourceFolder = folders.find((folder) => folder.id === folderId);
+
+  if (sourceFolder === undefined) {
+    return folders;
+  }
+
+  const currentIndex = sourceFolder.draftIds.indexOf(draftId);
+  const nextIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1;
+
+  if (currentIndex < 0 || nextIndex < 0 || nextIndex >= sourceFolder.draftIds.length) {
+    return folders;
+  }
+
+  const nextDraftIds = [...sourceFolder.draftIds];
+  const [movedDraftId] = nextDraftIds.splice(currentIndex, 1);
+
+  if (movedDraftId === undefined) {
+    return folders;
+  }
+
+  nextDraftIds.splice(nextIndex, 0, movedDraftId);
+
+  return folders.map((folder) =>
+    folder.id === folderId ? { ...folder, draftIds: nextDraftIds } : folder,
+  );
 }
 
 export function moveDemoIdFolderDraft(

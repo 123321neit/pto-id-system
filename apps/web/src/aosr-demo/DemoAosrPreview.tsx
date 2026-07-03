@@ -353,7 +353,9 @@ export function DemoAosrPreview({
                           <span className="act-page__signature-person">{member.signatureText}</span>
                           <span className="act-page__signature-name">{member.signatureName}</span>
                         </p>
-                        <p className="act-page__caption">{signatureCaption}</p>
+                        <p className="act-page__caption act-page__signature-caption">
+                          {signatureCaption}
+                        </p>
                       </div>
                     ))}
                   </div>
