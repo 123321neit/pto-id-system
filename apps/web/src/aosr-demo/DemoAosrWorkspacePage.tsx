@@ -87,7 +87,6 @@ interface DemoAosrWorkspacePageProps {
   readonly initialDocumentPreviewOpen?: boolean;
   readonly initialSelectedDraftId?: string;
   readonly isEmbeddedInObjectWorkspace?: boolean;
-  readonly previewModeForTests?: 'auto' | 'html-fallback-for-tests-only';
   readonly isSectionTemplateSettingsPage?: boolean;
   readonly lastTemplateCopyMessage?: string;
   readonly sectionTemplateClipboard?: SectionTemplateClipboard | null;
@@ -124,7 +123,6 @@ export function DemoAosrWorkspacePage({
   initialDocumentPreviewOpen = false,
   initialSelectedDraftId,
   isEmbeddedInObjectWorkspace = false,
-  previewModeForTests = 'auto',
   isSectionTemplateSettingsPage = false,
   lastTemplateCopyMessage = '',
   sectionTemplateClipboard = null,
@@ -835,11 +833,7 @@ export function DemoAosrWorkspacePage({
               <p className="section-kicker">Предпросмотр</p>
               <h2>Предпросмотр акта</h2>
             </div>
-            <DemoAosrPreview
-              formVariant={selectedFormVariant}
-              previewMode={previewModeForTests}
-              printState={printState}
-            />
+            <DemoAosrPreview printState={printState} />
           </div>
         </section>
       ) : (
@@ -987,18 +981,14 @@ export function DemoAosrWorkspacePage({
             </>
           }
           contextLabel="Контекст предпросмотра документа"
-          eyebrow="HTML-макет печатной формы"
+          eyebrow="DOCX-шаблон печатной формы"
           isOpen={isDocumentPreviewOpen}
           onClose={() => {
             setDocumentPreviewOpen(false);
           }}
           title="Предпросмотр документа"
         >
-          <DemoAosrPreview
-            formVariant={selectedFormVariant}
-            previewMode={previewModeForTests}
-            printState={printState}
-          />
+          <DemoAosrPreview printState={printState} />
         </DocumentPreviewDrawer>
       )}
 

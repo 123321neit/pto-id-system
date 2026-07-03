@@ -5972,16 +5972,16 @@ delete/move/reorder lifecycle or generation was introduced.
   folder act display and reorder behavior;
 - the noisy section-template summary cards (`Как применяются значения`,
   `Организации`, `Представители`, `Нумерация`) were removed from the settings UI;
-- AOSR preview now tries to generate the same DOCX as download and render it
-  through `docx-preview`; the existing HTML preview remains as a fallback/test
-  layer and uses `buildAosrDocxTemplateData`, so visible tag placeholders are not
-  shown.
+- AOSR preview now generates the same DOCX as download and renders it through
+  `docx-preview`; the old manual HTML act preview was removed from the product
+  component so users do not see a CSS imitation of the Word form.
 
 Ограничения:
 
 - no PDF/ZIP/backend/storage work was added;
-- DOCX preview is browser-side and depends on `docx-preview`; HTML fallback is
-  still kept for resilience and tests.
+- DOCX preview is browser-side and depends on `docx-preview`; if browser-side
+  rendering fails, the UI asks the user to download and check the DOCX instead
+  of showing a fake HTML copy.
 
 ### 2026-07-01 — Folder reorder stability, DOCX manual-fill lines and AI prep
 

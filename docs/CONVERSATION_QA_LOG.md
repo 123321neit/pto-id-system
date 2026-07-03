@@ -1758,9 +1758,8 @@ A: The object workspace UX was polished without adding backend/storage scope:
   automatic section numbering is recalculated from the new folder order;
 - the clutter summary cards in section template settings were removed;
 - AOSR preview now attempts to render the generated DOCX from the same static
-  template used for download via `docx-preview`; HTML preview remains as fallback
-  and is fed by `buildAosrDocxTemplateData`, so template tags are not visible when
-  fields are empty;
+  template used for download via `docx-preview`; the old manual HTML preview is
+  not a product preview and must not be used as a visual fallback;
 - added `docx-preview` as a web dependency and tests for folder-order helpers,
   folder deletion and automatic renumbering after reorder.
 
@@ -2073,10 +2072,8 @@ AI/OCR were not touched.
 
 A: The downloaded AOSR DOCX remains the display reference. The normal preview
 path now shows the generated DOCX through `docx-preview`; the custom HTML act
-layout is kept as an explicit fallback/test layer and is no longer shown during
-normal loading/ready states. Its final signature fallback layout was tightened
-so role/organization text stays left, surname/initials stay right, and the
-single normative caption remains below the line.
+layout is not a product preview and must not be shown during normal
+loading/ready/error states.
 
 The folder workspace now starts a readonly on-screen `Реестр папки` built from
 the current folder acts. It uses the current `folder.draftIds` order, shows
@@ -2102,10 +2099,32 @@ alignment and point-5 dates could drift away from the downloaded DOCX.
 The normal user preview now renders only the generated DOCX through
 `docx-preview`. Loading shows only `Готовим предпросмотр из DOCX-шаблона…`; if
 the preview cannot be rendered, the UI shows a compact message asking the user
-to download the DOCX for checking. The manual HTML act remains only behind an
-explicit `html-fallback-for-tests-only` prop for focused tests and is not used by
-the live/user UI.
+to download the DOCX for checking. The manual HTML act renderer, its
+`html-fallback-for-tests-only` prop and its `.act-page` CSS were removed; jsdom
+tests use only a hidden data probe from `buildAosrDocxTemplateData`, not a visual
+fallback.
 
 This was a frontend preview/test cleanup only. The DOCX renderer/template,
 backend, Prisma, PDF/ZIP/package builder, auth, storage, AI/OCR and new act
 types were not touched.
+
+---
+
+## 74. AOSR manual HTML preview removed
+
+### Q: Что сделано после повторного сравнения скачанного DOCX и предпросмотра?
+
+A: The manual HTML AOSR renderer was removed from `DemoAosrPreview` entirely.
+The component no longer accepts a fallback preview mode, no longer receives
+`formVariant`, and no longer contains `.act-page` markup. The old `.act-page`
+CSS was removed too, so the product cannot accidentally show a CSS imitation of
+the act.
+
+The preview drawer now labels the view as `DOCX-шаблон печатной формы` and shows
+only the `docx-preview` host. In jsdom tests, where `docx-preview` is skipped,
+the host exposes a hidden test-only data probe from `buildAosrDocxTemplateData`
+so tests can still verify the data sequence without rendering a fake act.
+
+This stayed frontend-only. The DOCX renderer, DOCX template, backend, Prisma,
+PDF/ZIP/package builder, auth, storage, AI/OCR and new act types were not
+touched.

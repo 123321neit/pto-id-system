@@ -218,20 +218,17 @@ describe('DemoAosrWorkspacePage', () => {
     await user.click(screen.getByRole('button', { name: 'Предпросмотр документа' }));
 
     const drawer = screen.getByRole('dialog', { name: 'Предпросмотр документа' });
-    const preview = within(drawer).getByLabelText('Тестовый HTML fallback АОСР');
+    const preview = within(drawer).getByLabelText('Предпросмотр DOCX-шаблона АОСР');
     const drawerContext = within(drawer).getByLabelText('Контекст предпросмотра документа');
 
     expect(drawerContext.textContent).toContain('Акт ОВ-1');
     expect(drawerContext.textContent).toContain('АОСР 1');
     expect(drawerContext.textContent).toContain('«04» сентября 2026 г.');
     expect(drawerContext.textContent).toContain('4 приложений');
-    expect(within(preview).getByText('Страница 1')).toBeTruthy();
-    expect(within(preview).queryByText('Страница 2')).toBeNull();
     expect(within(drawer).getByText('1 страница')).toBeTruthy();
     expect(within(drawer).queryByText('2 страницы')).toBeNull();
-    expect(preview.textContent).toContain('ОСВИДЕТЕЛЬСТВОВАНИЯ СКРЫТЫХ РАБОТ');
-    expect(preview.querySelectorAll('.act-page__page-frame')).toHaveLength(1);
-    expect(preview.querySelectorAll('.act-page__sheet')).toHaveLength(1);
+    expect(preview.dataset['testDocxPreview']).toBe('skipped');
+    expect(drawer.querySelector('.act-page')).toBeNull();
 
     await user.click(
       within(drawer).getByRole('button', { name: 'Закрыть предпросмотр документа' }),
@@ -244,7 +241,7 @@ describe('DemoAosrWorkspacePage', () => {
   it('uses only the DOCX preview host in normal user preview mode', async () => {
     const user = userEvent.setup();
 
-    renderDemoWorkspace({ previewModeForTests: 'auto' });
+    renderDemoWorkspace();
 
     await user.click(screen.getByRole('button', { name: 'Предпросмотр документа' }));
 
@@ -1268,16 +1265,7 @@ describe('DemoAosrWorkspacePage', () => {
       within(applications).getByText('Запись журнала входного контроля материалов'),
     ).toBeTruthy();
 
-    const preview = getDocumentPreview();
-    const pointFourPreview = within(preview).getByLabelText('Документы соответствия');
-    const previewApplications = preview.querySelector('.act-page__applications');
-
-    if (previewApplications === null) {
-      throw new Error('В preview ожидается блок приложений.');
-    }
-
-    expect(pointFourPreview.textContent).toContain('Запись журнала входного контроля материалов');
-    expect(previewApplications.textContent).not.toContain(
+    expect(getPreviewApplicationsText()).not.toContain(
       'Запись журнала входного контроля материалов',
     );
   });
@@ -1304,17 +1292,9 @@ describe('DemoAosrWorkspacePage', () => {
       previewText.indexOf('Приложения:'),
     );
 
-    const preview = getDocumentPreview();
-    const applications = preview.querySelector('.act-page__applications');
-    const signatures = preview.querySelector('.act-page__signature-section');
-
-    if (applications === null || signatures === null) {
-      throw new Error('В preview ожидаются приложения и блок подписей.');
-    }
-
-    expect(
-      Boolean(applications.compareDocumentPosition(signatures) & Node.DOCUMENT_POSITION_FOLLOWING),
-    ).toBe(true);
+    expect(previewText.indexOf('Приложения:')).toBeGreaterThan(
+      previewText.indexOf('Акт составлен в 4 экземплярах.'),
+    );
   });
 
   it('uses real AOSR wording for point 4 in the preview', () => {
@@ -1356,16 +1336,17 @@ describe('DemoAosrWorkspacePage', () => {
     }
   });
 
-  it('renders key Word-like preview structure classes', () => {
+  it('renders only the DOCX preview host instead of Word-like manual HTML classes', () => {
     renderDemoWorkspace({ initialDocumentPreviewOpen: true });
 
     const preview = getDocumentPreview();
-    expect(preview.querySelector('.act-page__sheet')).toBeTruthy();
-    expect(preview.querySelector('.act-page__top-blocks')).toBeTruthy();
-    expect(preview.querySelector('.act-page__field-line')).toBeTruthy();
-    expect(preview.querySelector('.act-page__caption')).toBeTruthy();
-    expect(preview.querySelector('.act-page__number-date-row')).toBeTruthy();
-    expect(preview.querySelector('.act-page__signature-line-row')).toBeTruthy();
+    expect(preview.classList.contains('aosr-docx-preview-host')).toBe(true);
+    expect(preview.querySelector('.act-page__sheet')).toBeNull();
+    expect(preview.querySelector('.act-page__top-blocks')).toBeNull();
+    expect(preview.querySelector('.act-page__field-line')).toBeNull();
+    expect(preview.querySelector('.act-page__caption')).toBeNull();
+    expect(preview.querySelector('.act-page__number-date-row')).toBeNull();
+    expect(preview.querySelector('.act-page__signature-line-row')).toBeNull();
   });
 
   it('keeps current editing behavior after the component split', async () => {
@@ -1676,19 +1657,14 @@ describe('DemoAosrWorkspacePage', () => {
 
 interface RenderDemoWorkspaceOptions {
   readonly initialDocumentPreviewOpen?: boolean;
-  readonly previewModeForTests?: 'auto' | 'html-fallback-for-tests-only';
 }
 
 function renderDemoWorkspace({
   initialDocumentPreviewOpen = false,
-  previewModeForTests = 'html-fallback-for-tests-only',
 }: RenderDemoWorkspaceOptions = {}): void {
   render(
     <DemoStoreProvider>
-      <DemoAosrWorkspacePage
-        initialDocumentPreviewOpen={initialDocumentPreviewOpen}
-        previewModeForTests={previewModeForTests}
-      />
+      <DemoAosrWorkspacePage initialDocumentPreviewOpen={initialDocumentPreviewOpen} />
     </DemoStoreProvider>,
   );
 }
@@ -1742,13 +1718,24 @@ async function addRepresentativeAssignmentFromAct(
 }
 
 function getPreviewText(): string {
-  return getDocumentPreview().textContent;
+  return getDocumentPreview().dataset['testDocxTemplateText'] ?? getDocumentPreview().textContent;
+}
+
+function getPreviewApplicationsText(): string {
+  const previewText = getPreviewText();
+  const applicationsStartIndex = previewText.indexOf('Приложения:');
+
+  if (applicationsStartIndex === -1) {
+    return '';
+  }
+
+  return previewText.slice(applicationsStartIndex);
 }
 
 function getDocumentPreview(): HTMLElement {
   const drawer = screen.getByRole('dialog', { name: 'Предпросмотр документа' });
 
-  return within(drawer).getByLabelText('Тестовый HTML fallback АОСР');
+  return within(drawer).getByLabelText('Предпросмотр DOCX-шаблона АОСР');
 }
 
 function getTextAreaValue(element: HTMLElement): string {

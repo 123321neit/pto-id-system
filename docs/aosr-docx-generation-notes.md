@@ -177,12 +177,12 @@ the act editor uses user-facing terms such as `Данные из раздела`
   it must remove the draft from both the draft collection and the containing
   folder `draftIds`.
 - The normal live preview renders only the generated DOCX through
-  `docx-preview`. The custom HTML `.act-page` layout is not a user fallback
-  anymore, because it can visually drift away from Word/DOCX behavior for tabs,
-  signatures and dates.
-- The HTML `.act-page` layer remains only behind the explicit
-  `html-fallback-for-tests-only` prop for focused unit tests. It is not the
-  product preview and must not be enabled in the live/user UI.
+  `docx-preview`. The custom HTML `.act-page` layout was removed from the
+  product component because it can visually drift away from Word/DOCX behavior
+  for tabs, signatures and dates.
+- Tests that need to verify the data sent into DOCX use a hidden jsdom-only data
+  probe derived from `buildAosrDocxTemplateData`; they do not render a visual
+  HTML act fallback.
 - The DOCX preview host is lightly isolated from project UI CSS. If
   `docx-preview` fails, the UI shows a compact preview error and asks the user
   to download the DOCX for checking instead of showing a fake HTML copy of the
