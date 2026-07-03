@@ -739,7 +739,7 @@ export function DemoAosrWorkspacePage({
             <span>{formatDocumentDate(selectedDraft.actDate)}</span>
           </p>
         </div>
-        <div className="workspace-header__aside">
+        <div className="workspace-header__aside" role="region" aria-label="Действия редактора">
           <div className="workspace-actions">
             {onBackToObjects === undefined ? null : (
               <button className="secondary-action" onClick={onBackToObjects} type="button">
@@ -786,23 +786,43 @@ export function DemoAosrWorkspacePage({
                 >
                   Скачать DOCX
                 </button>
-                <button className="secondary-action" type="button">
-                  Скачать PDF
-                </button>
               </>
             ) : (
-              <button
-                aria-expanded={isDocumentPreviewOpen}
-                className="secondary-action secondary-action--accent"
-                onClick={() => {
-                  setDocumentPreviewOpen(true);
-                }}
-                type="button"
-              >
-                Предпросмотр документа
-              </button>
+              <>
+                <button
+                  aria-expanded={isDocumentPreviewOpen}
+                  className="secondary-action secondary-action--accent"
+                  onClick={() => {
+                    setDocumentPreviewOpen(true);
+                  }}
+                  type="button"
+                >
+                  Предпросмотр документа
+                </button>
+                <button
+                  className="secondary-action"
+                  onClick={handleDownloadSelectedAosrDocx}
+                  type="button"
+                >
+                  Скачать DOCX
+                </button>
+              </>
             )}
+            <button
+              className="secondary-action secondary-action--danger"
+              onClick={() => {
+                deleteDraft();
+              }}
+              type="button"
+            >
+              Удалить акт
+            </button>
           </div>
+          {docxDownloadError === '' ? null : (
+            <p className="workspace-header__error" role="alert">
+              {docxDownloadError}
+            </p>
+          )}
         </div>
       </section>
 
@@ -844,7 +864,6 @@ export function DemoAosrWorkspacePage({
                 isCertificateLibraryOpen={isCertificateLibraryOpen}
                 isManualRepresentativeFormOpen={isManualRepresentativeFormOpen}
                 isObjectDocumentLibraryOpen={isObjectDocumentLibraryOpen}
-                docxDownloadError={docxDownloadError}
                 manualRepresentativeForm={manualRepresentativeForm}
                 materialSearch={materialSearch}
                 linkedTemplateFields={linkedTemplateFields}
@@ -888,10 +907,6 @@ export function DemoAosrWorkspacePage({
                 onChangeDocumentTypeFilter={setObjectDocumentTypeFilter}
                 onChangeManualRepresentativeForm={updateManualRepresentativeForm}
                 onChangeMaterialSearch={setMaterialSearch}
-                onDeleteAct={() => {
-                  deleteDraft();
-                }}
-                onDownloadDocx={handleDownloadSelectedAosrDocx}
                 onDragRepresentativeEnd={() => {
                   setDraggedRepresentativeId(null);
                   setRepresentativeDropTargetId(null);

@@ -654,7 +654,7 @@ button {
 
 .object-folder-row {
   display: grid;
-  grid-template-columns: 42px minmax(0, 1fr) minmax(130px, 0.3fr) 84px;
+  grid-template-columns: 86px 42px minmax(0, 1fr) minmax(130px, 0.3fr) auto;
   gap: 14px;
   align-items: center;
   width: 100%;
@@ -672,6 +672,39 @@ button {
 
 .object-folder-row:hover {
   background: #f8fbff;
+}
+
+.object-folder-row__order {
+  display: grid;
+  gap: 6px;
+  width: 86px;
+}
+
+.object-folder-row__order button {
+  width: 100%;
+  border: 1px solid #d8e3ee;
+  border-radius: 7px;
+  background: #ffffff;
+  padding: 6px 8px;
+  color: #334155;
+  font-size: 0.72rem;
+  font-weight: 850;
+  line-height: 1.1;
+  transition:
+    background 160ms ease,
+    border-color 160ms ease,
+    color 160ms ease;
+}
+
+.object-folder-row__order button:not(:disabled):hover {
+  border-color: #9dc4e8;
+  background: #eef6ff;
+  color: #1d4ed8;
+}
+
+.object-folder-row__order button:disabled {
+  cursor: not-allowed;
+  opacity: 0.42;
 }
 
 .object-folder-row__icon {
@@ -708,11 +741,9 @@ button {
   line-height: 1.35;
 }
 
-.object-folder-row__action {
-  color: #235ea6;
-  font-size: 0.8rem;
-  font-weight: 850;
-  text-align: right;
+.object-folder-row__actions {
+  display: flex;
+  justify-content: flex-end;
 }
 
 .object-workspace-nav__empty-current {
@@ -3038,6 +3069,18 @@ h3 {
   gap: 14px;
 }
 
+.workspace-header__error {
+  max-width: 420px;
+  border: 1px solid #bfdbfe;
+  border-radius: 8px;
+  background: #eff6ff;
+  padding: 8px 10px;
+  color: #1e40af;
+  font-size: 0.78rem;
+  font-weight: 780;
+  line-height: 1.35;
+}
+
 .workspace-actions {
   display: flex;
   flex-wrap: wrap;
@@ -3049,6 +3092,12 @@ h3 {
   border-color: #2563eb;
   background: #eff6ff;
   color: #1d4ed8;
+}
+
+.workspace-actions .secondary-action--danger {
+  border-color: #fecaca;
+  background: #fff7f7;
+  color: #b42318;
 }
 
 .act-preview-mode {
@@ -3128,6 +3177,11 @@ h3 {
 .document-tree-panel {
   position: sticky;
   top: 18px;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  max-height: calc(100vh - 36px);
+  min-height: 0;
+  overflow: hidden;
   background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%), #ffffff;
 }
 
@@ -3186,7 +3240,9 @@ h3 {
 
 .document-tree {
   display: grid;
+  min-height: 0;
   gap: 10px;
+  overflow: hidden;
   border-left: 0;
   padding-left: 0;
 }
@@ -3245,7 +3301,10 @@ h3 {
   position: relative;
   display: grid;
   gap: 8px;
+  min-height: 0;
+  overflow-y: auto;
   padding-left: 0;
+  padding-right: 4px;
 }
 
 .act-tree-item {
@@ -3486,40 +3545,6 @@ h3 {
   margin: 0;
 }
 
-.act-download-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  align-items: center;
-  justify-content: space-between;
-  margin-top: 10px;
-  border: 1px solid #bfdbfe;
-  border-radius: 8px;
-  background: #eff6ff;
-  padding: 11px 12px;
-}
-
-.act-download-actions > span {
-  display: grid;
-  gap: 4px;
-  min-width: min(100%, 320px);
-}
-
-.act-download-actions strong,
-.act-download-actions p {
-  margin: 0;
-}
-
-.act-download-actions strong {
-  color: #172033;
-  font-size: 0.84rem;
-  font-weight: 900;
-}
-
-.act-download-actions .helper-note {
-  color: #1d4ed8;
-}
-
 .empty-state-card {
   display: grid;
   gap: 8px;
@@ -3544,13 +3569,6 @@ h3 {
   color: #5d6b76;
   font-size: 0.88rem;
   line-height: 1.5;
-}
-
-.act-download-actions__buttons {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  justify-content: flex-end;
 }
 
 .print-header-field {
@@ -5258,6 +5276,7 @@ h3 {
 .document-preview-drawer button:focus-visible,
 .act-tree-item__duplicate:focus-visible,
 .act-tree-item__order button:focus-visible,
+.object-folder-row__order button:focus-visible,
 .object-folder-draft-card__order button:focus-visible,
 .signatory-order-item__drag:focus-visible,
 .signatory-order-item__actions button:focus-visible,
@@ -5622,6 +5641,13 @@ h3 {
 
   .document-tree-panel {
     position: static;
+    max-height: none;
+    overflow: visible;
+  }
+
+  .document-tree,
+  .act-tree-list {
+    overflow: visible;
   }
 
   .preview-panel {
@@ -5691,7 +5717,7 @@ h3 {
   }
 
   .object-folder-row {
-    grid-template-columns: 42px minmax(0, 1fr) minmax(120px, 0.3fr) 72px;
+    grid-template-columns: 86px 42px minmax(0, 1fr) minmax(120px, 0.3fr) auto;
   }
 
   .app-sidebar {
@@ -5774,8 +5800,12 @@ h3 {
     display: none;
   }
 
-  .object-folder-row__action {
-    text-align: left;
+  .object-folder-row__actions {
+    justify-content: flex-start;
+  }
+
+  .object-folder-row__order {
+    width: min(100%, 180px);
   }
 
   .object-folder-draft-card {

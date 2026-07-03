@@ -26,7 +26,6 @@ interface DemoCurrentActEditorProps {
   readonly certificateLibrary: readonly DemoMaterialCertificate[];
   readonly documentSearch: string;
   readonly documentTypeFilter: 'all' | DemoObjectDocumentType;
-  readonly docxDownloadError: string;
   readonly draggedRepresentativeId: string | null;
   readonly dropTargetRepresentativeId: string | null;
   readonly formVariant: DemoAosrFormVariantMetadata;
@@ -56,8 +55,6 @@ interface DemoCurrentActEditorProps {
     value: string,
   ) => void;
   readonly onChangeMaterialSearch: (value: string) => void;
-  readonly onDeleteAct: () => void;
-  readonly onDownloadDocx: () => void;
   readonly onDragRepresentativeEnd: () => void;
   readonly onDragRepresentativeStart: (representativeId: string) => void;
   readonly onDragRepresentativeTarget: (representativeId: string) => void;
@@ -105,7 +102,6 @@ export function DemoCurrentActEditor({
   certificateLibrary,
   documentSearch,
   documentTypeFilter,
-  docxDownloadError,
   draggedRepresentativeId,
   dropTargetRepresentativeId,
   formVariant,
@@ -132,8 +128,6 @@ export function DemoCurrentActEditor({
   onChangeDocumentTypeFilter,
   onChangeManualRepresentativeForm,
   onChangeMaterialSearch,
-  onDeleteAct,
-  onDownloadDocx,
   onDragRepresentativeEnd,
   onDragRepresentativeStart,
   onDragRepresentativeTarget,
@@ -269,36 +263,6 @@ export function DemoCurrentActEditor({
             </>
           )}
         </div>
-        <section className="act-download-actions" aria-label="Действия с актом">
-          <span>
-            <strong>Действия с актом</strong>
-            <p className="helper-note">
-              Перед скачиванием проверьте номер, дату, период работ, материалы, приложения и
-              подписантов.
-            </p>
-          </span>
-          <div className="act-download-actions__buttons">
-            <button
-              className="compact-toggle compact-toggle--accent"
-              onClick={onDownloadDocx}
-              type="button"
-            >
-              Скачать DOCX
-            </button>
-            <button
-              className="compact-toggle compact-toggle--danger"
-              onClick={onDeleteAct}
-              type="button"
-            >
-              Удалить акт
-            </button>
-          </div>
-          {docxDownloadError === '' ? null : (
-            <p className="helper-note" role="alert">
-              {docxDownloadError}
-            </p>
-          )}
-        </section>
       </div>
 
       <section

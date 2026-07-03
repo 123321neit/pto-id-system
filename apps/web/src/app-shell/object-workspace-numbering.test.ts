@@ -124,6 +124,53 @@ describe('object workspace numbering helpers', () => {
     });
   });
 
+  it('uses changed section folder order while preserving manual numbers', () => {
+    const manualDraft = createDraft({
+      actNumber: 'ручной-номер',
+      id: 'draft-2',
+      numberingAssignment: { source: 'manual' },
+    });
+    const result = renumberSectionDraftsByFolderOrder({
+      currentDrafts: [
+        createDraft({
+          id: 'draft-1',
+          numberingAssignment: {
+            automaticSequences: { folder: 5, section: 5 },
+            source: 'automatic',
+          },
+        }),
+        manualDraft,
+        createDraft({
+          id: 'draft-3',
+          numberingAssignment: {
+            automaticSequences: { folder: 6, section: 6 },
+            source: 'automatic',
+          },
+        }),
+      ],
+      currentFolders: testFolders,
+      mode: 'automatic-only',
+      section: { ...testSection, folderIds: ['folder-b', 'folder-a'] },
+      sectionTemplateSettings: createNumberingSettings({ scope: 'section-wide', start: 5 }),
+    });
+
+    expect(getDraftById(result, 'draft-3')).toMatchObject({
+      actNumber: 'ОВ-5',
+      numberingAssignment: {
+        automaticSequences: { folder: 5, section: 5 },
+        source: 'automatic',
+      },
+    });
+    expect(getDraftById(result, 'draft-1')).toMatchObject({
+      actNumber: 'ОВ-6',
+      numberingAssignment: {
+        automaticSequences: { folder: 5, section: 6 },
+        source: 'automatic',
+      },
+    });
+    expect(getDraftById(result, 'draft-2')).toBe(manualDraft);
+  });
+
   it('does not renumber when section is missing or numbering mode is manual', () => {
     const drafts = createDrafts();
     const manualSettings = createNumberingSettings({ mode: 'manual' });

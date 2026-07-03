@@ -9,6 +9,7 @@ import {
 
 export type DemoDocumentationSectionId = string;
 export type DemoSectionTemplateSettingsId = string;
+export type DemoDocumentationSectionFolderMoveDirection = 'down' | 'up';
 
 export interface DemoDocumentationSection {
   readonly folderIds: readonly DemoIdFolderId[];
@@ -78,7 +79,11 @@ export function getDemoDocumentationSectionFolders(
   section: DemoDocumentationSection,
   folders: DemoIdFolders = demoIdFolders,
 ): readonly DemoIdFolder[] {
-  return folders.filter((folder) => section.folderIds.includes(folder.id));
+  const folderById = new Map(folders.map((folder) => [folder.id, folder]));
+
+  return section.folderIds
+    .map((folderId) => folderById.get(folderId))
+    .filter((folder): folder is DemoIdFolder => folder !== undefined);
 }
 
 export function getDemoDocumentationSectionDrafts(
@@ -100,5 +105,38 @@ export function addDemoDocumentationSectionFolder(
     section.id === sectionId
       ? { ...section, folderIds: [...section.folderIds, folderId] }
       : section,
+  );
+}
+
+export function moveDemoDocumentationSectionFolderByDirection(
+  sections: DemoDocumentationSections,
+  sectionId: DemoDocumentationSectionId,
+  folderId: DemoIdFolderId,
+  direction: DemoDocumentationSectionFolderMoveDirection,
+): DemoDocumentationSections {
+  const sourceSection = sections.find((section) => section.id === sectionId);
+
+  if (sourceSection === undefined) {
+    return sections;
+  }
+
+  const currentIndex = sourceSection.folderIds.indexOf(folderId);
+  const nextIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1;
+
+  if (currentIndex < 0 || nextIndex < 0 || nextIndex >= sourceSection.folderIds.length) {
+    return sections;
+  }
+
+  const nextFolderIds = [...sourceSection.folderIds];
+  const [movedFolderId] = nextFolderIds.splice(currentIndex, 1);
+
+  if (movedFolderId === undefined) {
+    return sections;
+  }
+
+  nextFolderIds.splice(nextIndex, 0, movedFolderId);
+
+  return sections.map((section) =>
+    section.id === sectionId ? { ...section, folderIds: nextFolderIds } : section,
   );
 }

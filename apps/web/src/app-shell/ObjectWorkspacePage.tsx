@@ -20,7 +20,9 @@ import {
   getDemoDocumentationSectionDrafts,
   getDemoDocumentationSectionForFolderId,
   getDemoDocumentationSectionFolders,
+  moveDemoDocumentationSectionFolderByDirection,
   type DemoDocumentationSection,
+  type DemoDocumentationSectionFolderMoveDirection,
   type DemoDocumentationSectionId,
   type DemoDocumentationSections,
 } from './object-documentation-sections.js';
@@ -424,6 +426,50 @@ export function ObjectWorkspacePage({
     setSelectedDraftId(draftId);
   };
 
+  const moveFolderInSelectedSection = (
+    folderId: DemoIdFolderId,
+    direction: DemoDocumentationSectionFolderMoveDirection,
+  ): void => {
+    if (selectedSection === undefined) {
+      return;
+    }
+
+    const shouldMove = window.confirm(
+      'Порядок папок влияет на автоматическую нумерацию актов по разделу. После перемещения номера автоматических актов будут пересчитаны. Переместить папку?',
+    );
+
+    if (!shouldMove) {
+      return;
+    }
+
+    const nextSections = moveDemoDocumentationSectionFolderByDirection(
+      sections,
+      selectedSection.id,
+      folderId,
+      direction,
+    );
+
+    if (nextSections === sections) {
+      return;
+    }
+
+    const nextSection = getDemoDocumentationSectionById(selectedSection.id, nextSections);
+    const nextSectionTemplateSettings =
+      sectionTemplateSettingsById[nextSection.templateSettingsId] ??
+      createSectionTemplateSettings(nextSection);
+
+    setSections(nextSections);
+    setSelectedSectionId(nextSection.id);
+    setDrafts((currentDrafts) =>
+      maybeRenumberAutomaticSectionDrafts({
+        currentDrafts,
+        currentFolders: folders,
+        section: nextSection,
+        sectionTemplateSettings: nextSectionTemplateSettings,
+      }),
+    );
+  };
+
   const duplicateAosrDraft = (sourceDraftId: string): void => {
     duplicateAosrDraftWithMode(sourceDraftId, { openEditor: true });
   };
@@ -679,6 +725,7 @@ export function ObjectWorkspacePage({
             }}
             onOpenFolder={openFolder}
             onOpenSectionTemplateSettings={openObjectSettings}
+            onMoveFolder={moveFolderInSelectedSection}
           />
         ) : null}
 
@@ -1118,6 +1165,10 @@ interface ObjectSectionPageProps {
   readonly onOpenFinalPackage: () => void;
   readonly onOpenFolder: (folderId: DemoIdFolderId) => void;
   readonly onOpenSectionTemplateSettings: () => void;
+  readonly onMoveFolder: (
+    folderId: DemoIdFolderId,
+    direction: DemoDocumentationSectionFolderMoveDirection,
+  ) => void;
 }
 
 function ObjectSectionPage({
@@ -1133,6 +1184,7 @@ function ObjectSectionPage({
   onOpenFinalPackage,
   onOpenFolder,
   onOpenSectionTemplateSettings,
+  onMoveFolder,
 }: ObjectSectionPageProps): React.JSX.Element {
   if (selectedSection === undefined) {
     return (
@@ -1246,20 +1298,40 @@ function ObjectSectionPage({
           </div>
         ) : (
           <div className="object-folder-directory" aria-label="Папки раздела">
-            {selectedSectionFolders.map((folder) => {
+            {selectedSectionFolders.map((folder, folderIndex) => {
               const folderDrafts = getDemoIdFolderDrafts(folder, drafts);
               const lastDraft = getLatestDraft(folderDrafts);
 
               return (
-                <button
-                  aria-label={`Открыть папку ${folder.name}`}
+                <div
+                  aria-label={`Папка ${folder.name}`}
                   className="object-folder-row"
                   key={folder.id}
-                  onClick={() => {
-                    onOpenFolder(folder.id);
-                  }}
-                  type="button"
+                  role="group"
                 >
+                  <span
+                    className="object-folder-row__order"
+                    aria-label={`Порядок папки ${folder.name}`}
+                  >
+                    <button
+                      disabled={folderIndex === 0}
+                      onClick={() => {
+                        onMoveFolder(folder.id, 'up');
+                      }}
+                      type="button"
+                    >
+                      ↑ Вверх
+                    </button>
+                    <button
+                      disabled={folderIndex === selectedSectionFolders.length - 1}
+                      onClick={() => {
+                        onMoveFolder(folder.id, 'down');
+                      }}
+                      type="button"
+                    >
+                      ↓ Вниз
+                    </button>
+                  </span>
                   <span className="object-folder-row__icon" aria-hidden="true">
                     ▣
                   </span>
@@ -1274,8 +1346,19 @@ function ObjectSectionPage({
                       ? 'Обновлений нет'
                       : `Обновлено: ${formatShortDate(lastDraft.actDate)}`}
                   </span>
-                  <span className="object-folder-row__action">Открыть</span>
-                </button>
+                  <span className="object-folder-row__actions">
+                    <button
+                      aria-label={`Открыть папку ${folder.name}`}
+                      className="compact-toggle"
+                      onClick={() => {
+                        onOpenFolder(folder.id);
+                      }}
+                      type="button"
+                    >
+                      Открыть
+                    </button>
+                  </span>
+                </div>
               );
             })}
           </div>

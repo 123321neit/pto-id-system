@@ -5,8 +5,15 @@ import {
   createDemoDocumentationSection,
   demoDocumentationSections,
   getDemoDocumentationSectionForFolderId,
+  getDemoDocumentationSectionFolders,
+  moveDemoDocumentationSectionFolderByDirection,
+  type DemoDocumentationSection,
 } from './object-documentation-sections.js';
-import { demoIdFolders, getDemoIdFolderForDraftId } from './object-id-folders.js';
+import {
+  demoIdFolders,
+  getDemoIdFolderForDraftId,
+  type DemoIdFolder,
+} from './object-id-folders.js';
 import {
   copySectionTemplateSettingsToTarget,
   createSectionTemplateSettings,
@@ -134,4 +141,63 @@ describe('frontend-only documentation section model', () => {
       getDemoIdFolderForDraftId('draft-missing');
     }).toThrow('Unknown demo ID folder for draft: draft-missing');
   });
+
+  it('returns section folders in section folderIds order', () => {
+    const section = createTestSection('section-a', ['folder-2', 'folder-1']);
+    const folders = [
+      createTestFolder('folder-1', 'Папка 1'),
+      createTestFolder('folder-2', 'Папка 2'),
+    ];
+
+    expect(getDemoDocumentationSectionFolders(section, folders).map((folder) => folder.id)).toEqual(
+      ['folder-2', 'folder-1'],
+    );
+  });
+
+  it('moves a section folder up without changing other sections', () => {
+    const sections = [
+      createTestSection('section-a', ['folder-1', 'folder-2', 'folder-3']),
+      createTestSection('section-b', ['folder-4']),
+    ];
+
+    expect(
+      moveDemoDocumentationSectionFolderByDirection(sections, 'section-a', 'folder-2', 'up'),
+    ).toMatchObject([
+      { folderIds: ['folder-2', 'folder-1', 'folder-3'] },
+      { folderIds: ['folder-4'] },
+    ]);
+  });
+
+  it('moves a section folder down and keeps boundary moves unchanged', () => {
+    const sections = [createTestSection('section-a', ['folder-1', 'folder-2'])];
+
+    expect(
+      moveDemoDocumentationSectionFolderByDirection(sections, 'section-a', 'folder-1', 'down'),
+    ).toMatchObject([{ folderIds: ['folder-2', 'folder-1'] }]);
+    expect(
+      moveDemoDocumentationSectionFolderByDirection(sections, 'section-a', 'folder-1', 'up'),
+    ).toBe(sections);
+    expect(
+      moveDemoDocumentationSectionFolderByDirection(sections, 'section-a', 'folder-2', 'down'),
+    ).toBe(sections);
+  });
 });
+
+function createTestSection(id: string, folderIds: readonly string[]): DemoDocumentationSection {
+  return {
+    folderIds,
+    id,
+    name: `Раздел ${id}`,
+    templateSettingsId: `${id}-template-settings`,
+  };
+}
+
+function createTestFolder(id: string, name: string): DemoIdFolder {
+  return {
+    draftIds: [],
+    id,
+    intermediateIdTitle: `Промежуточная ИД ${name}`,
+    name,
+    registryTitle: `Реестр ${name}`,
+  };
+}

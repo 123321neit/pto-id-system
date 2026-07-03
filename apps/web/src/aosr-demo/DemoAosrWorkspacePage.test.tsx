@@ -167,15 +167,12 @@ describe('DemoAosrWorkspacePage', () => {
     vi.stubGlobal('fetch', vi.fn().mockRejectedValue(generationError));
     renderDemoWorkspace();
 
-    const actions = screen.getByRole('region', { name: 'Действия с актом' });
+    expect(screen.queryByRole('region', { name: 'Действия с актом' })).toBeNull();
+
+    const actions = screen.getByRole('region', { name: 'Действия редактора' });
     const downloadButton = within(actions).getByRole('button', { name: 'Скачать DOCX' });
 
     expect(downloadButton).toBeTruthy();
-    expect(
-      within(actions).getByText(
-        'Перед скачиванием проверьте номер, дату, период работ, материалы, приложения и подписантов.',
-      ),
-    ).toBeTruthy();
 
     await user.click(downloadButton);
 
@@ -197,7 +194,7 @@ describe('DemoAosrWorkspacePage', () => {
 
     renderDemoWorkspace();
 
-    const actions = screen.getByRole('region', { name: 'Действия с актом' });
+    const actions = screen.getByRole('region', { name: 'Действия редактора' });
     const deleteButton = within(actions).getByRole('button', { name: 'Удалить акт' });
 
     await user.click(deleteButton);

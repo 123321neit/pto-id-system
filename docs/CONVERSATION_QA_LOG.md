@@ -2040,3 +2040,27 @@ the compatibility fields remain in the mock model.
 
 This was a frontend demo UX/data cleanup only. The DOCX renderer, backend,
 Prisma, PDF/ZIP/package builder, auth, storage and AI/OCR were not touched.
+
+---
+
+## 71. AOSR editor actions, scrollable act list and folder ordering
+
+### Q: Что изменено в редакторе АОСР и порядке папок раздела?
+
+A: The large in-form `Действия с актом` panel was removed. `Скачать DOCX` and
+`Удалить акт` now live in the editor header actions, and DOCX generation errors
+are shown as a compact alert near those top actions.
+
+The left act list in edit mode now has its own scroll container, so long folder
+act lists can be scrolled independently from the right-side editor form. On
+narrow layouts the list returns to the normal page flow.
+
+Section folder order can now be changed explicitly with `↑ Вверх` / `↓ Вниз`
+buttons on folder cards. Before moving a folder the UI warns that folder order
+affects automatic section numbering; confirmed moves update `section.folderIds`
+and reuse the existing automatic-only renumbering flow, so manual act numbers
+are preserved.
+
+This was frontend demo UX/data work only. Drag/drop was not restored. The DOCX
+renderer/template, backend, Prisma, PDF/ZIP/package builder, auth, storage and
+AI/OCR were not touched.

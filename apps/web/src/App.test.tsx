@@ -165,7 +165,7 @@ describe('App shell mock navigation', () => {
       throw new Error('Список папок раздела не найден.');
     }
 
-    const createdFolder = within(folderDirectory).getByRole('button', {
+    const createdFolder = within(folderDirectory).getByRole('group', {
       name: /Монтаж вентиляции — этап 1/u,
     });
     expect(createdFolder.textContent).toContain('1 акт');
@@ -430,6 +430,81 @@ describe('App shell mock navigation', () => {
 
     expect(screen.getByRole('heading', { name: 'Акты в папке «Октябрь 2026»' })).toBeTruthy();
     expect(screen.getByLabelText('Текущий акт: ОВ-2')).toBeTruthy();
+  });
+
+  it('does not move section folders when the folder-order warning is cancelled', async () => {
+    const user = userEvent.setup();
+    const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(false);
+
+    render(<App />);
+    await user.click(getFirstOpenObjectButton());
+    await user.click(
+      within(screen.getByRole('navigation', { name: 'Разделы объекта' })).getByRole('button', {
+        name: 'Открыть раздел Вентиляция',
+      }),
+    );
+
+    const foldersPanel = within(getSectionByHeading('Папки раздела'));
+    let folderRows = foldersPanel.getAllByRole('group', { name: /Папка/u });
+
+    expect(folderRows[0]?.textContent).toContain('Сентябрь 2026');
+    expect(folderRows[1]?.textContent).toContain('Октябрь 2026');
+
+    await user.click(
+      within(getRequiredListItem(folderRows, 1)).getByRole('button', { name: '↑ Вверх' }),
+    );
+
+    expect(confirmSpy).toHaveBeenCalledWith(
+      'Порядок папок влияет на автоматическую нумерацию актов по разделу. После перемещения номера автоматических актов будут пересчитаны. Переместить папку?',
+    );
+
+    folderRows = within(getSectionByHeading('Папки раздела')).getAllByRole('group', {
+      name: /Папка/u,
+    });
+    expect(folderRows[0]?.textContent).toContain('Сентябрь 2026');
+    expect(folderRows[1]?.textContent).toContain('Октябрь 2026');
+  });
+
+  it('moves section folders with warning and recalculates automatic numbering', async () => {
+    const user = userEvent.setup();
+    const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true);
+
+    render(<App />);
+    await user.click(getFirstOpenObjectButton());
+    await user.click(
+      within(screen.getByRole('navigation', { name: 'Разделы объекта' })).getByRole('button', {
+        name: 'Открыть раздел Вентиляция',
+      }),
+    );
+
+    let folderRows = within(getSectionByHeading('Папки раздела')).getAllByRole('group', {
+      name: /Папка/u,
+    });
+
+    expect(
+      within(getRequiredListItem(folderRows, 0)).getByRole('button', { name: '↑ Вверх' }),
+    ).toHaveProperty('disabled', true);
+
+    await user.click(
+      within(getRequiredListItem(folderRows, 1)).getByRole('button', { name: '↑ Вверх' }),
+    );
+
+    expect(confirmSpy).toHaveBeenCalledWith(
+      'Порядок папок влияет на автоматическую нумерацию актов по разделу. После перемещения номера автоматических актов будут пересчитаны. Переместить папку?',
+    );
+    expect(screen.getByRole('heading', { name: 'Вентиляция' })).toBeTruthy();
+
+    folderRows = within(getSectionByHeading('Папки раздела')).getAllByRole('group', {
+      name: /Папка/u,
+    });
+    expect(folderRows[0]?.textContent).toContain('Октябрь 2026');
+    expect(folderRows[1]?.textContent).toContain('Сентябрь 2026');
+
+    await openFolderByName(user, 'Октябрь 2026');
+    expect(screen.getByText('ОВ-1')).toBeTruthy();
+
+    await openFolderByName(user, 'Сентябрь 2026');
+    expect(screen.getByText('ОВ-2')).toBeTruthy();
   });
 
   it('opens a frontend-only intermediate ID page derived from the selected folder', async () => {
@@ -1021,7 +1096,8 @@ describe('App shell mock navigation', () => {
     await user.click(getFirstOpenObjectButton());
     await openSeptemberAosrDocument(user);
 
-    const actions = screen.getByRole('region', { name: 'Действия с актом' });
+    expect(screen.queryByRole('region', { name: 'Действия с актом' })).toBeNull();
+    const actions = screen.getByRole('region', { name: 'Действия редактора' });
 
     await user.click(within(actions).getByRole('button', { name: 'Удалить акт' }));
 
