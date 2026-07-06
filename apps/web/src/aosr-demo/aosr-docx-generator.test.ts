@@ -31,8 +31,13 @@ describe('renderAosrDocxTemplateBytes', () => {
       printState: createPrintState(),
       templateBytes,
     });
-    const { documentParagraphs, documentXml, documentXmlParagraphs, renderedEntries } =
-      readRenderedDocumentXml(renderedBytes);
+    const {
+      documentParagraphs,
+      documentXml,
+      documentXmlParagraphs,
+      documentXmlTables,
+      renderedEntries,
+    } = readRenderedDocumentXml(renderedBytes);
 
     expect(renderedEntries['[Content_Types].xml']).toBeDefined();
 
@@ -57,7 +62,7 @@ describe('renderAosrDocxTemplateBytes', () => {
     });
     expectSingleCaptionAfterList(documentParagraphs, {
       caption: confirmationDocumentsCaption,
-      endFragment: '5.Даты',
+      endFragment: 'Даты:',
       itemFragments: ['Исполнительная схема ИС-1', 'Журнал работ ЖР-1'],
       startFragment: '4.Предъявлены документы',
     });
@@ -72,8 +77,8 @@ describe('renderAosrDocxTemplateBytes', () => {
       getRequiredParagraphXml(documentXmlParagraphs, 'Приложения:').includes('<w:keepNext/>'),
     ).toBe(true);
     expect(
-      getLastRequiredParagraphXml(documentXmlParagraphs, 'Представитель подрядчика:').includes(
-        '<w:keepNext/>',
+      getLastRequiredTableXml(documentXmlTables, 'Представитель подрядчика:').includes(
+        '<w:gridSpan w:val="2"/>',
       ),
     ).toBe(true);
   });
@@ -96,16 +101,13 @@ describe('renderAosrDocxTemplateBytes', () => {
       ),
     });
     const renderedBytes = renderAosrDocxTemplateBytes({ printState, templateBytes });
-    const { documentParagraphs, documentXml, documentXmlParagraphs } =
+    const { documentParagraphs, documentXml, documentXmlTables } =
       readRenderedDocumentXml(renderedBytes);
-    const contractorSignatureParagraph = getRequiredParagraphXml(
-      documentXmlParagraphs,
-      'Производитель работ ООО',
-      '<w:pBdr>',
+    const datesTable = getRequiredTableXml(documentXmlTables, 'Даты:');
+    const contractorSignatureTable = getLastRequiredTableXml(
+      documentXmlTables,
+      'Представитель подрядчика:',
     );
-    const contractorSignatureTextIndex =
-      contractorSignatureParagraph.indexOf('Производитель работ ООО');
-    const contractorSignatureFirstTabIndex = contractorSignatureParagraph.indexOf('<w:tab/>');
 
     expect(documentXml).not.toContain('&lt;&lt;');
     expect(documentXml).not.toContain('&gt;&gt;');
@@ -114,6 +116,10 @@ describe('renderAosrDocxTemplateBytes', () => {
     expect(documentXml).toContain('№ ОВ-1');
     expect(documentXml).toContain('«01» сентября 2026 г.');
     expect(documentXml).toContain('«03» сентября 2026 г.');
+    expect(datesTable).toContain('«01» сентября 2026 г.');
+    expect(datesTable).toContain('«03» сентября 2026 г.');
+    expect(datesTable).toContain('<w:tblLayout w:type="fixed"/>');
+    expect(datesTable).not.toContain('<w:tab/>');
     expect(documentXml).not.toContain('2026-09-01');
     expect(documentXml).not.toContain('2026-09-03');
     expect(documentXml).not.toContain('Разрешается производство последующих работ по: Разрешается');
@@ -136,16 +142,19 @@ describe('renderAosrDocxTemplateBytes', () => {
     expect(documentXml).not.toContain(
       'Запись журнала входного контроля материалов Журнал / ЖВК-2026-05',
     );
-    expect(contractorSignatureParagraph).toContain('<w:jc w:val="left"/>');
-    expect(contractorSignatureParagraph).not.toContain('<w:jc w:val="both"/>');
+    expect(contractorSignatureTable).toContain('Производитель работ ООО');
+    expect(contractorSignatureTable).toContain('Иванов\u00a0И.И.');
+    expect(contractorSignatureTable).toContain('<w:gridSpan w:val="2"/>');
+    expect(contractorSignatureTable).toContain('<w:tcW w:w="6500" w:type="dxa"/>');
+    expect(contractorSignatureTable).toContain('<w:tcW w:w="2300" w:type="dxa"/>');
+    expect(contractorSignatureTable).not.toContain('<w:tab/>');
     expect(documentParagraphs).toContain('Подрядчик:');
     expect(documentParagraphs).toContain('Технический заказчик:');
     expect(documentParagraphs.some((paragraph) => paragraph.includes(')Подрядчик:'))).toBe(false);
     expect(
       documentParagraphs.some((paragraph) => paragraph.includes(')Технический заказчик:')),
     ).toBe(false);
-    expect(contractorSignatureFirstTabIndex).toBeGreaterThan(contractorSignatureTextIndex);
-    expect(documentXml).toContain('<w:keepNext/><w:keepLines/><w:pBdr>');
+    expect(documentXml).not.toContain('<w:rPr><w:rPr>');
   });
 });
 
@@ -153,6 +162,7 @@ function readRenderedDocumentXml(renderedBytes: Uint8Array): {
   readonly documentParagraphs: readonly string[];
   readonly documentXml: string;
   readonly documentXmlParagraphs: readonly string[];
+  readonly documentXmlTables: readonly string[];
   readonly renderedEntries: Record<string, Uint8Array>;
 } {
   const renderedEntries = unzipSync(renderedBytes);
@@ -170,6 +180,7 @@ function readRenderedDocumentXml(renderedBytes: Uint8Array): {
     documentParagraphs: getWordParagraphTexts(documentXml),
     documentXml,
     documentXmlParagraphs: getWordParagraphXmlFragments(documentXml),
+    documentXmlTables: getWordTableXmlFragments(documentXml),
     renderedEntries,
   };
 }
@@ -192,16 +203,28 @@ function getRequiredParagraphXml(
   return paragraph;
 }
 
-function getLastRequiredParagraphXml(paragraphs: readonly string[], textFragment: string): string {
-  const paragraph = [...paragraphs]
-    .reverse()
-    .find((currentParagraph) => getWordParagraphText(currentParagraph).includes(textFragment));
+function getRequiredTableXml(tables: readonly string[], textFragment: string): string {
+  const table = tables.find((currentTable) =>
+    getWordTableText(currentTable).includes(textFragment),
+  );
 
-  if (paragraph === undefined) {
-    throw new Error(`Rendered DOCX paragraph is missing: ${textFragment}`);
+  if (table === undefined) {
+    throw new Error(`Rendered DOCX table is missing: ${textFragment}`);
   }
 
-  return paragraph;
+  return table;
+}
+
+function getLastRequiredTableXml(tables: readonly string[], textFragment: string): string {
+  const table = [...tables]
+    .reverse()
+    .find((currentTable) => getWordTableText(currentTable).includes(textFragment));
+
+  if (table === undefined) {
+    throw new Error(`Rendered DOCX table is missing: ${textFragment}`);
+  }
+
+  return table;
 }
 
 function getWordParagraphTexts(documentXml: string): readonly string[] {
@@ -214,6 +237,14 @@ function getWordParagraphXmlFragments(documentXml: string): readonly string[] {
 
 function getWordParagraphText(paragraphXml: string): string {
   return paragraphXml.replace(/<[^>]+>/gu, '').trim();
+}
+
+function getWordTableXmlFragments(documentXml: string): readonly string[] {
+  return documentXml.match(/<w:tbl\b[\s\S]*?<\/w:tbl>/gu) ?? [];
+}
+
+function getWordTableText(tableXml: string): string {
+  return tableXml.replace(/<[^>]+>/gu, '').trim();
 }
 
 function expectSingleCaptionAfterList(

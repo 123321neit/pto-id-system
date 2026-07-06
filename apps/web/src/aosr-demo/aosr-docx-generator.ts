@@ -119,7 +119,7 @@ function renderAosrDocxTemplateXml(xml: string, data: AosrDocxTemplateData): str
     data as unknown as TemplateContext,
   );
 
-  return stabilizeAosrFinalSignatureBlock(
+  return stabilizeAosrFinalSignatureTables(
     stabilizeAosrApplicationsBlock(
       deduplicateAosrListCaptionParagraphs(stabilizeAosrSignatureParagraphs(renderedXml)),
     ),
@@ -497,31 +497,343 @@ function stabilizeAosrApplicationsBlock(xml: string): string {
   });
 }
 
-function stabilizeAosrFinalSignatureBlock(xml: string): string {
+interface AosrFinalSignatureMember {
+  readonly signatureName: string;
+  readonly signatureText: string;
+  readonly subscript: string;
+}
+
+function stabilizeAosrFinalSignatureTables(xml: string): string {
   let hasSeenApplicationsHeading = false;
   let isInsideFinalSignatureBlock = false;
+  const xmlParts = splitWordParagraphXmlFragments(xml);
+  let renderedXml = '';
 
-  return xml.replace(/<w:p\b[\s\S]*?<\/w:p>/gu, (paragraph) => {
-    const paragraphText = getWordParagraphText(paragraph);
+  for (let partIndex = 0; partIndex < xmlParts.length; partIndex += 1) {
+    const part = xmlParts[partIndex] ?? '';
+
+    if (!isWordParagraphXmlFragment(part)) {
+      renderedXml += part;
+      continue;
+    }
+
+    const paragraphText = getWordParagraphText(part);
 
     if (paragraphText === 'Приложения:') {
       hasSeenApplicationsHeading = true;
-      return paragraph;
+      renderedXml += part;
+      continue;
     }
 
     if (hasSeenApplicationsHeading && getAosrListCaptionKey(paragraphText) === 'applications') {
       isInsideFinalSignatureBlock = true;
-      return paragraph;
+      renderedXml += part;
+      continue;
     }
 
     if (!isInsideFinalSignatureBlock) {
-      return paragraph;
+      renderedXml += part;
+      continue;
     }
 
-    return paragraphText.endsWith(':') || paragraph.includes('<w:pBdr>')
-      ? addWordParagraphKeepControls(paragraph)
-      : paragraph;
-  });
+    if (paragraphText === '') {
+      renderedXml += part;
+      continue;
+    }
+
+    if (isAosrFinalSignatureGroupTitle(paragraphText)) {
+      const signatureGroup = collectAosrFinalSignatureGroup(xmlParts, partIndex, paragraphText);
+
+      if (signatureGroup !== null) {
+        renderedXml += buildAosrFinalSignatureTableXml(
+          paragraphText,
+          signatureGroup.members,
+          signatureGroup.shouldAddBottomGap,
+        );
+        partIndex = signatureGroup.endPartIndex;
+        continue;
+      }
+    }
+
+    renderedXml += part;
+  }
+
+  return renderedXml;
+}
+
+function splitWordParagraphXmlFragments(xml: string): readonly string[] {
+  return xml.split(/(<w:p\b[\s\S]*?<\/w:p>)/gu);
+}
+
+function isWordParagraphXmlFragment(xml: string): boolean {
+  return /^<w:p\b/u.test(xml);
+}
+
+function isAosrFinalSignatureGroupTitle(paragraphText: string): boolean {
+  return paragraphText.endsWith(':');
+}
+
+function collectAosrFinalSignatureGroup(
+  xmlParts: readonly string[],
+  groupTitlePartIndex: number,
+  groupTitle: string,
+): {
+  readonly endPartIndex: number;
+  readonly members: readonly AosrFinalSignatureMember[];
+  readonly shouldAddBottomGap: boolean;
+} | null {
+  const members: AosrFinalSignatureMember[] = [];
+  let cursorPartIndex = groupTitlePartIndex + 1;
+  let endPartIndex = groupTitlePartIndex;
+
+  for (;;) {
+    const memberPartIndex = getNextWordParagraphPartIndex(xmlParts, cursorPartIndex);
+
+    if (memberPartIndex === null) {
+      break;
+    }
+
+    const memberParagraph = xmlParts[memberPartIndex] ?? '';
+    const memberParagraphText = getWordParagraphText(memberParagraph);
+
+    if (memberParagraphText === '' || isAosrFinalSignatureGroupTitle(memberParagraphText)) {
+      break;
+    }
+
+    const subscriptPartIndex = getNextWordParagraphPartIndex(xmlParts, memberPartIndex + 1);
+
+    if (subscriptPartIndex === null) {
+      break;
+    }
+
+    const subscriptParagraph = xmlParts[subscriptPartIndex] ?? '';
+    const subscriptText = getWordParagraphText(subscriptParagraph);
+
+    if (!subscriptText.startsWith('(')) {
+      break;
+    }
+
+    members.push({
+      ...splitAosrFinalSignatureMemberParagraph(memberParagraph),
+      subscript: subscriptText,
+    });
+    endPartIndex = subscriptPartIndex;
+    cursorPartIndex = subscriptPartIndex + 1;
+  }
+
+  if (members.length === 0) {
+    return null;
+  }
+
+  return {
+    endPartIndex,
+    members,
+    shouldAddBottomGap: groupTitle !== 'Авторский надзор:',
+  };
+}
+
+function getNextWordParagraphPartIndex(
+  xmlParts: readonly string[],
+  startPartIndex: number,
+): number | null {
+  for (let partIndex = startPartIndex; partIndex < xmlParts.length; partIndex += 1) {
+    if (isWordParagraphXmlFragment(xmlParts[partIndex] ?? '')) {
+      return partIndex;
+    }
+  }
+
+  return null;
+}
+
+function splitAosrFinalSignatureMemberParagraph(paragraph: string): {
+  readonly signatureName: string;
+  readonly signatureText: string;
+} {
+  const paragraphTextWithTabs = getWordParagraphTextWithTabs(paragraph);
+  const tabIndex = paragraphTextWithTabs.indexOf('\t');
+
+  if (tabIndex < 0) {
+    return {
+      signatureName: '',
+      signatureText: normalizeAosrSignatureCellText(paragraphTextWithTabs),
+    };
+  }
+
+  return {
+    signatureName: normalizeAosrSignatureCellText(paragraphTextWithTabs.slice(tabIndex + 1)),
+    signatureText: normalizeAosrSignatureCellText(paragraphTextWithTabs.slice(0, tabIndex)),
+  };
+}
+
+function getWordParagraphTextWithTabs(paragraph: string): string {
+  return decodeXmlText(paragraph.replace(/<w:tab\/>/gu, '\t').replace(/<[^>]+>/gu, '')).trim();
+}
+
+function normalizeAosrSignatureCellText(value: string): string {
+  return value.trim().replace(/[^\S\u00a0]+/gu, ' ');
+}
+
+function decodeXmlText(value: string): string {
+  return value
+    .replace(/&quot;/gu, '"')
+    .replace(/&apos;/gu, "'")
+    .replace(/&lt;/gu, '<')
+    .replace(/&gt;/gu, '>')
+    .replace(/&amp;/gu, '&');
+}
+
+function buildAosrFinalSignatureTableXml(
+  groupTitle: string,
+  members: readonly AosrFinalSignatureMember[],
+  shouldAddBottomGap: boolean,
+): string {
+  const tableRows = [
+    buildAosrSignatureTitleRow(groupTitle),
+    ...members.flatMap((member) => [
+      buildAosrSignatureMemberRow(member),
+      buildAosrSignatureSubscriptRow(member.subscript),
+    ]),
+  ].join('');
+
+  return [
+    '<w:tbl>',
+    '<w:tblPr>',
+    '<w:tblW w:w="8800" w:type="dxa"/>',
+    '<w:tblLayout w:type="fixed"/>',
+    '<w:tblCellMar>',
+    '<w:top w:w="0" w:type="dxa"/>',
+    '<w:left w:w="0" w:type="dxa"/>',
+    '<w:bottom w:w="0" w:type="dxa"/>',
+    '<w:right w:w="0" w:type="dxa"/>',
+    '</w:tblCellMar>',
+    '</w:tblPr>',
+    '<w:tblGrid><w:gridCol w:w="6500"/><w:gridCol w:w="2300"/></w:tblGrid>',
+    tableRows,
+    '</w:tbl>',
+    shouldAddBottomGap ? buildAosrSignatureSpacerParagraph() : '',
+  ].join('');
+}
+
+function buildAosrSignatureTitleRow(groupTitle: string): string {
+  return buildAosrSignatureTableRow(
+    buildAosrSignatureTableCell({
+      bottomBorder: true,
+      gridSpan: 2,
+      isBold: true,
+      text: groupTitle,
+      width: 8800,
+    }),
+  );
+}
+
+function buildAosrSignatureMemberRow(member: AosrFinalSignatureMember): string {
+  return buildAosrSignatureTableRow(
+    [
+      buildAosrSignatureTableCell({
+        bottomBorder: true,
+        isItalic: true,
+        text: member.signatureText,
+        verticalAlign: 'bottom',
+        width: 6500,
+      }),
+      buildAosrSignatureTableCell({
+        alignment: 'right',
+        bottomBorder: true,
+        isItalic: true,
+        text: member.signatureName,
+        verticalAlign: 'bottom',
+        width: 2300,
+      }),
+    ].join(''),
+  );
+}
+
+function buildAosrSignatureSubscriptRow(subscript: string): string {
+  return buildAosrSignatureTableRow(
+    buildAosrSignatureTableCell({
+      alignment: 'center',
+      fontSize: 14,
+      gridSpan: 2,
+      text: subscript,
+      width: 8800,
+    }),
+  );
+}
+
+function buildAosrSignatureTableRow(cellsXml: string): string {
+  return `<w:tr><w:trPr><w:cantSplit/></w:trPr>${cellsXml}</w:tr>`;
+}
+
+function buildAosrSignatureTableCell({
+  alignment = 'left',
+  bottomBorder = false,
+  fontSize = 20,
+  gridSpan,
+  isBold = false,
+  isItalic = false,
+  text,
+  verticalAlign,
+  width,
+}: {
+  readonly alignment?: 'center' | 'left' | 'right';
+  readonly bottomBorder?: boolean;
+  readonly fontSize?: number;
+  readonly gridSpan?: number;
+  readonly isBold?: boolean;
+  readonly isItalic?: boolean;
+  readonly text: string;
+  readonly verticalAlign?: 'bottom';
+  readonly width: number;
+}): string {
+  const runProperties = buildAosrSignatureRunProperties({ fontSize, isBold, isItalic });
+  const cellProperties = [
+    `<w:tcW w:w="${String(width)}" w:type="dxa"/>`,
+    gridSpan === undefined ? '' : `<w:gridSpan w:val="${String(gridSpan)}"/>`,
+    verticalAlign === undefined ? '' : `<w:vAlign w:val="${verticalAlign}"/>`,
+    bottomBorder
+      ? '<w:tcBorders><w:bottom w:val="single" w:sz="4" w:space="1" w:color="auto"/></w:tcBorders>'
+      : '',
+    '<w:tcMar>',
+    '<w:top w:w="0" w:type="dxa"/>',
+    '<w:left w:w="0" w:type="dxa"/>',
+    '<w:bottom w:w="0" w:type="dxa"/>',
+    '<w:right w:w="0" w:type="dxa"/>',
+    '</w:tcMar>',
+  ].join('');
+
+  return [
+    '<w:tc>',
+    `<w:tcPr>${cellProperties}</w:tcPr>`,
+    '<w:p>',
+    `<w:pPr><w:spacing w:after="0" w:line="240" w:lineRule="auto"/><w:jc w:val="${alignment}"/>${runProperties}</w:pPr>`,
+    `<w:r>${runProperties}<w:t>${escapeWordText(text)}</w:t></w:r>`,
+    '</w:p>',
+    '</w:tc>',
+  ].join('');
+}
+
+function buildAosrSignatureRunProperties({
+  fontSize,
+  isBold,
+  isItalic,
+}: {
+  readonly fontSize: number;
+  readonly isBold: boolean;
+  readonly isItalic: boolean;
+}): string {
+  return [
+    '<w:rPr>',
+    '<w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman"/>',
+    isBold ? '<w:b/>' : '',
+    isItalic ? '<w:i/><w:iCs/>' : '',
+    `<w:sz w:val="${String(fontSize)}"/>`,
+    fontSize === 14 ? '<w:szCs w:val="16"/>' : '',
+    '</w:rPr>',
+  ].join('');
+}
+
+function buildAosrSignatureSpacerParagraph(): string {
+  return '<w:p><w:pPr><w:spacing w:after="120" w:line="120" w:lineRule="auto"/></w:pPr></w:p>';
 }
 
 function getAosrListCaptionKey(paragraphText: string): string | null {
