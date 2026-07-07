@@ -6066,3 +6066,31 @@ delete/move/reorder lifecycle or generation was introduced.
 
 - the DOCX template asset and normative applications caption were not changed;
 - no PDF/ZIP/backend/storage/auth/AI work was added.
+
+### 2026-07-07 — ID register DOCX foundation
+
+- Статус: `Frontend-only register print-state foundation`
+- Описание: prepared the first real-register architecture slice after reviewing
+  4 correct ventilation register samples.
+
+Добавлено/уточнено:
+
+- `docs/register-docx-generation-notes.md` records the practical structure of
+  the real registers: contractors, working drawings, quality documents,
+  execution documents/acts, executive schemes and journals;
+- the register can be scoped either to one ID folder for intermediate ID or to
+  the whole selected section for final ID;
+- register source data is structured section/folder data, not DOM/UI text;
+- `IdRegisterPrintState` was added as the first frontend-only data contract for
+  future DOCX generation;
+- folder/section builders keep each act as its own row and deduplicate
+  certificates plus used object/section documents such as schemes and journals;
+- `docs/03-registry-model.md` now reflects the folder-vs-section register
+  scope and the rule that the `Журналы` block remains in the printed structure.
+
+Ограничения:
+
+- no DOCX register template or download button was added yet;
+- no backend/API/storage/Prisma migration was added;
+- no PDF/ZIP/package builder/AI/OCR work was added;
+- real register files remain reference examples only, not production seed data.

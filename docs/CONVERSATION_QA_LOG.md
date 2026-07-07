@@ -2128,3 +2128,32 @@ so tests can still verify the data sequence without rendering a fake act.
 This stayed frontend-only. The DOCX renderer, DOCX template, backend, Prisma,
 PDF/ZIP/package builder, auth, storage, AI/OCR and new act types were not
 touched.
+
+---
+
+## 75. Register scope and DOCX foundation
+
+### Q: Как поняли реальные реестры вентиляции и что делаем дальше?
+
+A: Four correct ventilation registers were reviewed as reference examples. The
+first product register is a generated ID package register, not a source table.
+It can be scoped either to one folder for intermediate ID or to all folders of a
+section for final ID.
+
+The practical printed structure is: contractors, working drawings, quality
+documents/certificates, execution documents/acts, executive schemes and
+journals. The journals section stays present even when it has no rows. Acts are
+kept as separate rows, while certificates, passports, declarations, schemes,
+journals and working-documentation rows are deduplicated inside the selected
+scope.
+
+`docs/register-docx-generation-notes.md` now records the engineering notes and
+the `Документы объекта` vs `Документы раздела` direction: do not create a
+separate top-level product section for schemes; instead keep documents as
+typed/scoped library items with future object/section/folder/act scope.
+
+A frontend-only `IdRegisterPrintState` builder was added as the first data
+contract for future DOCX generation. It builds folder/section register data from
+structured demo state and has focused unit coverage for folder scope, section
+scope and deduplication. No DOCX template, download button, backend, Prisma,
+PDF/ZIP/package builder, auth, storage or AI/OCR was added.
