@@ -108,6 +108,7 @@ describe('renderAosrDocxTemplateBytes', () => {
       documentXmlTables,
       'Представитель подрядчика:',
     );
+    const contractorSignatureRows = getWordTableRowXmlFragments(contractorSignatureTable);
 
     expect(documentXml).not.toContain('&lt;&lt;');
     expect(documentXml).not.toContain('&gt;&gt;');
@@ -148,6 +149,11 @@ describe('renderAosrDocxTemplateBytes', () => {
     expect(contractorSignatureTable).toContain('<w:tcW w:w="6500" w:type="dxa"/>');
     expect(contractorSignatureTable).toContain('<w:tcW w:w="2300" w:type="dxa"/>');
     expect(contractorSignatureTable).not.toContain('<w:tab/>');
+    expect(contractorSignatureRows).toHaveLength(3);
+    expect(contractorSignatureRows[0]).not.toContain('<w:tcBorders>');
+    expect(contractorSignatureRows[0]).not.toContain('<w:bottom w:val="single"');
+    expect(contractorSignatureRows[1]).toContain('<w:bottom w:val="single"');
+    expect(contractorSignatureRows[2]).not.toContain('<w:tcBorders>');
     expect(documentParagraphs).toContain('Подрядчик:');
     expect(documentParagraphs).toContain('Технический заказчик:');
     expect(documentParagraphs.some((paragraph) => paragraph.includes(')Подрядчик:'))).toBe(false);
@@ -241,6 +247,10 @@ function getWordParagraphText(paragraphXml: string): string {
 
 function getWordTableXmlFragments(documentXml: string): readonly string[] {
   return documentXml.match(/<w:tbl\b[\s\S]*?<\/w:tbl>/gu) ?? [];
+}
+
+function getWordTableRowXmlFragments(tableXml: string): readonly string[] {
+  return tableXml.match(/<w:tr\b[\s\S]*?<\/w:tr>/gu) ?? [];
 }
 
 function getWordTableText(tableXml: string): string {

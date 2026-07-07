@@ -537,7 +537,10 @@ function stabilizeAosrFinalSignatureTables(xml: string): string {
     }
 
     if (paragraphText === '') {
-      renderedXml += part;
+      // The tagged template keeps visual breathing room between the original tab-based
+      // signature paragraphs. After converting signatures to compact fixed tables those
+      // empty paragraphs become oversized gaps in Word/docx-preview, so the renderer owns
+      // spacing for this narrow final-signature block.
       continue;
     }
 
@@ -717,7 +720,6 @@ function buildAosrFinalSignatureTableXml(
 function buildAosrSignatureTitleRow(groupTitle: string): string {
   return buildAosrSignatureTableRow(
     buildAosrSignatureTableCell({
-      bottomBorder: true,
       gridSpan: 2,
       isBold: true,
       text: groupTitle,
@@ -833,7 +835,7 @@ function buildAosrSignatureRunProperties({
 }
 
 function buildAosrSignatureSpacerParagraph(): string {
-  return '<w:p><w:pPr><w:spacing w:after="120" w:line="120" w:lineRule="auto"/></w:pPr></w:p>';
+  return '<w:p><w:pPr><w:spacing w:after="0" w:line="80" w:lineRule="auto"/></w:pPr></w:p>';
 }
 
 function getAosrListCaptionKey(paragraphText: string): string | null {
