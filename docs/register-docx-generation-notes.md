@@ -1,6 +1,6 @@
 # DOCX-реестр ИД — engineering notes
 
-Статус: подготовка первого DOCX-реестра. Код генерации DOCX ещё не подключён.
+Статус: первый frontend-only DOCX-реестр подключён для папки и раздела.
 
 Источник анализа: 4 реальных правильных реестра вентиляции:
 
@@ -27,7 +27,7 @@ Source of truth остаётся structured data. Реестр не должен
 Целевая цепочка:
 
 ```text
-section/folder structured data -> IdRegisterPrintState -> DOCX template data -> DOCX template -> downloaded .docx
+section/folder structured data -> IdRegisterPrintState -> narrow DOCX register renderer -> downloaded .docx
 ```
 
 Не читать данные напрямую из DOM/UI.
@@ -209,20 +209,22 @@ section/folder structured data -> IdRegisterPrintState -> DOCX template data -> 
 Так мы не ломаем текущую логику, но перестаём смешивать объектовые и
 разделовые документы.
 
-## Шаблон DOCX
+## DOCX renderer
 
-Решение: первый шаблон реестра с тегами может подготовить Codex на основе 4
-реальных образцов, затем пользователь проверяет и правит его вручную в Word.
+Первый рабочий scope подключён как узкий frontend-only renderer под
+`IdRegisterPrintState`, а не как универсальный Word-template engine.
 
-Причина:
+Причина решения:
 
-- структура повторяется;
-- теги лучше сразу проектировать под renderer;
-- внешний вид всё равно требует человеческой проверки: шрифты, отступы, переносы
-  строк, повтор заголовков таблиц на страницах.
+- в реестре главная сложность — динамические таблицы с переменным количеством
+  строк;
+- для первого надёжного шага безопаснее сформировать DOCX-таблицы напрямую из
+  structured data;
+- tagged DOCX-шаблон для реестра можно подготовить позже, когда пользователь
+  утвердит точный внешний вид: шрифты, отступы, ширины колонок, переносы строк,
+  повтор заголовков таблиц на страницах.
 
-Шаблон должен быть static asset, как АОСР-шаблон. Реальные реестры остаются
-reference fixtures, не production data.
+Реальные реестры остаются reference fixtures, не production data.
 
 ## Что уже покрывает frontend demo
 
@@ -241,7 +243,16 @@ reference fixtures, не production data.
 - дедублирует сертификаты по библиотечному документу;
 - дедублирует задействованные схемы/журналы по id документа;
 - оставляет раздел журналов даже если строк нет;
-- пока не генерирует DOCX.
+- используется для скачивания DOCX-реестра папки и DOCX-реестра раздела.
+
+Добавлен первый DOCX renderer:
+
+- генерирует `.docx` в браузере без backend/API/storage;
+- строит Word-документ из `IdRegisterPrintState`, не из DOM/UI;
+- поддерживает landscape-страницу, таблицы, повторяемые header rows и базовые
+  разделы реального реестра;
+- подключён к кнопкам `Скачать реестр папки DOCX` и
+  `Скачать реестр раздела DOCX`.
 
 ## Чего ещё не хватает для точного реестра
 
@@ -253,8 +264,10 @@ reference fixtures, не production data.
   тексту;
 - структурных данных подрядчика для раздела 1;
 - поддерживаемых типов актов кроме АОСР;
-- DOCX-шаблона реестра с динамическими таблицами;
-- visual QA generated DOCX against the real reference registers.
+- точной Word-вёрстки финального реестра по согласованному шаблону;
+- visual QA generated DOCX against the real reference registers;
+- решения, оставляем ли programmatic renderer или переходим на static tagged
+  DOCX template после утверждения макета.
 
 ## Что не делаем в этом scope
 

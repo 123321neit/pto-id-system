@@ -24,6 +24,25 @@ afterEach(() => {
   cleanup();
 });
 
+function mockBrowserDocxDownload() {
+  const createObjectUrl = vi.fn(() => 'blob:id-register-test');
+  const revokeObjectUrl = vi.fn();
+  const clickSpy = vi
+    .spyOn(HTMLAnchorElement.prototype, 'click')
+    .mockImplementation(() => undefined);
+
+  Object.defineProperty(URL, 'createObjectURL', {
+    configurable: true,
+    value: createObjectUrl,
+  });
+  Object.defineProperty(URL, 'revokeObjectURL', {
+    configurable: true,
+    value: revokeObjectUrl,
+  });
+
+  return { clickSpy, createObjectUrl, revokeObjectUrl };
+}
+
 describe('App shell mock navigation', () => {
   it('renders mock object cards and quick access cards on the dashboard', () => {
     render(<App />);
@@ -575,18 +594,24 @@ describe('App shell mock navigation', () => {
     ).toBeTruthy();
     expect(within(intermediatePackagePage).getAllByText('ОВ-2').length).toBeGreaterThan(0);
     expect(
-      within(intermediatePackagePage).getByText('Комплект печатается из текущего состава папки.'),
+      within(intermediatePackagePage).getByText(
+        'Скачивается DOCX-реестр только по текущей папке. Полный комплект промежуточной ИД пока не формируется.',
+      ),
     ).toBeTruthy();
+    const downloadMocks = mockBrowserDocxDownload();
     const printButton = within(intermediatePackagePage).getByRole('button', {
-      name: 'Печать промежуточной ИД по папке',
+      name: 'Скачать реестр папки DOCX',
     });
     expect((printButton as HTMLButtonElement).disabled).toBe(false);
     await user.click(printButton);
     expect(
       within(intermediatePackagePage).getByText(
-        'Промежуточная ИД по папке пока доступна как экран состава. Генерация файла появится после UX-baseline.',
+        'Реестр папки DOCX сформирован и передан в скачивание.',
       ),
     ).toBeTruthy();
+    expect(downloadMocks.createObjectUrl).toHaveBeenCalledTimes(1);
+    expect(downloadMocks.clickSpy).toHaveBeenCalledTimes(1);
+    expect(downloadMocks.revokeObjectUrl).toHaveBeenCalledWith('blob:id-register-test');
   });
 
   it('creates an AOSR draft inside the selected folder and shows it in that folder tree', async () => {
@@ -982,7 +1007,7 @@ describe('App shell mock navigation', () => {
     ]);
   });
 
-  it('shows a mock message for the final ID package download action in demo mode', async () => {
+  it('downloads a final section register DOCX in demo mode', async () => {
     const user = userEvent.setup();
 
     render(<App />);
@@ -991,21 +1016,23 @@ describe('App shell mock navigation', () => {
     const finalPackagePage = screen.getByRole('region', {
       name: 'Итоговая ИД по разделу: Вентиляция',
     });
+    const downloadMocks = mockBrowserDocxDownload();
     const downloadButton = within(finalPackagePage).getByRole('button', {
-      name: 'Скачать итоговую ИД по разделу',
+      name: 'Скачать реестр раздела DOCX',
     });
     expect((downloadButton as HTMLButtonElement).disabled).toBe(false);
     await user.click(downloadButton);
     expect(
-      within(finalPackagePage).getByText(
-        'Генерация DOCX/PDF будет подключена позже. Сейчас показан состав итоговой ИД по разделу.',
-      ),
+      within(finalPackagePage).getByText('Реестр раздела DOCX сформирован и передан в скачивание.'),
     ).toBeTruthy();
     expect(
       screen.getByText(
-        'Документы папок выбранного раздела собираются без дублирования сертификатов и файлов.',
+        'Скачивается DOCX-реестр по всем папкам выбранного раздела. Полный пакет ИД, PDF и ZIP пока не формируются.',
       ),
     ).toBeTruthy();
+    expect(downloadMocks.createObjectUrl).toHaveBeenCalledTimes(1);
+    expect(downloadMocks.clickSpy).toHaveBeenCalledTimes(1);
+    expect(downloadMocks.revokeObjectUrl).toHaveBeenCalledWith('blob:id-register-test');
   });
 
   it('navigates from the final ID package page back to AOSR', async () => {

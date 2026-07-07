@@ -6094,3 +6094,30 @@ delete/move/reorder lifecycle or generation was introduced.
 - no backend/API/storage/Prisma migration was added;
 - no PDF/ZIP/package builder/AI/OCR work was added;
 - real register files remain reference examples only, not production seed data.
+
+### 2026-07-07 — First frontend-only ID register DOCX download
+
+- Статус: `Frontend-only register DOCX download`
+- Описание: connected the first downloadable DOCX register from the structured
+  register print-state.
+
+Добавлено/уточнено:
+
+- `IdRegisterPrintState` now feeds a narrow DOCX renderer for both supported
+  scopes: one folder and the whole selected section;
+- the object workspace download areas now offer `Скачать реестр папки DOCX` and
+  `Скачать реестр раздела DOCX`;
+- the UI copy explicitly avoids promising full intermediate/final ID packages:
+  PDF, ZIP and package generation remain out of scope;
+- the renderer creates a Word `.docx` with landscape page setup, register
+  sections, dynamic tables and repeated table header rows;
+- unit/UI coverage checks generated DOCX XML content, filenames and smoke
+  download actions.
+
+Ограничения:
+
+- the register renderer is programmatic and narrow, not a generic Word-template
+  engine;
+- no static tagged DOCX register template was added yet;
+- no backend/API/storage/Prisma migration was added;
+- no PDF/ZIP/package builder/auth/AI/OCR/AOSR renderer work was added.

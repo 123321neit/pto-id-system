@@ -756,7 +756,12 @@ export function ObjectWorkspacePage({
         ) : null}
 
         {activeSection === 'intermediate-package' && selectedFolder !== undefined ? (
-          <ObjectIntermediatePackagePage drafts={drafts} folder={selectedFolder} />
+          <ObjectIntermediatePackagePage
+            drafts={drafts}
+            folder={selectedFolder}
+            sectionName={selectedSection?.name}
+            sectionTemplateSettings={selectedSectionTemplateSettings}
+          />
         ) : null}
 
         {isAosrVisible && (selectedFolder !== undefined || activeSection === 'settings') ? (
@@ -797,6 +802,7 @@ export function ObjectWorkspacePage({
             drafts={selectedSectionDrafts}
             folders={selectedSectionFolders}
             sectionName={selectedSection?.name}
+            sectionTemplateSettings={selectedSectionTemplateSettings}
           />
         ) : null}
       </section>

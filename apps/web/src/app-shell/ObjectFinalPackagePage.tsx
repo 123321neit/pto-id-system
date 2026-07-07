@@ -1,8 +1,17 @@
 import { useMemo, useState } from 'react';
 
-import { demoAosrWorkspace, type DemoAosrDraft } from '../aosr-demo/demo-aosr-workspace.js';
+import {
+  demoAosrWorkspace,
+  type DemoAosrDraft,
+  type DemoSectionTemplateSettings,
+} from '../aosr-demo/demo-aosr-workspace.js';
 import { useDemoStore } from '../demo-store/demo-store.js';
 import { DerivedRegistryTable } from './DerivedRegistryTable.js';
+import { downloadIdRegisterDocx } from './id-register-docx-generator.js';
+import {
+  buildFolderIdRegisterPrintState,
+  buildSectionIdRegisterPrintState,
+} from './id-register-print-state.js';
 import {
   buildSectionFinalPackageModel,
   buildSectionIdPackageOverviewModel,
@@ -18,12 +27,14 @@ interface ObjectFinalPackagePageProps {
   readonly drafts?: readonly DemoAosrDraft[];
   readonly folders?: DemoIdFolders;
   readonly sectionName?: string | undefined;
+  readonly sectionTemplateSettings?: DemoSectionTemplateSettings;
 }
 
 export function ObjectFinalPackagePage({
   drafts = demoAosrWorkspace.drafts,
   folders = demoIdFolders,
   sectionName,
+  sectionTemplateSettings = demoAosrWorkspace.sectionTemplateSettings,
 }: ObjectFinalPackagePageProps = {}): React.JSX.Element {
   const { certificates, objectDocuments } = useDemoStore();
   const [downloadMessage, setDownloadMessage] = useState('');
@@ -35,6 +46,25 @@ export function ObjectFinalPackagePage({
     () => buildSectionIdPackageOverviewModel(drafts, objectDocuments, certificates, folders),
     [certificates, drafts, objectDocuments, folders],
   );
+  const downloadSectionRegisterDocx = (): void => {
+    setDownloadMessage('');
+
+    try {
+      downloadIdRegisterDocx(
+        buildSectionIdRegisterPrintState({
+          certificates,
+          drafts,
+          folders,
+          objectDocuments,
+          sectionTemplateSettings,
+          workName: sectionName ?? sectionTemplateSettings.defaultWorkContractorName,
+        }),
+      );
+      setDownloadMessage('Реестр раздела DOCX сформирован и передан в скачивание.');
+    } catch {
+      setDownloadMessage('Не удалось сформировать DOCX-реестр. Проверьте данные реестра.');
+    }
+  };
 
   return (
     <section
@@ -74,22 +104,21 @@ export function ObjectFinalPackagePage({
 
       <section className="object-documents-panel final-package-download" aria-label="Скачивание">
         <div>
-          <p className="section-kicker">Итоговый комплект</p>
-          <h3>Итоговая ИД по разделу</h3>
+          <p className="section-kicker">Реестр раздела</p>
+          <h3>Итоговый реестр по разделу</h3>
           <p>
-            Документы папок выбранного раздела собираются без дублирования сертификатов и файлов.
+            Скачивается DOCX-реестр по всем папкам выбранного раздела. Полный пакет ИД, PDF и ZIP
+            пока не формируются.
           </p>
         </div>
         <button
           className="action-button"
           onClick={() => {
-            setDownloadMessage(
-              'Генерация DOCX/PDF будет подключена позже. Сейчас показан состав итоговой ИД по разделу.',
-            );
+            downloadSectionRegisterDocx();
           }}
           type="button"
         >
-          Скачать итоговую ИД по разделу
+          Скачать реестр раздела DOCX
         </button>
         {downloadMessage === '' ? null : (
           <p className="final-package-download__message" role="note">
@@ -104,11 +133,15 @@ export function ObjectFinalPackagePage({
 interface ObjectIntermediatePackagePageProps {
   readonly drafts?: readonly DemoAosrDraft[];
   readonly folder: DemoIdFolder;
+  readonly sectionName?: string | undefined;
+  readonly sectionTemplateSettings?: DemoSectionTemplateSettings;
 }
 
 export function ObjectIntermediatePackagePage({
   drafts = demoAosrWorkspace.drafts,
   folder,
+  sectionName,
+  sectionTemplateSettings = demoAosrWorkspace.sectionTemplateSettings,
 }: ObjectIntermediatePackagePageProps): React.JSX.Element {
   const { certificates, objectDocuments } = useDemoStore();
   const [printMessage, setPrintMessage] = useState('');
@@ -116,6 +149,25 @@ export function ObjectIntermediatePackagePage({
     () => buildIntermediateIdPackageModel(folder, drafts, objectDocuments, certificates),
     [certificates, drafts, objectDocuments, folder],
   );
+  const downloadFolderRegisterDocx = (): void => {
+    setPrintMessage('');
+
+    try {
+      downloadIdRegisterDocx(
+        buildFolderIdRegisterPrintState({
+          certificates,
+          drafts,
+          folder,
+          objectDocuments,
+          sectionTemplateSettings,
+          workName: sectionName ?? sectionTemplateSettings.defaultWorkContractorName,
+        }),
+      );
+      setPrintMessage('Реестр папки DOCX сформирован и передан в скачивание.');
+    } catch {
+      setPrintMessage('Не удалось сформировать DOCX-реестр. Проверьте данные реестра.');
+    }
+  };
 
   return (
     <section
@@ -154,20 +206,21 @@ export function ObjectIntermediatePackagePage({
 
       <section className="object-documents-panel final-package-download" aria-label="Формирование">
         <div>
-          <p className="section-kicker">Промежуточный комплект</p>
-          <h3>Печать промежуточной ИД по папке</h3>
-          <p>Комплект печатается из текущего состава папки.</p>
+          <p className="section-kicker">Реестр папки</p>
+          <h3>Промежуточный реестр по папке</h3>
+          <p>
+            Скачивается DOCX-реестр только по текущей папке. Полный комплект промежуточной ИД пока
+            не формируется.
+          </p>
         </div>
         <button
           className="action-button"
           onClick={() => {
-            setPrintMessage(
-              'Промежуточная ИД по папке пока доступна как экран состава. Генерация файла появится после UX-baseline.',
-            );
+            downloadFolderRegisterDocx();
           }}
           type="button"
         >
-          Печать промежуточной ИД по папке
+          Скачать реестр папки DOCX
         </button>
         {printMessage === '' ? null : (
           <p className="final-package-download__message" role="note">

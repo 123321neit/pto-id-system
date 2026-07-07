@@ -2157,3 +2157,25 @@ contract for future DOCX generation. It builds folder/section register data from
 structured demo state and has focused unit coverage for folder scope, section
 scope and deduplication. No DOCX template, download button, backend, Prisma,
 PDF/ZIP/package builder, auth, storage or AI/OCR was added.
+
+---
+
+## 76. First frontend-only DOCX register download
+
+### Q: What changed after the register print-state foundation?
+
+A: The first narrow DOCX register download was connected for both supported
+scopes: one ID folder and the whole selected section. The UI now says
+`Скачать реестр папки DOCX` and `Скачать реестр раздела DOCX`, so it does not
+promise a full intermediate/final ID package yet.
+
+The download is built from `IdRegisterPrintState`, not from DOM/UI text. The
+first renderer is intentionally programmatic and narrow: it writes a Word DOCX
+with landscape pages, register sections and dynamic tables directly from
+structured print-state rows. This avoids turning the AOSR tagged-template
+renderer into a generic Word-template engine before the exact register layout is
+approved.
+
+This stayed frontend-only. No PDF, ZIP, package builder, backend/API/storage,
+Prisma domain models/migrations, auth, AI/OCR, AOSR DOCX renderer or AOSR
+template changes were added.
