@@ -35,8 +35,22 @@ vi.mock('docx-preview', () => ({
 }));
 
 const originalWindowConfirm = window.confirm;
+const NativeRequest = globalThis.Request;
+
+class RouterCompatibleRequest extends NativeRequest {
+  constructor(input: RequestInfo | URL, init?: RequestInit) {
+    const routerInit = init === undefined ? undefined : { ...init };
+    if (routerInit !== undefined) {
+      delete routerInit.signal;
+    }
+    super(input, routerInit);
+  }
+}
+
+vi.stubGlobal('Request', RouterCompatibleRequest);
 
 beforeEach(() => {
+  window.history.replaceState(null, '', '/objects');
   aosrPreviewMocks.generateAosrDocxBlob.mockReset();
   aosrPreviewMocks.generateAosrDocxBlob.mockResolvedValue(new Blob(['mock AOSR DOCX']));
   aosrPreviewMocks.downloadAosrDocx.mockReset();
@@ -126,6 +140,7 @@ describe('App shell mock navigation', () => {
     }
 
     await user.click(within(emptyObjectCard).getByRole('button', { name: 'Открыть объект' }));
+    expect(window.location.pathname).toBe('/objects/object-empty-demo');
 
     expect(screen.getByRole('heading', { name: 'Создайте первый раздел ИД' })).toBeTruthy();
     expect(screen.getByRole('heading', { name: 'Объект → раздел → папка → акт' })).toBeTruthy();
@@ -153,6 +168,7 @@ describe('App shell mock navigation', () => {
     await user.click(createSectionButton);
 
     expect(screen.getByRole('heading', { name: 'Вентиляция' })).toBeTruthy();
+    expect(window.location.pathname).toBe('/objects/object-empty-demo/sections/section-created-1');
 
     const createFolderPanelButton = screen.getAllByRole('button', { name: 'Создать папку' })[0];
 
@@ -176,6 +192,9 @@ describe('App shell mock navigation', () => {
     await user.click(createFolderButton);
 
     expect(screen.getByRole('heading', { name: 'Монтаж вентиляции — этап 1' })).toBeTruthy();
+    expect(window.location.pathname).toBe(
+      '/objects/object-empty-demo/sections/section-created-1/folders/folder-created-1',
+    );
     expect(screen.getByText('В этой папке пока нет актов')).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Создать акт' })).toBeTruthy();
 
@@ -187,6 +206,12 @@ describe('App shell mock navigation', () => {
     await user.click(within(createDocumentDialog).getByRole('button', { name: 'Создать акт' }));
 
     expect(screen.getByLabelText('Текущий акт: 1')).toBeTruthy();
+    expect(window.location.pathname).toBe(
+      '/objects/object-empty-demo/sections/section-created-1/folders/folder-created-1/aosr/aosr-draft-created-1',
+    );
+    const createdNumberInput = screen.getByLabelText<HTMLInputElement>('Номер акта');
+    await user.clear(createdNumberInput);
+    await user.type(createdNumberInput, 'SESSION-42');
     await user.click(
       within(objectNavigation).getByRole('button', { name: 'Открыть раздел Вентиляция' }),
     );
@@ -202,6 +227,33 @@ describe('App shell mock navigation', () => {
       name: /Монтаж вентиляции — этап 1/u,
     });
     expect(createdFolder.textContent).toContain('1 акт');
+
+    await user.click(screen.getByRole('button', { name: 'Назад к объектам' }));
+    const reopenedEmptyObjectCard = screen
+      .getByRole('heading', { name: 'Новый объект без папок ИД' })
+      .closest('article');
+
+    if (reopenedEmptyObjectCard === null) {
+      throw new Error('Карточка пустого демо-объекта не найдена после возврата.');
+    }
+
+    await user.click(
+      within(reopenedEmptyObjectCard).getByRole('button', { name: 'Открыть объект' }),
+    );
+    const reopenedNavigation = screen.getByRole('navigation', { name: 'Разделы объекта' });
+    await user.click(
+      within(reopenedNavigation).getByRole('button', { name: 'Открыть раздел Вентиляция' }),
+    );
+    await user.click(
+      getRequiredListItem(
+        screen.getAllByRole('button', { name: 'Открыть папку Монтаж вентиляции — этап 1' }),
+        0,
+      ),
+    );
+    await user.click(
+      getRequiredListItem(screen.getAllByRole('button', { name: /SESSION-42/u }), 0),
+    );
+    expect(screen.getByLabelText<HTMLInputElement>('Номер акта').value).toBe('SESSION-42');
   });
 
   it('creates an AOSR draft from a folder and updates derived object counts', async () => {
@@ -260,6 +312,10 @@ describe('App shell mock navigation', () => {
     expect(screen.queryByText('12-3-ОВ')).toBeNull();
 
     await user.click(
+      within(objectNavigation).getByRole('button', { name: 'Открыть раздел Вентиляция' }),
+    );
+
+    await user.click(
       within(objectNavigation).getByRole('button', {
         name: 'Итоговая ИД по разделу Вентиляция',
       }),
@@ -316,6 +372,14 @@ describe('App shell mock navigation', () => {
       within(objectNavigation).getByRole('button', { name: 'Открыть раздел Отопление' }),
     ).toBeTruthy();
     expect(
+      within(objectNavigation).queryByRole('button', {
+        name: 'Шаблонные значения раздела Вентиляция',
+      }),
+    ).toBeNull();
+    await user.click(
+      within(objectNavigation).getByRole('button', { name: 'Открыть раздел Вентиляция' }),
+    );
+    expect(
       within(objectNavigation).getByRole('button', {
         name: 'Шаблонные значения раздела Вентиляция',
       }),
@@ -346,6 +410,8 @@ describe('App shell mock navigation', () => {
     expect(
       within(objectNavigation).queryByRole('button', { name: 'Открыть реестр ИД' }),
     ).toBeNull();
+
+    await user.click(within(objectNavigation).getByRole('button', { name: 'Обзор объекта' }));
 
     expect(
       screen.getByRole('heading', {
@@ -428,7 +494,7 @@ describe('App shell mock navigation', () => {
     await openFolderByName(user, 'Сентябрь 2026');
     expect(screen.getByRole('heading', { name: 'Сентябрь 2026' })).toBeTruthy();
     expect(screen.getByRole('heading', { name: 'Акты в папке' })).toBeTruthy();
-    expect(screen.getByRole('button', { name: /ОВ-1/u })).toBeTruthy();
+    expect(screen.getAllByRole('button', { name: /ОВ-1/u }).length).toBeGreaterThan(0);
     expect(screen.getByRole('heading', { name: 'Реестр папки' })).toBeTruthy();
     const septemberRegistry = within(getSectionByHeading('Реестр папки'));
     expect(septemberRegistry.getByRole('columnheader', { name: '№ п/п' })).toBeTruthy();
@@ -475,7 +541,7 @@ describe('App shell mock navigation', () => {
       screen.getByText('Реестр и печатный состав открываются в промежуточной ИД этой папки.'),
     ).toBeTruthy();
 
-    await user.click(screen.getByRole('button', { name: /ОВ-2/u }));
+    await user.click(getRequiredListItem(screen.getAllByRole('button', { name: /ОВ-2/u }), 0));
 
     expect(screen.getByRole('heading', { name: 'Акты в папке «Октябрь 2026»' })).toBeTruthy();
     expect(screen.getByLabelText('Текущий акт: ОВ-2')).toBeTruthy();
@@ -648,19 +714,19 @@ describe('App shell mock navigation', () => {
       updatedOctoberActs.getAllByText('АОСР — Акт освидетельствования скрытых работ').length,
     ).toBeGreaterThan(1);
 
-    await user.click(screen.getByRole('button', { name: /ОВ-3/u }));
+    await user.click(getRequiredListItem(screen.getAllByRole('button', { name: /ОВ-3/u }), 0));
 
     expect(screen.getByLabelText('Текущий акт: ОВ-3')).toBeTruthy();
     expect(screen.getAllByText('Октябрь 2026').length).toBeGreaterThan(0);
     expect(screen.getByDisplayValue('ОВ-3')).toBeTruthy();
-    expect(screen.getByRole('button', { name: /ОВ-3/u })).toBeTruthy();
+    expect(screen.getAllByRole('button', { name: /ОВ-3/u }).length).toBeGreaterThan(0);
 
     await openFolderByName(user, 'Октябрь 2026');
-    expect(screen.getByRole('button', { name: /ОВ-2/u })).toBeTruthy();
-    expect(screen.getByRole('button', { name: /ОВ-3/u })).toBeTruthy();
+    expect(screen.getAllByRole('button', { name: /ОВ-2/u }).length).toBeGreaterThan(0);
+    expect(screen.getAllByRole('button', { name: /ОВ-3/u }).length).toBeGreaterThan(0);
 
     await openFolderByName(user, 'Сентябрь 2026');
-    expect(screen.getByRole('button', { name: /ОВ-1/u })).toBeTruthy();
+    expect(screen.getAllByRole('button', { name: /ОВ-1/u }).length).toBeGreaterThan(0);
     expect(screen.queryByRole('button', { name: /ОВ-3/u })).toBeNull();
   });
 
@@ -718,7 +784,7 @@ describe('App shell mock navigation', () => {
 
     const selector = screen.getByRole('dialog', { name: 'Создание акта' });
     await user.click(within(selector).getByRole('button', { name: 'Создать акт' }));
-    await user.click(screen.getByRole('button', { name: /ОВ-3/u }));
+    await user.click(getRequiredListItem(screen.getAllByRole('button', { name: /ОВ-3/u }), 0));
 
     expect(
       getTextAreaValue(screen.getByLabelText('Объект капитального строительства в документе')),
@@ -1113,7 +1179,7 @@ describe('App shell mock navigation', () => {
     await openFolderByName(user, 'Сентябрь 2026');
     expect(screen.getByRole('heading', { name: 'Реестр папки' })).toBeTruthy();
     expect(screen.getByRole('heading', { name: 'Промежуточная ИД по папке' })).toBeTruthy();
-    await user.click(screen.getByRole('button', { name: /ОВ-1/u }));
+    await user.click(getRequiredListItem(screen.getAllByRole('button', { name: /ОВ-1/u }), 0));
 
     expect(screen.getByRole('heading', { name: 'Акты в папке «Сентябрь 2026»' })).toBeTruthy();
     expect(screen.getByRole('heading', { name: 'Редактирование акта ОВ-1' })).toBeTruthy();
@@ -1134,6 +1200,9 @@ describe('App shell mock navigation', () => {
     await user.click(within(actions).getByRole('button', { name: 'Удалить акт' }));
 
     expect(confirmSpy).toHaveBeenCalledWith('Удалить акт ОВ-1? Акт будет удалён из текущей папки.');
+    expect(window.location.pathname).toBe(
+      '/objects/object-polyclinic-demo/sections/section-ventilation/folders/folder-2026-09',
+    );
     expect(screen.getByRole('heading', { name: 'Сентябрь 2026' })).toBeTruthy();
     expect(screen.getByText('В этой папке пока нет актов')).toBeTruthy();
     expect(screen.queryByRole('button', { name: /ОВ-1/u })).toBeNull();
@@ -1156,7 +1225,7 @@ describe('App shell mock navigation', () => {
     await user.click(deleteButton);
 
     expect(confirmSpy).toHaveBeenCalledWith('Удалить акт ОВ-1? Акт будет удалён из текущей папки.');
-    expect(screen.getByRole('button', { name: /ОВ-1/u })).toBeTruthy();
+    expect(screen.getAllByRole('button', { name: /ОВ-1/u }).length).toBeGreaterThan(0);
 
     await user.click(deleteButton);
 
@@ -1227,7 +1296,7 @@ describe('App shell mock navigation', () => {
     );
 
     await openFolderByName(user, 'Октябрь 2026');
-    expect(screen.getByRole('button', { name: /ОВ-3/u })).toBeTruthy();
+    expect(screen.getAllByRole('button', { name: /ОВ-3/u }).length).toBeGreaterThan(0);
   });
 
   it('moves folder acts with up/down buttons and recalculates automatic section numbering', async () => {
@@ -1296,7 +1365,7 @@ describe('App shell mock navigation', () => {
     expect(registryRows[1]?.textContent).toContain('05.09.2026');
 
     await openFolderByName(user, 'Октябрь 2026');
-    expect(screen.getByRole('button', { name: /ОВ-3/u })).toBeTruthy();
+    expect(screen.getAllByRole('button', { name: /ОВ-3/u }).length).toBeGreaterThan(0);
   });
 
   it('keeps representatives in the global library instead of duplicating them in object navigation', async () => {
@@ -1537,7 +1606,7 @@ describe('App shell mock navigation', () => {
     expect(selector.textContent).not.toContain('АОСР/2/2026');
     expect(within(selector).queryByLabelText('Номер документа')).toBeNull();
     await user.click(within(selector).getByRole('button', { name: 'Создать акт' }));
-    expect(screen.getByRole('button', { name: /АОСР\/100\/2026/u })).toBeTruthy();
+    expect(screen.getAllByRole('button', { name: /АОСР\/100\/2026/u }).length).toBeGreaterThan(0);
   });
 
   it('creates new acts without a number when section numbering is manual', async () => {
@@ -1616,8 +1685,8 @@ describe('App shell mock navigation', () => {
     await user.click(within(dialog).getByRole('button', { name: 'Вернуться к разделу' }));
 
     await openFolderByName(user, 'Сентябрь 2026');
-    expect(screen.getByRole('button', { name: /РУЧНОЙ-77/u })).toBeTruthy();
-    await user.click(screen.getByRole('button', { name: /РУЧНОЙ-77/u }));
+    expect(screen.getAllByRole('button', { name: /РУЧНОЙ-77/u }).length).toBeGreaterThan(0);
+    await user.click(getRequiredListItem(screen.getAllByRole('button', { name: /РУЧНОЙ-77/u }), 0));
     expect(screen.getByLabelText<HTMLInputElement>('Номер акта').value).toBe('РУЧНОЙ-77');
     expect(screen.getByText('Ручная нумерация')).toBeTruthy();
     expect(
@@ -1627,7 +1696,7 @@ describe('App shell mock navigation', () => {
     ).toBeTruthy();
 
     await openFolderByName(user, 'Октябрь 2026');
-    expect(screen.getByRole('button', { name: /AUTO-100/u })).toBeTruthy();
+    expect(screen.getAllByRole('button', { name: /AUTO-100/u }).length).toBeGreaterThan(0);
   });
 
   it('does not show forbidden status or object-template wording in the object workflow', async () => {
@@ -2203,6 +2272,15 @@ async function openFolderByName(
   folderName: string,
 ): Promise<void> {
   const objectNavigation = screen.getByRole('navigation', { name: 'Разделы объекта' });
+  const folderButton = within(objectNavigation).queryByRole('button', {
+    name: `Открыть папку ${folderName}`,
+  });
+
+  if (folderButton === null) {
+    await user.click(
+      within(objectNavigation).getByRole('button', { name: 'Открыть раздел Вентиляция' }),
+    );
+  }
 
   await user.click(
     within(objectNavigation).getByRole('button', { name: `Открыть папку ${folderName}` }),
@@ -2282,7 +2360,13 @@ async function openObjectDocumentsPage(user: ReturnType<typeof userEvent.setup>)
 
 async function openSeptemberAosrDocument(user: ReturnType<typeof userEvent.setup>): Promise<void> {
   await openFolderByName(user, 'Сентябрь 2026');
-  await user.click(screen.getByRole('button', { name: /ОВ-1/u }));
+  const [openActButton] = screen.getAllByRole('button', { name: /ОВ-1/u });
+
+  if (openActButton === undefined) {
+    throw new Error('Кнопка открытия ОВ-1 не найдена.');
+  }
+
+  await user.click(openActButton);
 }
 
 async function openObjectSettingsFromWorkspace(
@@ -2290,6 +2374,10 @@ async function openObjectSettingsFromWorkspace(
   sectionName = 'Вентиляция',
 ): Promise<void> {
   const objectNavigation = screen.getByRole('navigation', { name: 'Разделы объекта' });
+
+  await user.click(
+    within(objectNavigation).getByRole('button', { name: `Открыть раздел ${sectionName}` }),
+  );
 
   await user.click(
     within(objectNavigation).getByRole('button', {
@@ -2305,6 +2393,10 @@ async function openObjectFinalPackagePage(
   await user.click(getFirstOpenObjectButton());
 
   const objectNavigation = screen.getByRole('navigation', { name: 'Разделы объекта' });
+
+  await user.click(
+    within(objectNavigation).getByRole('button', { name: `Открыть раздел ${sectionName}` }),
+  );
 
   await user.click(
     within(objectNavigation).getByRole('button', {
