@@ -102,7 +102,6 @@ describe('object workspace numbering helpers', () => {
         }),
       ],
       currentFolders: testFolders,
-      mode: 'automatic-only',
       section: testSection,
       sectionTemplateSettings: createNumberingSettings({ scope: 'section-wide', start: 5 }),
     });
@@ -149,7 +148,6 @@ describe('object workspace numbering helpers', () => {
         }),
       ],
       currentFolders: testFolders,
-      mode: 'automatic-only',
       section: { ...testSection, folderIds: ['folder-b', 'folder-a'] },
       sectionTemplateSettings: createNumberingSettings({ scope: 'section-wide', start: 5 }),
     });
@@ -240,7 +238,10 @@ function createDrafts(): readonly DemoAosrDraft[] {
 function createDraft({
   actNumber = '',
   id,
-  numberingAssignment = { source: 'manual' },
+  numberingAssignment = {
+    automaticSequences: { folder: 1, section: 1 },
+    source: 'automatic',
+  },
 }: {
   readonly actNumber?: string;
   readonly id: string;

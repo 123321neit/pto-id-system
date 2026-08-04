@@ -91,7 +91,7 @@ interface DemoAosrWorkspacePageProps {
   readonly lastTemplateCopyMessage?: string;
   readonly sectionTemplateClipboard?: SectionTemplateClipboard | null;
   readonly sectionTemplateSettings?: DemoSectionTemplateSettings;
-  readonly sectionDraftCount?: number;
+  readonly automaticSectionDraftCount?: number;
   /** Legacy compatibility alias for older standalone AOSR demo helpers. */
   readonly objectDefaults?: DemoAosrObjectDefaults;
   readonly onDraftsChange?: (drafts: readonly DemoAosrDraft[]) => void;
@@ -127,7 +127,7 @@ export function DemoAosrWorkspacePage({
   lastTemplateCopyMessage = '',
   sectionTemplateClipboard = null,
   sectionTemplateSettings: controlledSectionTemplateSettings,
-  sectionDraftCount = 0,
+  automaticSectionDraftCount = 0,
   objectDefaults: controlledObjectDefaults,
   onDraftsChange,
   onCopySectionTemplate,
@@ -607,7 +607,7 @@ export function DemoAosrWorkspacePage({
         objectTitle={objectTitle}
         presentation="page"
         representativeSearch={representativeSearch}
-        sectionDraftCount={sectionDraftCount}
+        automaticSectionDraftCount={automaticSectionDraftCount}
         sectionId={sectionId}
         sectionTemplateClipboard={sectionTemplateClipboard}
         onAddHeaderOrganization={addConfiguredHeaderOrganization}
@@ -1006,7 +1006,7 @@ export function DemoAosrWorkspacePage({
           objectId={objectId}
           objectTitle={objectTitle}
           representativeSearch={representativeSearch}
-          sectionDraftCount={sectionDraftCount}
+          automaticSectionDraftCount={automaticSectionDraftCount}
           sectionId={sectionId}
           sectionTemplateClipboard={sectionTemplateClipboard}
           onAddHeaderOrganization={addConfiguredHeaderOrganization}

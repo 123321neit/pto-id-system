@@ -32,7 +32,7 @@ interface DemoObjectSettingsPanelProps {
   readonly objectTitle?: string | undefined;
   readonly presentation?: 'dialog' | 'page';
   readonly representativeSearch: string;
-  readonly sectionDraftCount: number;
+  readonly automaticSectionDraftCount: number;
   readonly sectionId?: string | undefined;
   readonly onAddHeaderOrganization: (event: SyntheticEvent<HTMLFormElement>) => void;
   readonly onAddLibraryRepresentative: (event: SyntheticEvent<HTMLFormElement>) => void;
@@ -118,7 +118,7 @@ export function DemoObjectSettingsPanel({
   objectTitle,
   presentation = 'dialog',
   representativeSearch,
-  sectionDraftCount,
+  automaticSectionDraftCount,
   sectionId,
   onAddHeaderOrganization,
   onAddLibraryRepresentative,
@@ -491,14 +491,19 @@ export function DemoObjectSettingsPanel({
                     <div className="object-numbering-actions">
                       <button
                         className="compact-toggle compact-toggle--accent"
-                        disabled={sectionDraftCount === 0 || onRenumberSectionDrafts === undefined}
+                        disabled={
+                          automaticSectionDraftCount === 0 ||
+                          onRenumberSectionDrafts === undefined
+                        }
                         onClick={onRenumberSectionDrafts}
                         type="button"
                       >
-                        Пронумеровать все акты раздела
+                        Пересчитать автоматические номера
                       </button>
-                      {sectionDraftCount === 0 ? (
-                        <p className="object-folders__empty-copy">В разделе пока нет актов.</p>
+                      {automaticSectionDraftCount === 0 ? (
+                        <p className="object-folders__empty-copy">
+                          В разделе нет актов с автоматической нумерацией.
+                        </p>
                       ) : null}
                     </div>
                   ) : (

@@ -20,13 +20,11 @@ function normalizeNumberingStart(numberingStart: number): number {
 export function renumberSectionDraftsByFolderOrder({
   currentDrafts,
   currentFolders,
-  mode = 'all',
   section,
   sectionTemplateSettings,
 }: {
   readonly currentDrafts: readonly DemoAosrDraft[];
   readonly currentFolders: DemoIdFolders;
-  readonly mode?: 'all' | 'automatic-only';
   readonly section: DemoDocumentationSection;
   readonly sectionTemplateSettings: DemoSectionTemplateSettings;
 }): readonly DemoAosrDraft[] {
@@ -48,7 +46,7 @@ export function renumberSectionDraftsByFolderOrder({
 
       if (
         draft?.sectionId !== section.id ||
-        (mode === 'automatic-only' && draft.numberingAssignment.source !== 'automatic')
+        draft.numberingAssignment.source !== 'automatic'
       ) {
         continue;
       }
@@ -110,7 +108,6 @@ export function maybeRenumberAutomaticSectionDrafts({
   return renumberSectionDraftsByFolderOrder({
     currentDrafts,
     currentFolders,
-    mode: 'automatic-only',
     section,
     sectionTemplateSettings,
   });

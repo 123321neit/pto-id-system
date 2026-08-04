@@ -145,6 +145,13 @@ export function ObjectWorkspacePage({
         : getDemoDocumentationSectionDrafts(selectedSection, folders, drafts),
     [drafts, folders, selectedSection],
   );
+  const selectedAutomaticSectionDrafts = useMemo(
+    () =>
+      selectedSectionDrafts.filter(
+        (draft) => draft.numberingAssignment.source === 'automatic',
+      ),
+    [selectedSectionDrafts],
+  );
   const selectedFolderDrafts =
     selectedFolder === undefined ? [] : getDemoIdFolderDrafts(selectedFolder, drafts);
   const selectedSectionTemplateSettings =
@@ -620,18 +627,18 @@ export function ObjectWorkspacePage({
   const renumberSelectedSectionDrafts = (): void => {
     if (
       selectedSection === undefined ||
-      selectedSectionDrafts.length === 0 ||
+      selectedAutomaticSectionDrafts.length === 0 ||
       selectedSectionTemplateSettings.sectionTemplate.numberingMode !== 'automatic'
     ) {
       return;
     }
 
     const shouldRenumber = window.confirm(
-      'Задать автоматическую нумерацию для всех актов раздела?\n' +
-        `Будут изменены номера актов выбранного раздела: ${formatRenumberedActCount(
-          selectedSectionDrafts.length,
+      'Пересчитать автоматические номера раздела?\n' +
+        `Будут изменены номера только автоматически пронумерованных актов: ${formatRenumberedActCount(
+          selectedAutomaticSectionDrafts.length,
         )}.\n` +
-        'Шаблонные значения акта и ручной/связанный режим шаблона не изменятся.\n' +
+        'Ручные номера останутся без изменений.\n' +
         'Продолжить?',
     );
 
@@ -647,7 +654,7 @@ export function ObjectWorkspacePage({
         sectionTemplateSettings: selectedSectionTemplateSettings,
       }),
     );
-    setLastTemplateCopyMessage('Автоматическая нумерация применена ко всем актам раздела.');
+    setLastTemplateCopyMessage('Автоматические номера пересчитаны. Ручные номера не изменены.');
   };
 
   return (
@@ -778,7 +785,7 @@ export function ObjectWorkspacePage({
             folderName={selectedFolder?.name}
             objectId={object.id}
             objectTitle={object.title}
-            sectionDraftCount={selectedSectionDrafts.length}
+            automaticSectionDraftCount={selectedAutomaticSectionDrafts.length}
             sectionId={selectedSection?.id}
             sectionName={selectedSection?.name}
             sectionTemplateClipboard={sectionTemplateClipboard}
