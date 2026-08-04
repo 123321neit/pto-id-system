@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { cleanup, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { App } from './App.js';
 import {
@@ -19,9 +19,38 @@ import {
 import { demoAosrWorkspace, type DemoAosrDraft } from './aosr-demo/demo-aosr-workspace.js';
 import { initialDemoCertificates, initialDemoObjectDocuments } from './demo-store/demo-store.js';
 
+const aosrPreviewMocks = vi.hoisted(() => ({
+  generateAosrDocxBlob: vi.fn(),
+  renderAsync: vi.fn(),
+}));
+
+vi.mock('./aosr-demo/aosr-docx-generator.js', async (importOriginal) => {
+  const original = await importOriginal<typeof import('./aosr-demo/aosr-docx-generator.js')>();
+
+  return {
+    ...original,
+    generateAosrDocxBlob: aosrPreviewMocks.generateAosrDocxBlob,
+  };
+});
+
+vi.mock('docx-preview', () => ({
+  renderAsync: aosrPreviewMocks.renderAsync,
+}));
+
+beforeEach(() => {
+  aosrPreviewMocks.generateAosrDocxBlob.mockReset();
+  aosrPreviewMocks.generateAosrDocxBlob.mockResolvedValue(new Blob(['mock AOSR DOCX']));
+  aosrPreviewMocks.renderAsync.mockReset();
+  aosrPreviewMocks.renderAsync.mockImplementation(
+    async (_blob: Blob, bodyContainer: HTMLElement): Promise<void> => {
+      bodyContainer.textContent = 'DOCX preview';
+    },
+  );
+});
+
 afterEach(() => {
-  vi.restoreAllMocks();
   cleanup();
+  vi.restoreAllMocks();
 });
 
 function mockBrowserDocxDownload() {

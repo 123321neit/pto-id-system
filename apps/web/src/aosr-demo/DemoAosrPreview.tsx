@@ -1,20 +1,15 @@
 import { useEffect, useRef, useState } from 'react';
 
-import { buildAosrDocxTemplateData } from './aosr-docx-template-data.js';
 import { generateAosrDocxBlob } from './aosr-docx-generator.js';
 import type { AosrPrintState } from './demo-aosr-workspace.js';
 
 interface DemoAosrPreviewProps {
   readonly printState: AosrPrintState;
-  readonly testOnlyPreviewStatus?: AosrPreviewStatus;
 }
 
 type AosrPreviewStatus = 'error' | 'loading' | 'ready';
 
-export function DemoAosrPreview({
-  printState,
-  testOnlyPreviewStatus,
-}: DemoAosrPreviewProps): React.JSX.Element {
+export function DemoAosrPreview({ printState }: DemoAosrPreviewProps): React.JSX.Element {
   const previewHostRef = useRef<HTMLDivElement | null>(null);
   const previewRenderIdRef = useRef(0);
   const [previewStatus, setPreviewStatus] = useState<AosrPreviewStatus>('loading');
@@ -30,21 +25,7 @@ export function DemoAosrPreview({
     setPreviewStatus('loading');
     const renderId = previewRenderIdRef.current + 1;
     previewRenderIdRef.current = renderId;
-
-    if (testOnlyPreviewStatus !== undefined) {
-      previewHost.dataset['testDocxPreview'] = testOnlyPreviewStatus;
-      setPreviewStatus(testOnlyPreviewStatus);
-
-      return undefined;
-    }
-
-    if (import.meta.env.MODE === 'test') {
-      previewHost.dataset['testDocxPreview'] = 'skipped';
-      previewHost.dataset['testDocxTemplateText'] = buildTestDocxTemplateText(printState);
-      setPreviewStatus('ready');
-
-      return undefined;
-    }
+    const detachedPreviewHost = document.createElement('div');
 
     const renderPreview = async (): Promise<void> => {
       try {
@@ -55,7 +36,7 @@ export function DemoAosrPreview({
           return;
         }
 
-        await renderAsync(docxBlob, previewHost, previewHost, {
+        await renderAsync(docxBlob, detachedPreviewHost, detachedPreviewHost, {
           breakPages: true,
           className: 'aosr-docx',
           experimental: true,
@@ -69,9 +50,12 @@ export function DemoAosrPreview({
           useBase64URL: true,
         });
 
-        if (previewRenderIdRef.current === renderId) {
-          setPreviewStatus('ready');
+        if (previewRenderIdRef.current !== renderId) {
+          return;
         }
+
+        previewHost.replaceChildren(...Array.from(detachedPreviewHost.childNodes));
+        setPreviewStatus('ready');
       } catch (error) {
         console.error('AOSR DOCX preview rendering failed', error);
 
@@ -88,7 +72,7 @@ export function DemoAosrPreview({
       previewRenderIdRef.current += 1;
       previewHost.replaceChildren();
     };
-  }, [printState, testOnlyPreviewStatus]);
+  }, [printState]);
 
   return (
     <section className="preview-panel preview-panel--template" aria-labelledby="preview-title">
@@ -118,57 +102,4 @@ export function DemoAosrPreview({
       </div>
     </section>
   );
-}
-
-function buildTestDocxTemplateText(printState: AosrPrintState): string {
-  const templateData = buildAosrDocxTemplateData(printState);
-  const textParts = [
-    'Объект капитального строительства:',
-    templateData.object.name,
-    ...templateData.counterparties.flatMap((counterparty) => [
-      `${counterparty.title}:`,
-      counterparty.displayText,
-      counterparty.subscript === '' ? '' : `(${counterparty.subscript})`,
-    ]),
-    'ОСВИДЕТЕЛЬСТВОВАНИЯ СКРЫТЫХ РАБОТ',
-    templateData.document.numberLine,
-    templateData.document.dateLine,
-    ...templateData.representatives.groups.flatMap((group) => [
-      `${group.title}:`,
-      ...group.members.flatMap((member) => [
-        member.introDisplayText,
-        member.subscript === '' ? '' : `(${member.subscript})`,
-        member.signatureText,
-        member.signatureName,
-      ]),
-    ]),
-    'произвели осмотр работ',
-    templateData.work.contractorName,
-    'и составили настоящий акт о нижеследующем:',
-    '1.К освидетельствованию предъявлены следующие работы:',
-    templateData.work.description,
-    '2.Работы выполнены по проектной документации:',
-    templateData.project.documentation,
-    '3.При выполнении работ применены:',
-    ...templateData.materials.items.map((material) => material.displayText),
-    '4.Предъявлены документы, подтверждающие соответствие работ предъявляемым к ним требованиям:',
-    ...templateData.confirmationDocuments.items.map((document) => document.displayText),
-    '5.Даты:',
-    templateData.work.startDateLine,
-    templateData.work.endDateLine,
-    '6.Работы выполнены в соответствии с:',
-    templateData.project.compliance,
-    '7.Разрешается производство последующих работ по:',
-    templateData.work.nextWorks,
-    'Дополнительные сведения:',
-    templateData.document.additionalInfo,
-    `Акт составлен в ${templateData.document.copiesLine} экземплярах.`,
-    'Приложения:',
-    ...templateData.applications.items.map((application) => application.displayText),
-  ];
-
-  return textParts
-    .map((textPart) => textPart.trim())
-    .filter((textPart) => textPart !== '')
-    .join('\n');
 }

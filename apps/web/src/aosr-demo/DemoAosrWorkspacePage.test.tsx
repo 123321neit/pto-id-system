@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { cleanup, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { DemoAosrWorkspacePage } from './DemoAosrWorkspacePage.js';
 import {
@@ -23,16 +23,55 @@ import {
   resetDraftHeaderOrganizationsToObjectDefault,
   resetDraftObjectNameToObjectDefault,
   resetDraftProjectDocumentationToObjectDefault,
+  type AosrPrintState,
   type DemoAosrDraft,
   updateDemoAosrDraftField,
   updateDraftComplianceStatement,
 } from './demo-aosr-workspace.js';
 import { DemoStoreProvider } from '../demo-store/DemoStoreProvider.js';
+import { buildAosrDocxTemplateData } from './aosr-docx-template-data.js';
+
+const previewMocks = vi.hoisted(() => ({
+  generateAosrDocxBlob: vi.fn(),
+  latestPrintState: undefined as unknown,
+  renderAsync: vi.fn(),
+}));
+
+vi.mock('./aosr-docx-generator.js', async (importOriginal) => {
+  const original = await importOriginal<typeof import('./aosr-docx-generator.js')>();
+
+  return {
+    ...original,
+    generateAosrDocxBlob: previewMocks.generateAosrDocxBlob,
+  };
+});
+
+vi.mock('docx-preview', () => ({
+  renderAsync: previewMocks.renderAsync,
+}));
+
+beforeEach(() => {
+  previewMocks.latestPrintState = undefined;
+  previewMocks.generateAosrDocxBlob.mockReset();
+  previewMocks.generateAosrDocxBlob.mockImplementation(
+    async (printState: AosrPrintState): Promise<Blob> => {
+      previewMocks.latestPrintState = printState;
+
+      return new Blob(['mock AOSR DOCX']);
+    },
+  );
+  previewMocks.renderAsync.mockReset();
+  previewMocks.renderAsync.mockImplementation(
+    async (_blob: Blob, bodyContainer: HTMLElement): Promise<void> => {
+      bodyContainer.textContent = 'DOCX preview';
+    },
+  );
+});
 
 afterEach(() => {
-  vi.restoreAllMocks();
-  vi.unstubAllGlobals();
   cleanup();
+  vi.unstubAllGlobals();
+  vi.restoreAllMocks();
 });
 
 describe('DemoAosrWorkspacePage', () => {
@@ -227,7 +266,6 @@ describe('DemoAosrWorkspacePage', () => {
     expect(drawerContext.textContent).toContain('4 приложений');
     expect(within(drawer).getByText('1 страница')).toBeTruthy();
     expect(within(drawer).queryByText('2 страницы')).toBeNull();
-    expect(preview.dataset['testDocxPreview']).toBe('skipped');
     expect(drawer.querySelector('.act-page')).toBeNull();
 
     await user.click(
@@ -1718,7 +1756,62 @@ async function addRepresentativeAssignmentFromAct(
 }
 
 function getPreviewText(): string {
-  return getDocumentPreview().dataset['testDocxTemplateText'] ?? getDocumentPreview().textContent;
+  const printState = previewMocks.latestPrintState as AosrPrintState | undefined;
+
+  return printState === undefined ? getDocumentPreview().textContent : buildPreviewText(printState);
+}
+
+function buildPreviewText(printState: AosrPrintState): string {
+  const templateData = buildAosrDocxTemplateData(printState);
+  const textParts = [
+    'Объект капитального строительства:',
+    templateData.object.name,
+    ...templateData.counterparties.flatMap((counterparty) => [
+      `${counterparty.title}:`,
+      counterparty.displayText,
+      counterparty.subscript === '' ? '' : `(${counterparty.subscript})`,
+    ]),
+    'ОСВИДЕТЕЛЬСТВОВАНИЯ СКРЫТЫХ РАБОТ',
+    templateData.document.numberLine,
+    templateData.document.dateLine,
+    ...templateData.representatives.groups.flatMap((group) => [
+      `${group.title}:`,
+      ...group.members.flatMap((member) => [
+        member.introDisplayText,
+        member.subscript === '' ? '' : `(${member.subscript})`,
+        member.signatureText,
+        member.signatureName,
+      ]),
+    ]),
+    'произвели осмотр работ',
+    templateData.work.contractorName,
+    'и составили настоящий акт о нижеследующем:',
+    '1.К освидетельствованию предъявлены следующие работы:',
+    templateData.work.description,
+    '2.Работы выполнены по проектной документации:',
+    templateData.project.documentation,
+    '3.При выполнении работ применены:',
+    ...templateData.materials.items.map((material) => material.displayText),
+    '4.Предъявлены документы, подтверждающие соответствие работ предъявляемым к ним требованиям:',
+    ...templateData.confirmationDocuments.items.map((document) => document.displayText),
+    '5.Даты:',
+    templateData.work.startDateLine,
+    templateData.work.endDateLine,
+    '6.Работы выполнены в соответствии с:',
+    templateData.project.compliance,
+    '7.Разрешается производство последующих работ по:',
+    templateData.work.nextWorks,
+    'Дополнительные сведения:',
+    templateData.document.additionalInfo,
+    `Акт составлен в ${templateData.document.copiesLine} экземплярах.`,
+    'Приложения:',
+    ...templateData.applications.items.map((application) => application.displayText),
+  ];
+
+  return textParts
+    .map((textPart) => textPart.trim())
+    .filter((textPart) => textPart !== '')
+    .join('\n');
 }
 
 function getPreviewApplicationsText(): string {
