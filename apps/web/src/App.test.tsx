@@ -6,7 +6,6 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { App } from './App.js';
 import {
   buildSectionFinalPackageModel,
-  buildFinalPackageReadiness,
   buildSectionIdPackageOverviewModel,
   buildIntermediateIdPackageModel,
 } from './app-shell/object-final-package-model.js';
@@ -124,6 +123,37 @@ describe('App shell mock navigation', () => {
       }),
     ).toBeTruthy();
     expect(screen.getByText('Реконструкция поликлиники, демонстрационный проект')).toBeTruthy();
+  });
+
+  it('starts each object workspace screen at the top after route navigation', async () => {
+    const user = userEvent.setup();
+
+    render(<App />);
+    await user.click(getFirstOpenObjectButton());
+
+    document.documentElement.scrollTop = 420;
+    await user.click(
+      within(screen.getByRole('navigation', { name: 'Разделы объекта' })).getByRole('link', {
+        name: 'Открыть раздел Вентиляция',
+      }),
+    );
+    expect(document.documentElement.scrollTop).toBe(0);
+
+    document.documentElement.scrollTop = 320;
+    await user.click(
+      within(screen.getByRole('navigation', { name: 'Разделы объекта' })).getByRole('link', {
+        name: 'Открыть папку Сентябрь 2026',
+      }),
+    );
+    expect(document.documentElement.scrollTop).toBe(0);
+
+    document.documentElement.scrollTop = 220;
+    await user.click(
+      within(screen.getByRole('navigation', { name: 'Разделы объекта' })).getByRole('link', {
+        name: 'Открыть АОСР ОВ-1',
+      }),
+    );
+    expect(document.documentElement.scrollTop).toBe(0);
   });
 
   it('creates the first section, arbitrary folder and first document in an empty object', async () => {
@@ -502,12 +532,12 @@ describe('App shell mock navigation', () => {
     ).toBeTruthy();
     expect(septemberRegistry.getByRole('columnheader', { name: 'Дата' })).toBeTruthy();
     expect(
-      septemberRegistry.getByRole('columnheader', { name: 'Примечание / статус' }),
-    ).toBeTruthy();
+      septemberRegistry.queryByRole('columnheader', { name: 'Примечание / статус' }),
+    ).toBeNull();
     expect(septemberRegistry.getByText('ОВ-1')).toBeTruthy();
     expect(septemberRegistry.getByText('04.09.2026')).toBeTruthy();
     expect(septemberRegistry.getByText(/АОСР — Монтаж скрытых участков/u)).toBeTruthy();
-    expect(septemberRegistry.getByText('Готово')).toBeTruthy();
+    expect(septemberRegistry.queryByText('Готово')).toBeNull();
     expect(screen.getByRole('heading', { name: 'Промежуточная ИД по папке' })).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Открыть промежуточную ИД по папке' })).toBeTruthy();
 
@@ -663,7 +693,7 @@ describe('App shell mock navigation', () => {
     expect(intermediateRegistry.getByText(/АОСР — Установка гильз/u)).toBeTruthy();
     expect(intermediateRegistry.getByText('ОВ-2')).toBeTruthy();
     expect(intermediateRegistry.getByText('06.10.2026')).toBeTruthy();
-    expect(intermediateRegistry.getByText('Готово')).toBeTruthy();
+    expect(intermediateRegistry.queryByText('Готово')).toBeNull();
     expect(intermediateRegistry.queryByText('ОВ-1')).toBeNull();
     expect(
       within(intermediatePackagePage).getByRole('heading', { name: 'Документы папки' }),
@@ -705,7 +735,7 @@ describe('App shell mock navigation', () => {
     await user.click(within(nextSelector).getByRole('button', { name: 'Отмена' }));
 
     const updatedOctoberActs = within(getSectionByHeading('Акты в папке'));
-    expect(updatedOctoberActs.getByText('ОВ-3')).toBeTruthy();
+    expect(updatedOctoberActs.getAllByText('ОВ-3')).toHaveLength(2);
     expect(
       updatedOctoberActs.getAllByText('АОСР — Акт освидетельствования скрытых работ').length,
     ).toBeGreaterThan(1);
@@ -724,6 +754,77 @@ describe('App shell mock navigation', () => {
     await openFolderByName(user, 'Сентябрь 2026');
     expect(screen.getAllByRole('link', { name: /ОВ-1/u }).length).toBeGreaterThan(0);
     expect(screen.queryByRole('link', { name: /ОВ-3/u })).toBeNull();
+  });
+
+  it('prepares a linked empty draft with the AI assistant and opens it in split mode', async () => {
+    const user = userEvent.setup();
+
+    render(<App />);
+    await user.click(getFirstOpenObjectButton());
+    await openFolderByName(user, 'Октябрь 2026');
+
+    await user.click(screen.getByRole('button', { name: 'Сделать ИД с ИИ' }));
+
+    const assistant = screen.getByRole('dialog', { name: 'Сделать ИД с ИИ' });
+    expect(within(assistant).getByRole('radio', { name: /В этой папке/u })).toHaveProperty(
+      'checked',
+      true,
+    );
+    expect(assistant.textContent).toContain('Пустые акты допустимы');
+    expect(assistant.textContent).toContain('frontend-прототипе');
+
+    await user.click(within(assistant).getByRole('button', { name: 'Подготовить ИД в папке' }));
+
+    expect(screen.queryByRole('dialog', { name: 'Сделать ИД с ИИ' })).toBeNull();
+    expect(screen.getByText('ИИ подготовил редактируемые черновики')).toBeTruthy();
+    expect(screen.getByText(/Предложено ИИ/u)).toBeTruthy();
+    expect(screen.getByRole('link', { name: 'Открыть акт ОВ-3' })).toBeTruthy();
+
+    await user.click(screen.getByRole('link', { name: 'Открыть акт ОВ-3' }));
+
+    expect(screen.getByRole('heading', { name: 'Редактирование акта ОВ-3' })).toBeTruthy();
+    expect(
+      screen.getByRole('button', { name: 'Редактировать только для этого акта' }),
+    ).toBeTruthy();
+    expect(
+      screen.getByRole('button', { name: 'Редактор + документ' }).getAttribute('aria-pressed'),
+    ).toBe('true');
+    expect(screen.getByRole('region', { name: 'Редактор документа' })).toBeTruthy();
+    expect(screen.getByRole('region', { name: 'Предпросмотр акта' })).toBeTruthy();
+
+    await user.click(screen.getByRole('button', { name: 'Редактирование' }));
+    expect(screen.queryByRole('region', { name: 'Предпросмотр акта' })).toBeNull();
+    await user.click(screen.getByRole('button', { name: 'Редактор + документ' }));
+    expect(screen.getByRole('region', { name: 'Предпросмотр акта' })).toBeTruthy();
+  });
+
+  it('prepares one AI draft per existing section folder and keeps the suggestions visible', async () => {
+    const user = userEvent.setup();
+
+    render(<App />);
+    await user.click(getFirstOpenObjectButton());
+    await user.click(
+      within(screen.getByRole('navigation', { name: 'Разделы объекта' })).getByRole('link', {
+        name: 'Открыть раздел Вентиляция',
+      }),
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Сделать ИД с ИИ' }));
+    const assistant = screen.getByRole('dialog', { name: 'Сделать ИД с ИИ' });
+    expect(within(assistant).queryByRole('radio', { name: /В этой папке/u })).toBeNull();
+    await user.click(within(assistant).getByRole('button', { name: 'Подготовить ИД в разделе' }));
+
+    expect(
+      screen.getByText('ИИ подготовил 2 черновика — по одному в каждой папке раздела.'),
+    ).toBeTruthy();
+
+    await openFolderByName(user, 'Сентябрь 2026');
+    expect(screen.getByRole('link', { name: 'Открыть акт ОВ-3' })).toBeTruthy();
+    expect(screen.getAllByText(/Предложено ИИ/u)).toHaveLength(1);
+
+    await openFolderByName(user, 'Октябрь 2026');
+    expect(screen.getByRole('link', { name: 'Открыть акт ОВ-4' })).toBeTruthy();
+    expect(screen.getAllByText(/Предложено ИИ/u)).toHaveLength(1);
   });
 
   it('uses current section template parameters for linked AOSR drafts', async () => {
@@ -936,7 +1037,6 @@ describe('App shell mock navigation', () => {
         documentTypeTitle: 'Акт освидетельствования скрытых работ',
         folderName: 'Октябрь 2026',
         rowNumber: 1,
-        statusText: 'Готово',
         workDescription:
           'Установка гильз трубопроводов перед заделкой отверстий в перекрытии в осях 5-7 / Г-Д с отм. 0.000 - +0.600.',
       }),
@@ -955,7 +1055,6 @@ describe('App shell mock navigation', () => {
         documentTypeCode: 'АОСР',
         documentTypeTitle: 'Акт освидетельствования скрытых работ',
         folderName: 'Октябрь 2026',
-        statusText: 'Готово',
       }),
     ]);
 
@@ -970,11 +1069,9 @@ describe('App shell mock navigation', () => {
       buildDerivedRegistryRows([
         {
           actTypeId: 'aosr',
-          confirmationDocumentCount: 0,
           documentDate: '',
           documentNumber: '',
           id: 'metadata-driven-row',
-          materialCount: 0,
           folderName: 'Ноябрь 2026',
           workDescription: '',
         },
@@ -982,20 +1079,11 @@ describe('App shell mock navigation', () => {
     ).toEqual([
       expect.objectContaining({
         documentDateDisplay: 'Не заполнена',
-        documentName: 'АОСР — работы не заполнены',
+        documentName: 'АОСР — пустой бланк для заполнения',
         documentNumberDisplay: 'Без номера',
         documentTypeCode: 'АОСР',
         documentTypeTitle: 'Акт освидетельствования скрытых работ',
         folderName: 'Ноябрь 2026',
-        statusMessages: [
-          'Нет номера',
-          'Нет даты',
-          'Не заполнено описание работ',
-          'Нет материалов',
-          'Нет документов',
-        ],
-        statusText:
-          'Нет номера; Нет даты; Не заполнено описание работ; Нет материалов; Нет документов',
       }),
     ]);
   });
@@ -1051,22 +1139,6 @@ describe('App shell mock navigation', () => {
         (item) => item.id === 'final-object-document-object-document-scheme-ov-04',
       ),
     ).toHaveLength(1);
-  });
-
-  it('derives final package readiness warnings from missing demo composition', () => {
-    const readiness = buildFinalPackageReadiness({
-      acts: 0,
-      certificates: 0,
-      objectDocuments: 0,
-    });
-
-    expect(readiness.status).toBe('needs-attention');
-    expect(readiness.statusLabel).toBe('Пустые поля останутся пустыми');
-    expect(readiness.issues).toEqual([
-      'Нет документов папки',
-      'Нет сертификатов',
-      'Нет документов объекта',
-    ]);
   });
 
   it('navigates from the final ID package page back to AOSR', async () => {
@@ -1256,14 +1328,12 @@ describe('App shell mock navigation', () => {
     rows = within(screen.getByRole('list', { name: 'Акты в папке Сентябрь 2026' })).getAllByRole(
       'listitem',
     );
-    expect(rows[1]?.textContent).toContain('Работы не заполнены');
+    expect(rows[1]?.textContent).toContain('Пустой акт — можно распечатать и заполнить от руки');
 
     const registry = within(getSectionByHeading('Реестр папки'));
-    expect(registry.getByText('АОСР — работы не заполнены')).toBeTruthy();
+    expect(registry.getByText('АОСР — пустой бланк для заполнения')).toBeTruthy();
     expect(registry.getByText('Не заполнена')).toBeTruthy();
-    expect(
-      registry.getByText('Нет даты; Не заполнено описание работ; Нет материалов; Нет документов'),
-    ).toBeTruthy();
+    expect(registry.queryByText(/Нет даты|Не заполнено описание работ|Нет материалов/u)).toBeNull();
     expect(registry.queryByRole('button', { name: /Скачать/u })).toBeNull();
   });
 

@@ -165,7 +165,9 @@ export function DemoDocumentTree({
 function getDraftWorkDescriptionPreview(draft: DemoAosrDraft): string {
   const workDescription = draft.workDescription.trim();
 
-  return workDescription === '' ? 'Работы не заполнены' : workDescription;
+  return workDescription === ''
+    ? 'Пустой акт — можно распечатать и заполнить от руки'
+    : workDescription;
 }
 
 function TrashIcon(): React.JSX.Element {

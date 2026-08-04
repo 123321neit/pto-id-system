@@ -50,14 +50,6 @@ interface FinalPackageSummary {
   readonly total: number;
 }
 
-export type FinalPackageReadinessStatus = 'ready' | 'needs-attention';
-
-export interface FinalPackageReadiness {
-  readonly issues: readonly string[];
-  readonly status: FinalPackageReadinessStatus;
-  readonly statusLabel: string;
-}
-
 interface FinalPackageItem {
   readonly date: string;
   readonly id: string;
@@ -75,7 +67,6 @@ export interface FinalPackageGroup {
 
 export interface FinalPackageModel {
   readonly groups: readonly FinalPackageGroup[];
-  readonly readiness: FinalPackageReadiness;
   readonly summary: FinalPackageSummary;
 }
 
@@ -207,39 +198,7 @@ export function buildSectionFinalPackageModel(
       { id: 'certificates', items: certificateItems, title: 'Сертификаты' },
       { id: 'object-documents', items: objectDocumentItems, title: 'Документы объекта' },
     ],
-    readiness: buildFinalPackageReadiness(summary),
     summary,
-  };
-}
-
-// Frontend-only package diagnostics. Future versions may check attached files and
-// empty package sections here without blocking print output.
-export function buildFinalPackageReadiness(
-  summary: Pick<FinalPackageSummary, 'acts' | 'certificates' | 'objectDocuments'>,
-): FinalPackageReadiness {
-  const issues: string[] = [];
-
-  if (summary.acts === 0) {
-    issues.push('Нет документов папки');
-  }
-
-  if (summary.certificates === 0) {
-    issues.push('Нет сертификатов');
-  }
-
-  if (summary.objectDocuments === 0) {
-    issues.push('Нет документов объекта');
-  }
-
-  const status: FinalPackageReadinessStatus = issues.length === 0 ? 'ready' : 'needs-attention';
-
-  return {
-    issues,
-    status,
-    statusLabel:
-      status === 'ready'
-        ? 'Файл можно сформировать с текущими значениями'
-        : 'Пустые поля останутся пустыми',
   };
 }
 

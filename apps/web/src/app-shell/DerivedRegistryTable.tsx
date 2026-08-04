@@ -26,7 +26,6 @@ export function DerivedRegistryTable({ registry }: DerivedRegistryTableProps): R
             <th scope="col">Обозначение / номер</th>
             <th scope="col">Наименование документа</th>
             <th scope="col">Дата</th>
-            <th scope="col">Примечание / статус</th>
             {shouldShowFolderColumn ? <th scope="col">Папка</th> : null}
           </tr>
         </thead>
@@ -39,7 +38,6 @@ export function DerivedRegistryTable({ registry }: DerivedRegistryTableProps): R
               </td>
               <td>{row.documentName}</td>
               <td>{row.documentDateDisplay}</td>
-              <td>{row.statusText}</td>
               {shouldShowFolderColumn ? <td>{row.folderName}</td> : null}
             </tr>
           ))}

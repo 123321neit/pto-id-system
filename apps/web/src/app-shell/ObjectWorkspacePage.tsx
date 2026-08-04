@@ -10,6 +10,7 @@ import {
   type DemoSectionTemplateSettings,
 } from '../aosr-demo/demo-aosr-workspace.js';
 import { DerivedRegistryTable } from './DerivedRegistryTable.js';
+import { AiDocumentationAssistant } from './AiDocumentationAssistant.js';
 import { AppBreadcrumbs, type AppBreadcrumbScreen } from './AppBreadcrumbs.js';
 import { ObjectDocumentsPage } from './ObjectDocumentsPage.js';
 import { ObjectFinalPackagePage, ObjectIntermediatePackagePage } from './ObjectFinalPackagePage.js';
@@ -58,6 +59,7 @@ import {
   renumberSectionDraftsByFolderOrder,
 } from './object-workspace-numbering.js';
 import { duplicateAosrDraftInFolder } from './object-workspace-drafts.js';
+import { prepareAiDocumentationDrafts, type AiDocumentationScope } from './object-workspace-ai.js';
 import type { ObjectWorkspaceSection } from './object-workspace-types.js';
 import {
   copySectionTemplateSettingsToTarget,
@@ -143,6 +145,11 @@ export function ObjectWorkspacePage({
   const [sectionNameInput, setSectionNameInput] = useState('');
   const [lastTemplateCopyMessage, setLastTemplateCopyMessage] = useState('');
   const [isIntermediatePackageOpen, setIntermediatePackageOpen] = useState(false);
+  const [isAiAssistantOpen, setAiAssistantOpen] = useState(false);
+  const [aiAssistantInitialScope, setAiAssistantInitialScope] =
+    useState<AiDocumentationScope>('folder');
+  const [aiAssistantMessage, setAiAssistantMessage] = useState('');
+  const [aiSuggestedDraftIds, setAiSuggestedDraftIds] = useState<readonly string[]>([]);
   const isAosrVisible = route.screen === 'aosr' || route.screen === 'template';
   const selectedSectionFolders =
     selectedSection === undefined
@@ -213,7 +220,18 @@ export function ObjectWorkspacePage({
     setSectionNameInput('');
     setLastTemplateCopyMessage('');
     setIntermediatePackageOpen(false);
+    setAiAssistantOpen(false);
   }, [object.id, selectedFolderId, selectedSectionId]);
+
+  useEffect(() => {
+    setAiAssistantMessage('');
+    setAiSuggestedDraftIds([]);
+  }, [object.id, selectedSectionId]);
+
+  useEffect(() => {
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+  }, [route.screen, selectedDraftId, selectedFolderId, selectedSectionId]);
 
   useEffect(() => {
     if (route.screen !== 'folder') {
@@ -349,6 +367,46 @@ export function ObjectWorkspacePage({
     }));
     setCreateDocumentPanelOpen(false);
     navigateTo(aosrPath(object.id, selectedSection.id, selectedFolderId, draft.id));
+  };
+
+  const openAiAssistant = (scope: AiDocumentationScope): void => {
+    if (selectedSection === undefined) {
+      return;
+    }
+
+    setAiAssistantInitialScope(scope);
+    setAiAssistantOpen(true);
+  };
+
+  const prepareDocumentationWithAi = (scope: AiDocumentationScope): void => {
+    if (selectedSection === undefined) {
+      return;
+    }
+
+    const result = prepareAiDocumentationDrafts({
+      ...(selectedFolder === undefined ? {} : { folderId: selectedFolder.id }),
+      scope,
+      section: selectedSection,
+      sectionTemplateSettings: selectedSectionTemplateSettings,
+      workspace,
+    });
+
+    setAiAssistantOpen(false);
+
+    if (result.createdDraftIds.length === 0) {
+      setAiAssistantMessage('ИИ-помощнику нужна хотя бы одна папка в выбранном разделе.');
+      return;
+    }
+
+    updateWorkspace(object.id, () => result.workspace);
+    setAiSuggestedDraftIds(result.createdDraftIds);
+    setAiAssistantMessage(
+      scope === 'folder'
+        ? 'ИИ подготовил новый черновик в этой папке. Его можно открыть, изменить или удалить.'
+        : `ИИ подготовил ${String(result.createdDraftIds.length)} ${formatDraftCount(
+            result.createdDraftIds.length,
+          )} — по одному в каждой папке раздела.`,
+    );
   };
 
   const deleteAosrDraftFromCurrentFolder = (draftId: string): void => {
@@ -612,6 +670,7 @@ export function ObjectWorkspacePage({
 
   return (
     <main className="object-workspace-shell">
+      <ProductTopbar />
       <ObjectWorkspaceNavigation
         activeSection={activeSection}
         drafts={drafts}
@@ -655,6 +714,7 @@ export function ObjectWorkspacePage({
 
         {activeSection === 'section' ? (
           <ObjectSectionPage
+            aiAssistantMessage={aiAssistantMessage}
             drafts={drafts}
             folderName={folderNameInput}
             isCreateFolderPanelOpen={isCreateFolderPanelOpen}
@@ -667,6 +727,9 @@ export function ObjectWorkspacePage({
             }}
             onCreateFolder={createFolder}
             onOpenCreateFolderPanel={openCreateFolderPanel}
+            onOpenAiAssistant={() => {
+              openAiAssistant('section');
+            }}
             onMoveFolder={moveFolderInSelectedSection}
           />
         ) : null}
@@ -678,6 +741,8 @@ export function ObjectWorkspacePage({
             drafts={selectedFolderDrafts}
             isCreateDocumentPanelOpen={isCreateDocumentPanelOpen}
             folder={selectedFolder}
+            aiAssistantMessage={aiAssistantMessage}
+            aiSuggestedDraftIds={aiSuggestedDraftIds}
             objectId={object.id}
             sectionId={selectedSection?.id}
             sectionName={selectedSection?.name}
@@ -689,6 +754,9 @@ export function ObjectWorkspacePage({
             onDuplicateAosr={duplicateAosrDraftFromFolderList}
             onMoveAosr={moveAosrDraftInSelectedFolder}
             onOpenCreateDocumentPanel={openCreateDocumentPanel}
+            onOpenAiAssistant={() => {
+              openAiAssistant('folder');
+            }}
             onOpenIntermediatePackage={() => {
               setCreateDocumentPanelOpen(false);
               setIntermediatePackageOpen(true);
@@ -767,6 +835,19 @@ export function ObjectWorkspacePage({
             sectionName={selectedSection?.name}
           />
         ) : null}
+
+        {isAiAssistantOpen && selectedSection !== undefined ? (
+          <AiDocumentationAssistant
+            {...(selectedFolder === undefined ? {} : { folderName: selectedFolder.name })}
+            initialScope={aiAssistantInitialScope}
+            onClose={() => {
+              setAiAssistantOpen(false);
+            }}
+            onPrepare={prepareDocumentationWithAi}
+            sectionFolderCount={selectedSectionFolders.length}
+            sectionName={selectedSection.name}
+          />
+        ) : null}
       </section>
     </main>
   );
@@ -788,9 +869,34 @@ function ObjectWorkspaceHeader({ object, route }: ObjectWorkspaceHeaderProps): R
           screen={route.screen satisfies AppBreadcrumbScreen}
           {...('section' in route ? { section: route.section } : {})}
         />
-        <h1 id="object-workspace-title">{object.title}</h1>
-        <p>{object.address}</p>
+        <div className="object-workspace-header__object-context">
+          <span className="section-kicker">Объект</span>
+          <h1 id="object-workspace-title">{object.title}</h1>
+          <p>{object.address}</p>
+        </div>
       </div>
+    </header>
+  );
+}
+
+function ProductTopbar(): React.JSX.Element {
+  return (
+    <header className="product-topbar">
+      <Link aria-label="ИДея — к объектам" className="product-topbar__brand" to="/objects">
+        <span aria-hidden="true">И</span>
+        <strong>ИДея</strong>
+        <small>Исполнительная документация</small>
+      </Link>
+      <nav aria-label="Главное меню" className="product-topbar__navigation">
+        <Link aria-current="page" to="/objects">
+          Объекты
+        </Link>
+        <Link to="/certificates">Библиотека сертификатов</Link>
+        <Link to="/organizations">Организации и представители</Link>
+      </nav>
+      <span className="product-topbar__account" aria-label="Текущий пользователь: Иванов И.И.">
+        ИИ
+      </span>
     </header>
   );
 }
@@ -1113,6 +1219,7 @@ function ObjectSectionsPage({
 }
 
 interface ObjectSectionPageProps {
+  readonly aiAssistantMessage: string;
   readonly drafts: readonly DemoAosrDraft[];
   readonly folderName: string;
   readonly isCreateFolderPanelOpen: boolean;
@@ -1123,6 +1230,7 @@ interface ObjectSectionPageProps {
   readonly onCloseCreateFolderPanel: () => void;
   readonly onCreateFolder: () => void;
   readonly onOpenCreateFolderPanel: () => void;
+  readonly onOpenAiAssistant: () => void;
   readonly onMoveFolder: (
     folderId: DemoIdFolderId,
     direction: DemoDocumentationSectionFolderMoveDirection,
@@ -1130,6 +1238,7 @@ interface ObjectSectionPageProps {
 }
 
 function ObjectSectionPage({
+  aiAssistantMessage,
   drafts,
   folderName,
   isCreateFolderPanelOpen,
@@ -1140,6 +1249,7 @@ function ObjectSectionPage({
   onCloseCreateFolderPanel,
   onCreateFolder,
   onOpenCreateFolderPanel,
+  onOpenAiAssistant,
   onMoveFolder,
 }: ObjectSectionPageProps): React.JSX.Element {
   if (selectedSection === undefined) {
@@ -1172,21 +1282,24 @@ function ObjectSectionPage({
           >
             Создать папку
           </button>
+          <button
+            className="action-button action-button--ai"
+            onClick={onOpenAiAssistant}
+            type="button"
+          >
+            <span aria-hidden="true">✦</span>
+            Сделать ИД с ИИ
+          </button>
           <Link className="compact-toggle" to={sectionFinalPath(objectId, selectedSection.id)}>
             Итоговая ИД по разделу
           </Link>
           <Link className="compact-toggle" to={sectionTemplatePath(objectId, selectedSection.id)}>
             Шаблонные значения раздела
           </Link>
-          <button
-            aria-label={`Дополнительные действия раздела ${selectedSection.name}`}
-            className="compact-toggle compact-toggle--icon"
-            type="button"
-          >
-            …
-          </button>
         </div>
       </div>
+
+      <AiDocumentationResult message={aiAssistantMessage} />
 
       {isCreateFolderPanelOpen ? (
         <form
@@ -1433,6 +1546,8 @@ function CreateDocumentPanel({
 }
 
 interface ObjectFolderPageProps {
+  readonly aiAssistantMessage: string;
+  readonly aiSuggestedDraftIds: readonly string[];
   readonly drafts: readonly DemoAosrDraft[];
   readonly isCreateDocumentPanelOpen: boolean;
   readonly folder: DemoIdFolder;
@@ -1445,10 +1560,13 @@ interface ObjectFolderPageProps {
   readonly onDuplicateAosr: (draftId: string) => void;
   readonly onMoveAosr: (draftId: string, direction: DemoIdFolderDraftMoveDirection) => void;
   readonly onOpenCreateDocumentPanel: () => void;
+  readonly onOpenAiAssistant: () => void;
   readonly onOpenIntermediatePackage: () => void;
 }
 
 function ObjectFolderPage({
+  aiAssistantMessage,
+  aiSuggestedDraftIds,
   drafts,
   isCreateDocumentPanelOpen,
   folder,
@@ -1461,6 +1579,7 @@ function ObjectFolderPage({
   onDuplicateAosr,
   onMoveAosr,
   onOpenCreateDocumentPanel,
+  onOpenAiAssistant,
   onOpenIntermediatePackage,
 }: ObjectFolderPageProps): React.JSX.Element {
   const folderRegistry = buildFolderRegistryModel(folder, drafts);
@@ -1489,15 +1608,16 @@ function ObjectFolderPage({
           >
             Создать акт
           </button>
-          <button className="compact-toggle" onClick={onOpenIntermediatePackage} type="button">
-            Промежуточная ИД по папке
-          </button>
           <button
-            aria-label={`Дополнительные действия папки ${folder.name}`}
-            className="compact-toggle compact-toggle--icon"
+            className="action-button action-button--ai"
+            onClick={onOpenAiAssistant}
             type="button"
           >
-            …
+            <span aria-hidden="true">✦</span>
+            Сделать ИД с ИИ
+          </button>
+          <button className="compact-toggle" onClick={onOpenIntermediatePackage} type="button">
+            Промежуточная ИД по папке
           </button>
         </div>
       </div>
@@ -1510,6 +1630,8 @@ function ObjectFolderPage({
           onCreateAosr={onCreateAosr}
         />
       ) : null}
+
+      <AiDocumentationResult message={aiAssistantMessage} />
 
       <div className="object-folder-grid">
         <section
@@ -1529,7 +1651,11 @@ function ObjectFolderPage({
             <ul className="object-folder-draft-list" aria-label={`Акты в папке ${folder.name}`}>
               {drafts.map((draft, draftIndex) => (
                 <li
-                  className="object-folder-draft-card"
+                  className={`object-folder-draft-card${
+                    aiSuggestedDraftIds.includes(draft.id)
+                      ? ' object-folder-draft-card--ai-suggested'
+                      : ''
+                  }`}
                   data-folder-draft-id={draft.id}
                   key={draft.id}
                 >
@@ -1556,6 +1682,13 @@ function ObjectFolderPage({
                       ↓ Вниз
                     </button>
                   </div>
+                  <span className="object-folder-draft-card__preview" aria-hidden="true">
+                    <strong>{getDocumentDisplayNumber(draft.actNumber)}</strong>
+                    <i />
+                    <i />
+                    <i />
+                    <i />
+                  </span>
                   <div className="object-folder-draft-card__body">
                     <div className="object-folder-draft-card__title">
                       <strong className="object-folder-draft-card__number">
@@ -1564,6 +1697,9 @@ function ObjectFolderPage({
                       <span className="object-folder-draft-card__type">
                         {aosrActType.code} — {aosrActType.title}
                       </span>
+                      {aiSuggestedDraftIds.includes(draft.id) ? (
+                        <span className="object-folder-draft-card__ai-label">✦ Предложено ИИ</span>
+                      ) : null}
                     </div>
                     <p
                       className={
@@ -1661,5 +1797,46 @@ function ObjectFolderPage({
 function getDraftWorkDescriptionPreview(draft: DemoAosrDraft): string {
   const workDescription = draft.workDescription.trim();
 
-  return workDescription === '' ? 'Работы не заполнены' : workDescription;
+  return workDescription === ''
+    ? 'Пустой акт — можно распечатать и заполнить от руки'
+    : workDescription;
+}
+
+function AiDocumentationResult({
+  message,
+}: {
+  readonly message: string;
+}): React.JSX.Element | null {
+  if (message === '') {
+    return null;
+  }
+
+  return (
+    <div className="ai-documentation-result" role="status">
+      <span aria-hidden="true">✦</span>
+      <div>
+        <strong>ИИ подготовил редактируемые черновики</strong>
+        <p>{message}</p>
+      </div>
+    </div>
+  );
+}
+
+function formatDraftCount(count: number): string {
+  const mod100 = count % 100;
+  const mod10 = count % 10;
+
+  if (mod100 >= 11 && mod100 <= 14) {
+    return 'черновиков';
+  }
+
+  if (mod10 === 1) {
+    return 'черновик';
+  }
+
+  if (mod10 >= 2 && mod10 <= 4) {
+    return 'черновика';
+  }
+
+  return 'черновиков';
 }

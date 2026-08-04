@@ -202,8 +202,8 @@ export function DemoAosrWorkspacePage({
   const [isCertificateLibraryOpen, setCertificateLibraryOpen] = useState(false);
   const [isObjectDocumentLibraryOpen, setObjectDocumentLibraryOpen] = useState(false);
   const [isDocumentPreviewOpen, setDocumentPreviewOpen] = useState(initialDocumentPreviewOpen);
-  const [activeActMode, setActiveActMode] = useState<'edit' | 'preview'>(
-    initialDocumentPreviewOpen ? 'preview' : 'edit',
+  const [activeActMode, setActiveActMode] = useState<'edit' | 'preview' | 'split'>(
+    initialDocumentPreviewOpen ? 'preview' : isEmbeddedInObjectWorkspace ? 'split' : 'edit',
   );
   const [headerOrganizationForm, setHeaderOrganizationForm] = useState<HeaderOrganizationFormState>(
     emptyHeaderOrganizationForm,
@@ -759,8 +759,16 @@ export function DemoAosrWorkspacePage({
             className="workspace-header__current-act"
             aria-label={`Текущий акт: ${selectedDocumentLabel}`}
           >
-            Акт: <strong>{selectedDocumentLabel}</strong>
-            <span>{formatDocumentDate(selectedDraft.actDate)}</span>
+            {isEmbeddedInObjectWorkspace ? (
+              <>
+                Дата акта: <strong>{formatDocumentDate(selectedDraft.actDate)}</strong>
+              </>
+            ) : (
+              <>
+                Акт: <strong>{selectedDocumentLabel}</strong>
+                <span>{formatDocumentDate(selectedDraft.actDate)}</span>
+              </>
+            )}
           </p>
         </div>
         <div className="workspace-header__aside" role="region" aria-label="Действия редактора">
@@ -784,8 +792,18 @@ export function DemoAosrWorkspacePage({
             {isEmbeddedInObjectWorkspace ? (
               <>
                 <button
+                  aria-pressed={activeActMode === 'split'}
+                  className="secondary-action"
+                  onClick={() => {
+                    setActiveActMode('split');
+                  }}
+                  type="button"
+                >
+                  Редактор + документ
+                </button>
+                <button
                   aria-pressed={activeActMode === 'preview'}
-                  className="secondary-action secondary-action--accent"
+                  className="secondary-action"
                   onClick={() => {
                     setActiveActMode('preview');
                   }}
@@ -875,7 +893,9 @@ export function DemoAosrWorkspacePage({
           </section>
         </div>
       ) : (
-        <div className="workspace-grid">
+        <div
+          className={`workspace-grid${activeActMode === 'split' ? ' workspace-grid--split' : ''}`}
+        >
           <DemoDocumentTree
             actType={aosrActType}
             drafts={visibleDrafts}
@@ -1004,6 +1024,21 @@ export function DemoAosrWorkspacePage({
               />
             </div>
           </section>
+          {activeActMode === 'split' ? (
+            <section
+              className="act-preview-mode act-preview-mode--split"
+              aria-label="Предпросмотр акта"
+            >
+              <div className="preview-panel">
+                <div className="panel-heading">
+                  <p className="section-kicker">Живой документ</p>
+                  <h2>Предпросмотр акта</h2>
+                  <p>Пустые значения остаются линиями для заполнения от руки.</p>
+                </div>
+                <DemoAosrPreview printState={printState} />
+              </div>
+            </section>
+          ) : null}
         </div>
       )}
 

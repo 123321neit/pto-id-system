@@ -13,10 +13,8 @@ export interface RegistrySourceDocument {
   readonly actTypeId: DemoActTypeId;
   readonly documentDate: string;
   readonly documentNumber: string;
-  readonly confirmationDocumentCount?: number;
   readonly id: string;
   readonly folderName: string;
-  readonly materialCount?: number;
   readonly workDescription: string;
 }
 
@@ -32,8 +30,6 @@ export interface DerivedRegistryRow {
   readonly id: string;
   readonly folderName: string;
   readonly rowNumber: number;
-  readonly statusMessages: readonly string[];
-  readonly statusText: string;
   readonly workDescription: string;
 }
 
@@ -101,8 +97,6 @@ export function buildDerivedRegistryRows(
       id: `registry-row-${document.id}`,
       folderName: document.folderName,
       rowNumber: index + 1,
-      statusMessages: getRegistryStatusMessages(document),
-      statusText: formatRegistryStatus(document),
       workDescription: document.workDescription,
     };
   });
@@ -114,12 +108,10 @@ function mapAosrDraftToRegistryDocument(
 ): RegistrySourceDocument {
   return {
     actTypeId: 'aosr',
-    confirmationDocumentCount: draft.objectDocumentIds.length,
     documentDate: draft.actDate,
     documentNumber: draft.actNumber,
     id: draft.id,
     folderName,
-    materialCount: draft.materialCertificateIds.length,
     workDescription: draft.workDescription,
   };
 }
@@ -146,42 +138,7 @@ function formatRegistryDate(value: string): string {
 
 function formatRegistryDocumentName(documentTypeCode: string, workDescription: string): string {
   const workDescriptionPreview =
-    workDescription.trim() === '' ? 'работы не заполнены' : workDescription;
+    workDescription.trim() === '' ? 'пустой бланк для заполнения' : workDescription;
 
   return `${documentTypeCode} — ${workDescriptionPreview}`;
-}
-
-function formatRegistryStatus(document: RegistrySourceDocument): string {
-  const messages = getRegistryStatusMessages(document);
-
-  return messages.length === 0 ? 'Готово' : messages.join('; ');
-}
-
-function getRegistryStatusMessages(document: RegistrySourceDocument): readonly string[] {
-  const messages: string[] = [];
-
-  if (document.documentNumber.trim() === '') {
-    messages.push('Нет номера');
-  }
-
-  if (document.documentDate.trim() === '') {
-    messages.push('Нет даты');
-  }
-
-  if (document.workDescription.trim() === '') {
-    messages.push('Не заполнено описание работ');
-  }
-
-  if (document.materialCount !== undefined && document.materialCount === 0) {
-    messages.push('Нет материалов');
-  }
-
-  if (
-    document.confirmationDocumentCount !== undefined &&
-    document.confirmationDocumentCount === 0
-  ) {
-    messages.push('Нет документов');
-  }
-
-  return messages;
 }
