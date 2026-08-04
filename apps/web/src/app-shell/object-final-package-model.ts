@@ -15,8 +15,6 @@ import {
 
 type FinalPackageGroupId = 'registry' | 'acts' | 'certificates' | 'object-documents';
 
-export type IdPackageType = 'intermediate' | 'final';
-
 export interface IdPackageCompositionSummary {
   readonly acts: number;
   readonly objectDocuments: number;

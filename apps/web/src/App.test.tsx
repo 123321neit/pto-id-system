@@ -20,57 +20,42 @@ import { demoAosrWorkspace, type DemoAosrDraft } from './aosr-demo/demo-aosr-wor
 import { initialDemoCertificates, initialDemoObjectDocuments } from './demo-store/demo-store.js';
 
 const aosrPreviewMocks = vi.hoisted(() => ({
+  downloadAosrDocx: vi.fn(),
   generateAosrDocxBlob: vi.fn(),
   renderAsync: vi.fn(),
 }));
 
-vi.mock('./aosr-demo/aosr-docx-generator.js', async (importOriginal) => {
-  const original = await importOriginal<typeof import('./aosr-demo/aosr-docx-generator.js')>();
-
-  return {
-    ...original,
-    generateAosrDocxBlob: aosrPreviewMocks.generateAosrDocxBlob,
-  };
-});
+vi.mock('./aosr-demo/aosr-docx-generator.js', () => ({
+  downloadAosrDocx: aosrPreviewMocks.downloadAosrDocx,
+  generateAosrDocxBlob: aosrPreviewMocks.generateAosrDocxBlob,
+}));
 
 vi.mock('docx-preview', () => ({
   renderAsync: aosrPreviewMocks.renderAsync,
 }));
 
+const originalWindowConfirm = window.confirm;
+
 beforeEach(() => {
   aosrPreviewMocks.generateAosrDocxBlob.mockReset();
   aosrPreviewMocks.generateAosrDocxBlob.mockResolvedValue(new Blob(['mock AOSR DOCX']));
+  aosrPreviewMocks.downloadAosrDocx.mockReset();
+  aosrPreviewMocks.downloadAosrDocx.mockResolvedValue(undefined);
   aosrPreviewMocks.renderAsync.mockReset();
   aosrPreviewMocks.renderAsync.mockImplementation(
-    async (_blob: Blob, bodyContainer: HTMLElement): Promise<void> => {
+    (_blob: Blob, bodyContainer: HTMLElement): Promise<void> => {
       bodyContainer.textContent = 'DOCX preview';
+
+      return Promise.resolve();
     },
   );
 });
 
 afterEach(() => {
   cleanup();
-  vi.restoreAllMocks();
+  window.confirm = originalWindowConfirm;
+  vi.clearAllMocks();
 });
-
-function mockBrowserDocxDownload() {
-  const createObjectUrl = vi.fn(() => 'blob:id-register-test');
-  const revokeObjectUrl = vi.fn();
-  const clickSpy = vi
-    .spyOn(HTMLAnchorElement.prototype, 'click')
-    .mockImplementation(() => undefined);
-
-  Object.defineProperty(URL, 'createObjectURL', {
-    configurable: true,
-    value: createObjectUrl,
-  });
-  Object.defineProperty(URL, 'revokeObjectURL', {
-    configurable: true,
-    value: revokeObjectUrl,
-  });
-
-  return { clickSpy, createObjectUrl, revokeObjectUrl };
-}
 
 describe('App shell mock navigation', () => {
   it('renders mock object cards and quick access cards on the dashboard', () => {
@@ -623,24 +608,10 @@ describe('App shell mock navigation', () => {
     ).toBeTruthy();
     expect(within(intermediatePackagePage).getAllByText('ОВ-2').length).toBeGreaterThan(0);
     expect(
-      within(intermediatePackagePage).getByText(
-        'Скачивается DOCX-реестр только по текущей папке. Полный комплект промежуточной ИД пока не формируется.',
-      ),
-    ).toBeTruthy();
-    const downloadMocks = mockBrowserDocxDownload();
-    const printButton = within(intermediatePackagePage).getByRole('button', {
-      name: 'Скачать реестр папки DOCX',
-    });
-    expect((printButton as HTMLButtonElement).disabled).toBe(false);
-    await user.click(printButton);
-    expect(
-      within(intermediatePackagePage).getByText(
-        'Реестр папки DOCX сформирован и передан в скачивание.',
-      ),
-    ).toBeTruthy();
-    expect(downloadMocks.createObjectUrl).toHaveBeenCalledTimes(1);
-    expect(downloadMocks.clickSpy).toHaveBeenCalledTimes(1);
-    expect(downloadMocks.revokeObjectUrl).toHaveBeenCalledWith('blob:id-register-test');
+      within(intermediatePackagePage).queryByRole('button', {
+        name: /Скачать реестр/u,
+      }),
+    ).toBeNull();
   });
 
   it('creates an AOSR draft inside the selected folder and shows it in that folder tree', async () => {
@@ -1036,39 +1007,13 @@ describe('App shell mock navigation', () => {
     ]);
   });
 
-  it('downloads a final section register DOCX in demo mode', async () => {
-    const user = userEvent.setup();
-
-    render(<App />);
-    await openObjectFinalPackagePage(user);
-
-    const finalPackagePage = screen.getByRole('region', {
-      name: 'Итоговая ИД по разделу: Вентиляция',
-    });
-    const downloadMocks = mockBrowserDocxDownload();
-    const downloadButton = within(finalPackagePage).getByRole('button', {
-      name: 'Скачать реестр раздела DOCX',
-    });
-    expect((downloadButton as HTMLButtonElement).disabled).toBe(false);
-    await user.click(downloadButton);
-    expect(
-      within(finalPackagePage).getByText('Реестр раздела DOCX сформирован и передан в скачивание.'),
-    ).toBeTruthy();
-    expect(
-      screen.getByText(
-        'Скачивается DOCX-реестр по всем папкам выбранного раздела. Полный пакет ИД, PDF и ZIP пока не формируются.',
-      ),
-    ).toBeTruthy();
-    expect(downloadMocks.createObjectUrl).toHaveBeenCalledTimes(1);
-    expect(downloadMocks.clickSpy).toHaveBeenCalledTimes(1);
-    expect(downloadMocks.revokeObjectUrl).toHaveBeenCalledWith('blob:id-register-test');
-  });
-
   it('navigates from the final ID package page back to AOSR', async () => {
     const user = userEvent.setup();
 
     render(<App />);
     await openObjectFinalPackagePage(user);
+
+    expect(screen.queryByRole('button', { name: /Скачать реестр/u })).toBeNull();
 
     await openSeptemberAosrDocument(user);
 

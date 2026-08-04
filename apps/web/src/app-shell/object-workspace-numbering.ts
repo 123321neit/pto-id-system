@@ -44,10 +44,7 @@ export function renumberSectionDraftsByFolderOrder({
     for (const draftId of folder.draftIds) {
       const draft = currentDrafts.find((currentDraft) => currentDraft.id === draftId);
 
-      if (
-        draft?.sectionId !== section.id ||
-        draft.numberingAssignment.source !== 'automatic'
-      ) {
+      if (draft?.sectionId !== section.id || draft.numberingAssignment.source !== 'automatic') {
         continue;
       }
 

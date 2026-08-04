@@ -6121,3 +6121,31 @@ delete/move/reorder lifecycle or generation was introduced.
 - no static tagged DOCX register template was added yet;
 - no backend/API/storage/Prisma migration was added;
 - no PDF/ZIP/package builder/auth/AI/OCR/AOSR renderer work was added.
+
+### 2026-08-04 — Frontend stabilization and audit
+
+- Статус: `Stabilized frontend baseline`
+- Описание: removed premature register-download code, made mass numbering
+  automatic-only and hardened the DOCX-only AOSR preview lifecycle.
+
+Уточнено:
+
+- mass section renumbering changes only drafts whose numbering source is
+  `automatic`; manual numbers are never converted or overwritten;
+- the AOSR preview has no public test-only status prop and no production
+  `MODE === test` bypass;
+- the preview renders generated DOCX into a detached host and publishes it only
+  if the render is still current;
+- frontend folder/section register DOCX generators and download actions were
+  removed; readonly derived registries and package composition screens remain;
+- the earlier 2026-07-07 register DOCX foundation/download entries are
+  historical and no longer describe the active frontend baseline;
+- `docs/frontend-code-and-file-audit.md` records removed orphans, retained
+  boundaries and future refactor candidates.
+
+Ограничения:
+
+- no new product behavior was added;
+- the tagged AOSR DOCX template was not changed;
+- no backend/API/Prisma/storage/PDF/ZIP/package-builder/auth/AI/OCR work was
+  added.

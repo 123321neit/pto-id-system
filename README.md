@@ -70,14 +70,6 @@ and are not parsed as production data. PDF, ZIP, final/intermediate package
 downloads, backend/API, Prisma and production storage are still intentionally
 out of scope.
 
-ID register DOCX generation v1: the object workspace can download a
-frontend-only `.docx` register either for one folder or for the whole selected
-section. The register is generated from
-`IdRegisterPrintState -> narrow DOCX register renderer`, not from DOM/UI reads.
-This is a register export only: full intermediate/final ID package downloads,
-PDF, ZIP, backend/API, Prisma and production storage are still intentionally out
-of scope.
-
 Frontend-only section model cleanup: ID folders are now represented in the
 frontend mock as `DemoIdFolder` in `object-id-folders.ts`, not as object
 periods. Demo sections carry the user-visible `name`, optional `description`

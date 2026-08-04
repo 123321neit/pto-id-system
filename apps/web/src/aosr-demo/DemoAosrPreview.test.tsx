@@ -35,11 +35,13 @@ describe('DemoAosrPreview', () => {
 
     previewMocks.generateAosrDocxBlob.mockResolvedValue(docxBlob);
     previewMocks.renderAsync.mockImplementation(
-      async (_blob: Blob, bodyContainer: HTMLElement): Promise<void> => {
+      (_blob: Blob, bodyContainer: HTMLElement): Promise<void> => {
         const renderedPage = document.createElement('article');
         renderedPage.dataset['renderedDocx'] = 'ready';
         renderedPage.textContent = 'Содержимое DOCX';
         bodyContainer.append(renderedPage);
+
+        return Promise.resolve();
       },
     );
 
@@ -92,8 +94,10 @@ describe('DemoAosrPreview', () => {
 
     previewMocks.generateAosrDocxBlob.mockResolvedValueOnce(new Blob(['first']));
     previewMocks.renderAsync.mockImplementationOnce(
-      async (_blob: Blob, bodyContainer: HTMLElement): Promise<void> => {
+      (_blob: Blob, bodyContainer: HTMLElement): Promise<void> => {
         bodyContainer.textContent = 'Старое содержимое';
+
+        return Promise.resolve();
       },
     );
 
@@ -121,21 +125,19 @@ describe('DemoAosrPreview', () => {
   });
 
   it('does not let a stale asynchronous render replace the current DOCX preview', async () => {
-    const firstRender = createDeferred<void>();
+    const firstRender = createDeferred<undefined>();
     const firstBlob = new Blob(['first']);
     const secondBlob = new Blob(['second']);
 
     previewMocks.generateAosrDocxBlob.mockImplementation(
-      async (printState: AosrPrintState): Promise<Blob> =>
-        printState.document.number === 'ОВ-1' ? firstBlob : secondBlob,
+      (printState: AosrPrintState): Promise<Blob> =>
+        Promise.resolve(printState.document.number === 'ОВ-1' ? firstBlob : secondBlob),
     );
     previewMocks.renderAsync.mockImplementation(
-      async (blob: Blob, bodyContainer: HTMLElement): Promise<void> => {
+      (blob: Blob, bodyContainer: HTMLElement): Promise<void> => {
         bodyContainer.textContent = blob === firstBlob ? 'Устаревший DOCX' : 'Текущий DOCX';
 
-        if (blob === firstBlob) {
-          await firstRender.promise;
-        }
+        return blob === firstBlob ? firstRender.promise : Promise.resolve();
       },
     );
 

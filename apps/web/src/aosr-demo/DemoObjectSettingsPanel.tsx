@@ -492,8 +492,7 @@ export function DemoObjectSettingsPanel({
                       <button
                         className="compact-toggle compact-toggle--accent"
                         disabled={
-                          automaticSectionDraftCount === 0 ||
-                          onRenumberSectionDrafts === undefined
+                          automaticSectionDraftCount === 0 || onRenumberSectionDrafts === undefined
                         }
                         onClick={onRenumberSectionDrafts}
                         type="button"

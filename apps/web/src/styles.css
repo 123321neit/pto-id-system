@@ -2162,39 +2162,6 @@ button {
   text-align: center;
 }
 
-.final-package-download {
-  grid-template-columns: minmax(0, 1fr) auto;
-  align-items: center;
-  border-left: 3px solid #c7d3df;
-  background: #fbfdff;
-}
-
-.final-package-download h3 {
-  color: #172033;
-  font-size: 1.08rem;
-  line-height: 1.25;
-}
-
-.final-package-download p:not(.section-kicker) {
-  max-width: 720px;
-  color: #516064;
-  font-size: 0.88rem;
-  font-weight: 700;
-  line-height: 1.5;
-}
-
-.final-package-download__message {
-  grid-column: 1 / -1;
-  width: fit-content;
-  border: 1px solid #bfdbfe;
-  border-radius: 999px;
-  background: #eff6ff;
-  padding: 7px 10px;
-  color: #1d4ed8 !important;
-  font-size: 0.8rem !important;
-  font-weight: 820 !important;
-}
-
 .dashboard-page {
   min-width: 0;
   padding: 32px;
@@ -5515,7 +5482,6 @@ h3 {
   .object-folder-support-grid,
   .object-documents-summary,
   .object-documents-panel__header,
-  .final-package-download,
   .intermediate-package-row dl,
   .object-document-form {
     grid-template-columns: 1fr;

@@ -858,12 +858,6 @@ export interface BuildAosrPrintStateInput extends ResolveDemoAosrTemplateFieldsI
   readonly selectedObjectDocuments: readonly DemoObjectDocument[];
 }
 
-export function getSectionTemplateFromSettings(
-  sectionTemplateSettings: DemoSectionTemplateSettings,
-): SectionTemplate {
-  return sectionTemplateSettings.sectionTemplate;
-}
-
 /** Legacy compatibility wrapper for older standalone AOSR demo helpers. */
 export function getObjectTemplateFromDefaults(
   objectDefaults: DemoAosrObjectDefaults,
@@ -1975,26 +1969,6 @@ export function updateRepresentativeInDraft(
   });
 }
 
-export function updateManualObjectNameSubscript(
-  draft: DemoAosrDraft,
-  value: string,
-): DemoAosrDraft {
-  if (draft.templateMode !== 'manual' || draft.manualTemplateSnapshot === undefined) {
-    return draft;
-  }
-
-  return {
-    ...draft,
-    manualTemplateSnapshot: {
-      ...draft.manualTemplateSnapshot,
-      object: {
-        ...draft.manualTemplateSnapshot.object,
-        nameSubscript: value,
-      },
-    },
-  };
-}
-
 export function moveRepresentativeInDraft(
   draft: DemoAosrDraft,
   representativeId: string,
@@ -2100,10 +2074,6 @@ export function toggleApplicationInclusionInDraft(
     ...draft,
     excludedApplicationIds: [...draft.excludedApplicationIds, applicationId],
   };
-}
-
-export function getDraftRepresentatives(draft: DemoAosrDraft): readonly DemoAosrRepresentative[] {
-  return draft.representatives;
 }
 
 export function getDraftMaterialCertificates(

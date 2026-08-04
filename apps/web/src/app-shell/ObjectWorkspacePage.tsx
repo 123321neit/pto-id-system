@@ -146,10 +146,7 @@ export function ObjectWorkspacePage({
     [drafts, folders, selectedSection],
   );
   const selectedAutomaticSectionDrafts = useMemo(
-    () =>
-      selectedSectionDrafts.filter(
-        (draft) => draft.numberingAssignment.source === 'automatic',
-      ),
+    () => selectedSectionDrafts.filter((draft) => draft.numberingAssignment.source === 'automatic'),
     [selectedSectionDrafts],
   );
   const selectedFolderDrafts =
@@ -763,12 +760,7 @@ export function ObjectWorkspacePage({
         ) : null}
 
         {activeSection === 'intermediate-package' && selectedFolder !== undefined ? (
-          <ObjectIntermediatePackagePage
-            drafts={drafts}
-            folder={selectedFolder}
-            sectionName={selectedSection?.name}
-            sectionTemplateSettings={selectedSectionTemplateSettings}
-          />
+          <ObjectIntermediatePackagePage drafts={drafts} folder={selectedFolder} />
         ) : null}
 
         {isAosrVisible && (selectedFolder !== undefined || activeSection === 'settings') ? (
@@ -809,7 +801,6 @@ export function ObjectWorkspacePage({
             drafts={selectedSectionDrafts}
             folders={selectedSectionFolders}
             sectionName={selectedSection?.name}
-            sectionTemplateSettings={selectedSectionTemplateSettings}
           />
         ) : null}
       </section>

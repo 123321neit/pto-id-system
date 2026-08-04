@@ -75,24 +75,6 @@ export function formatDocumentDate(dateValue: string): string {
   return `«${day}» ${getRussianMonthName(month)} ${year} г.`;
 }
 
-export function getRepresentativePreviewLine(representative: DemoAosrRepresentative): string {
-  return [representative.position, representative.organization, representative.fullName]
-    .filter(Boolean)
-    .join(' ');
-}
-
-export function getRepresentativeAuthorityLine(representative: DemoAosrRepresentative): string {
-  return [
-    representative.authorityBasis,
-    representative.nrsId === undefined
-      ? ''
-      : `идентификационный номер в национальном реестре специалистов ${representative.nrsId}`,
-    representative.details ?? '',
-  ]
-    .filter(Boolean)
-    .join('; ');
-}
-
 function getRussianMonthName(monthValue: string): string {
   switch (monthValue) {
     case '01':

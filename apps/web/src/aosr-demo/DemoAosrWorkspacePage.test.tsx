@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { cleanup, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { strToU8, zipSync } from 'fflate';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { DemoAosrWorkspacePage } from './DemoAosrWorkspacePage.js';
@@ -32,38 +33,43 @@ import { DemoStoreProvider } from '../demo-store/DemoStoreProvider.js';
 import { buildAosrDocxTemplateData } from './aosr-docx-template-data.js';
 
 const previewMocks = vi.hoisted(() => ({
+  downloadAosrDocx: vi.fn(),
   generateAosrDocxBlob: vi.fn(),
-  latestPrintState: undefined as unknown,
   renderAsync: vi.fn(),
 }));
 
-vi.mock('./aosr-docx-generator.js', async (importOriginal) => {
-  const original = await importOriginal<typeof import('./aosr-docx-generator.js')>();
-
-  return {
-    ...original,
-    generateAosrDocxBlob: previewMocks.generateAosrDocxBlob,
-  };
-});
+vi.mock('./aosr-docx-generator.js', () => ({
+  downloadAosrDocx: previewMocks.downloadAosrDocx,
+  generateAosrDocxBlob: previewMocks.generateAosrDocxBlob,
+}));
 
 vi.mock('docx-preview', () => ({
   renderAsync: previewMocks.renderAsync,
 }));
 
+const originalConsoleError = console.error;
+const originalWindowConfirm = window.confirm;
+const mockAosrDocxBlob = createMinimalDocxBlob();
+let latestPrintState: AosrPrintState | undefined;
+
 beforeEach(() => {
-  previewMocks.latestPrintState = undefined;
+  latestPrintState = undefined;
+  previewMocks.downloadAosrDocx.mockReset();
+  previewMocks.downloadAosrDocx.mockResolvedValue(undefined);
   previewMocks.generateAosrDocxBlob.mockReset();
   previewMocks.generateAosrDocxBlob.mockImplementation(
-    async (printState: AosrPrintState): Promise<Blob> => {
-      previewMocks.latestPrintState = printState;
+    (printState: AosrPrintState): Promise<Blob> => {
+      latestPrintState = printState;
 
-      return new Blob(['mock AOSR DOCX']);
+      return Promise.resolve(mockAosrDocxBlob);
     },
   );
   previewMocks.renderAsync.mockReset();
   previewMocks.renderAsync.mockImplementation(
-    async (_blob: Blob, bodyContainer: HTMLElement): Promise<void> => {
+    (_blob: Blob, bodyContainer: HTMLElement): Promise<void> => {
       bodyContainer.textContent = 'DOCX preview';
+
+      return Promise.resolve();
     },
   );
 });
@@ -71,7 +77,9 @@ beforeEach(() => {
 afterEach(() => {
   cleanup();
   vi.unstubAllGlobals();
-  vi.restoreAllMocks();
+  console.error = originalConsoleError;
+  window.confirm = originalWindowConfirm;
+  vi.clearAllMocks();
 });
 
 describe('DemoAosrWorkspacePage', () => {
@@ -203,7 +211,7 @@ describe('DemoAosrWorkspacePage', () => {
     const generationError = new Error('DOCX template error');
     const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => undefined);
 
-    vi.stubGlobal('fetch', vi.fn().mockRejectedValue(generationError));
+    previewMocks.downloadAosrDocx.mockRejectedValueOnce(generationError);
     renderDemoWorkspace();
 
     expect(screen.queryByRole('region', { name: 'Действия с актом' })).toBeNull();
@@ -257,7 +265,7 @@ describe('DemoAosrWorkspacePage', () => {
     await user.click(screen.getByRole('button', { name: 'Предпросмотр документа' }));
 
     const drawer = screen.getByRole('dialog', { name: 'Предпросмотр документа' });
-    const preview = within(drawer).getByLabelText('Предпросмотр DOCX-шаблона АОСР');
+    within(drawer).getByLabelText('Предпросмотр DOCX-шаблона АОСР');
     const drawerContext = within(drawer).getByLabelText('Контекст предпросмотра документа');
 
     expect(drawerContext.textContent).toContain('Акт ОВ-1');
@@ -1756,9 +1764,9 @@ async function addRepresentativeAssignmentFromAct(
 }
 
 function getPreviewText(): string {
-  const printState = previewMocks.latestPrintState as AosrPrintState | undefined;
-
-  return printState === undefined ? getDocumentPreview().textContent : buildPreviewText(printState);
+  return latestPrintState === undefined
+    ? getDocumentPreview().textContent
+    : buildPreviewText(latestPrintState);
 }
 
 function buildPreviewText(printState: AosrPrintState): string {
@@ -1874,4 +1882,33 @@ function getRequiredElement<TElement>(elements: readonly TElement[], index: numb
   }
 
   return element;
+}
+
+function createMinimalDocxBlob(): Blob {
+  const archive = zipSync({
+    '[Content_Types].xml': strToU8(
+      '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+        '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">' +
+        '<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>' +
+        '<Default Extension="xml" ContentType="application/xml"/>' +
+        '<Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>' +
+        '</Types>',
+    ),
+    '_rels/.rels': strToU8(
+      '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+        '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">' +
+        '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/>' +
+        '</Relationships>',
+    ),
+    'word/document.xml': strToU8(
+      '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+        '<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">' +
+        '<w:body><w:p><w:r><w:t>DOCX preview</w:t></w:r></w:p><w:sectPr/></w:body>' +
+        '</w:document>',
+    ),
+  });
+
+  return new Blob([archive.buffer], {
+    type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  });
 }

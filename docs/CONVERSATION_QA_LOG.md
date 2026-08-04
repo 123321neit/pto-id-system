@@ -2179,3 +2179,26 @@ approved.
 This stayed frontend-only. No PDF, ZIP, package builder, backend/API/storage,
 Prisma domain models/migrations, auth, AI/OCR, AOSR DOCX renderer or AOSR
 template changes were added.
+
+---
+
+## 77. Stabilized frontend baseline after audit
+
+### Q: Какой frontend baseline считается активным после аудита?
+
+A: Активный baseline ограничен уже подтверждёнными рабочими
+сценариями.
+
+- массовый пересчёт нумеров обрабатывает только автоматически
+  пронумерованные акты и не меняет ручные номера;
+- обычный preview АОСР всегда генерирует DOCX и рендерит его через
+  `docx-preview` без HTML fallback и без test-only production path;
+- frontend-only DOCX download реестра папки/раздела удалён;
+- readonly derived registries, folder/section composition and deduplication
+  remain available;
+- navigation remains the existing single-root shell with local in-memory state;
+  no deep-link routing, session hydration or route registry was added;
+- the tagged AOSR DOCX template remains byte-for-byte unchanged.
+
+Это stabilization/cleanup step only. Не добавлены backend, Prisma,
+PDF/ZIP/package builder, storage, auth, AI/OCR или новые типы актов.
