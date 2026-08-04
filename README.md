@@ -165,8 +165,9 @@ final signature blocks.
 
 The mock app shell now starts on a frontend-only object dashboard with a left
 navigation rail, mock object cards, quick-access cards and recent documents.
-Opening any mock object switches in memory to the existing AOSR workspace, and
-the workspace has a `Назад к объектам` action. The `Представители и
+Opening a mock object or workspace entity now navigates to its canonical URL;
+browser Back/Forward, reload and direct links restore the navigation context.
+The `Представители и
 организации` dashboard section now opens a frontend-only mock management page
 with in-memory global organization/representative libraries, local mock add
 forms and conceptual object-level binding/snapshot notes. The
@@ -178,6 +179,31 @@ mock store with the AOSR workspace, so added demo records appear in the AOSR
 material, signatory and object-organization pickers. These dashboard sections
 have no backend, persistence, uploads, real generation, auth, share codes or
 production business logic.
+
+The accepted frontend route map is:
+
+```text
+/objects
+/certificates
+/organizations
+/objects/:objectId
+/objects/:objectId/documents
+/objects/:objectId/sections
+/objects/:objectId/sections/:sectionId
+/objects/:objectId/sections/:sectionId/template
+/objects/:objectId/sections/:sectionId/final
+/objects/:objectId/sections/:sectionId/folders/:folderId
+/objects/:objectId/sections/:sectionId/folders/:folderId/aosr/:draftId
+```
+
+`/` redirects to `/objects`. The URL is the sole source for the selected
+dashboard page, object screen, section, folder and AOSR draft; breadcrumbs and
+the navigation tree use the same route context. Unknown or mismatched entity
+chains stay on their requested URL and show a safe not-found state instead of
+silently selecting another entity. Form values, drawers, preview mode and other
+ephemeral UI state remain local. Domain data is shared in memory for the
+current app session only: there is still no localStorage/session hydration,
+backend or durable persistence.
 
 Stage 5 clarified the mock AOSR workspace UX: the object template stays behind a
 compact button, the middle column is now presented as `Рабочая область акта`,

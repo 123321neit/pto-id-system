@@ -6149,3 +6149,40 @@ delete/move/reorder lifecycle or generation was introduced.
 - the tagged AOSR DOCX template was not changed;
 - no backend/API/Prisma/storage/PDF/ZIP/package-builder/auth/AI/OCR work was
   added.
+
+### 2026-08-04 — Canonical frontend routing and URL navigation context
+
+- Статус: `Frontend routing stage 2`
+- Описание: replaced the single-root/local-selection shell with an explicit
+  browser route contract while retaining the existing in-memory demo domain.
+
+Зафиксировано:
+
+- `/` redirects with history replacement to `/objects`;
+- global routes are `/objects`, `/certificates` and `/organizations`;
+- canonical workspace routes cover object overview/documents, section
+  directory/overview/template/final package, folder and folder-owned AOSR;
+- the URL is the only source for the selected dashboard screen, object,
+  section, folder and draft; Back/Forward, direct links and reload therefore
+  restore navigation context;
+- breadcrumbs contain entity names and real parent links; the document tree is
+  route-driven and only the active section expands;
+- object, section, folder and draft ownership is checked by specialized typed
+  resolvers; invalid or inconsistent chains keep their URL and show a safe
+  not-found state without fallback selection or redirect loops;
+- creating a section, folder or AOSR navigates to the new entity's canonical
+  route; deleting the open AOSR returns to its folder;
+- switching drafts while DOCX preview is open changes the URL and the preview
+  print state; no `.act-page` HTML fallback was restored;
+- domain mutations live in one shared in-memory provider and survive route
+  navigation inside the mounted app, but reload resets to seed data;
+- form edits, dialogs, search/filter state, preview visibility and editor
+  presentation remain local UI state.
+
+Ограничения:
+
+- no localStorage/sessionStorage hydration, backend persistence, API, Prisma or
+  auth was added;
+- the tagged AOSR DOCX template and renderer were not changed;
+- no PDF/ZIP/package builder/upload/storage/AI/OCR or new act type was added;
+- linked/manual domain hardening remains the next separate stage.

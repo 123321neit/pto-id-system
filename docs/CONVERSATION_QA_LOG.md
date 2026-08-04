@@ -2202,3 +2202,41 @@ A: Активный baseline ограничен уже подтверждённ�
 
 Это stabilization/cleanup step only. Не добавлены backend, Prisma,
 PDF/ZIP/package builder, storage, auth, AI/OCR или новые типы актов.
+
+---
+
+## 78. Canonical routes and browser navigation
+
+### Q: Что теперь является source of truth для навигации по объекту и ИД?
+
+A: URL. Каноническая цепочка маршрута хранит выбранные object, section, folder
+и AOSR draft; dashboard screen и object workspace screen также определяются
+route path. Local React state больше не выбирает навигационные сущности.
+
+Принята карта `/objects`, `/certificates`, `/organizations`, object
+overview/documents, section directory/overview/template/final, folder и
+folder-owned AOSR. `/` заменяется в history на `/objects`. Back/Forward, direct
+links, reload, breadcrumbs и document tree работают через реальный browser
+router.
+
+Каждый ownership edge проверяет специализированный selector. Неизвестный ID или
+несогласованная цепочка не подменяется первой подходящей сущностью и не
+редиректится циклически: запрошенный URL сохраняется, пользователь получает
+not-found состояние и безопасные ссылки к родителям.
+
+Domain data всё ещё frontend-only и in-memory. Общий session provider сохраняет
+изменения при route navigation в рамках смонтированного приложения, но reload
+сбрасывает их к seed data. localStorage/sessionStorage, backend hydration,
+Prisma и auth не добавлены. Локальными остаются формы, модальные окна, поиск,
+редактор и открытое состояние DOCX preview. Linked/manual domain hardening —
+следующий отдельный этап; DOCX renderer/template, PDF/ZIP/package builder,
+storage, uploads, AI/OCR и новые типы актов не менялись.
+
+Integration coverage проверяет все канонические direct routes, root replace,
+invalid/mismatched ownership chains, реальный browser history, именованные
+breadcrumbs, URL-driven navigation state и смену акта при открытом preview.
+Ручной smoke production build дополнительно прошёл цепочку
+`objects -> object -> section -> folder -> act`, reload, Back/Forward,
+section template, breadcrumb, final ID, `ОВ-2 -> ОВ-1` в открытом DOCX preview
+и оба invalid-route сценария. В preview использовался результат реальной DOCX
+генерации; `.act-page`, console errors и console warnings отсутствовали.

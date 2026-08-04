@@ -78,7 +78,7 @@ These are review candidates, not approved rewrite tasks.
 - Linked working data, manual act snapshots and released output snapshots.
 - AOSR DOCX rendering and future register/package generation.
 - Global reusable libraries and object/section-owned copies.
-- Product navigation state and speculative URL/session persistence.
+- URL navigation context and in-memory domain/session state.
 
 ## Large components and boundaries
 
@@ -94,19 +94,33 @@ without a stable owner boundary would increase cross-file coupling.
 - A generic DOCX engine would blur immutable form-template behavior and current
   real-template fixes.
 - A generic registry editor would make a derived projection a source of truth.
-- A generic workspace router before persistence/auth contracts would create URL
-  semantics the product has not ratified.
+- A generic entity resolver would hide object/section/folder/draft ownership
+  mismatches that the canonical routes must reject explicitly.
 - A generic package/download layer in the frontend would bypass the future
   asynchronous, snapshot-based package boundary.
 
 ## Navigation findings
 
-The active app uses the existing `createBrowserRouter` shell with one `/` route.
-Dashboard/workspace selection, chosen object, section and folder remain local
-in-memory React state. There is no route registry for product screens, no deep
-link contract, no browser-history synchronization, no local/session storage
-hydration and no speculative workspace URL scheme. No additional SPA routing
-was introduced by this stabilization.
+The active app now has an explicit `createBrowserRouter` registry. `/` replaces
+itself with `/objects`; dashboard routes cover `/objects`, `/certificates` and
+`/organizations`. The object workspace uses canonical routes for object
+overview, object documents, section directory, section overview, section
+template, section final package, folder and folder-owned AOSR draft.
+
+The URL is the sole source for the selected dashboard page, object screen,
+section, folder and AOSR draft. Specialized resolvers validate every ownership
+edge (`object -> section -> folder -> draft`); an unknown entity or mismatched
+chain renders a stable not-found state at the requested URL with safe parent
+links. Navigation uses normal browser history, real linked breadcrumbs and a
+route-driven section/folder/act tree. The active section alone is expanded, and
+switching acts while DOCX preview is open updates the route and print state.
+
+Domain edits remain in a shared in-memory session provider so route navigation
+does not remount and reset them. This is not persistence: reload starts from
+seed data, and there is no localStorage, sessionStorage, backend hydration or
+repository layer. Ephemeral editor, drawer, search, modal and preview state
+remains component-local. The next domain-hardening stage is the linked/manual
+boundary and must not be mixed into routing.
 
 ## DOCX template history
 
