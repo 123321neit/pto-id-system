@@ -1,11 +1,4 @@
-import {
-  Link,
-  Navigate,
-  createBrowserRouter,
-  useNavigate,
-  useParams,
-  type RouteObject,
-} from 'react-router-dom';
+import { Link, Navigate, createBrowserRouter, useParams, type RouteObject } from 'react-router-dom';
 
 import { MockObjectDashboardPage } from './app-shell/MockObjectDashboardPage.js';
 import { ObjectWorkspacePage, type ObjectWorkspaceRoute } from './app-shell/ObjectWorkspacePage.js';
@@ -66,25 +59,7 @@ function DashboardRoute({
 }: {
   readonly panel: 'certificates' | 'objects' | 'representatives';
 }): React.JSX.Element {
-  const navigate = useNavigate();
-
-  return (
-    <MockObjectDashboardPage
-      activePanel={panel}
-      onOpenObject={(objectId) => {
-        void navigate(objectPath(objectId));
-      }}
-      onSelectPanel={(nextPanel) => {
-        void navigate(
-          nextPanel === 'objects'
-            ? '/objects'
-            : nextPanel === 'certificates'
-              ? '/certificates'
-              : '/organizations',
-        );
-      }}
-    />
-  );
+  return <MockObjectDashboardPage activePanel={panel} />;
 }
 
 function ObjectWorkspaceRoute({

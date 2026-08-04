@@ -84,6 +84,7 @@ type DraftMoveDirection = 'down' | 'up';
 
 interface DemoAosrWorkspacePageProps {
   readonly drafts?: readonly DemoAosrDraft[];
+  readonly getDraftHref?: ((draftId: string) => string | undefined) | undefined;
   readonly initialDocumentPreviewOpen?: boolean;
   readonly initialSelectedDraftId?: string;
   readonly selectedDraftId?: string;
@@ -111,6 +112,7 @@ interface DemoAosrWorkspacePageProps {
   readonly onObjectDefaultsChange?: (objectDefaults: DemoAosrObjectDefaults) => void;
   readonly onBackToObjects?: () => void;
   readonly onObjectSettingsClosed?: () => void;
+  readonly objectSettingsCloseHref?: string | undefined;
   readonly folderName?: string | undefined;
   readonly objectId?: string | undefined;
   readonly objectTitle?: string | undefined;
@@ -122,6 +124,7 @@ interface DemoAosrWorkspacePageProps {
 
 export function DemoAosrWorkspacePage({
   drafts: controlledDrafts,
+  getDraftHref,
   initialDocumentPreviewOpen = false,
   initialSelectedDraftId,
   selectedDraftId: controlledSelectedDraftId,
@@ -145,6 +148,7 @@ export function DemoAosrWorkspacePage({
   onObjectDefaultsChange,
   onBackToObjects,
   onObjectSettingsClosed,
+  objectSettingsCloseHref,
   folderName,
   objectId,
   objectTitle,
@@ -625,6 +629,7 @@ export function DemoAosrWorkspacePage({
         objectId={objectId}
         objectTitle={objectTitle}
         presentation="page"
+        closeHref={objectSettingsCloseHref}
         representativeSearch={representativeSearch}
         automaticSectionDraftCount={automaticSectionDraftCount}
         sectionId={sectionId}
@@ -851,6 +856,7 @@ export function DemoAosrWorkspacePage({
             actType={aosrActType}
             drafts={visibleDrafts}
             folderName={folderName}
+            getDraftHref={getDraftHref}
             selectedDraftId={selectedDraft.id}
             onCreateAct={onCreateActInFolder}
             onDeleteDraft={deleteDraft}
@@ -874,6 +880,7 @@ export function DemoAosrWorkspacePage({
             actType={aosrActType}
             drafts={visibleDrafts}
             folderName={folderName}
+            getDraftHref={getDraftHref}
             selectedDraftId={selectedDraft.id}
             onCreateAct={onCreateActInFolder}
             onDeleteDraft={deleteDraft}

@@ -1,11 +1,11 @@
 import { type SyntheticEvent, useState } from 'react';
+import { Link } from 'react-router-dom';
 
 import { type DemoRepresentative, useDemoStore } from '../demo-store/demo-store.js';
 
 interface RepresentativesOrganizationsPageProps {
   readonly backLabel?: string;
   readonly description?: string;
-  readonly onBackToObjects: () => void;
 }
 
 interface OrganizationFormState {
@@ -41,7 +41,6 @@ const emptyRepresentativeForm: RepresentativeFormState = {
 export function RepresentativesOrganizationsPage({
   backLabel = 'Вернуться к объектам',
   description = 'Глобальные библиотеки организаций и представителей. Из поиска создавайте или выбирайте карточку, затем назначайте ее объекту и акту.',
-  onBackToObjects,
 }: RepresentativesOrganizationsPageProps): React.JSX.Element {
   const {
     addOrganization: addOrganizationToStore,
@@ -119,9 +118,9 @@ export function RepresentativesOrganizationsPage({
             <h1 id="management-page-title">Представители и организации</h1>
             <p>{description}</p>
           </div>
-          <button className="secondary-action" onClick={onBackToObjects} type="button">
+          <Link className="secondary-action" to="/objects">
             {backLabel}
-          </button>
+          </Link>
         </header>
 
         <ol

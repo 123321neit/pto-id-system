@@ -1,3 +1,5 @@
+import { Link } from 'react-router-dom';
+
 import type { DemoActTypeMetadata } from '../act-types/act-types.js';
 import type { DemoAosrDraft } from './demo-aosr-workspace.js';
 
@@ -7,6 +9,7 @@ interface DemoDocumentTreeProps {
   readonly actType: DemoActTypeMetadata;
   readonly drafts: readonly DemoAosrDraft[];
   readonly folderName?: string | undefined;
+  readonly getDraftHref?: ((draftId: string) => string | undefined) | undefined;
   readonly selectedDraftId: string;
   readonly onCreateAct?: (() => void) | undefined;
   readonly onDeleteDraft?: ((draftId: string) => void) | undefined;
@@ -19,6 +22,7 @@ export function DemoDocumentTree({
   actType,
   drafts,
   folderName,
+  getDraftHref,
   selectedDraftId,
   onCreateAct,
   onDeleteDraft,
@@ -40,6 +44,29 @@ export function DemoDocumentTree({
         <div className="act-tree-list" role="list" aria-label={`Акты ${actType.code}`}>
           {drafts.map((draft, draftIndex) => {
             const draftLabel = draft.actNumber.trim() === '' ? 'Без номера' : draft.actNumber;
+            const draftHref = getDraftHref?.(draft.id);
+            const draftContent = (
+              <>
+                <span className="act-tree-item__number">{draftLabel}</span>
+                <span className="act-tree-item__type">
+                  {actType.code} — {actType.title}
+                </span>
+                <span
+                  className={
+                    draft.workDescription.trim() === ''
+                      ? 'act-tree-item__work act-tree-item__work--empty'
+                      : 'act-tree-item__work'
+                  }
+                >
+                  {getDraftWorkDescriptionPreview(draft)}
+                </span>
+                {draft.actDate.trim() === '' ? null : (
+                  <span className="act-tree-item__meta">
+                    Дата: <small>{formatShortDate(draft.actDate)}</small>
+                  </span>
+                )}
+              </>
+            );
 
             return (
               <div
@@ -70,33 +97,26 @@ export function DemoDocumentTree({
                     ↓ Вниз
                   </button>
                 </div>
-                <button
-                  aria-pressed={draft.id === selectedDraftId}
-                  className="act-tree-item__select"
-                  onClick={() => {
-                    onSelectDraft(draft.id);
-                  }}
-                  type="button"
-                >
-                  <span className="act-tree-item__number">{draftLabel}</span>
-                  <span className="act-tree-item__type">
-                    {actType.code} — {actType.title}
-                  </span>
-                  <span
-                    className={
-                      draft.workDescription.trim() === ''
-                        ? 'act-tree-item__work act-tree-item__work--empty'
-                        : 'act-tree-item__work'
-                    }
+                {draftHref === undefined ? (
+                  <button
+                    aria-pressed={draft.id === selectedDraftId}
+                    className="act-tree-item__select"
+                    onClick={() => {
+                      onSelectDraft(draft.id);
+                    }}
+                    type="button"
                   >
-                    {getDraftWorkDescriptionPreview(draft)}
-                  </span>
-                  {draft.actDate.trim() === '' ? null : (
-                    <span className="act-tree-item__meta">
-                      Дата: <small>{formatShortDate(draft.actDate)}</small>
-                    </span>
-                  )}
-                </button>
+                    {draftContent}
+                  </button>
+                ) : (
+                  <Link
+                    aria-current={draft.id === selectedDraftId ? 'page' : undefined}
+                    className="act-tree-item__select"
+                    to={draftHref}
+                  >
+                    {draftContent}
+                  </Link>
+                )}
                 <div className="act-tree-item__actions">
                   {onDuplicateDraft === undefined ? null : (
                     <button

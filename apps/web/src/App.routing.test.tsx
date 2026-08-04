@@ -4,10 +4,11 @@ import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { App } from './App.js';
+import type { AosrPrintState } from './aosr-demo/demo-aosr-workspace.js';
 
 const previewMocks = vi.hoisted(() => ({
   downloadAosrDocx: vi.fn(),
-  generateAosrDocxBlob: vi.fn(),
+  generateAosrDocxBlob: vi.fn<(printState: AosrPrintState) => Promise<Blob>>(),
   renderAsync: vi.fn(),
 }));
 
@@ -49,7 +50,9 @@ afterEach(() => {
 
 const objectId = 'object-polyclinic-demo';
 const sectionId = 'section-ventilation';
+const heatingSectionId = 'section-heating';
 const folderId = 'folder-2026-09';
+const octoberFolderId = 'folder-2026-10';
 const draftId = 'aosr-draft-001';
 
 describe('application routes', () => {
@@ -102,18 +105,19 @@ describe('application routes', () => {
     const user = userEvent.setup();
     renderAppAt('/certificates');
     const navigation = screen.getByRole('navigation', { name: 'Основная навигация' });
-    const certificates = within(navigation).getByRole('button', {
+    const certificates = within(navigation).getByRole('link', {
       name: /Библиотека сертификатов/u,
     });
+    expect(certificates.getAttribute('href')).toBe('/certificates');
     expect(certificates.getAttribute('aria-current')).toBe('page');
 
     await user.click(
-      within(navigation).getByRole('button', { name: /Представители и организации/u }),
+      within(navigation).getByRole('link', { name: /Представители и организации/u }),
     );
     expect(window.location.pathname).toBe('/organizations');
     expect(
       within(navigation)
-        .getByRole('button', { name: /Представители и организации/u })
+        .getByRole('link', { name: /Представители и организации/u })
         .getAttribute('aria-current'),
     ).toBe('page');
   });
@@ -122,12 +126,12 @@ describe('application routes', () => {
     const user = userEvent.setup();
     renderAppAt('/objects');
 
-    await user.click(getRequiredElement(screen.getAllByRole('button', { name: 'Открыть объект' })));
-    await user.click(screen.getByRole('button', { name: 'Открыть раздел Вентиляция' }));
+    await user.click(getRequiredElement(screen.getAllByRole('link', { name: 'Открыть объект' })));
+    await user.click(screen.getByRole('link', { name: 'Открыть раздел Вентиляция' }));
     await user.click(
-      getRequiredElement(screen.getAllByRole('button', { name: 'Открыть папку Сентябрь 2026' })),
+      getRequiredElement(screen.getAllByRole('link', { name: 'Открыть папку Сентябрь 2026' })),
     );
-    await user.click(getRequiredElement(screen.getAllByRole('button', { name: /ОВ-1/u })));
+    await user.click(screen.getByRole('link', { name: 'Открыть АОСР ОВ-1' }));
     expect(window.location.pathname).toBe(
       `/objects/${objectId}/sections/${sectionId}/folders/${folderId}/aosr/${draftId}`,
     );
@@ -165,6 +169,83 @@ describe('application routes', () => {
     });
   });
 
+  it('does not add history for a local folder form and clears its section-owned state', async () => {
+    const user = userEvent.setup();
+    const heatingPath = `/objects/${objectId}/sections/${heatingSectionId}`;
+    const ventilationPath = `/objects/${objectId}/sections/${sectionId}`;
+    renderAppAt(heatingPath);
+
+    await user.click(screen.getByRole('link', { name: 'Открыть раздел Вентиляция' }));
+    expect(window.location.pathname).toBe(ventilationPath);
+
+    const historyLength = window.history.length;
+    await user.click(screen.getByRole('button', { name: 'Создать папку' }));
+    expect(window.location.pathname).toBe(ventilationPath);
+    expect(window.history.length).toBe(historyLength);
+
+    await user.type(screen.getByLabelText('Название папки'), 'Черновик из Вентиляции');
+    expect(screen.getByDisplayValue('Черновик из Вентиляции')).toBeTruthy();
+
+    act(() => {
+      window.history.back();
+    });
+    await waitFor(() => {
+      expect(window.location.pathname).toBe(heatingPath);
+      expect(screen.queryByRole('form', { name: 'Создать папку ИД' })).toBeNull();
+    });
+    expect(screen.queryByDisplayValue('Черновик из Вентиляции')).toBeNull();
+
+    act(() => {
+      window.history.forward();
+    });
+    await waitFor(() => {
+      expect(window.location.pathname).toBe(ventilationPath);
+      expect(screen.queryByRole('form', { name: 'Создать папку ИД' })).toBeNull();
+    });
+  });
+
+  it('clears folder-owned create UI when Back changes the folder owner', async () => {
+    const user = userEvent.setup();
+    const septemberPath = `/objects/${objectId}/sections/${sectionId}/folders/${folderId}`;
+    const octoberPath = `/objects/${objectId}/sections/${sectionId}/folders/${octoberFolderId}`;
+    renderAppAt(septemberPath);
+
+    await user.click(getRequiredElement(screen.getAllByRole('button', { name: 'Создать акт' })));
+    expect(screen.getByRole('dialog', { name: 'Создание акта' })).toBeTruthy();
+    await user.click(screen.getByRole('link', { name: 'Открыть папку Октябрь 2026' }));
+    expect(window.location.pathname).toBe(octoberPath);
+    expect(screen.queryByRole('dialog', { name: 'Создание акта' })).toBeNull();
+
+    act(() => {
+      window.history.back();
+    });
+    await waitFor(() => {
+      expect(window.location.pathname).toBe(septemberPath);
+    });
+    expect(screen.queryByRole('dialog', { name: 'Создание акта' })).toBeNull();
+  });
+
+  it('exposes canonical hrefs and URL-driven active state for section, folder and act links', () => {
+    const actPath = `/objects/${objectId}/sections/${sectionId}/folders/${folderId}/aosr/${draftId}`;
+    renderAppAt(actPath);
+    const navigation = screen.getByRole('navigation', { name: 'Разделы объекта' });
+    const sectionLink = within(navigation).getByRole('link', {
+      name: 'Открыть раздел Вентиляция',
+    });
+    const folderLink = within(navigation).getByRole('link', {
+      name: 'Открыть папку Сентябрь 2026',
+    });
+    const actLink = within(navigation).getByRole('link', { name: 'Открыть АОСР ОВ-1' });
+
+    expect(sectionLink.getAttribute('href')).toBe(`/objects/${objectId}/sections/${sectionId}`);
+    expect(folderLink.getAttribute('href')).toBe(
+      `/objects/${objectId}/sections/${sectionId}/folders/${folderId}`,
+    );
+    expect(actLink.getAttribute('href')).toBe(actPath);
+    expect(folderLink.getAttribute('aria-current')).toBe('page');
+    expect(actLink.getAttribute('aria-current')).toBe('page');
+  });
+
   it('renders named clickable breadcrumbs without raw route IDs', async () => {
     const user = userEvent.setup();
     const actPath = `/objects/${objectId}/sections/${sectionId}/folders/${folderId}/aosr/${draftId}`;
@@ -197,15 +278,25 @@ describe('application routes', () => {
     expect(screen.getByRole('heading', { name: 'Предпросмотр акта' })).toBeTruthy();
 
     const objectNavigation = screen.getByRole('navigation', { name: 'Разделы объекта' });
-    await user.click(within(objectNavigation).getByRole('button', { name: 'Открыть АОСР ОВ-1' }));
+    const originalActLink = within(objectNavigation).getByRole('link', {
+      name: 'Открыть АОСР ОВ-1',
+    });
+    expect(originalActLink.getAttribute('href')).toBe(
+      `/objects/${objectId}/sections/${sectionId}/folders/${folderId}/aosr/${draftId}`,
+    );
+    await user.click(originalActLink);
 
     expect(window.location.pathname).toContain(`/aosr/${draftId}`);
     expect(screen.getByRole('heading', { name: 'Предпросмотр акта' })).toBeTruthy();
     expect(
       within(objectNavigation)
-        .getByRole('button', { name: 'Открыть АОСР ОВ-1' })
+        .getByRole('link', { name: 'Открыть АОСР ОВ-1' })
         .getAttribute('aria-current'),
     ).toBe('page');
+    await waitFor(() => {
+      const latestPrintState = previewMocks.generateAosrDocxBlob.mock.calls.at(-1)?.[0];
+      expect(latestPrintState?.document.number).toBe('ОВ-1');
+    });
   });
 });
 

@@ -1,24 +1,23 @@
+import { useState } from 'react';
+import { Link } from 'react-router-dom';
+
 import {
   mockObjectCards,
   mockRecentDocuments,
   type MockDashboardPanel,
   type MockObjectCard,
 } from './mock-dashboard.js';
-import { useState } from 'react';
 
+import { objectPath } from './app-route-paths.js';
 import { CertificateLibraryPage } from './CertificateLibraryPage.js';
 import { RepresentativesOrganizationsPage } from './RepresentativesOrganizationsPage.js';
 
 interface MockObjectDashboardPageProps {
   readonly activePanel: MockDashboardPanel;
-  readonly onOpenObject: (objectId: string) => void;
-  readonly onSelectPanel: (panel: MockDashboardPanel) => void;
 }
 
 export function MockObjectDashboardPage({
   activePanel,
-  onOpenObject,
-  onSelectPanel,
 }: MockObjectDashboardPageProps): React.JSX.Element {
   const [objectSearch, setObjectSearch] = useState('');
   const filteredObjects = filterObjects(mockObjectCards, objectSearch);
@@ -37,36 +36,24 @@ export function MockObjectDashboardPage({
         </div>
 
         <nav className="app-sidebar__nav" aria-label="Основная навигация">
-          <button
-            aria-current={activePanel === 'objects' ? 'page' : undefined}
-            onClick={() => {
-              onSelectPanel('objects');
-            }}
-            type="button"
-          >
+          <Link aria-current={activePanel === 'objects' ? 'page' : undefined} to="/objects">
             <span aria-hidden="true">□</span>
             Объекты
-          </button>
-          <button
+          </Link>
+          <Link
             aria-current={activePanel === 'certificates' ? 'page' : undefined}
-            onClick={() => {
-              onSelectPanel('certificates');
-            }}
-            type="button"
+            to="/certificates"
           >
             <span aria-hidden="true">◇</span>
             Библиотека сертификатов
-          </button>
-          <button
+          </Link>
+          <Link
             aria-current={activePanel === 'representatives' ? 'page' : undefined}
-            onClick={() => {
-              onSelectPanel('representatives');
-            }}
-            type="button"
+            to="/organizations"
           >
             <span aria-hidden="true">△</span>
             Представители и организации
-          </button>
+          </Link>
           <button aria-label="Настройки скоро" disabled type="button">
             <span aria-hidden="true">○</span>
             Настройки · скоро
@@ -115,9 +102,7 @@ export function MockObjectDashboardPage({
             <div className="dashboard-layout">
               <section className="object-list" aria-label="Список объектов">
                 {filteredObjects.length > 0 ? (
-                  filteredObjects.map((object) => (
-                    <ObjectCard key={object.id} object={object} onOpenObject={onOpenObject} />
-                  ))
+                  filteredObjects.map((object) => <ObjectCard key={object.id} object={object} />)
                 ) : (
                   <p className="empty-state">
                     В приложении «ИДея» по такому запросу объекты не найдены.
@@ -128,13 +113,7 @@ export function MockObjectDashboardPage({
               <aside className="dashboard-side" aria-label="Быстрые разделы">
                 <section className="quick-access" aria-labelledby="quick-access-title">
                   <h2 id="quick-access-title">Быстрый доступ</h2>
-                  <button
-                    className="quick-access-card"
-                    onClick={() => {
-                      onSelectPanel('certificates');
-                    }}
-                    type="button"
-                  >
+                  <Link className="quick-access-card" to="/certificates">
                     <span className="quick-access-card__icon" aria-hidden="true">
                       ◇
                     </span>
@@ -142,14 +121,8 @@ export function MockObjectDashboardPage({
                       <strong>Библиотека сертификатов</strong>
                       <small>Материалы и документы качества</small>
                     </span>
-                  </button>
-                  <button
-                    className="quick-access-card"
-                    onClick={() => {
-                      onSelectPanel('representatives');
-                    }}
-                    type="button"
-                  >
+                  </Link>
+                  <Link className="quick-access-card" to="/organizations">
                     <span className="quick-access-card__icon" aria-hidden="true">
                       △
                     </span>
@@ -157,7 +130,7 @@ export function MockObjectDashboardPage({
                       <strong>Представители и организации</strong>
                       <small>Подписанты и объектовые участники</small>
                     </span>
-                  </button>
+                  </Link>
                 </section>
 
                 <section className="recent-documents" aria-labelledby="recent-documents-title">
@@ -181,17 +154,9 @@ export function MockObjectDashboardPage({
           </div>
         </section>
       ) : activePanel === 'certificates' ? (
-        <CertificateLibraryPage
-          onBackToObjects={() => {
-            onSelectPanel('objects');
-          }}
-        />
+        <CertificateLibraryPage />
       ) : (
-        <RepresentativesOrganizationsPage
-          onBackToObjects={() => {
-            onSelectPanel('objects');
-          }}
-        />
+        <RepresentativesOrganizationsPage />
       )}
     </main>
   );
@@ -199,10 +164,9 @@ export function MockObjectDashboardPage({
 
 interface ObjectCardProps {
   readonly object: MockObjectCard;
-  readonly onOpenObject: (objectId: string) => void;
 }
 
-function ObjectCard({ object, onOpenObject }: ObjectCardProps): React.JSX.Element {
+function ObjectCard({ object }: ObjectCardProps): React.JSX.Element {
   return (
     <article className="object-card">
       <div className="object-card__thumb" aria-hidden="true">
@@ -232,15 +196,9 @@ function ObjectCard({ object, onOpenObject }: ObjectCardProps): React.JSX.Elemen
           </div>
         </dl>
       </div>
-      <button
-        className="object-card__action"
-        onClick={() => {
-          onOpenObject(object.id);
-        }}
-        type="button"
-      >
+      <Link className="object-card__action" to={objectPath(object.id)}>
         Открыть объект
-      </button>
+      </Link>
     </article>
   );
 }

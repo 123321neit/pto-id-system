@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, type SetStateAction } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 
 import { getDemoActTypeById, registeredDemoActTypes } from '../act-types/act-types.js';
 import { DemoAosrWorkspacePage } from '../aosr-demo/DemoAosrWorkspacePage.js';
@@ -17,8 +17,6 @@ import { ObjectWorkspaceNavigation } from './ObjectWorkspaceNavigation.js';
 import {
   aosrPath,
   folderPath,
-  objectDocumentsPath,
-  objectPath,
   objectSectionsPath,
   sectionFinalPath,
   sectionPath,
@@ -30,7 +28,6 @@ import {
   createDemoDocumentationSection,
   getDemoDocumentationSectionById,
   getDemoDocumentationSectionDrafts,
-  getDemoDocumentationSectionForFolderId,
   getDemoDocumentationSectionFolders,
   moveDemoDocumentationSectionFolderByDirection,
   type DemoDocumentationSection,
@@ -41,7 +38,6 @@ import { getProposedDemoDocumentNumberDetails } from './object-document-numberin
 import {
   addDemoIdFolderDraft,
   createDemoIdFolder,
-  getDemoIdFolderById,
   getDemoIdFolderDrafts,
   moveDemoIdFolderDraftByDirection,
   removeDemoIdFolderDraft,
@@ -104,8 +100,13 @@ export function ObjectWorkspacePage({
   object,
   route,
 }: ObjectWorkspacePageProps): React.JSX.Element {
+  const location = useLocation();
   const navigate = useNavigate();
   const navigateTo = (path: string): void => {
+    if (location.pathname === path) {
+      return;
+    }
+
     void navigate(path);
   };
   const {
@@ -205,8 +206,35 @@ export function ObjectWorkspacePage({
   const proposedAosrNumber = proposedAosrNumberDetails?.renderedNumber ?? '';
 
   useEffect(() => {
+    setCreateDocumentPanelOpen(false);
+    setCreateFolderPanelOpen(false);
+    setCreateSectionPanelOpen(false);
+    setFolderNameInput('');
+    setSectionNameInput('');
+    setLastTemplateCopyMessage('');
     setIntermediatePackageOpen(false);
-  }, [route.screen, selectedFolderId]);
+  }, [object.id, selectedFolderId, selectedSectionId]);
+
+  useEffect(() => {
+    if (route.screen !== 'folder') {
+      setCreateDocumentPanelOpen(false);
+      setIntermediatePackageOpen(false);
+    }
+
+    if (route.screen !== 'section') {
+      setCreateFolderPanelOpen(false);
+      setFolderNameInput('');
+    }
+
+    if (route.screen !== 'sections') {
+      setCreateSectionPanelOpen(false);
+      setSectionNameInput('');
+    }
+
+    if (route.screen !== 'template') {
+      setLastTemplateCopyMessage('');
+    }
+  }, [route.screen]);
 
   const openCreateDocumentPanel = (): void => {
     if (selectedFolder === undefined) {
@@ -222,20 +250,6 @@ export function ObjectWorkspacePage({
     setSectionNameInput('');
     setCreateSectionPanelOpen(true);
     navigateTo(objectSectionsPath(object.id));
-  };
-
-  const openSectionsPage = (): void => {
-    setCreateDocumentPanelOpen(false);
-    setCreateFolderPanelOpen(false);
-    setCreateSectionPanelOpen(false);
-    navigateTo(objectSectionsPath(object.id));
-  };
-
-  const openObjectDocumentsPage = (): void => {
-    setCreateDocumentPanelOpen(false);
-    setCreateFolderPanelOpen(false);
-    setCreateSectionPanelOpen(false);
-    navigateTo(objectDocumentsPath(object.id));
   };
 
   const createSection = (): void => {
@@ -306,40 +320,6 @@ export function ObjectWorkspacePage({
     setCreateFolderPanelOpen(false);
     setFolderNameInput('');
     navigateTo(folderPath(object.id, selectedSectionId, folder.id));
-  };
-
-  const openSection = (sectionId: DemoDocumentationSectionId): void => {
-    setCreateDocumentPanelOpen(false);
-    setCreateFolderPanelOpen(false);
-    setCreateSectionPanelOpen(false);
-    setLastTemplateCopyMessage('');
-    navigateTo(sectionPath(object.id, sectionId));
-  };
-
-  const openFolder = (folderId: DemoIdFolderId): void => {
-    const section = getDemoDocumentationSectionForFolderId(folderId, sections);
-
-    setCreateDocumentPanelOpen(false);
-    setCreateFolderPanelOpen(false);
-    setCreateSectionPanelOpen(false);
-    setLastTemplateCopyMessage('');
-    navigateTo(folderPath(object.id, section.id, folderId));
-  };
-
-  const openAosr = (folderId: DemoIdFolderId | null = selectedFolderId, draftId?: string): void => {
-    if (folderId === null) {
-      return;
-    }
-
-    const section = getDemoDocumentationSectionForFolderId(folderId, sections);
-    const folder = getDemoIdFolderById(folderId, folders);
-    const selectedDraft = draftId ?? folder.draftIds[0];
-
-    setCreateDocumentPanelOpen(false);
-
-    if (selectedDraft !== undefined) {
-      navigateTo(aosrPath(object.id, section.id, folderId, selectedDraft));
-    }
   };
 
   const createAosrDraft = (): void => {
@@ -530,34 +510,6 @@ export function ObjectWorkspacePage({
     }
   };
 
-  const openObjectSettings = (): void => {
-    if (selectedSection === undefined) {
-      openCreateSectionPanel();
-      return;
-    }
-
-    setCreateDocumentPanelOpen(false);
-    setCreateFolderPanelOpen(false);
-    setCreateSectionPanelOpen(false);
-    navigateTo(sectionTemplatePath(object.id, selectedSection.id));
-  };
-
-  const openSectionTemplateSettings = (sectionId: DemoDocumentationSectionId): void => {
-    const section = getDemoDocumentationSectionById(sectionId, sections);
-    setCreateDocumentPanelOpen(false);
-    setCreateFolderPanelOpen(false);
-    setCreateSectionPanelOpen(false);
-    navigateTo(sectionTemplatePath(object.id, section.id));
-  };
-
-  const openSectionFinalPackage = (sectionId: DemoDocumentationSectionId): void => {
-    const section = getDemoDocumentationSectionById(sectionId, sections);
-    setCreateDocumentPanelOpen(false);
-    setCreateFolderPanelOpen(false);
-    setCreateSectionPanelOpen(false);
-    navigateTo(sectionFinalPath(object.id, section.id));
-  };
-
   const updateSelectedSectionTemplateSettings = (
     nextSectionTemplateSettings: DemoSectionTemplateSettings,
   ): void => {
@@ -669,24 +621,6 @@ export function ObjectWorkspacePage({
         selectedDraftId={selectedDraftId}
         selectedFolderId={selectedFolderId}
         selectedSectionId={selectedSectionId}
-        onBackToObjects={() => {
-          navigateTo('/objects');
-        }}
-        onOpenFolder={openFolder}
-        onOpenAosr={(folderId, draftId) => {
-          openAosr(folderId, draftId);
-        }}
-        onOpenObjectDocumentsPage={openObjectDocumentsPage}
-        onOpenOverview={() => {
-          setCreateDocumentPanelOpen(false);
-          setCreateFolderPanelOpen(false);
-          setCreateSectionPanelOpen(false);
-          navigateTo(objectPath(object.id));
-        }}
-        onOpenSection={openSection}
-        onOpenSectionFinalPackage={openSectionFinalPackage}
-        onOpenSectionTemplateSettings={openSectionTemplateSettings}
-        onOpenSectionsPage={openSectionsPage}
       />
 
       <section className="object-workspace-main" aria-labelledby="object-workspace-title">
@@ -694,12 +628,11 @@ export function ObjectWorkspacePage({
 
         {activeSection === 'overview' ? (
           <ObjectOverview
+            objectId={object.id}
             sections={sections}
             selectedSection={overviewSection}
             selectedSectionFolders={overviewSectionFolders}
             onCreateSection={openCreateSectionPanel}
-            onOpenSection={openSection}
-            onOpenSectionsPage={openSectionsPage}
           />
         ) : null}
 
@@ -709,6 +642,7 @@ export function ObjectWorkspacePage({
             isCreateSectionPanelOpen={isCreateSectionPanelOpen}
             sectionName={sectionNameInput}
             folders={folders}
+            objectId={object.id}
             sections={sections}
             onChangeSectionName={setSectionNameInput}
             onCloseCreateSectionPanel={() => {
@@ -716,10 +650,6 @@ export function ObjectWorkspacePage({
             }}
             onCreateSection={createSection}
             onOpenCreateSectionPanel={openCreateSectionPanel}
-            onOpenSection={openSection}
-            onOpenSectionTemplateSettings={(sectionId) => {
-              openSectionTemplateSettings(sectionId);
-            }}
           />
         ) : null}
 
@@ -728,6 +658,7 @@ export function ObjectWorkspacePage({
             drafts={drafts}
             folderName={folderNameInput}
             isCreateFolderPanelOpen={isCreateFolderPanelOpen}
+            objectId={object.id}
             selectedSection={selectedSection}
             selectedSectionFolders={selectedSectionFolders}
             onChangeFolderName={setFolderNameInput}
@@ -736,13 +667,6 @@ export function ObjectWorkspacePage({
             }}
             onCreateFolder={createFolder}
             onOpenCreateFolderPanel={openCreateFolderPanel}
-            onOpenFinalPackage={() => {
-              if (selectedSection !== undefined) {
-                navigateTo(sectionFinalPath(object.id, selectedSection.id));
-              }
-            }}
-            onOpenFolder={openFolder}
-            onOpenSectionTemplateSettings={openObjectSettings}
             onMoveFolder={moveFolderInSelectedSection}
           />
         ) : null}
@@ -754,6 +678,8 @@ export function ObjectWorkspacePage({
             drafts={selectedFolderDrafts}
             isCreateDocumentPanelOpen={isCreateDocumentPanelOpen}
             folder={selectedFolder}
+            objectId={object.id}
+            sectionId={selectedSection?.id}
             sectionName={selectedSection?.name}
             onCloseCreateDocumentPanel={() => {
               setCreateDocumentPanelOpen(false);
@@ -762,9 +688,6 @@ export function ObjectWorkspacePage({
             onDeleteAosr={deleteAosrDraftFromFolder}
             onDuplicateAosr={duplicateAosrDraftFromFolderList}
             onMoveAosr={moveAosrDraftInSelectedFolder}
-            onOpenAosr={(draftId) => {
-              openAosr(selectedFolder.id, draftId);
-            }}
             onOpenCreateDocumentPanel={openCreateDocumentPanel}
             onOpenIntermediatePackage={() => {
               setCreateDocumentPanelOpen(false);
@@ -803,11 +726,19 @@ export function ObjectWorkspacePage({
                 navigateTo(aosrPath(object.id, selectedSection.id, selectedFolder.id, draftId));
               }
             }}
+            getDraftHref={(draftId) =>
+              selectedSection === undefined || selectedFolder === undefined
+                ? undefined
+                : aosrPath(object.id, selectedSection.id, selectedFolder.id, draftId)
+            }
             onSectionTemplateSettingsChange={updateSelectedSectionTemplateSettings}
             lastTemplateCopyMessage={lastTemplateCopyMessage}
             folderName={selectedFolder?.name}
             objectId={object.id}
             objectTitle={object.title}
+            objectSettingsCloseHref={
+              selectedSection === undefined ? undefined : sectionPath(object.id, selectedSection.id)
+            }
             automaticSectionDraftCount={selectedAutomaticSectionDrafts.length}
             sectionId={selectedSection?.id}
             sectionName={selectedSection?.name}
@@ -897,21 +828,19 @@ function createWorkspaceFieldSetter<TKey extends keyof DemoObjectWorkspaceSessio
 }
 
 interface ObjectOverviewProps {
+  readonly objectId: string;
   readonly sections: readonly DemoDocumentationSection[];
   readonly selectedSection: DemoDocumentationSection | undefined;
   readonly selectedSectionFolders: readonly DemoIdFolder[];
   readonly onCreateSection: () => void;
-  readonly onOpenSection: (sectionId: DemoDocumentationSectionId) => void;
-  readonly onOpenSectionsPage: () => void;
 }
 
 function ObjectOverview({
+  objectId,
   sections,
   selectedSection,
   selectedSectionFolders,
   onCreateSection,
-  onOpenSection,
-  onOpenSectionsPage,
 }: ObjectOverviewProps): React.JSX.Element {
   return (
     <section className="object-overview" aria-labelledby="object-overview-title">
@@ -955,18 +884,15 @@ function ObjectOverview({
             </p>
           </div>
           <div className="object-overview__focus-actions">
-            <button
+            <Link
               className="action-button action-button--primary"
-              onClick={() => {
-                onOpenSection(selectedSection.id);
-              }}
-              type="button"
+              to={sectionPath(objectId, selectedSection.id)}
             >
               Открыть раздел
-            </button>
-            <button className="compact-toggle" onClick={onOpenSectionsPage} type="button">
+            </Link>
+            <Link className="compact-toggle" to={objectSectionsPath(objectId)}>
               Перейти к разделам ИД
-            </button>
+            </Link>
           </div>
         </section>
       )}
@@ -980,12 +906,7 @@ function ObjectOverview({
           <ul className="object-overview__recent-list object-overview__recent-list--wide">
             {sections.map((section) => (
               <li key={section.id}>
-                <button
-                  onClick={() => {
-                    onOpenSection(section.id);
-                  }}
-                  type="button"
-                >
+                <Link to={sectionPath(objectId, section.id)}>
                   <span>
                     <strong>{section.name}</strong>
                     <small>
@@ -996,7 +917,7 @@ function ObjectOverview({
                     <small>Итоговая ИД</small>
                     <strong>по разделу</strong>
                   </span>
-                </button>
+                </Link>
               </li>
             ))}
           </ul>
@@ -1023,13 +944,12 @@ interface ObjectSectionsPageProps {
   readonly isCreateSectionPanelOpen: boolean;
   readonly sectionName: string;
   readonly folders: readonly DemoIdFolder[];
+  readonly objectId: string;
   readonly sections: readonly DemoDocumentationSection[];
   readonly onChangeSectionName: (value: string) => void;
   readonly onCloseCreateSectionPanel: () => void;
   readonly onCreateSection: () => void;
   readonly onOpenCreateSectionPanel: () => void;
-  readonly onOpenSection: (sectionId: DemoDocumentationSectionId) => void;
-  readonly onOpenSectionTemplateSettings: (sectionId: DemoDocumentationSectionId) => void;
 }
 
 function ObjectSectionsPage({
@@ -1037,13 +957,12 @@ function ObjectSectionsPage({
   isCreateSectionPanelOpen,
   sectionName,
   folders,
+  objectId,
   sections,
   onChangeSectionName,
   onCloseCreateSectionPanel,
   onCreateSection,
   onOpenCreateSectionPanel,
-  onOpenSection,
-  onOpenSectionTemplateSettings,
 }: ObjectSectionsPageProps): React.JSX.Element {
   return (
     <section className="object-folders" aria-labelledby="object-folders-title">
@@ -1149,26 +1068,20 @@ function ObjectSectionsPage({
                     )}
                   </div>
                   <div className="object-section-card__actions">
-                    <button
+                    <Link
                       aria-label={`Открыть раздел ${section.name}`}
                       className="compact-toggle compact-toggle--accent"
-                      onClick={() => {
-                        onOpenSection(section.id);
-                      }}
-                      type="button"
+                      to={sectionPath(objectId, section.id)}
                     >
                       Открыть раздел
-                    </button>
-                    <button
+                    </Link>
+                    <Link
                       aria-label={`Шаблонные значения раздела ${section.name}`}
                       className="compact-toggle"
-                      onClick={() => {
-                        onOpenSectionTemplateSettings(section.id);
-                      }}
-                      type="button"
+                      to={sectionTemplatePath(objectId, section.id)}
                     >
                       Шаблонные значения раздела
-                    </button>
+                    </Link>
                     <button
                       aria-label={`Дополнительные действия раздела ${section.name}`}
                       className="compact-toggle compact-toggle--icon"
@@ -1203,15 +1116,13 @@ interface ObjectSectionPageProps {
   readonly drafts: readonly DemoAosrDraft[];
   readonly folderName: string;
   readonly isCreateFolderPanelOpen: boolean;
+  readonly objectId: string;
   readonly selectedSection: DemoDocumentationSection | undefined;
   readonly selectedSectionFolders: readonly DemoIdFolder[];
   readonly onChangeFolderName: (value: string) => void;
   readonly onCloseCreateFolderPanel: () => void;
   readonly onCreateFolder: () => void;
   readonly onOpenCreateFolderPanel: () => void;
-  readonly onOpenFinalPackage: () => void;
-  readonly onOpenFolder: (folderId: DemoIdFolderId) => void;
-  readonly onOpenSectionTemplateSettings: () => void;
   readonly onMoveFolder: (
     folderId: DemoIdFolderId,
     direction: DemoDocumentationSectionFolderMoveDirection,
@@ -1222,15 +1133,13 @@ function ObjectSectionPage({
   drafts,
   folderName,
   isCreateFolderPanelOpen,
+  objectId,
   selectedSection,
   selectedSectionFolders,
   onChangeFolderName,
   onCloseCreateFolderPanel,
   onCreateFolder,
   onOpenCreateFolderPanel,
-  onOpenFinalPackage,
-  onOpenFolder,
-  onOpenSectionTemplateSettings,
   onMoveFolder,
 }: ObjectSectionPageProps): React.JSX.Element {
   if (selectedSection === undefined) {
@@ -1263,12 +1172,12 @@ function ObjectSectionPage({
           >
             Создать папку
           </button>
-          <button className="compact-toggle" onClick={onOpenFinalPackage} type="button">
+          <Link className="compact-toggle" to={sectionFinalPath(objectId, selectedSection.id)}>
             Итоговая ИД по разделу
-          </button>
-          <button className="compact-toggle" onClick={onOpenSectionTemplateSettings} type="button">
+          </Link>
+          <Link className="compact-toggle" to={sectionTemplatePath(objectId, selectedSection.id)}>
             Шаблонные значения раздела
-          </button>
+          </Link>
           <button
             aria-label={`Дополнительные действия раздела ${selectedSection.name}`}
             className="compact-toggle compact-toggle--icon"
@@ -1393,16 +1302,13 @@ function ObjectSectionPage({
                       : `Обновлено: ${formatShortDate(lastDraft.actDate)}`}
                   </span>
                   <span className="object-folder-row__actions">
-                    <button
+                    <Link
                       aria-label={`Открыть папку ${folder.name}`}
                       className="compact-toggle"
-                      onClick={() => {
-                        onOpenFolder(folder.id);
-                      }}
-                      type="button"
+                      to={folderPath(objectId, selectedSection.id, folder.id)}
                     >
                       Открыть
-                    </button>
+                    </Link>
                   </span>
                 </div>
               );
@@ -1530,13 +1436,14 @@ interface ObjectFolderPageProps {
   readonly drafts: readonly DemoAosrDraft[];
   readonly isCreateDocumentPanelOpen: boolean;
   readonly folder: DemoIdFolder;
+  readonly objectId: string;
+  readonly sectionId: DemoDocumentationSectionId | undefined;
   readonly sectionName: string | undefined;
   readonly onCloseCreateDocumentPanel: () => void;
   readonly onCreateAosr: () => void;
   readonly onDeleteAosr: (draftId: string) => void;
   readonly onDuplicateAosr: (draftId: string) => void;
   readonly onMoveAosr: (draftId: string, direction: DemoIdFolderDraftMoveDirection) => void;
-  readonly onOpenAosr: (draftId: string) => void;
   readonly onOpenCreateDocumentPanel: () => void;
   readonly onOpenIntermediatePackage: () => void;
 }
@@ -1545,13 +1452,14 @@ function ObjectFolderPage({
   drafts,
   isCreateDocumentPanelOpen,
   folder,
+  objectId,
+  sectionId,
   sectionName,
   onCloseCreateDocumentPanel,
   onCreateAosr,
   onDeleteAosr,
   onDuplicateAosr,
   onMoveAosr,
-  onOpenAosr,
   onOpenCreateDocumentPanel,
   onOpenIntermediatePackage,
 }: ObjectFolderPageProps): React.JSX.Element {
@@ -1673,17 +1581,16 @@ function ObjectFolderPage({
                     )}
                   </div>
                   <div className="object-folder-draft-card__actions">
-                    <button
-                      aria-label={`Открыть акт ${getDocumentDisplayNumber(draft.actNumber)}`}
-                      className="compact-toggle"
-                      onClick={() => {
-                        onOpenAosr(draft.id);
-                      }}
-                      title={`Открыть акт ${getDocumentDisplayNumber(draft.actNumber)}`}
-                      type="button"
-                    >
-                      Открыть
-                    </button>
+                    {sectionId === undefined ? null : (
+                      <Link
+                        aria-label={`Открыть акт ${getDocumentDisplayNumber(draft.actNumber)}`}
+                        className="compact-toggle"
+                        title={`Открыть акт ${getDocumentDisplayNumber(draft.actNumber)}`}
+                        to={aosrPath(objectId, sectionId, folder.id, draft.id)}
+                      >
+                        Открыть
+                      </Link>
+                    )}
                     <button
                       className="compact-toggle"
                       onClick={() => {

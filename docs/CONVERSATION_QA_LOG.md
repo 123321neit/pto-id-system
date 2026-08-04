@@ -2240,3 +2240,25 @@ breadcrumbs, URL-driven navigation state и смену акта при откр�
 section template, breadcrumb, final ID, `ОВ-2 -> ОВ-1` в открытом DOCX preview
 и оба invalid-route сценария. В preview использовался результат реальной DOCX
 генерации; `.act-page`, console errors и console warnings отсутствовали.
+
+---
+
+## 79. Route-scoped local UI and semantic links
+
+### Q: Что исправлено после независимого аудита canonical routing?
+
+A: Открытие локальной формы на уже выбранном canonical route больше не добавляет
+дубликат текущего URL в browser history. При смене владельца через URL
+(object/section/folder), включая Back/Forward и breadcrumbs, закрываются формы и
+панели предыдущего владельца, очищаются их ввод и временные сообщения. Состояние
+DOCX preview намеренно не привязано к draft ID: переход по ссылке на другой акт
+в той же папке оставляет preview открытым и обновляет print state.
+
+Глобальная навигация, карточки объектов, object workspace tree, разделы, папки,
+акты, родительские breadcrumbs и возврат из настроек представлены настоящими
+ссылками с canonical `href`. Активные состояния по-прежнему определяет URL;
+кнопками остаются действия, а не переходы.
+
+Это узкий corrective stage 2.1. In-memory domain model, DOCX template/renderer/
+template-data, backend/API/Prisma, persistence, PDF/ZIP, auth, storage и AI/OCR
+не менялись.

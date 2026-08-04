@@ -1,4 +1,5 @@
 import { type SyntheticEvent, useState } from 'react';
+import { Link } from 'react-router-dom';
 
 import {
   demoCertificateStatuses,
@@ -8,10 +9,6 @@ import {
   useDemoStore,
 } from '../demo-store/demo-store.js';
 import { CertificateMaterialsList } from './CertificateMaterialsList.js';
-
-interface CertificateLibraryPageProps {
-  readonly onBackToObjects: () => void;
-}
 
 interface CertificateFormState {
   readonly documentNumber: string;
@@ -35,9 +32,7 @@ const emptyCertificateForm: CertificateFormState = {
   validUntil: '',
 };
 
-export function CertificateLibraryPage({
-  onBackToObjects,
-}: CertificateLibraryPageProps): React.JSX.Element {
+export function CertificateLibraryPage(): React.JSX.Element {
   const { addCertificate: addCertificateToStore, certificates } = useDemoStore();
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | DemoCertificateStatus>('all');
@@ -79,9 +74,9 @@ export function CertificateLibraryPage({
               материалов.
             </p>
           </div>
-          <button className="secondary-action" onClick={onBackToObjects} type="button">
+          <Link className="secondary-action" to="/objects">
             Вернуться к объектам
-          </button>
+          </Link>
         </header>
 
         <ol className="workflow-flow" aria-label="Порядок работы с сертификатами">

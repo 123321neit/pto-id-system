@@ -1,4 +1,5 @@
 import { useEffect, useState, type SyntheticEvent } from 'react';
+import { Link } from 'react-router-dom';
 
 import type { SectionTemplateClipboard } from '../app-shell/section-template-clipboard.js';
 import type {
@@ -31,6 +32,7 @@ interface DemoObjectSettingsPanelProps {
   readonly objectId?: string | undefined;
   readonly objectTitle?: string | undefined;
   readonly presentation?: 'dialog' | 'page';
+  readonly closeHref?: string | undefined;
   readonly representativeSearch: string;
   readonly automaticSectionDraftCount: number;
   readonly sectionId?: string | undefined;
@@ -117,6 +119,7 @@ export function DemoObjectSettingsPanel({
   objectId,
   objectTitle,
   presentation = 'dialog',
+  closeHref,
   representativeSearch,
   automaticSectionDraftCount,
   sectionId,
@@ -191,9 +194,15 @@ export function DemoObjectSettingsPanel({
               значениями раздела.
             </p>
           </span>
-          <button className="compact-toggle" onClick={onCloseObjectSettings} type="button">
-            {isPagePresentation ? 'Вернуться к разделу' : 'Закрыть'}
-          </button>
+          {isPagePresentation && closeHref !== undefined ? (
+            <Link className="compact-toggle" to={closeHref}>
+              Вернуться к разделу
+            </Link>
+          ) : (
+            <button className="compact-toggle" onClick={onCloseObjectSettings} type="button">
+              {isPagePresentation ? 'Вернуться к разделу' : 'Закрыть'}
+            </button>
+          )}
         </div>
 
         {isSectionScopedTemplate ? (

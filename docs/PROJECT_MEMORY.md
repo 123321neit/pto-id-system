@@ -6178,6 +6178,14 @@ delete/move/reorder lifecycle or generation was introduced.
   navigation inside the mounted app, but reload resets to seed data;
 - form edits, dialogs, search/filter state, preview visibility and editor
   presentation remain local UI state.
+- owner-scoped local forms, inputs, temporary messages and package panels reset
+  when their object/section/folder owner changes through the URL; opening a
+  local panel on the current canonical route does not push a duplicate history
+  entry;
+- semantic global navigation, object navigation and the section/folder/AOSR
+  tree use real links with canonical `href` and URL-derived active state;
+- DOCX preview visibility deliberately survives a draft-link transition inside
+  the same folder and renders the newly selected draft.
 
 Ограничения:
 

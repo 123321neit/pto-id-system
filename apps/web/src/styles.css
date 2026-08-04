@@ -55,6 +55,7 @@ button {
 
 .app-sidebar__brand,
 .app-sidebar__account,
+.app-sidebar__nav a,
 .app-sidebar__nav button {
   display: grid;
   grid-template-columns: 34px minmax(0, 1fr);
@@ -99,6 +100,7 @@ button {
   gap: 8px;
 }
 
+.app-sidebar__nav a,
 .app-sidebar__nav button {
   width: 100%;
   border: 1px solid transparent;
@@ -110,20 +112,21 @@ button {
   font-weight: 750;
   line-height: 1.25;
   text-align: left;
+  text-decoration: none;
 }
 
-.app-sidebar__nav button[aria-current='page'] {
+.app-sidebar__nav a[aria-current='page'] {
   border-color: #2563eb;
   background: #2563eb;
   color: #ffffff;
 }
 
-.app-sidebar__nav button[aria-current='page'] span {
+.app-sidebar__nav a[aria-current='page'] span {
   border-color: rgba(255, 255, 255, 0.34);
   background: rgba(255, 255, 255, 0.16);
 }
 
-.app-sidebar__nav button:not([aria-current='page']):hover {
+.app-sidebar__nav a:not([aria-current='page']):hover {
   background: rgba(255, 255, 255, 0.08);
 }
 
@@ -163,6 +166,7 @@ button {
 }
 
 .object-workspace-nav__back {
+  display: block;
   width: 100%;
   border: 1px solid rgba(255, 255, 255, 0.18);
   border-radius: 8px;
@@ -173,6 +177,7 @@ button {
   font-weight: 850;
   line-height: 1.2;
   text-align: left;
+  text-decoration: none;
 }
 
 .object-workspace-nav__identity {
@@ -223,7 +228,7 @@ button {
   text-transform: uppercase;
 }
 
-.object-workspace-nav__sections button {
+.object-workspace-nav__sections a {
   position: relative;
   display: grid;
   grid-template-columns: 32px minmax(0, 1fr);
@@ -239,9 +244,10 @@ button {
   font-weight: 800;
   line-height: 1.25;
   text-align: left;
+  text-decoration: none;
 }
 
-.object-workspace-nav__sections button[aria-current='page'] {
+.object-workspace-nav__sections a[aria-current='page'] {
   border-color: rgba(180, 205, 234, 0.5);
   background: rgba(255, 255, 255, 0.15);
   color: #ffffff;
@@ -250,11 +256,11 @@ button {
     inset 0 1px 0 rgb(255 255 255 / 14%);
 }
 
-.object-workspace-nav__sections button[aria-current='page']::before {
+.object-workspace-nav__sections a[aria-current='page']::before {
   display: none;
 }
 
-.object-workspace-nav__sections button:not([aria-current='page']):hover,
+.object-workspace-nav__sections a:not([aria-current='page']):hover,
 .object-workspace-nav__back:hover {
   background: rgba(255, 255, 255, 0.12);
 }
@@ -281,7 +287,7 @@ button {
   stroke-width: 1.8;
 }
 
-.object-workspace-nav__sections button[aria-current='page'] .object-workspace-nav__icon {
+.object-workspace-nav__sections a[aria-current='page'] .object-workspace-nav__icon {
   border-color: rgba(255, 255, 255, 0.34);
   background: rgba(255, 255, 255, 0.16);
 }
@@ -311,17 +317,15 @@ button {
   white-space: nowrap;
 }
 
-.object-workspace-nav__sections button[aria-current='page'] .object-workspace-nav__label small {
+.object-workspace-nav__sections a[aria-current='page'] .object-workspace-nav__label small {
   color: #d8e7f5;
 }
 
-.object-workspace-nav__group--service button:not([aria-current='page']) {
+.object-workspace-nav__group--service a:not([aria-current='page']) {
   color: #c4d0dc;
 }
 
-.object-workspace-nav__group--service
-  button:not([aria-current='page'])
-  .object-workspace-nav__icon {
+.object-workspace-nav__group--service a:not([aria-current='page']) .object-workspace-nav__icon {
   background: rgba(255, 255, 255, 0.06);
 }
 
@@ -1271,13 +1275,14 @@ button {
 }
 
 .object-overview__actions button,
-.object-overview__recent-list button {
+.object-overview__recent-list a {
   width: 100%;
   border: 1px solid #dbe4ed;
   border-radius: 8px;
   background: #f8fbff;
   color: #172033;
   text-align: left;
+  text-decoration: none;
 }
 
 .object-overview__actions button {
@@ -1289,7 +1294,7 @@ button {
 }
 
 .object-overview__actions button:hover,
-.object-overview__recent-list button:hover {
+.object-overview__recent-list a:hover {
   border-color: #9dc4e8;
   background: #ffffff;
 }
@@ -1321,14 +1326,14 @@ button {
   list-style: none;
 }
 
-.object-overview__recent-list button {
+.object-overview__recent-list a {
   display: grid;
   grid-template-columns: minmax(0, 1.3fr) minmax(120px, 0.8fr) minmax(110px, 0.6fr);
   gap: 12px;
   padding: 12px;
 }
 
-.object-overview__recent-list--wide button {
+.object-overview__recent-list--wide a {
   grid-template-columns: minmax(0, 1.5fr) minmax(130px, 0.7fr) minmax(120px, 0.6fr);
 }
 
@@ -2285,6 +2290,7 @@ button {
   background: #ffffff;
   color: #1e3552;
   box-shadow: 0 8px 18px rgb(21 37 56 / 5%);
+  text-decoration: none;
 }
 
 .secondary-action--accent {
@@ -2442,6 +2448,7 @@ button {
   font-weight: 850;
   line-height: 1.2;
   box-shadow: 0 8px 16px rgb(21 37 56 / 5%);
+  text-decoration: none;
 }
 
 .object-card__action:hover {
@@ -2475,6 +2482,7 @@ button {
   padding: 12px;
   color: #172124;
   text-align: left;
+  text-decoration: none;
 }
 
 .quick-access-card__icon {
@@ -3370,7 +3378,8 @@ h3 {
   background: #fbfdff;
 }
 
-.act-tree-item:has(.act-tree-item__select[aria-pressed='true']) {
+.act-tree-item:has(.act-tree-item__select[aria-pressed='true']),
+.act-tree-item:has(.act-tree-item__select[aria-current='page']) {
   border-color: #93c5fd;
   background: linear-gradient(180deg, #eff6ff 0%, #f8fbff 100%);
   box-shadow:
@@ -3389,6 +3398,7 @@ h3 {
   padding: 2px;
   color: inherit;
   text-align: left;
+  text-decoration: none;
 }
 
 .act-tree-item__select:hover {
@@ -4081,6 +4091,10 @@ h3 {
 .compact-toggle {
   width: fit-content;
   max-width: 100%;
+  text-decoration: none;
+}
+
+a.compact-toggle {
   text-decoration: none;
 }
 
@@ -4855,6 +4869,7 @@ h3 {
   color: #1e3552;
   font-size: 0.78rem;
   font-weight: 800;
+  text-decoration: none;
 }
 
 .action-button--primary {
@@ -5547,7 +5562,7 @@ h3 {
   .object-placeholder,
   .object-overview__metrics,
   .object-overview__folder-folders button,
-  .object-overview__recent-list button,
+  .object-overview__recent-list a,
   .object-folder-row,
   .object-folder-support-grid,
   .object-documents-summary,
