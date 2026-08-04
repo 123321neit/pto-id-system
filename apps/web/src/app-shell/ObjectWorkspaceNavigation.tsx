@@ -1,3 +1,4 @@
+import type { DemoAosrDraft } from '../aosr-demo/demo-aosr-workspace.js';
 import type { MockObjectCard } from './mock-dashboard.js';
 import {
   getDemoDocumentationSectionFolders,
@@ -5,7 +6,7 @@ import {
   type DemoDocumentationSectionId,
 } from './object-documentation-sections.js';
 import type { DemoIdFolderId, DemoIdFolders } from './object-id-folders.js';
-import { getFolderCountLabel } from './object-workspace-formatters.js';
+import { getDocumentDisplayNumber, getFolderCountLabel } from './object-workspace-formatters.js';
 import type { ObjectWorkspaceSection } from './object-workspace-types.js';
 
 type WorkspaceNavIconName =
@@ -19,12 +20,15 @@ type WorkspaceNavIconName =
 
 interface ObjectWorkspaceNavigationProps {
   readonly activeSection: ObjectWorkspaceSection;
+  readonly drafts: readonly DemoAosrDraft[];
   readonly folders: DemoIdFolders;
   readonly object: MockObjectCard;
   readonly sections: readonly DemoDocumentationSection[];
   readonly selectedFolderId: DemoIdFolderId | null;
+  readonly selectedDraftId: string;
   readonly selectedSectionId: DemoDocumentationSectionId | null;
   readonly onBackToObjects: () => void;
+  readonly onOpenAosr: (folderId: DemoIdFolderId, draftId: string) => void;
   readonly onOpenFolder: (folderId: DemoIdFolderId) => void;
   readonly onOpenObjectDocumentsPage: () => void;
   readonly onOpenOverview: () => void;
@@ -36,12 +40,15 @@ interface ObjectWorkspaceNavigationProps {
 
 export function ObjectWorkspaceNavigation({
   activeSection,
+  drafts,
   folders,
   object,
   sections,
   selectedFolderId,
+  selectedDraftId,
   selectedSectionId,
   onBackToObjects,
+  onOpenAosr,
   onOpenFolder,
   onOpenObjectDocumentsPage,
   onOpenOverview,
@@ -147,80 +154,109 @@ export function ObjectWorkspaceNavigation({
                       </span>
                     </button>
 
-                    <ul className="object-workspace-tree__children">
-                      <li>
-                        <button
-                          aria-current={
-                            isSelectedSection && activeSection === 'settings' ? 'page' : undefined
-                          }
-                          aria-label={`Шаблонные значения раздела ${section.name}`}
-                          className="object-workspace-nav__subitem"
-                          onClick={() => {
-                            onOpenSectionTemplateSettings(section.id);
-                          }}
-                          type="button"
-                        >
-                          <span className="object-workspace-nav__icon" aria-hidden="true">
-                            <WorkspaceNavIcon name="settings" />
-                          </span>
-                          <span className="object-workspace-nav__label">
-                            <strong>Шаблонные значения раздела</strong>
-                            <small>{section.name}</small>
-                          </span>
-                        </button>
-                      </li>
-                      {sectionFolders.map((folder) => (
-                        <li key={folder.id}>
+                    {isSelectedSection ? (
+                      <ul className="object-workspace-tree__children">
+                        <li>
                           <button
-                            aria-current={
-                              selectedFolderId === folder.id &&
-                              (activeSection === 'folder' ||
-                                activeSection === 'intermediate-package' ||
-                                activeSection === 'aosr')
-                                ? 'page'
-                                : undefined
-                            }
-                            aria-label={`Открыть папку ${folder.name}`}
+                            aria-current={activeSection === 'settings' ? 'page' : undefined}
+                            aria-label={`Шаблонные значения раздела ${section.name}`}
                             className="object-workspace-nav__subitem"
                             onClick={() => {
-                              onOpenFolder(folder.id);
+                              onOpenSectionTemplateSettings(section.id);
                             }}
                             type="button"
                           >
                             <span className="object-workspace-nav__icon" aria-hidden="true">
-                              <WorkspaceNavIcon name="folder" />
+                              <WorkspaceNavIcon name="settings" />
                             </span>
                             <span className="object-workspace-nav__label">
-                              <strong>{folder.name}</strong>
-                              <small>Папка раздела</small>
+                              <strong>Шаблонные значения раздела</strong>
+                              <small>{section.name}</small>
                             </span>
                           </button>
                         </li>
-                      ))}
-                      <li>
-                        <button
-                          aria-current={
-                            isSelectedSection && activeSection === 'final-package'
-                              ? 'page'
-                              : undefined
-                          }
-                          aria-label={`Итоговая ИД по разделу ${section.name}`}
-                          className="object-workspace-nav__subitem"
-                          onClick={() => {
-                            onOpenSectionFinalPackage(section.id);
-                          }}
-                          type="button"
-                        >
-                          <span className="object-workspace-nav__icon" aria-hidden="true">
-                            <WorkspaceNavIcon name="final-package" />
-                          </span>
-                          <span className="object-workspace-nav__label">
-                            <strong>Итоговая ИД по разделу</strong>
-                            <small>{section.name}</small>
-                          </span>
-                        </button>
-                      </li>
-                    </ul>
+                        {sectionFolders.map((folder) => {
+                          const isSelectedFolder = selectedFolderId === folder.id;
+                          const folderDrafts = isSelectedFolder
+                            ? folder.draftIds
+                                .map((draftId) => drafts.find((draft) => draft.id === draftId))
+                                .filter((draft): draft is DemoAosrDraft => draft !== undefined)
+                            : [];
+
+                          return (
+                            <li key={folder.id}>
+                              <button
+                                aria-current={
+                                  isSelectedFolder &&
+                                  (activeSection === 'folder' ||
+                                    activeSection === 'intermediate-package' ||
+                                    activeSection === 'aosr')
+                                    ? 'page'
+                                    : undefined
+                                }
+                                aria-label={`Открыть папку ${folder.name}`}
+                                className="object-workspace-nav__subitem"
+                                onClick={() => {
+                                  onOpenFolder(folder.id);
+                                }}
+                                type="button"
+                              >
+                                <span className="object-workspace-nav__icon" aria-hidden="true">
+                                  <WorkspaceNavIcon name="folder" />
+                                </span>
+                                <span className="object-workspace-nav__label">
+                                  <strong>{folder.name}</strong>
+                                  <small>Папка раздела</small>
+                                </span>
+                              </button>
+                              {folderDrafts.length === 0 ? null : (
+                                <ul
+                                  className="object-workspace-tree__acts"
+                                  aria-label={`Акты папки ${folder.name}`}
+                                >
+                                  {folderDrafts.map((draft) => (
+                                    <li key={draft.id}>
+                                      <button
+                                        aria-current={
+                                          selectedDraftId === draft.id ? 'page' : undefined
+                                        }
+                                        aria-label={`Открыть АОСР ${getDocumentDisplayNumber(draft.actNumber)}`}
+                                        className="object-workspace-nav__act"
+                                        onClick={() => {
+                                          onOpenAosr(folder.id, draft.id);
+                                        }}
+                                        type="button"
+                                      >
+                                        АОСР {getDocumentDisplayNumber(draft.actNumber)}
+                                      </button>
+                                    </li>
+                                  ))}
+                                </ul>
+                              )}
+                            </li>
+                          );
+                        })}
+                        <li>
+                          <button
+                            aria-current={activeSection === 'final-package' ? 'page' : undefined}
+                            aria-label={`Итоговая ИД по разделу ${section.name}`}
+                            className="object-workspace-nav__subitem"
+                            onClick={() => {
+                              onOpenSectionFinalPackage(section.id);
+                            }}
+                            type="button"
+                          >
+                            <span className="object-workspace-nav__icon" aria-hidden="true">
+                              <WorkspaceNavIcon name="final-package" />
+                            </span>
+                            <span className="object-workspace-nav__label">
+                              <strong>Итоговая ИД по разделу</strong>
+                              <small>{section.name}</small>
+                            </span>
+                          </button>
+                        </li>
+                      </ul>
+                    ) : null}
                   </li>
                 );
               })}

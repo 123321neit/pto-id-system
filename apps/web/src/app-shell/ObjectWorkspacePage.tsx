@@ -1,4 +1,5 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, type SetStateAction } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 import { getDemoActTypeById, registeredDemoActTypes } from '../act-types/act-types.js';
 import { DemoAosrWorkspacePage } from '../aosr-demo/DemoAosrWorkspacePage.js';
@@ -9,14 +10,24 @@ import {
   type DemoSectionTemplateSettings,
 } from '../aosr-demo/demo-aosr-workspace.js';
 import { DerivedRegistryTable } from './DerivedRegistryTable.js';
+import { AppBreadcrumbs, type AppBreadcrumbScreen } from './AppBreadcrumbs.js';
 import { ObjectDocumentsPage } from './ObjectDocumentsPage.js';
 import { ObjectFinalPackagePage, ObjectIntermediatePackagePage } from './ObjectFinalPackagePage.js';
 import { ObjectWorkspaceNavigation } from './ObjectWorkspaceNavigation.js';
+import {
+  aosrPath,
+  folderPath,
+  objectDocumentsPath,
+  objectPath,
+  objectSectionsPath,
+  sectionFinalPath,
+  sectionPath,
+  sectionTemplatePath,
+} from './app-route-paths.js';
 import type { MockObjectCard } from './mock-dashboard.js';
 import {
   addDemoDocumentationSectionFolder,
   createDemoDocumentationSection,
-  demoDocumentationSections,
   getDemoDocumentationSectionById,
   getDemoDocumentationSectionDrafts,
   getDemoDocumentationSectionForFolderId,
@@ -25,13 +36,11 @@ import {
   type DemoDocumentationSection,
   type DemoDocumentationSectionFolderMoveDirection,
   type DemoDocumentationSectionId,
-  type DemoDocumentationSections,
 } from './object-documentation-sections.js';
 import { getProposedDemoDocumentNumberDetails } from './object-document-numbering.js';
 import {
   addDemoIdFolderDraft,
   createDemoIdFolder,
-  demoIdFolders,
   getDemoIdFolderById,
   getDemoIdFolderDrafts,
   moveDemoIdFolderDraftByDirection,
@@ -39,7 +48,6 @@ import {
   type DemoIdFolder,
   type DemoIdFolderDraftMoveDirection,
   type DemoIdFolderId,
-  type DemoIdFolders,
 } from './object-id-folders.js';
 import {
   formatRenumberedActCount,
@@ -58,86 +66,92 @@ import type { ObjectWorkspaceSection } from './object-workspace-types.js';
 import {
   copySectionTemplateSettingsToTarget,
   createSectionTemplateSettings,
-  type DemoSectionTemplateSettingsById,
 } from './object-section-template-settings.js';
-import {
-  cloneSectionTemplateSettingsForClipboard,
-  type SectionTemplateClipboard,
-} from './section-template-clipboard.js';
+import { cloneSectionTemplateSettingsForClipboard } from './section-template-clipboard.js';
 import { buildFolderRegistryModel } from './object-registry-model.js';
+import {
+  useDemoWorkspaceSession,
+  type DemoObjectWorkspaceSession,
+} from './object-workspace-session.js';
 
 const aosrActType = getDemoActTypeById('aosr');
 
-function buildInitialSectionTemplateSettings(
-  hasDemoContent: boolean,
-): DemoSectionTemplateSettingsById {
-  if (!hasDemoContent) {
-    return {};
-  }
-
-  return Object.fromEntries(
-    demoDocumentationSections.map((section) => [
-      section.templateSettingsId,
-      createSectionTemplateSettings(section),
-    ]),
-  );
-}
-
 interface ObjectWorkspacePageProps {
   readonly object: MockObjectCard;
-  readonly sectionTemplateClipboard: SectionTemplateClipboard | null;
-  readonly onBackToObjects: () => void;
-  readonly onSectionTemplateClipboardChange: (clipboard: SectionTemplateClipboard | null) => void;
+  readonly route: ObjectWorkspaceRoute;
 }
+
+export type ObjectWorkspaceRoute =
+  | { readonly screen: 'documents' }
+  | { readonly screen: 'overview' }
+  | { readonly screen: 'sections' }
+  | { readonly screen: 'section'; readonly section: DemoDocumentationSection }
+  | { readonly screen: 'template'; readonly section: DemoDocumentationSection }
+  | { readonly screen: 'final'; readonly section: DemoDocumentationSection }
+  | {
+      readonly screen: 'folder';
+      readonly folder: DemoIdFolder;
+      readonly section: DemoDocumentationSection;
+    }
+  | {
+      readonly screen: 'aosr';
+      readonly draft: DemoAosrDraft;
+      readonly folder: DemoIdFolder;
+      readonly section: DemoDocumentationSection;
+    };
 
 export function ObjectWorkspacePage({
   object,
-  sectionTemplateClipboard,
-  onBackToObjects,
-  onSectionTemplateClipboardChange,
+  route,
 }: ObjectWorkspacePageProps): React.JSX.Element {
-  const [activeSection, setActiveSection] = useState<ObjectWorkspaceSection>('overview');
-  const hasDemoContent = object.workspaceSeed === 'demo-content';
-  const [drafts, setDrafts] = useState<readonly DemoAosrDraft[]>(
-    hasDemoContent ? demoAosrWorkspace.drafts : [],
+  const navigate = useNavigate();
+  const navigateTo = (path: string): void => {
+    void navigate(path);
+  };
+  const {
+    sectionTemplateClipboard,
+    setSectionTemplateClipboard,
+    updateWorkspace,
+    workspacesByObjectId,
+  } = useDemoWorkspaceSession();
+  const workspace = workspacesByObjectId[object.id];
+
+  if (workspace === undefined) {
+    throw new Error(`Workspace session is missing for object: ${object.id}`);
+  }
+
+  const { drafts, folders, sections, sectionTemplateSettingsById } = workspace;
+  const setDrafts = createWorkspaceFieldSetter(object.id, updateWorkspace, 'drafts');
+  const setFolders = createWorkspaceFieldSetter(object.id, updateWorkspace, 'folders');
+  const setSections = createWorkspaceFieldSetter(object.id, updateWorkspace, 'sections');
+  const setSectionTemplateSettingsById = createWorkspaceFieldSetter(
+    object.id,
+    updateWorkspace,
+    'sectionTemplateSettingsById',
   );
-  const [sections, setSections] = useState<DemoDocumentationSections>(
-    hasDemoContent ? demoDocumentationSections : [],
-  );
-  const [selectedSectionId, setSelectedSectionId] = useState<DemoDocumentationSectionId | null>(
-    hasDemoContent ? (demoDocumentationSections[0]?.id ?? null) : null,
-  );
-  const [sectionTemplateSettingsById, setSectionTemplateSettingsById] =
-    useState<DemoSectionTemplateSettingsById>(() =>
-      buildInitialSectionTemplateSettings(hasDemoContent),
-    );
-  const [folders, setFolders] = useState<DemoIdFolders>(hasDemoContent ? demoIdFolders : []);
-  const [selectedFolderId, setSelectedFolderId] = useState<DemoIdFolderId | null>(
-    hasDemoContent ? (demoIdFolders[0]?.id ?? null) : null,
-  );
-  const [selectedDraftId, setSelectedDraftId] = useState(
-    hasDemoContent ? (demoAosrWorkspace.drafts[0]?.id ?? '') : '',
-  );
-  const [createdAosrDraftCount, setCreatedAosrDraftCount] = useState(1);
-  const [createdFolderCount, setCreatedFolderCount] = useState(1);
-  const [createdSectionCount, setCreatedSectionCount] = useState(1);
+  const activeSection = getActiveWorkspaceSection(route.screen);
+  const selectedSection = 'section' in route ? route.section : undefined;
+  const selectedFolder = 'folder' in route ? route.folder : undefined;
+  const selectedDraftId = 'draft' in route ? route.draft.id : '';
+  const selectedSectionId = selectedSection?.id ?? null;
+  const selectedFolderId = selectedFolder?.id ?? null;
   const [isCreateDocumentPanelOpen, setCreateDocumentPanelOpen] = useState(false);
   const [isCreateFolderPanelOpen, setCreateFolderPanelOpen] = useState(false);
   const [isCreateSectionPanelOpen, setCreateSectionPanelOpen] = useState(false);
   const [folderNameInput, setFolderNameInput] = useState('');
   const [sectionNameInput, setSectionNameInput] = useState('');
   const [lastTemplateCopyMessage, setLastTemplateCopyMessage] = useState('');
-  const isAosrVisible = activeSection === 'aosr' || activeSection === 'settings';
-  const selectedSection =
-    selectedSectionId === null
-      ? undefined
-      : getDemoDocumentationSectionById(selectedSectionId, sections);
+  const [isIntermediatePackageOpen, setIntermediatePackageOpen] = useState(false);
+  const isAosrVisible = route.screen === 'aosr' || route.screen === 'template';
   const selectedSectionFolders =
     selectedSection === undefined
       ? []
       : getDemoDocumentationSectionFolders(selectedSection, folders);
-  const selectedFolder =
-    selectedFolderId === null ? undefined : getDemoIdFolderById(selectedFolderId, folders);
+  const overviewSection = sections[0];
+  const overviewSectionFolders =
+    overviewSection === undefined
+      ? []
+      : getDemoDocumentationSectionFolders(overviewSection, folders);
   const selectedSectionDrafts = useMemo(
     () =>
       selectedSection === undefined
@@ -190,12 +204,15 @@ export function ObjectWorkspacePage({
   ]);
   const proposedAosrNumber = proposedAosrNumberDetails?.renderedNumber ?? '';
 
+  useEffect(() => {
+    setIntermediatePackageOpen(false);
+  }, [route.screen, selectedFolderId]);
+
   const openCreateDocumentPanel = (): void => {
     if (selectedFolder === undefined) {
       return;
     }
 
-    setActiveSection('folder');
     setCreateDocumentPanelOpen(true);
   };
 
@@ -204,21 +221,21 @@ export function ObjectWorkspacePage({
     setCreateFolderPanelOpen(false);
     setSectionNameInput('');
     setCreateSectionPanelOpen(true);
-    setActiveSection('sections');
+    navigateTo(objectSectionsPath(object.id));
   };
 
   const openSectionsPage = (): void => {
     setCreateDocumentPanelOpen(false);
     setCreateFolderPanelOpen(false);
     setCreateSectionPanelOpen(false);
-    setActiveSection('sections');
+    navigateTo(objectSectionsPath(object.id));
   };
 
   const openObjectDocumentsPage = (): void => {
     setCreateDocumentPanelOpen(false);
     setCreateFolderPanelOpen(false);
     setCreateSectionPanelOpen(false);
-    setActiveSection('documents');
+    navigateTo(objectDocumentsPath(object.id));
   };
 
   const createSection = (): void => {
@@ -229,22 +246,22 @@ export function ObjectWorkspacePage({
     }
 
     const section = createDemoDocumentationSection(
-      `section-created-${String(createdSectionCount)}`,
+      `section-created-${String(workspace.nextSectionOrdinal)}`,
       sectionName,
     );
 
-    setSections((currentSections) => [...currentSections, section]);
-    setSectionTemplateSettingsById((currentDefaults) => ({
-      ...currentDefaults,
-      [section.templateSettingsId]: createSectionTemplateSettings(section),
+    updateWorkspace(object.id, (currentWorkspace) => ({
+      ...currentWorkspace,
+      nextSectionOrdinal: currentWorkspace.nextSectionOrdinal + 1,
+      sections: [...currentWorkspace.sections, section],
+      sectionTemplateSettingsById: {
+        ...currentWorkspace.sectionTemplateSettingsById,
+        [section.templateSettingsId]: createSectionTemplateSettings(section),
+      },
     }));
-    setSelectedSectionId(section.id);
-    setSelectedFolderId(null);
-    setSelectedDraftId('');
-    setCreatedSectionCount((currentCount) => currentCount + 1);
     setCreateSectionPanelOpen(false);
     setSectionNameInput('');
-    setActiveSection('section');
+    navigateTo(sectionPath(object.id, section.id));
   };
 
   const openCreateFolderPanel = (): void => {
@@ -257,7 +274,7 @@ export function ObjectWorkspacePage({
     setCreateSectionPanelOpen(false);
     setFolderNameInput('');
     setCreateFolderPanelOpen(true);
-    setActiveSection('section');
+    navigateTo(sectionPath(object.id, selectedSection.id));
   };
 
   const createFolder = (): void => {
@@ -271,33 +288,32 @@ export function ObjectWorkspacePage({
       return;
     }
 
-    const folder = createDemoIdFolder(`folder-created-${String(createdFolderCount)}`, folderName);
-
-    setFolders((currentFolders) => [...currentFolders, folder]);
-    setSections((currentSections) =>
-      addDemoDocumentationSectionFolder(currentSections, selectedSectionId, folder.id),
+    const folder = createDemoIdFolder(
+      `folder-created-${String(workspace.nextFolderOrdinal)}`,
+      folderName,
     );
-    setSelectedFolderId(folder.id);
-    setSelectedDraftId('');
-    setCreatedFolderCount((currentCount) => currentCount + 1);
+
+    updateWorkspace(object.id, (currentWorkspace) => ({
+      ...currentWorkspace,
+      folders: [...currentWorkspace.folders, folder],
+      nextFolderOrdinal: currentWorkspace.nextFolderOrdinal + 1,
+      sections: addDemoDocumentationSectionFolder(
+        currentWorkspace.sections,
+        selectedSectionId,
+        folder.id,
+      ),
+    }));
     setCreateFolderPanelOpen(false);
     setFolderNameInput('');
-    setActiveSection('folder');
+    navigateTo(folderPath(object.id, selectedSectionId, folder.id));
   };
 
   const openSection = (sectionId: DemoDocumentationSectionId): void => {
-    const section = getDemoDocumentationSectionById(sectionId, sections);
-    const sectionFolders = getDemoDocumentationSectionFolders(section, folders);
-    const firstFolder = sectionFolders[0];
-
     setCreateDocumentPanelOpen(false);
     setCreateFolderPanelOpen(false);
     setCreateSectionPanelOpen(false);
-    setSelectedSectionId(sectionId);
-    setSelectedFolderId(firstFolder?.id ?? null);
-    setSelectedDraftId(firstFolder?.draftIds[0] ?? '');
     setLastTemplateCopyMessage('');
-    setActiveSection('section');
+    navigateTo(sectionPath(object.id, sectionId));
   };
 
   const openFolder = (folderId: DemoIdFolderId): void => {
@@ -306,12 +322,8 @@ export function ObjectWorkspacePage({
     setCreateDocumentPanelOpen(false);
     setCreateFolderPanelOpen(false);
     setCreateSectionPanelOpen(false);
-    setSelectedSectionId(section.id);
-    setSelectedFolderId(folderId);
-    const folder = getDemoIdFolderById(folderId, folders);
-    setSelectedDraftId(folder.draftIds[0] ?? '');
     setLastTemplateCopyMessage('');
-    setActiveSection('folder');
+    navigateTo(folderPath(object.id, section.id, folderId));
   };
 
   const openAosr = (folderId: DemoIdFolderId | null = selectedFolderId, draftId?: string): void => {
@@ -319,14 +331,15 @@ export function ObjectWorkspacePage({
       return;
     }
 
-    const folder = getDemoIdFolderById(folderId, folders);
     const section = getDemoDocumentationSectionForFolderId(folderId, sections);
+    const folder = getDemoIdFolderById(folderId, folders);
+    const selectedDraft = draftId ?? folder.draftIds[0];
 
     setCreateDocumentPanelOpen(false);
-    setSelectedSectionId(section.id);
-    setSelectedFolderId(folderId);
-    setSelectedDraftId(draftId ?? folder.draftIds[0] ?? '');
-    setActiveSection('aosr');
+
+    if (selectedDraft !== undefined) {
+      navigateTo(aosrPath(object.id, section.id, folderId, selectedDraft));
+    }
   };
 
   const createAosrDraft = (): void => {
@@ -341,24 +354,24 @@ export function ObjectWorkspacePage({
     const draft = createEmptyDemoAosrDraft({
       actNumber: proposedAosrNumber,
       folderId: selectedFolderId,
-      id: `aosr-draft-created-${String(createdAosrDraftCount)}`,
+      id: `aosr-draft-created-${String(workspace.nextAosrOrdinal)}`,
       numberingAssignment: proposedAosrNumberDetails.numberingAssignment,
       sectionTemplateSettings: selectedSectionTemplateSettings,
       sectionId: selectedSection.id,
       sectionTemplateSettingsId: selectedSection.templateSettingsId,
     });
 
-    setDrafts((currentDrafts) => [...currentDrafts, draft]);
-    setFolders((currentFolders) =>
-      addDemoIdFolderDraft(currentFolders, selectedFolderId, draft.id),
-    );
-    setCreatedAosrDraftCount((currentCount) => currentCount + 1);
+    updateWorkspace(object.id, (currentWorkspace) => ({
+      ...currentWorkspace,
+      drafts: [...currentWorkspace.drafts, draft],
+      folders: addDemoIdFolderDraft(currentWorkspace.folders, selectedFolderId, draft.id),
+      nextAosrOrdinal: currentWorkspace.nextAosrOrdinal + 1,
+    }));
     setCreateDocumentPanelOpen(false);
-    setSelectedDraftId(draft.id);
-    setActiveSection('aosr');
+    navigateTo(aosrPath(object.id, selectedSection.id, selectedFolderId, draft.id));
   };
 
-  const deleteAosrDraftFromCurrentFolder = (draftId: string, nextSelectedDraftId: string): void => {
+  const deleteAosrDraftFromCurrentFolder = (draftId: string): void => {
     const nextFolders = removeDemoIdFolderDraft(folders, draftId);
 
     setFolders(nextFolders);
@@ -370,10 +383,8 @@ export function ObjectWorkspacePage({
         sectionTemplateSettings: selectedSectionTemplateSettings,
       }),
     );
-    setSelectedDraftId(nextSelectedDraftId);
-
-    if (nextSelectedDraftId === '') {
-      setActiveSection('folder');
+    if (selectedSection !== undefined && selectedFolder !== undefined) {
+      navigateTo(folderPath(object.id, selectedSection.id, selectedFolder.id));
     }
   };
 
@@ -393,9 +404,7 @@ export function ObjectWorkspacePage({
       return;
     }
 
-    const nextSelectedDraftId = selectedFolderDrafts.find(({ id }) => id !== draftId)?.id ?? '';
-
-    deleteAosrDraftFromCurrentFolder(draftId, nextSelectedDraftId);
+    deleteAosrDraftFromCurrentFolder(draftId);
   };
 
   const moveAosrDraftInSelectedFolder = (
@@ -406,30 +415,29 @@ export function ObjectWorkspacePage({
       return;
     }
 
-    setFolders((currentFolders) => {
+    updateWorkspace(object.id, (currentWorkspace) => {
       const nextFolders = moveDemoIdFolderDraftByDirection(
-        currentFolders,
+        currentWorkspace.folders,
         selectedFolderId,
         draftId,
         direction,
       );
 
-      if (nextFolders === currentFolders) {
-        return currentFolders;
+      if (nextFolders === currentWorkspace.folders) {
+        return currentWorkspace;
       }
 
-      setDrafts((currentDrafts) =>
-        maybeRenumberAutomaticSectionDrafts({
-          currentDrafts,
+      return {
+        ...currentWorkspace,
+        drafts: maybeRenumberAutomaticSectionDrafts({
+          currentDrafts: currentWorkspace.drafts,
           currentFolders: nextFolders,
           section: selectedSection,
           sectionTemplateSettings: selectedSectionTemplateSettings,
         }),
-      );
-
-      return nextFolders;
+        folders: nextFolders,
+      };
     });
-    setSelectedDraftId(draftId);
   };
 
   const moveFolderInSelectedSection = (
@@ -465,7 +473,6 @@ export function ObjectWorkspacePage({
       createSectionTemplateSettings(nextSection);
 
     setSections(nextSections);
-    setSelectedSectionId(nextSection.id);
     setDrafts((currentDrafts) =>
       maybeRenumberAutomaticSectionDrafts({
         currentDrafts,
@@ -495,7 +502,7 @@ export function ObjectWorkspacePage({
     const result = duplicateAosrDraftInFolder({
       currentDrafts: drafts,
       currentFolders: folders,
-      duplicateDraftId: `aosr-draft-duplicate-${String(createdAosrDraftCount)}`,
+      duplicateDraftId: `aosr-draft-duplicate-${String(workspace.nextAosrOrdinal)}`,
       section: selectedSection,
       sectionTemplateSettings: selectedSectionTemplateSettings,
       sourceDraftId,
@@ -505,12 +512,21 @@ export function ObjectWorkspacePage({
       return;
     }
 
-    setDrafts(result.drafts);
-    setFolders(result.folders);
-    setCreatedAosrDraftCount((currentCount) => currentCount + 1);
-    setSelectedDraftId(result.duplicatedDraft.id);
+    updateWorkspace(object.id, (currentWorkspace) => ({
+      ...currentWorkspace,
+      drafts: result.drafts,
+      folders: result.folders,
+      nextAosrOrdinal: currentWorkspace.nextAosrOrdinal + 1,
+    }));
     if (openEditor) {
-      setActiveSection('aosr');
+      navigateTo(
+        aosrPath(
+          object.id,
+          result.duplicatedDraft.sectionId,
+          result.duplicatedDraft.folderId,
+          result.duplicatedDraft.id,
+        ),
+      );
     }
   };
 
@@ -523,35 +539,23 @@ export function ObjectWorkspacePage({
     setCreateDocumentPanelOpen(false);
     setCreateFolderPanelOpen(false);
     setCreateSectionPanelOpen(false);
-    setActiveSection('settings');
+    navigateTo(sectionTemplatePath(object.id, selectedSection.id));
   };
 
   const openSectionTemplateSettings = (sectionId: DemoDocumentationSectionId): void => {
     const section = getDemoDocumentationSectionById(sectionId, sections);
-    const sectionFolders = getDemoDocumentationSectionFolders(section, folders);
-    const firstFolder = sectionFolders[0];
-
     setCreateDocumentPanelOpen(false);
     setCreateFolderPanelOpen(false);
     setCreateSectionPanelOpen(false);
-    setSelectedSectionId(section.id);
-    setSelectedFolderId(firstFolder?.id ?? null);
-    setSelectedDraftId(firstFolder?.draftIds[0] ?? '');
-    setActiveSection('settings');
+    navigateTo(sectionTemplatePath(object.id, section.id));
   };
 
   const openSectionFinalPackage = (sectionId: DemoDocumentationSectionId): void => {
     const section = getDemoDocumentationSectionById(sectionId, sections);
-    const sectionFolders = getDemoDocumentationSectionFolders(section, folders);
-    const firstFolder = sectionFolders[0];
-
     setCreateDocumentPanelOpen(false);
     setCreateFolderPanelOpen(false);
     setCreateSectionPanelOpen(false);
-    setSelectedSectionId(section.id);
-    setSelectedFolderId(firstFolder?.id ?? null);
-    setSelectedDraftId(firstFolder?.draftIds[0] ?? '');
-    setActiveSection('final-package');
+    navigateTo(sectionFinalPath(object.id, section.id));
   };
 
   const updateSelectedSectionTemplateSettings = (
@@ -572,7 +576,7 @@ export function ObjectWorkspacePage({
       return;
     }
 
-    onSectionTemplateClipboardChange({
+    setSectionTemplateClipboard({
       sectionTemplateSettings: cloneSectionTemplateSettingsForClipboard(
         selectedSectionTemplateSettings,
       ),
@@ -658,19 +662,26 @@ export function ObjectWorkspacePage({
     <main className="object-workspace-shell">
       <ObjectWorkspaceNavigation
         activeSection={activeSection}
+        drafts={drafts}
         folders={folders}
         object={object}
         sections={sections}
+        selectedDraftId={selectedDraftId}
         selectedFolderId={selectedFolderId}
         selectedSectionId={selectedSectionId}
-        onBackToObjects={onBackToObjects}
+        onBackToObjects={() => {
+          navigateTo('/objects');
+        }}
         onOpenFolder={openFolder}
+        onOpenAosr={(folderId, draftId) => {
+          openAosr(folderId, draftId);
+        }}
         onOpenObjectDocumentsPage={openObjectDocumentsPage}
         onOpenOverview={() => {
           setCreateDocumentPanelOpen(false);
           setCreateFolderPanelOpen(false);
           setCreateSectionPanelOpen(false);
-          setActiveSection('overview');
+          navigateTo(objectPath(object.id));
         }}
         onOpenSection={openSection}
         onOpenSectionFinalPackage={openSectionFinalPackage}
@@ -679,13 +690,13 @@ export function ObjectWorkspacePage({
       />
 
       <section className="object-workspace-main" aria-labelledby="object-workspace-title">
-        <ObjectWorkspaceHeader object={object} activeSection={activeSection} />
+        <ObjectWorkspaceHeader object={object} route={route} />
 
         {activeSection === 'overview' ? (
           <ObjectOverview
             sections={sections}
-            selectedSection={selectedSection}
-            selectedSectionFolders={selectedSectionFolders}
+            selectedSection={overviewSection}
+            selectedSectionFolders={overviewSectionFolders}
             onCreateSection={openCreateSectionPanel}
             onOpenSection={openSection}
             onOpenSectionsPage={openSectionsPage}
@@ -707,8 +718,7 @@ export function ObjectWorkspacePage({
             onOpenCreateSectionPanel={openCreateSectionPanel}
             onOpenSection={openSection}
             onOpenSectionTemplateSettings={(sectionId) => {
-              setSelectedSectionId(sectionId);
-              setActiveSection('settings');
+              openSectionTemplateSettings(sectionId);
             }}
           />
         ) : null}
@@ -727,7 +737,9 @@ export function ObjectWorkspacePage({
             onCreateFolder={createFolder}
             onOpenCreateFolderPanel={openCreateFolderPanel}
             onOpenFinalPackage={() => {
-              setActiveSection('final-package');
+              if (selectedSection !== undefined) {
+                navigateTo(sectionFinalPath(object.id, selectedSection.id));
+              }
             }}
             onOpenFolder={openFolder}
             onOpenSectionTemplateSettings={openObjectSettings}
@@ -735,7 +747,9 @@ export function ObjectWorkspacePage({
           />
         ) : null}
 
-        {activeSection === 'folder' && selectedFolder !== undefined ? (
+        {activeSection === 'folder' &&
+        !isIntermediatePackageOpen &&
+        selectedFolder !== undefined ? (
           <ObjectFolderPage
             drafts={selectedFolderDrafts}
             isCreateDocumentPanelOpen={isCreateDocumentPanelOpen}
@@ -754,24 +768,41 @@ export function ObjectWorkspacePage({
             onOpenCreateDocumentPanel={openCreateDocumentPanel}
             onOpenIntermediatePackage={() => {
               setCreateDocumentPanelOpen(false);
-              setActiveSection('intermediate-package');
+              setIntermediatePackageOpen(true);
             }}
           />
         ) : null}
 
-        {activeSection === 'intermediate-package' && selectedFolder !== undefined ? (
-          <ObjectIntermediatePackagePage drafts={drafts} folder={selectedFolder} />
+        {route.screen === 'folder' && isIntermediatePackageOpen && selectedFolder !== undefined ? (
+          <section aria-label="Промежуточная ИД папки">
+            <button
+              className="secondary-action"
+              onClick={() => {
+                setIntermediatePackageOpen(false);
+              }}
+              type="button"
+            >
+              ← К документам папки
+            </button>
+            <ObjectIntermediatePackagePage drafts={drafts} folder={selectedFolder} />
+          </section>
         ) : null}
 
         {isAosrVisible && (selectedFolder !== undefined || activeSection === 'settings') ? (
           <DemoAosrWorkspacePage
             drafts={drafts}
             initialSelectedDraftId={selectedDraftId}
+            selectedDraftId={selectedDraftId}
             isEmbeddedInObjectWorkspace
             isSectionTemplateSettingsPage={activeSection === 'settings'}
             sectionTemplateSettings={selectedSectionTemplateSettings}
             onDraftsChange={setDrafts}
             onDeleteDraft={deleteAosrDraftFromCurrentFolder}
+            onSelectDraft={(draftId) => {
+              if (selectedSection !== undefined && selectedFolder !== undefined) {
+                navigateTo(aosrPath(object.id, selectedSection.id, selectedFolder.id, draftId));
+              }
+            }}
             onSectionTemplateSettingsChange={updateSelectedSectionTemplateSettings}
             lastTemplateCopyMessage={lastTemplateCopyMessage}
             folderName={selectedFolder?.name}
@@ -787,7 +818,9 @@ export function ObjectWorkspacePage({
             onDuplicateDraft={duplicateAosrDraft}
             onMoveDraft={moveAosrDraftInSelectedFolder}
             onObjectSettingsClosed={() => {
-              setActiveSection('section');
+              if (selectedSection !== undefined) {
+                navigateTo(sectionPath(object.id, selectedSection.id));
+              }
             }}
             onPasteSectionTemplate={pasteSectionTemplateFromClipboard}
             onRenumberSectionDrafts={renumberSelectedSectionDrafts}
@@ -809,22 +842,21 @@ export function ObjectWorkspacePage({
 }
 
 interface ObjectWorkspaceHeaderProps {
-  readonly activeSection: ObjectWorkspaceSection;
   readonly object: MockObjectCard;
+  readonly route: ObjectWorkspaceRoute;
 }
 
-function ObjectWorkspaceHeader({
-  activeSection,
-  object,
-}: ObjectWorkspaceHeaderProps): React.JSX.Element {
-  const sectionBreadcrumb = getSectionBreadcrumb(activeSection);
-
+function ObjectWorkspaceHeader({ object, route }: ObjectWorkspaceHeaderProps): React.JSX.Element {
   return (
     <header className="object-workspace-header">
       <div className="object-workspace-header__title">
-        <p className="object-workspace-breadcrumbs">
-          Объекты / {object.title} / {sectionBreadcrumb}
-        </p>
+        <AppBreadcrumbs
+          {...('draft' in route ? { draft: route.draft } : {})}
+          {...('folder' in route ? { folder: route.folder } : {})}
+          object={object}
+          screen={route.screen satisfies AppBreadcrumbScreen}
+          {...('section' in route ? { section: route.section } : {})}
+        />
         <h1 id="object-workspace-title">{object.title}</h1>
         <p>{object.address}</p>
       </div>
@@ -832,27 +864,36 @@ function ObjectWorkspaceHeader({
   );
 }
 
-function getSectionBreadcrumb(section: ObjectWorkspaceSection): string {
-  switch (section) {
+function getActiveWorkspaceSection(screen: ObjectWorkspaceRoute['screen']): ObjectWorkspaceSection {
+  switch (screen) {
     case 'overview':
-      return 'Обзор';
-    case 'sections':
-      return 'Разделы ИД';
-    case 'section':
-      return 'Разделы ИД / Обзор раздела';
-    case 'folder':
-      return 'Разделы ИД / Папка';
-    case 'intermediate-package':
-      return 'Разделы ИД / Промежуточная ИД по папке';
-    case 'aosr':
-      return `Разделы ИД / ${aosrActType.code}`;
-    case 'settings':
-      return 'Шаблонные значения раздела';
     case 'documents':
-      return 'Документы объекта';
-    case 'final-package':
-      return 'Итоговая ИД по разделу';
+    case 'sections':
+    case 'section':
+    case 'folder':
+    case 'aosr':
+      return screen;
+    case 'template':
+      return 'settings';
+    case 'final':
+      return 'final-package';
   }
+}
+
+function createWorkspaceFieldSetter<TKey extends keyof DemoObjectWorkspaceSession>(
+  objectId: string,
+  updateWorkspace: (
+    objectId: string,
+    updater: (current: DemoObjectWorkspaceSession) => DemoObjectWorkspaceSession,
+  ) => void,
+  field: TKey,
+): (action: SetStateAction<DemoObjectWorkspaceSession[TKey]>) => void {
+  return (action) => {
+    updateWorkspace(objectId, (currentWorkspace) => ({
+      ...currentWorkspace,
+      [field]: typeof action === 'function' ? action(currentWorkspace[field]) : action,
+    }));
+  };
 }
 
 interface ObjectOverviewProps {
@@ -1208,7 +1249,6 @@ function ObjectSectionPage({
     <section className="object-folders" aria-labelledby="section-overview-title">
       <div className="object-folders__topline">
         <div className="object-folders__heading">
-          <p className="object-workspace-breadcrumbs">Разделы ИД / {selectedSection.name}</p>
           <h2 id="section-overview-title">{selectedSection.name}</h2>
           <p>
             Раздел исполнительной документации. Внутри раздела создаются папки, а акты создаются уже

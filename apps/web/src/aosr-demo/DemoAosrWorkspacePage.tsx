@@ -86,6 +86,7 @@ interface DemoAosrWorkspacePageProps {
   readonly drafts?: readonly DemoAosrDraft[];
   readonly initialDocumentPreviewOpen?: boolean;
   readonly initialSelectedDraftId?: string;
+  readonly selectedDraftId?: string;
   readonly isEmbeddedInObjectWorkspace?: boolean;
   readonly isSectionTemplateSettingsPage?: boolean;
   readonly lastTemplateCopyMessage?: string;
@@ -102,6 +103,7 @@ interface DemoAosrWorkspacePageProps {
   readonly onMoveDraft?: (draftId: string, direction: DraftMoveDirection) => void;
   readonly onPasteSectionTemplate?: () => void;
   readonly onRenumberSectionDrafts?: () => void;
+  readonly onSelectDraft?: (draftId: string) => void;
   readonly onSectionTemplateSettingsChange?: (
     sectionTemplateSettings: DemoSectionTemplateSettings,
   ) => void;
@@ -122,6 +124,7 @@ export function DemoAosrWorkspacePage({
   drafts: controlledDrafts,
   initialDocumentPreviewOpen = false,
   initialSelectedDraftId,
+  selectedDraftId: controlledSelectedDraftId,
   isEmbeddedInObjectWorkspace = false,
   isSectionTemplateSettingsPage = false,
   lastTemplateCopyMessage = '',
@@ -137,6 +140,7 @@ export function DemoAosrWorkspacePage({
   onMoveDraft,
   onPasteSectionTemplate,
   onRenumberSectionDrafts,
+  onSelectDraft,
   onSectionTemplateSettingsChange,
   onObjectDefaultsChange,
   onBackToObjects,
@@ -181,9 +185,10 @@ export function DemoAosrWorkspacePage({
       : visibleDraftIds
           .map((draftId) => drafts.find((draft) => draft.id === draftId))
           .filter((draft): draft is DemoAosrDraft => draft !== undefined);
-  const [selectedDraftId, setSelectedDraftId] = useState(
+  const [localSelectedDraftId, setLocalSelectedDraftId] = useState(
     initialSelectedDraftId ?? demoAosrWorkspace.drafts[0]?.id ?? '',
   );
+  const selectedDraftId = controlledSelectedDraftId ?? localSelectedDraftId;
   const [draggedRepresentativeId, setDraggedRepresentativeId] = useState<string | null>(null);
   const [representativeDropTargetId, setRepresentativeDropTargetId] = useState<string | null>(null);
   const [isObjectSettingsOpen, setObjectSettingsOpen] = useState(false);
@@ -212,8 +217,6 @@ export function DemoAosrWorkspacePage({
     'all' | DemoObjectDocumentType
   >('all');
   const [docxDownloadError, setDocxDownloadError] = useState('');
-  const [createdHeaderOrganizationCount, setCreatedHeaderOrganizationCount] = useState(1);
-  const [createdRepresentativeCount, setCreatedRepresentativeCount] = useState(1);
 
   useEffect(() => {
     if (settingsOpenRequest !== undefined && settingsOpenRequest > 0) {
@@ -222,10 +225,10 @@ export function DemoAosrWorkspacePage({
   }, [settingsOpenRequest]);
 
   useEffect(() => {
-    if (initialSelectedDraftId !== undefined) {
-      setSelectedDraftId(initialSelectedDraftId);
+    if (controlledSelectedDraftId === undefined && initialSelectedDraftId !== undefined) {
+      setLocalSelectedDraftId(initialSelectedDraftId);
     }
-  }, [initialSelectedDraftId]);
+  }, [controlledSelectedDraftId, initialSelectedDraftId]);
 
   const selectedDraft = getSelectedDraft(visibleDrafts, selectedDraftId, objectDefaults);
   const selectedDocumentLabel =
@@ -312,7 +315,9 @@ export function DemoAosrWorkspacePage({
 
     commitDrafts((currentDrafts) => currentDrafts.filter((draft) => draft.id !== currentDraftId));
     onDeleteDraft?.(currentDraftId, nextSelectedDraftId);
-    setSelectedDraftId(nextSelectedDraftId);
+    if (controlledSelectedDraftId === undefined) {
+      selectDraft(nextSelectedDraftId);
+    }
     setDocxDownloadError('');
     setActiveActMode('edit');
   };
@@ -465,7 +470,10 @@ export function DemoAosrWorkspacePage({
         : selectedGlobalOrganizationId;
     const headerOrganization: DemoAosrHeaderOrganization = {
       details: headerOrganizationForm.details.trim(),
-      id: `header-organization-created-${String(createdHeaderOrganizationCount)}`,
+      id: getNextCreatedEntityId(
+        'header-organization-created-',
+        objectDefaults.headerOrganizations.map((organization) => organization.id),
+      ),
       label: headerOrganizationForm.label.trim(),
       organizationName: headerOrganizationForm.organizationName.trim(),
       ...(caption === '' || caption === selectedGlobalOrganization?.caption ? {} : { caption }),
@@ -475,7 +483,6 @@ export function DemoAosrWorkspacePage({
     commitObjectDefaults((currentDefaults) =>
       addHeaderOrganizationBlock(currentDefaults, headerOrganization),
     );
-    setCreatedHeaderOrganizationCount((currentCount) => currentCount + 1);
     setHeaderOrganizationForm(emptyHeaderOrganizationForm);
     setOrganizationSearch('');
     setHeaderOrganizationFormOpen(false);
@@ -497,7 +504,10 @@ export function DemoAosrWorkspacePage({
           }).id
         : selectedGlobalRepresentativeId;
     const createdRepresentative = createRepresentativeFromForm(
-      `representative-created-${String(createdRepresentativeCount)}`,
+      getNextCreatedEntityId(
+        'representative-created-',
+        objectDefaults.representativeLibrary.map((representative) => representative.id),
+      ),
       { ...libraryRepresentativeForm, globalRepresentativeId },
     );
     const selectedGlobalRepresentative = globalRepresentatives.find(
@@ -512,7 +522,6 @@ export function DemoAosrWorkspacePage({
     commitObjectDefaults((currentDefaults) =>
       addRepresentativeToLibrary(currentDefaults, representative),
     );
-    setCreatedRepresentativeCount((currentCount) => currentCount + 1);
     setLibraryRepresentativeForm(emptyRepresentativeForm);
     setRepresentativeSearch('');
     setRepresentativeLibraryFormOpen(false);
@@ -522,14 +531,16 @@ export function DemoAosrWorkspacePage({
     event.preventDefault();
 
     const representative = createRepresentativeFromForm(
-      `representative-created-${String(createdRepresentativeCount)}`,
+      getNextCreatedEntityId('representative-created-', [
+        ...objectDefaults.representativeLibrary.map((candidate) => candidate.id),
+        ...drafts.flatMap((draft) => draft.representatives.map((candidate) => candidate.id)),
+      ]),
       manualRepresentativeForm,
     );
 
     updateSelectedDraftWith((draft) =>
       draft.templateMode === 'manual' ? addRepresentativeToDraft(draft, representative) : draft,
     );
-    setCreatedRepresentativeCount((currentCount) => currentCount + 1);
     setManualRepresentativeForm(emptyRepresentativeForm);
     setManualRepresentativeFormOpen(false);
   };
@@ -583,8 +594,16 @@ export function DemoAosrWorkspacePage({
       onMoveDraft(draftId, direction);
     }
 
-    setSelectedDraftId(draftId);
+    selectDraft(draftId);
   };
+
+  function selectDraft(draftId: string): void {
+    if (controlledSelectedDraftId === undefined) {
+      setLocalSelectedDraftId(draftId);
+    }
+
+    onSelectDraft?.(draftId);
+  }
 
   const closeObjectSettings = (): void => {
     setObjectSettingsOpen(false);
@@ -827,15 +846,28 @@ export function DemoAosrWorkspacePage({
       </section>
 
       {isEmbeddedInObjectWorkspace && activeActMode === 'preview' ? (
-        <section className="act-preview-mode" aria-label="Предпросмотр акта">
-          <div className="preview-panel">
-            <div className="panel-heading">
-              <p className="section-kicker">Предпросмотр</p>
-              <h2>Предпросмотр акта</h2>
+        <div className="workspace-grid">
+          <DemoDocumentTree
+            actType={aosrActType}
+            drafts={visibleDrafts}
+            folderName={folderName}
+            selectedDraftId={selectedDraft.id}
+            onCreateAct={onCreateActInFolder}
+            onDeleteDraft={deleteDraft}
+            onDuplicateDraft={onDuplicateDraft}
+            onMoveDraft={moveDraft}
+            onSelectDraft={selectDraft}
+          />
+          <section className="act-preview-mode" aria-label="Предпросмотр акта">
+            <div className="preview-panel">
+              <div className="panel-heading">
+                <p className="section-kicker">Предпросмотр</p>
+                <h2>Предпросмотр акта</h2>
+              </div>
+              <DemoAosrPreview printState={printState} />
             </div>
-            <DemoAosrPreview printState={printState} />
-          </div>
-        </section>
+          </section>
+        </div>
       ) : (
         <div className="workspace-grid">
           <DemoDocumentTree
@@ -847,7 +879,7 @@ export function DemoAosrWorkspacePage({
             onDeleteDraft={deleteDraft}
             onDuplicateDraft={onDuplicateDraft}
             onMoveDraft={moveDraft}
-            onSelectDraft={setSelectedDraftId}
+            onSelectDraft={selectDraft}
           />
 
           <section className="act-form-panel" aria-label="Редактор документа">
@@ -1107,6 +1139,26 @@ function moveItemByDirection<TItem extends { readonly id: string }>(
   nextItems.splice(targetIndex, 0, item);
 
   return nextItems;
+}
+
+function getNextCreatedEntityId(prefix: string, existingIds: readonly string[]): string {
+  const usedOrdinals = new Set(
+    existingIds.flatMap((id) => {
+      if (!id.startsWith(prefix)) {
+        return [];
+      }
+
+      const ordinal = Number(id.slice(prefix.length));
+      return Number.isInteger(ordinal) && ordinal > 0 ? [ordinal] : [];
+    }),
+  );
+  let nextOrdinal = 1;
+
+  while (usedOrdinals.has(nextOrdinal)) {
+    nextOrdinal += 1;
+  }
+
+  return `${prefix}${String(nextOrdinal)}`;
 }
 
 function toDemoGlobalOrganization(organization: DemoOrganization): DemoGlobalOrganization {

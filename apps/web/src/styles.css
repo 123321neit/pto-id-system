@@ -361,6 +361,29 @@ button {
   margin-left: 4px;
 }
 
+.object-workspace-tree__acts {
+  display: grid;
+  gap: 4px;
+  margin: 2px 0 3px 32px;
+  padding: 0;
+  list-style: none;
+}
+
+.object-workspace-nav__sections .object-workspace-nav__act {
+  display: block;
+  border-left: 2px solid rgba(216, 231, 245, 0.3);
+  border-radius: 4px;
+  padding: 6px 9px;
+  color: #c8d8e6;
+  font-size: 0.72rem;
+}
+
+.object-workspace-nav__sections .object-workspace-nav__act[aria-current='page'] {
+  border-left-color: #7fb7f3;
+  background: rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+}
+
 .object-workspace-main {
   min-width: 0;
   padding: 24px;
@@ -424,6 +447,53 @@ button {
   font-size: 0.78rem;
   font-weight: 800;
   line-height: 1.4;
+}
+
+.object-workspace-breadcrumbs ol {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.object-workspace-breadcrumbs li:not(:last-child)::after {
+  color: #91a2b5;
+  content: '/';
+  margin-left: 5px;
+}
+
+.object-workspace-breadcrumbs a {
+  color: #285a99;
+  text-decoration: none;
+}
+
+.object-workspace-breadcrumbs a:hover {
+  text-decoration: underline;
+}
+
+.object-workspace-breadcrumbs [aria-current='page'] {
+  color: #5b6875;
+}
+
+.route-not-found {
+  display: grid;
+  min-height: 100vh;
+  place-items: center;
+  background: #f5f8fc;
+  padding: 24px;
+}
+
+.route-not-found .empty-state-card {
+  width: min(620px, 100%);
+}
+
+.route-not-found__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 18px;
 }
 
 .object-workspace-header__meta-list {
